@@ -8,37 +8,65 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // We initialize GoogleGenAI conditionally to avoid immediate crashes if key is missing
-let ai: GoogleGenAI;
-try {
-  ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-} catch (e) {
-  console.warn("Could not initialize GoogleGenAI. Is GEMINI_API_KEY set?");
+let ai: GoogleGenAI | null = null;
+const API_KEY = process.env.GEMINI_API_KEY;
+
+if (!API_KEY) {
+  console.warn("CRITICAL: GEMINI_API_KEY is not defined in environment variables. AI features will be disabled.");
+} else {
+  try {
+    ai = new GoogleGenAI({ apiKey: API_KEY });
+    console.log("SUCCESS: GoogleGenAI initialized correctly.");
+  } catch (e) {
+    console.error("ERROR: Failed to initialize GoogleGenAI:", e);
+  }
 }
 
 // Utility to parse Gemini JSON safely
 function parseGeminiJSON(text: string) {
   if (!text) return {};
+  // Handle markdown code blocks
   let jsonStr = text.replace(/```json\n?|```/g, "").trim();
   try {
     return JSON.parse(jsonStr);
   } catch (e) {
+    // Attempt to extract JSON if it's embedded in text
     const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if (jsonMatch) return JSON.parse(jsonMatch[0]);
-    throw new Error("Invalid JSON structure");
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (innerE) {
+        console.error("Failed to parse extracted JSON:", innerE);
+      }
+    }
+    throw new Error("Invalid JSON structure returned from AI");
   }
 }
 
 async function startServer() {
   const app = express();
-  // Using 3000 as base infrastructure requirement, with robust fallback
-  const PORT = process.env.PORT || 3000;
+  // Using PORT from env with 3000 as default
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: "2mb" }));
+
+  // Health check endpoint for monitoring
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      time: new Date().toISOString(),
+      aiAvailable: !!ai,
+      env: process.env.NODE_ENV || "development"
+    });
+  });
 
   // Middleware to ensure AI is initialized before handling requests
   const requireAI = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (!ai) {
-      return res.status(500).json({ error: "Servicio de IA no disponible en el servidor (falta API Key)" });
+      return res.status(503).json({ 
+        error: "Servicio de IA temporalmente no disponible",
+        message: "El servidor no tiene configurada una clave de API válida para Gemini." 
+      });
     }
     next();
   };

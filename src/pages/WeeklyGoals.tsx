@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
-import { collection, query, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, query, doc, setDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
 
@@ -49,13 +49,14 @@ export default function WeeklyGoals() {
   const [editType, setEditType] = useState<GoalType>("Azar");
   
   const [isGenerating, setIsGenerating] = useState<string | null>(null); // goal id being generated
+  const [userSummary, setUserSummary] = useState("");
 
-  useEffect(() => {
-    if (!user) return;
-
-    const q = query(collection(db, 'users', user.uid, 'weeklyGoals'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+  const loadGoals = useCallback(async (uid: string) => {
+    try {
+      const q = query(collection(db, 'users', uid, 'weeklyGoals'));
+      const snapshot = await getDocs(q);
       const fetchedGoals: Goal[] = [];
+      
       snapshot.forEach((doc) => {
         const data = doc.data();
         
@@ -84,12 +85,21 @@ export default function WeeklyGoals() {
       });
       
       setGoals(fetchedGoals);
-    }, (error) => {
+    } catch (error) {
       console.error("Error fetching goals:", error);
-    });
+    }
+  }, []);
 
-    return () => unsubscribe();
-  }, [user]);
+  useEffect(() => {
+    if (!user) return;
+
+    // Load summary once to avoid repeated reads during generation
+    getOrMigrateUserProfile(user.uid).then(res => {
+        setUserSummary(res.profileData.globalUserSummary || "");
+    }).catch(console.error);
+
+    loadGoals(user.uid);
+  }, [user, loadGoals]);
 
   const activeGoals = goals.filter(g => !g.isHistorical);
   const totalActive = activeGoals.length;
@@ -111,22 +121,44 @@ export default function WeeklyGoals() {
     };
     await setDoc(doc(db, 'users', user.uid, 'weeklyGoals', newId), newGoal);
     
+    // Update local state
+    setGoals(prev => {
+      const updated = [...prev, { id: newId, ...newGoal, isHistorical: false }];
+      return updated.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    });
+    
     startEditing({ id: newId, ...newGoal });
   };
 
   const toggleComplete = async (goal: Goal) => {
     if (!user) return;
     const docRef = doc(db, 'users', user.uid, 'weeklyGoals', goal.id);
+    const now = new Date().toISOString();
+    
     if (!goal.completed) {
       await updateDoc(docRef, { 
         completed: true, 
-        completedAt: new Date().toISOString() 
+        completedAt: now 
       });
+      
+      setGoals(prev => prev.map(g => g.id === goal.id ? { 
+        ...g, 
+        completed: true, 
+        completedAt: now,
+        isHistorical: isFromPreviousWeek(now)
+      } : g));
     } else {
       await updateDoc(docRef, { 
         completed: false, 
         completedAt: null 
       });
+      
+      setGoals(prev => prev.map(g => g.id === goal.id ? { 
+        ...g, 
+        completed: false, 
+        completedAt: undefined,
+        isHistorical: false
+      } : g));
     }
   };
 
@@ -134,6 +166,7 @@ export default function WeeklyGoals() {
     if (!user) return;
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'weeklyGoals', id));
+      setGoals(prev => prev.filter(g => g.id !== id));
     } catch(e) {
       console.error(e);
     }
@@ -148,11 +181,14 @@ export default function WeeklyGoals() {
 
   const saveEdit = async () => {
     if (!user || !editingGoalId) return;
-    await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', editingGoalId), {
+    const updates = {
       title: editTitle,
       description: editDescription,
       type: editType
-    });
+    };
+    await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', editingGoalId), updates);
+    
+    setGoals(prev => prev.map(g => g.id === editingGoalId ? { ...g, ...updates } : g));
     setEditingGoalId(null);
   };
 
@@ -161,12 +197,7 @@ export default function WeeklyGoals() {
     setIsGenerating("edit");
     
     try {
-      let accumulatedSummary = "";
-      try {
-        const { profileData } = await getOrMigrateUserProfile(user.uid);
-        accumulatedSummary = profileData.globalUserSummary || "";
-      } catch (e) { console.error(e) }
-
+      const accumulatedSummary = userSummary;
       const data = await api.weeklyGoal(editType, accumulatedSummary);
 
       setEditTitle(data.title || "Meta Sorpresa");
@@ -184,12 +215,7 @@ export default function WeeklyGoals() {
     setIsGenerating(goalId);
     
     try {
-      let accumulatedSummary = "";
-      try {
-        const { profileData } = await getOrMigrateUserProfile(user.uid);
-        accumulatedSummary = profileData.globalUserSummary || "";
-      } catch (e) { console.error(e) }
-
+      const accumulatedSummary = userSummary;
       const data = await api.weeklyGoal(type, accumulatedSummary);
 
       let finalizedType = type;
@@ -197,11 +223,15 @@ export default function WeeklyGoals() {
         finalizedType = "Azar";
       }
 
-      await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', goalId), {
+      const updates = {
         title: data.title || "Meta Sorpresa",
         description: data.description || "Tómate un momento para descubrir qué necesitas esta semana.",
         type: finalizedType
-      });
+      };
+
+      await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', goalId), updates);
+
+      setGoals(prev => prev.map(g => g.id === goalId ? { ...g, ...updates } : g));
 
     } catch (e) {
       console.error(e);
@@ -214,14 +244,20 @@ export default function WeeklyGoals() {
   const repeatGoal = async (goal: Goal) => {
     if (!user) return;
     const newId = Date.now().toString();
+    const nowISO = new Date().toISOString();
     const newGoal = {
       title: goal.title,
       description: goal.description,
       type: goal.type,
       completed: false,
-      timestamp: new Date().toISOString()
+      timestamp: nowISO
     };
     await setDoc(doc(db, 'users', user.uid, 'weeklyGoals', newId), newGoal);
+    
+    setGoals(prev => {
+      const updated = [...prev, { id: newId, ...newGoal, isHistorical: false }];
+      return updated.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    });
   };
 
   return (

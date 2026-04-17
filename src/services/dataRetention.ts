@@ -36,16 +36,19 @@ export async function runLazyDataRetentionAndCleanup(uid: string) {
 
     const lastCleanupAt = userData.lastCleanupAt ? new Date(userData.lastCleanupAt) : null;
 
-    // Actualizamos actividad
-    const userUpdates: any = {
-      lastActiveAt: now.toISOString(),
-    };
+    // 1. Throttled activity update (only update if > 6 hours have passed)
+    const lastActiveAt = userData.lastActiveAt ? new Date(userData.lastActiveAt) : new Date(0);
+    const hoursSinceLastActive = (now.getTime() - lastActiveAt.getTime()) / (1000 * 60 * 60);
+
+    const userUpdates: any = {};
+    if (hoursSinceLastActive >= 6) {
+      userUpdates.lastActiveAt = now.toISOString();
+    }
 
     // Comprobamos si debemos hacer limpieza (han pasado más de 7 días o nunca se ha hecho)
     let shouldCleanup = false;
     let shouldWipeTotals = false;
     
-    const lastActiveAt = userData.lastActiveAt ? new Date(userData.lastActiveAt) : now;
     const diffInactivityDays = (now.getTime() - lastActiveAt.getTime()) / (1000 * 60 * 60 * 24);
 
     if (!lastCleanupAt) {
@@ -154,8 +157,10 @@ export async function runLazyDataRetentionAndCleanup(uid: string) {
       userUpdates.cleanupVersion = 2;
     }
 
-    // Persistimos datos de última actividad
-    await updateDoc(userRef, userUpdates);
+    // Persistimos datos de actividad solo si hay algo nuevo que escribir
+    if (Object.keys(userUpdates).length > 0) {
+      await updateDoc(userRef, userUpdates);
+    }
 
   } catch (error) {
     console.error("[DataRetention] Error executing lazy cleanup:", error);

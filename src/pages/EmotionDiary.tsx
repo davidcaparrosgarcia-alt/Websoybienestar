@@ -79,6 +79,10 @@ export default function EmotionDiary() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDeep, setIsLoadingDeep] = useState(false);
 
+  // Optimization: Keep summary and refs to avoid redundant fetches
+  const [userSummary, setUserSummary] = useState("");
+  const [profileRef, setProfileRef] = useState<any>(null);
+
   // New lean progress indicators based on scores kept in profile (no massive reads)
   const [recentScores, setRecentScores] = useState<{date: string, score: number}[]>([]);
 
@@ -125,9 +129,11 @@ export default function EmotionDiary() {
 
     const loadData = async () => {
       try {
-        const { userData, profileData } = await getOrMigrateUserProfile(user.uid);
+        const { userData, profileRef: pRef, profileData } = await getOrMigrateUserProfile(user.uid);
         if (!isMounted) return;
 
+        setProfileRef(pRef);
+        setUserSummary(profileData.globalUserSummary || "");
         setIsSilenced(userData.diarySilenced === true);
         
         // Setup scores array locally without huge document counts
@@ -179,11 +185,12 @@ export default function EmotionDiary() {
     }
     setIsLoading(true);
     try {
-      const { profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
-      const accumulatedSummary = profileData.globalUserSummary || "";
+      const accumulatedSummary = userSummary;
 
       // Re-route with fused summary capability
       const data = await api.diaryValidate(entry1, entry2, accumulatedSummary);
+      
+      const pRef = profileRef || doc(db, 'userProfiles', user.uid);
 
       const todayStr = getDailyStr(new Date());
       const s1 = typeof data.score1 === 'number' ? data.score1 : 1;
@@ -208,7 +215,7 @@ export default function EmotionDiary() {
       });
       
       // Update scores history
-      let updatedScores = [...(profileData.diaryProfile?.recentScores || [])];
+      let updatedScores = [...recentScores];
       updatedScores = updatedScores.filter(s => s.date !== todayStr); // remove if exists
       updatedScores.push({ date: todayStr, score: totalDayScore });
       
@@ -218,12 +225,13 @@ export default function EmotionDiary() {
          updatedScores = updatedScores.slice(updatedScores.length - 365);
       }
 
-      await updateDoc(profileRef, {
+      await updateDoc(pRef, {
          globalUserSummary: data.newAccumulatedSummary || accumulatedSummary,
          "diaryProfile.recentScores": updatedScores,
          "diaryProfile.lastUsedAt": new Date().toISOString()
       });
 
+      setUserSummary(data.newAccumulatedSummary || accumulatedSummary);
       setRecentScores(updatedScores);
       setScore1(newData.score1);
       setScore2(newData.score2);
@@ -242,8 +250,8 @@ export default function EmotionDiary() {
     if (hasDeepened || !isValidated || !user) return;
     setIsLoadingDeep(true);
     try {
-      const { profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
-      const accumulatedSummary = profileData.globalUserSummary || "";
+      const accumulatedSummary = userSummary;
+      const pRef = profileRef || doc(db, 'userProfiles', user.uid);
 
       const data = await api.diaryDeepen(entry1, entry2, reflection, accumulatedSummary);
 
@@ -254,9 +262,10 @@ export default function EmotionDiary() {
       });
       
       if (data.newAccumulatedSummary) {
-         await updateDoc(profileRef, {
+         await updateDoc(pRef, {
             globalUserSummary: data.newAccumulatedSummary,
          });
+         setUserSummary(data.newAccumulatedSummary);
       }
 
       setDeepReflection(data.deepReflection);
