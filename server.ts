@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
@@ -6,10 +7,17 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// We initialize GoogleGenAI conditionally to avoid immediate crashes if key is missing
+let ai: GoogleGenAI;
+try {
+  ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+} catch (e) {
+  console.warn("Could not initialize GoogleGenAI. Is GEMINI_API_KEY set?");
+}
 
 // Utility to parse Gemini JSON safely
 function parseGeminiJSON(text: string) {
+  if (!text) return {};
   let jsonStr = text.replace(/```json\n?|```/g, "").trim();
   try {
     return JSON.parse(jsonStr);
@@ -22,11 +30,20 @@ function parseGeminiJSON(text: string) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  // Using 3000 as base infrastructure requirement, with robust fallback
+  const PORT = process.env.PORT || 3000;
 
   app.use(express.json({ limit: "2mb" }));
 
-  app.post("/api/session-reply", async (req, res) => {
+  // Middleware to ensure AI is initialized before handling requests
+  const requireAI = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (!ai) {
+      return res.status(500).json({ error: "Servicio de IA no disponible en el servidor (falta API Key)" });
+    }
+    next();
+  };
+
+  app.post("/api/session-reply", requireAI, async (req, res) => {
     try {
       const { history, message } = req.body;
       if (!message || typeof message !== 'string') return res.status(400).json({ error: "Invalid message" });
@@ -47,7 +64,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/report", async (req, res) => {
+  app.post("/api/report", requireAI, async (req, res) => {
     try {
       const { messages, accumulatedSummary } = req.body;
       if (!Array.isArray(messages)) return res.status(400).json({ error: "Invalid messages array" });
@@ -91,7 +108,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/diary-validate", async (req, res) => {
+  app.post("/api/diary-validate", requireAI, async (req, res) => {
     try {
       const { entry1, entry2 } = req.body;
       if (!entry1 || !entry2) return res.status(400).json({ error: "Entries missing" });
@@ -122,7 +139,7 @@ Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
     }
   });
 
-  app.post("/api/diary-deepen", async (req, res) => {
+  app.post("/api/diary-deepen", requireAI, async (req, res) => {
     try {
       const { entry1, entry2, reflection } = req.body;
       if (!entry1 || !entry2 || !reflection) return res.status(400).json({ error: "Data missing" });
@@ -148,7 +165,7 @@ Responde EXCLUSIVAMENTE con un objeto JSON:
     }
   });
 
-  app.post("/api/weekly-goal", async (req, res) => {
+  app.post("/api/weekly-goal", requireAI, async (req, res) => {
     try {
       const { category, accumulatedSummary } = req.body;
       if (!category) return res.status(400).json({ error: "Category missing" });
@@ -193,7 +210,8 @@ Responde EXCLUSIVAMENTE con un objeto JSON:
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  // Listen on all interfaces
+  app.listen(PORT as number, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

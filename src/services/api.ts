@@ -1,53 +1,47 @@
-// Simple API client to replace direct Gemini calls from the frontend
+// Capa de abstracción de API para endpoints de IA.
+// Mantiene las asunciones simples pero con mejor gestión de errores.
+
+async function fetchAPI(endpoint: string, body: any) {
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  
+  if (!res.ok) {
+    let errorMessage = `Error ${res.status} en ${endpoint}`;
+    try {
+      const data = await res.json();
+      if (data && data.error) {
+        errorMessage = data.error;
+      }
+    } catch (e) {
+      // Si la respuesta no es JSON, mantenemos el mensaje genérico
+    }
+    throw new Error(errorMessage);
+  }
+  
+  return res.json();
+}
 
 export const api = {
   async sessionReply(history: any[], message: string) {
-    const res = await fetch("/api/session-reply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ history, message })
-    });
-    if (!res.ok) throw new Error("Failed");
-    return res.json();
+    return fetchAPI("/api/session-reply", { history, message });
   },
 
   async report(messages: any[], accumulatedSummary: string) {
-    const res = await fetch("/api/report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, accumulatedSummary })
-    });
-    if (!res.ok) throw new Error("Failed");
-    return res.json();
+    return fetchAPI("/api/report", { messages, accumulatedSummary });
   },
 
   async diaryValidate(entry1: string, entry2: string) {
-    const res = await fetch("/api/diary-validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entry1, entry2 })
-    });
-    if (!res.ok) throw new Error("Failed");
-    return res.json();
+    return fetchAPI("/api/diary-validate", { entry1, entry2 });
   },
 
   async diaryDeepen(entry1: string, entry2: string, reflection: string) {
-    const res = await fetch("/api/diary-deepen", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entry1, entry2, reflection })
-    });
-    if (!res.ok) throw new Error("Failed");
-    return res.json();
+    return fetchAPI("/api/diary-deepen", { entry1, entry2, reflection });
   },
 
   async weeklyGoal(category: string, accumulatedSummary: string) {
-    const res = await fetch("/api/weekly-goal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, accumulatedSummary })
-    });
-    if (!res.ok) throw new Error("Failed");
-    return res.json();
+    return fetchAPI("/api/weekly-goal", { category, accumulatedSummary });
   }
 };
