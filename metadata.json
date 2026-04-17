@@ -1,0 +1,6 @@
+{
+  "name": "web Reprográmate",
+  "description": "Web principal del proyecto Reprográmate con sala de terapia para transcripción de sesión terapeuta y enlace a cuestionario. también será el visionado final de resultados de la evaluación preliminar pra la captación del paciente.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": []
+}

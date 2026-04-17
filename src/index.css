@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Manrope:wght@200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-surface-variant: #e1e3e2;
+  --color-on-primary: #ffffff;
+  --color-surface-container-high: #e7e8e7;
+  --color-tertiary-container: #3a3e2d;
+  --color-outline: #74777d;
+  --color-on-secondary: #ffffff;
+  --color-secondary: #7c8c8a;
+  --color-on-primary-fixed: #091d2e;
+  --color-on-secondary-container: #546866;
+  --color-primary-container: #3a4a5a;
+  --color-error: #ba1a1a;
+  --color-on-primary-fixed-variant: #36485b;
+  --color-primary-fixed-dim: #b5c8df;
+  --color-on-secondary-fixed-variant: #374a48;
+  --color-tertiary: #242819;
+  --color-outline-variant: #c4c6cd;
+  --color-inverse-surface: #2e3131;
+  --color-inverse-primary: #b5c8df;
+  --color-on-error-container: #93000a;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-fixed-variant: #444937;
+  --color-on-tertiary-fixed: #191d0e;
+  --color-surface-container-low: #f3f4f3;
+  --color-surface-container: #edeeed;
+  --color-surface: #f9f9f8;
+  --color-primary-fixed: #d1e4fb;
+  --color-on-error: #ffffff;
+  --color-inverse-on-surface: #f0f1f0;
+  --color-error-container: #ffdad6;
+  --color-tertiary-fixed-dim: #c5c9b2;
+  --color-secondary-fixed: #d1e7e4;
+  --color-background: #f9f9f8;
+  --color-surface-tint: #4e6073;
+  --color-surface-bright: #f9f9f8;
+  --color-on-primary-container: #96a9be;
+  --color-secondary-fixed-dim: #b6cbc8;
+  --color-on-tertiary-container: #a5a993;
+  --color-tertiary-fixed: #e1e5cd;
+  --color-on-secondary-fixed: #0b1f1d;
+  --color-surface-dim: #d9dad9;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-background: #191c1c;
+  --color-secondary-container: #d1e7e4;
+  --color-surface-container-highest: #e1e3e2;
+  --color-on-surface: #191c1c;
+  --color-on-surface-variant: #43474c;
+  --color-primary: #2c3e50;
+
+  --font-headline: "Noto Serif", serif;
+  --font-body: "Manrope", sans-serif;
+  --font-label: "Manrope", sans-serif;
+}
+
+@layer base {
+  html {
+    font-size: 92%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+.cenefa-decorative {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  color: var(--color-primary);
+}
+.cenefa-line {
+  height: 3px;
+  background: var(--color-primary);
+  flex-grow: 1;
+  max-width: 350px;
+  position: relative;
+}
+.cenefa-line::before, .cenefa-line::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  top: -3.5px;
+}
+.cenefa-line.left::after { right: 0; }
+.cenefa-line.right::before { left: 0; }
+
+/* Zen Palette Harmony */
+.zen-slate { background-color: #2c3e50; } 
+.zen-taupe { background-color: #8b7d6b; } 
+.zen-mist { background-color: #5d6d7e; } 
+.zen-stone { background-color: #707b7c; } 
+.zen-sand { background-color: #a69b8d; } 
+.zen-azure-fog { background-color: #4a646c; }
+.zen-light-gray { background-color: #e5e7eb; }
