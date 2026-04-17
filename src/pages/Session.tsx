@@ -1,15 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { GoogleGenAI } from "@google/genai";
+import { api } from "../services/api";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
 }
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default function Session() {
   const [messages, setMessages] = useState<Message[]>([
@@ -100,15 +98,7 @@ export default function Session() {
         parts: [{ text: msg.content }]
       }));
 
-      const chatWithHistory = ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: "Eres un asistente empático, cálido y profesional, actuando como un puente entre el paciente y un terapeuta humano. Tu objetivo es escuchar al paciente, hacerle preguntas suaves y guiadas para entender su situación (ansiedad, estrés, etc.) y ayudarle a plasmar cómo se siente en un máximo de 15 minutos. Mantén respuestas concisas, conversacionales y muy humanas. No diagnostiques, solo recopila información y brinda apoyo emocional.",
-        },
-        history: chatHistory.slice(0, -1)
-      });
-
-      const response = await chatWithHistory.sendMessage({ message: input });
+      const response = await api.sessionReply(chatHistory.slice(0, -1), input);
       
       if (response.text) {
         const aiMessage: Message = {

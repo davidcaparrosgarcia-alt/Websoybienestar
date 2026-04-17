@@ -1,12 +1,10 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { GoogleGenAI } from "@google/genai";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import Markdown from "react-markdown";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { api } from "../services/api";
 
 export default function Report() {
   const location = useLocation();
@@ -57,60 +55,18 @@ export default function Report() {
           }
         }
 
-        const conversationText = messages
-          .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content}`)
-          .join("\n\n");
+        const parsedData = await api.report(messages, accumulatedSummary);
 
-        const prompt = `
-          A continuación se presenta la transcripción de una sesión preliminar entre un paciente y una IA asistente.
-          Tu tarea es actuar como un Psicólogo / Coach de vida y evaluar esta sesión.
-          Instrucciones:
-          1. Determina si la sesión ha llegado a un punto de conclusión válido o aportado información útil y relevante sobre el estado del paciente. (Mero ruido o conversaciones vacías no son válidas).
-          2. Genera un informe detallado estructurado en Markdown clásico.
-          3. Genera un resumen compacto de la sesión actual sumado a resúmenes pasados (si existen).
-          
-          Historial pasado de sesiones (Resumen Acumulado):
-          ${accumulatedSummary || "No hay historial previo."}
-
-          Transcripción Actual:
-          ${conversationText}
-
-          EL RESULTADO DEBE SER EXCLUSIVAMENTE UN OBJETO JSON con esta estructura exacta (sin bloques \`\`\`json):
-          {
-            "validConclusion": boolean,
-            "markdownReport": "El informe clínico completo (motivo, síntomas, contexto, observaciones)",
-            "newAccumulatedSummary": "El nuevo resumen que integra lo viejo (si existía) con lo nuevo"
-          }
-        `;
-
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: prompt,
-        });
-
-        if (response.text) {
-          let jsonStr = response.text;
-          // Strip markdown code blocks if present
-          jsonStr = jsonStr.replace(/```json\n?|```/g, "").trim();
-          
-          let parsedData;
-          try {
-            parsedData = JSON.parse(jsonStr);
-          } catch (parseError) {
-            console.error("JSON parsing error in Report:", parseError, "Raw string:", jsonStr);
-            const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              parsedData = JSON.parse(jsonMatch[0]);
-            } else {
-              throw parseError;
-            }
-          }
-
+        if (parsedData) {
           if (parsedData.validConclusion) {
             setReport(parsedData.markdownReport);
             
             // Guardar en Firebase si hay usuario
             if (user) {
+              const conversationText = messages
+                .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content}`)
+                .join("\n\n");
+
               const userRef = doc(db, "users", user.uid);
               const docSnap = await getDoc(userRef);
               

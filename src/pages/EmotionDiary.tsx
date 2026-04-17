@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, onSnapshot } from "firebase/firestore";
-import { GoogleGenAI } from "@google/genai";
+import { api } from "../services/api";
 
 enum OperationType {
   CREATE = 'create',
@@ -55,8 +55,6 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const getDailyStr = (d: Date) => {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -205,40 +203,7 @@ export default function EmotionDiary() {
     }
     setIsLoading(true);
     try {
-      const prompt = `Eres un psicoterapeuta y coach de vida experto. Analiza las siguientes dos razones de gratitud de un paciente (que puede padecer depresión, estrés o ansiedad).
-Instrucciones:
-1. Puntúa cada motivo con 0, 1 o 2 ('destellos'). 0 = vacío/esquivo/sin esfuerzo real, 1 = superficial, 2 = profundo o significativo. (Max 2 para cada uno).
-2. Escribe una pequeña reflexión terapéutica (1 o 2 párrafos). Relaciónate con los hechos relatados por el usuario. Sé profesional, amigable y didáctico. Evita la positividad tóxica; ofrece una valoración realista con un leve decantamiento hacia la motivación para que no se desanime.
-Motivo 1: "${entry1}"
-Motivo 2: "${entry2}"
-Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
-{
-  "score1": número,
-  "score2": número,
-  "reflection": "tu reflexión"
-}`;
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
-
-      let jsonStr = response.text || "";
-      // Strip markdown code blocks if present
-      jsonStr = jsonStr.replace(/```json\n?|```/g, "").trim();
-      
-      let data;
-      try {
-        data = JSON.parse(jsonStr);
-      } catch (parseError) {
-        console.error("JSON parsing error:", parseError, "Raw string:", jsonStr);
-        // Attempt to find JSON object in text if parsing failed
-        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          data = JSON.parse(jsonMatch[0]);
-        } else {
-          throw parseError;
-        }
-      }
+      const data = await api.diaryValidate(entry1, entry2);
 
       const todayStr = getDailyStr(new Date());
       const newData = {
@@ -278,24 +243,7 @@ Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
     if (hasDeepened || !isValidated || !user) return;
     setIsLoadingDeep(true);
     try {
-      const prompt = `Eres el mismo psicoterapeuta y coach de vida. Basándote en los motivos de gratitud del paciente y tu reflexión anterior, profundiza aún más en el análisis.
-Motivos: 1. "${entry1}", 2. "${entry2}"
-Reflexión anterior: "${reflection}"
-Genera un análisis más profundo (2 o 3 párrafos) y proporciona una pequeña herramienta o anclaje relacionado. Mantén tu tono amigable y profesional.
-Responde EXCLUSIVAMENTE con un objeto JSON:
-{
-  "deepReflection": "tu texto aquí"
-}`;
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
-
-      let jsonStr = response.text || "";
-      if (jsonStr.includes("\`\`\`json")) jsonStr = jsonStr.split("\`\`\`json")[1].split("\`\`\`")[0].trim();
-      else if (jsonStr.includes("\`\`\`")) jsonStr = jsonStr.split("\`\`\`")[1].split("\`\`\`")[0].trim();
-      
-      const data = JSON.parse(jsonStr);
+      const data = await api.diaryDeepen(entry1, entry2, reflection);
 
       const todayStr = getDailyStr(new Date());
       const docRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);

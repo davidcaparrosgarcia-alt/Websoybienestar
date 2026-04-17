@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { api } from "../services/api";
 
 type GoalType = "Bienestar Mental" | "Actividad Física" | "Desarrollo Intelectual" | "Gestión de Emociones" | "Azar";
 const GOAL_TYPES: GoalType[] = ["Bienestar Mental", "Actividad Física", "Desarrollo Intelectual", "Gestión de Emociones", "Azar"];
@@ -174,34 +172,7 @@ export default function WeeklyGoals() {
         }
       } catch (e) { console.error(e) }
 
-      const prompt = `
-      Eres un psicoterapeuta y coach de vida. Necesitas generar una meta semanal estimulante para el usuario basándote en la siguiente categoría: "${editType}".
-      Aquí tienes un resumen de contexto del usuario y sesiones previas (puede estar vacío): "${accumulatedSummary}".
-      
-      Instrucciones:
-      Si el resumen menciona problemas específicos (ej., dormir, estrés, ansiedad, sedentarismo), la meta debe sugerir algo para contrarrestarlos de forma empática y sutil. 
-      Si la categoría es "Azar", elige libremente una de las otras categorías y sé creativo.
-      Mantén el título muy breve, y la descripción como un consejo accionable de no más de 1-2 líneas largas.
-      
-      DEBES responder ÚNICAMENTE con un JSON con los campos: "title" y "description".
-      `;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
-
-      let jsonStr = response.text || "";
-      jsonStr = jsonStr.replace(/```json\n?|```/g, "").trim();
-      
-      let data;
-      try {
-        data = JSON.parse(jsonStr);
-      } catch (parseError) {
-        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-        if (jsonMatch) data = JSON.parse(jsonMatch[0]);
-        else throw parseError;
-      }
+      const data = await api.weeklyGoal(editType, accumulatedSummary);
 
       setEditTitle(data.title || "Meta Sorpresa");
       setEditDescription(data.description || "Tómate un momento para descubrir qué necesitas esta semana.");
@@ -226,34 +197,7 @@ export default function WeeklyGoals() {
         }
       } catch (e) { console.error(e) }
 
-      const prompt = `
-      Eres un psicoterapeuta y coach de vida. Necesitas generar una meta semanal estimulante para el usuario basándote en la siguiente categoría: "${type}".
-      Aquí tienes un resumen de contexto del usuario y sesiones previas (puede estar vacío): "${accumulatedSummary}".
-      
-      Instrucciones:
-      Si el resumen menciona problemas específicos (ej., dormir, estrés, ansiedad, sedentarismo), la meta debe sugerir algo para contrarrestarlos de forma empática y sutil. 
-      Si la categoría es "Azar", elige libremente una de las otras categorías y sé creativo.
-      Mantén el título muy breve, y la descripción como un consejo accionable de no más de 1-2 líneas largas.
-      
-      DEBES responder ÚNICAMENTE con un JSON con los campos: "title" y "description".
-      `;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
-
-      let jsonStr = response.text || "";
-      jsonStr = jsonStr.replace(/```json\n?|```/g, "").trim();
-      
-      let data;
-      try {
-        data = JSON.parse(jsonStr);
-      } catch (parseError) {
-        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-        if (jsonMatch) data = JSON.parse(jsonMatch[0]);
-        else throw parseError;
-      }
+      const data = await api.weeklyGoal(type, accumulatedSummary);
 
       let finalizedType = type;
       if (type === "Azar") {
