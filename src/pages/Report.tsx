@@ -5,6 +5,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import Markdown from "react-markdown";
 import { api } from "../services/api";
+import { getOrMigrateUserProfile } from "../services/userProfile";
 
 export default function Report() {
   const location = useLocation();
@@ -31,57 +32,65 @@ export default function Report() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const generateReport = async () => {
       // Small delay or check to ensure auth state is resolved or we don't care initially if they are anonymous.
       // We will save if user is present.
       if (!messages || messages.length <= 1) {
-        setReport("No hay suficiente información en la sesión para generar un informe detallado.");
-        setIsLoading(false);
+        if (isMounted) setReport("No hay suficiente información en la sesión para generar un informe detallado.");
+        if (isMounted) setIsLoading(false);
         return;
       }
 
       try {
         let accumulatedSummary = "";
+        let profileReference: any = null;
+        let userReference: any = null;
         
         // Obtenemos historial si el usuario está logueado
         if (user) {
           try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-              accumulatedSummary = userDoc.data()?.accumulatedSummary || "";
-            }
+            const { userRef, profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
+            userReference = userRef;
+            profileReference = profileRef;
+            accumulatedSummary = profileData.globalUserSummary || "";
           } catch (e) {
             console.error("Firebase read error", e);
           }
         }
 
         const parsedData = await api.report(messages, accumulatedSummary);
+        if (!isMounted) return;
 
         if (parsedData) {
           if (parsedData.validConclusion) {
             setReport(parsedData.markdownReport);
             
             // Guardar en Firebase si hay usuario
-            if (user) {
+            if (user && profileReference && userReference) {
               const conversationText = messages
                 .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content}`)
                 .join("\n\n");
-
-              const userRef = doc(db, "users", user.uid);
-              const docSnap = await getDoc(userRef);
               
-              const updateData = {
+              // Actualizamos el Identity minimal record
+              const updateDataUser = {
                 hasDoneConsultation: true,
-                accumulatedSummary: parsedData.newAccumulatedSummary,
-                latestSessionTranscript: conversationText,
                 lastUpdated: new Date().toISOString()
               };
+              
+              // Actualizamos la Memory separada (NO crudos, solo conclusiones útiles)
+              const updateDataProfile = {
+                globalUserSummary: parsedData.newAccumulatedSummary,
+                latestClinicalConclusion: parsedData.markdownReport,
+              };
 
-              if (docSnap.exists()) {
-                await updateDoc(userRef, updateData);
-              } else {
-                await setDoc(userRef, updateData);
-              }
+              await updateDoc(userReference, updateDataUser).catch(async () => {
+                 await setDoc(userReference, updateDataUser, { merge: true });
+              });
+              
+              await updateDoc(profileReference, updateDataProfile).catch(async () => {
+                 await setDoc(profileReference, updateDataProfile, { merge: true });
+              });
             }
           } else {
             setReport("La sesión no proporcionó suficiente información estructurada para alcanzar una conclusión clínica válida y guardarla en el historial. Por favor, realice una sesión más profunda.");
@@ -92,13 +101,17 @@ export default function Report() {
         }
       } catch (err) {
         console.error("Error generating report:", err);
-        setError("Ocurrió un error al analizar la clínica o el formato de respuesta de la IA.");
+        if (isMounted) setError("Ocurrió un error al analizar la clínica o el formato de respuesta de la IA.");
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     generateReport();
+    
+    return () => {
+      isMounted = false;
+    }
   }, [messages, user]);
 
   const handleShare = async () => {

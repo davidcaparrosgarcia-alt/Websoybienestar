@@ -4,6 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 import { api } from "../services/api";
+import { getOrMigrateUserProfile } from "../services/userProfile";
 
 type GoalType = "Bienestar Mental" | "Actividad Física" | "Desarrollo Intelectual" | "Gestión de Emociones" | "Azar";
 const GOAL_TYPES: GoalType[] = ["Bienestar Mental", "Actividad Física", "Desarrollo Intelectual", "Gestión de Emociones", "Azar"];
@@ -62,8 +63,6 @@ export default function WeeklyGoals() {
         if (data.completed && data.completedAt) {
           historical = isFromPreviousWeek(data.completedAt);
         } else if (!data.completed && data.timestamp) {
-          // Si no está completada pero es de otra semana, simplemente "fluye" a esta semana.
-          // Is it historical? No, it's active.
           historical = false;
         }
 
@@ -79,7 +78,7 @@ export default function WeeklyGoals() {
         });
       });
       
-      // Sort: Strictly by creation date (oldest first, newest at the bottom), regardless of completion status
+      // Sort
       fetchedGoals.sort((a, b) => {
         return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
       });
@@ -97,7 +96,6 @@ export default function WeeklyGoals() {
   const completedActive = activeGoals.filter(g => g.completed).length;
 
   const nextResetStr = () => {
-    // Return "Domingo, 23:59" conceptually or dynamically
     return "Domingo, 23:59";
   };
 
@@ -113,7 +111,6 @@ export default function WeeklyGoals() {
     };
     await setDoc(doc(db, 'users', user.uid, 'weeklyGoals', newId), newGoal);
     
-    // Automatically enter edit mode
     startEditing({ id: newId, ...newGoal });
   };
 
@@ -166,10 +163,8 @@ export default function WeeklyGoals() {
     try {
       let accumulatedSummary = "";
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          accumulatedSummary = userDoc.data()?.accumulatedSummary || "";
-        }
+        const { profileData } = await getOrMigrateUserProfile(user.uid);
+        accumulatedSummary = profileData.globalUserSummary || "";
       } catch (e) { console.error(e) }
 
       const data = await api.weeklyGoal(editType, accumulatedSummary);
@@ -191,17 +186,14 @@ export default function WeeklyGoals() {
     try {
       let accumulatedSummary = "";
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          accumulatedSummary = userDoc.data()?.accumulatedSummary || "";
-        }
+        const { profileData } = await getOrMigrateUserProfile(user.uid);
+        accumulatedSummary = profileData.globalUserSummary || "";
       } catch (e) { console.error(e) }
 
       const data = await api.weeklyGoal(type, accumulatedSummary);
 
       let finalizedType = type;
       if (type === "Azar") {
-        // Just leave it as Azar or pick a random one if we wanted, but let's keep the user's label
         finalizedType = "Azar";
       }
 

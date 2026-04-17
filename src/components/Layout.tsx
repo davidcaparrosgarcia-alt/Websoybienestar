@@ -1,12 +1,21 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, logOut } from "../firebase";
 import ScrollArrows from "./ScrollArrows";
+import { runLazyDataRetentionAndCleanup } from "../services/dataRetention";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (user) {
+      // Trigger lazy cleanup non-blockingly without awaiting
+      runLazyDataRetentionAndCleanup(user.uid);
+    }
+  }, [user]);
 
   const handleAuthAction = () => {
     if (user) {

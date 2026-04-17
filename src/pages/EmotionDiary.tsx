@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { api } from "../services/api";
+import { getOrMigrateUserProfile } from "../services/userProfile";
 
 enum OperationType {
   CREATE = 'create',
@@ -51,7 +52,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     },
     operationType,
     path
-  }
+  };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
@@ -63,8 +64,6 @@ const getDailyStr = (d: Date) => {
 export default function EmotionDiary() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  
-  const [entries, setEntries] = useState<any[]>([]);
   
   const [entry1, setEntry1] = useState("");
   const [entry2, setEntry2] = useState("");
@@ -80,13 +79,36 @@ export default function EmotionDiary() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDeep, setIsLoadingDeep] = useState(false);
 
-  const [progressWeek, setProgressWeek] = useState(0);
-  const [progressMonth, setProgressMonth] = useState(0);
-  const [progressYear, setProgressYear] = useState(0);
+  // New lean progress indicators based on scores kept in profile (no massive reads)
+  const [recentScores, setRecentScores] = useState<{date: string, score: number}[]>([]);
+
+  // Compute progress by summing available scores, using 1 fallback point for unrecorded days if we wanted, 
+  // but let's strictly sum actual scores out of the max possible (4 per day).
+  const calculateProgress = (days: number) => {
+    let totalScore = 0;
+    const today = new Date();
+    for (let i = 0; i < days; i++) {
+       const d = new Date(today);
+       d.setDate(d.getDate() - i);
+       const dateStr = getDailyStr(d);
+       const record = recentScores.find(s => s.date === dateStr);
+       if (record) {
+          totalScore += record.score;
+       } else {
+          // Standard penalty-free grace or 0. If 0 is too brutal, we count 0.
+          totalScore += 0; 
+       }
+    }
+    const maxPossible = days * 4;
+    return Math.min(100, Math.round((totalScore / maxPossible) * 100)) || 0;
+  }
+
+  const progressWeek = calculateProgress(7);
+  const progressMonth = calculateProgress(30);
+  const progressYear = calculateProgress(365);
 
   useEffect(() => {
     if (!user) {
-      setEntries([]);
       setEntry1("");
       setEntry2("");
       setScore1(0);
@@ -95,102 +117,56 @@ export default function EmotionDiary() {
       setDeepReflection("");
       setHasDeepened(false);
       setIsValidated(false);
+      setRecentScores([]);
       return;
     }
 
-    const userRef = doc(db, 'users', user.uid);
-    const unsubUser = onSnapshot(userRef, (userDoc) => {
-      if (userDoc.exists()) {
-        setIsSilenced(userDoc.data().diarySilenced === true);
-      } else {
-        setDoc(userRef, { diarySilenced: false, hasDoneConsultation: false }, { merge: true }).catch(err => {
-          handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
-        });
-      }
-    }, (err) => {
-      console.error("Diary profile error:", err);
-      try {
-        handleFirestoreError(err, OperationType.GET, `users/${user.uid}`);
-      } catch (e) { /* logged */ }
-    });
+    let isMounted = true;
 
-    const diaryColl = collection(db, 'users', user.uid, 'diaryEntries');
-    const unsubDiary = onSnapshot(diaryColl, (snapshot) => {
-      const loadedEntries = snapshot.docs.map(d => {
-        const data = d.data();
-        return {
-          id: d.id,
-          entry1: data.entry1,
-          entry2: data.entry2,
-          score1: data.score1,
-          score2: data.score2,
-          reflection: data.reflection,
-          deepReflection: data.deepReflection,
-          hasDeepened: data.hasDeepened
-        };
-      });
-      setEntries(loadedEntries);
-      
-      const todayStr = getDailyStr(new Date());
-      const todayEntry = loadedEntries.find(e => e.id === todayStr);
-      if (todayEntry) {
-        setEntry1(todayEntry.entry1 || "");
-        setEntry2(todayEntry.entry2 || "");
-        setScore1(todayEntry.score1 || 0);
-        setScore2(todayEntry.score2 || 0);
-        setReflection(todayEntry.reflection || "");
-        setDeepReflection(todayEntry.deepReflection || "");
-        setHasDeepened(todayEntry.hasDeepened || false);
-        setIsValidated(true);
-      } else {
-        // Reset for new day
-        setEntry1("");
-        setEntry2("");
-        setScore1(0);
-        setScore2(0);
-        setReflection("");
-        setDeepReflection("");
-        setHasDeepened(false);
-        setIsValidated(false);
-      }
-    }, (err) => {
-      console.error("Diary entries error:", err);
+    const loadData = async () => {
       try {
-        handleFirestoreError(err, OperationType.LIST, `users/${user.uid}/diaryEntries`);
-      } catch (e) { /* logged */ }
-    });
+        const { userData, profileData } = await getOrMigrateUserProfile(user.uid);
+        if (!isMounted) return;
+
+        setIsSilenced(userData.diarySilenced === true);
+        
+        // Setup scores array locally without huge document counts
+        const scoresArr = profileData.diaryProfile?.recentScores || [];
+        setRecentScores(scoresArr);
+
+        // Just fetch today's document
+        const todayStr = getDailyStr(new Date());
+        const todayRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
+        const todayDoc = await getDoc(todayRef);
+
+        if (!isMounted) return;
+
+        if (todayDoc.exists()) {
+          const data = todayDoc.data();
+          if (data.score1 !== undefined) {
+             setIsValidated(true);
+             setEntry1(data.entry1 || "");
+             setEntry2(data.entry2 || "");
+             setScore1(data.score1 || 0);
+             setScore2(data.score2 || 0);
+             setReflection(data.reflection || "");
+             if (data.hasDeepened) {
+                setHasDeepened(true);
+                setDeepReflection(data.deepReflection || "");
+             }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading diary data:", err);
+      }
+    };
+
+    loadData();
 
     return () => {
-      unsubUser();
-      unsubDiary();
+      isMounted = false;
     };
   }, [user]);
-
-  useEffect(() => {
-    const calculateProgress = (days: number) => {
-      const today = new Date();
-      let totalScore = 0;
-      for (let i = 0; i < days; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = getDailyStr(d);
-        
-        const entry = entries.find(e => e.id === dateStr);
-        if (entry) {
-          totalScore += (entry.score1 + entry.score2);
-        } else {
-          // Día no registrado contabliza como 1 destello
-          totalScore += 1;
-        }
-      }
-      const maxPossible = days * 4;
-      return Math.min(100, Math.round((totalScore / maxPossible) * 100));
-    };
-
-    setProgressWeek(calculateProgress(7));
-    setProgressMonth(calculateProgress(30));
-    setProgressYear(calculateProgress(365));
-  }, [entries]);
 
   const handleValidate = async () => {
     if (!user) {
@@ -203,17 +179,27 @@ export default function EmotionDiary() {
     }
     setIsLoading(true);
     try {
-      const data = await api.diaryValidate(entry1, entry2);
+      const { profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
+      const accumulatedSummary = profileData.globalUserSummary || "";
+
+      // Re-route with fused summary capability
+      const data = await api.diaryValidate(entry1, entry2, accumulatedSummary);
 
       const todayStr = getDailyStr(new Date());
+      const s1 = typeof data.score1 === 'number' ? data.score1 : 1;
+      const s2 = typeof data.score2 === 'number' ? data.score2 : 1;
+      const totalDayScore = s1 + s2;
+
       const newData = {
-        entry1,
+        entry1, // Tempsaved for UI resilience initially, data retention script scrubs it securely
         entry2,
-        score1: typeof data.score1 === 'number' ? data.score1 : 1,
-        score2: typeof data.score2 === 'number' ? data.score2 : 1,
+        score1: s1,
+        score2: s2,
+        dayScore: totalDayScore,
         reflection: data.reflection || "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.",
         hasDeepened: false,
-        deepReflection: ""
+        deepReflection: "",
+        createdAt: new Date().toISOString()
       };
       
       const docRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
@@ -221,15 +207,28 @@ export default function EmotionDiary() {
         handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/diaryEntries/${todayStr}`);
       });
       
+      // Update scores history
+      let updatedScores = [...(profileData.diaryProfile?.recentScores || [])];
+      updatedScores = updatedScores.filter(s => s.date !== todayStr); // remove if exists
+      updatedScores.push({ date: todayStr, score: totalDayScore });
+      
+      // Sort and truncate to last 365 elements to keep document small
+      updatedScores.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      if (updatedScores.length > 365) {
+         updatedScores = updatedScores.slice(updatedScores.length - 365);
+      }
+
+      await updateDoc(profileRef, {
+         globalUserSummary: data.newAccumulatedSummary || accumulatedSummary,
+         "diaryProfile.recentScores": updatedScores,
+         "diaryProfile.lastUsedAt": new Date().toISOString()
+      });
+
+      setRecentScores(updatedScores);
       setScore1(newData.score1);
       setScore2(newData.score2);
       setReflection(newData.reflection);
       setIsValidated(true);
-      
-      setEntries(prev => {
-        const filtered = prev.filter(e => e.id !== todayStr);
-        return [...filtered, { id: todayStr, ...newData }];
-      });
       
     } catch (e) {
       console.error("AI or Firestore Error:", e);
@@ -243,7 +242,10 @@ export default function EmotionDiary() {
     if (hasDeepened || !isValidated || !user) return;
     setIsLoadingDeep(true);
     try {
-      const data = await api.diaryDeepen(entry1, entry2, reflection);
+      const { profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
+      const accumulatedSummary = profileData.globalUserSummary || "";
+
+      const data = await api.diaryDeepen(entry1, entry2, reflection, accumulatedSummary);
 
       const todayStr = getDailyStr(new Date());
       const docRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
@@ -251,6 +253,12 @@ export default function EmotionDiary() {
         handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/diaryEntries/${todayStr}`);
       });
       
+      if (data.newAccumulatedSummary) {
+         await updateDoc(profileRef, {
+            globalUserSummary: data.newAccumulatedSummary,
+         });
+      }
+
       setDeepReflection(data.deepReflection);
       setHasDeepened(true);
     } catch (e) {

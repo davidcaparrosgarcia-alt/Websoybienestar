@@ -33,12 +33,12 @@ export const api = {
     return fetchAPI("/api/report", { messages, accumulatedSummary });
   },
 
-  async diaryValidate(entry1: string, entry2: string) {
-    return fetchAPI("/api/diary-validate", { entry1, entry2 });
+  async diaryValidate(entry1: string, entry2: string, accumulatedSummary: string) {
+    return fetchAPI("/api/diary-validate", { entry1, entry2, accumulatedSummary });
   },
 
-  async diaryDeepen(entry1: string, entry2: string, reflection: string) {
-    return fetchAPI("/api/diary-deepen", { entry1, entry2, reflection });
+  async diaryDeepen(entry1: string, entry2: string, reflection: string, accumulatedSummary: string) {
+    return fetchAPI("/api/diary-deepen", { entry1, entry2, reflection, accumulatedSummary });
   },
 
   async weeklyGoal(category: string, accumulatedSummary: string) {

@@ -110,20 +110,25 @@ async function startServer() {
 
   app.post("/api/diary-validate", requireAI, async (req, res) => {
     try {
-      const { entry1, entry2 } = req.body;
+      const { entry1, entry2, accumulatedSummary } = req.body;
       if (!entry1 || !entry2) return res.status(400).json({ error: "Entries missing" });
 
       const prompt = `Eres un psicoterapeuta y coach de vida experto. Analiza las siguientes dos razones de gratitud de un paciente (que puede padecer depresión, estrés o ansiedad).
 Instrucciones:
 1. Puntúa cada motivo con 0, 1 o 2 ('destellos'). 0 = vacío/esquivo/sin esfuerzo real, 1 = superficial, 2 = profundo o significativo. (Max 2 para cada uno).
 2. Escribe una pequeña reflexión terapéutica (1 o 2 párrafos). Relaciónate con los hechos relatados por el usuario. Sé profesional, amigable y didáctico. Evita la positividad tóxica; ofrece una valoración realista con un leve decantamiento hacia la motivación para que no se desanime.
+3. Fusiona la nueva conclusión con el resumen global previo del usuario. No repitas hallazgos ya presentes salvo para reforzarlos o matizarlos. Devuelve un único resumen acumulado, compacto, útil para personalizar futuras propuestas y sin redundancias.
+
+Resumen global previo del usuario: "${accumulatedSummary || 'Ninguno'}"
 Motivo 1: "${entry1}"
 Motivo 2: "${entry2}"
+
 Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
 {
   "score1": número,
   "score2": número,
-  "reflection": "tu reflexión"
+  "reflection": "tu reflexión",
+  "newAccumulatedSummary": "resumen global fusionado"
 }`;
 
       const response = await ai.models.generateContent({
@@ -141,16 +146,21 @@ Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
 
   app.post("/api/diary-deepen", requireAI, async (req, res) => {
     try {
-      const { entry1, entry2, reflection } = req.body;
+      const { entry1, entry2, reflection, accumulatedSummary } = req.body;
       if (!entry1 || !entry2 || !reflection) return res.status(400).json({ error: "Data missing" });
 
       const prompt = `Eres el mismo psicoterapeuta y coach de vida. Basándote en los motivos de gratitud del paciente y tu reflexión anterior, profundiza aún más en el análisis.
 Motivos: 1. "${entry1}", 2. "${entry2}"
 Reflexión anterior: "${reflection}"
+
 Genera un análisis más profundo (2 o 3 párrafos) y proporciona una pequeña herramienta o anclaje relacionado. Mantén tu tono amigable y profesional.
+Considera el Resumen global previo del usuario: "${accumulatedSummary || 'Ninguno'}". 
+Fusiona la nueva conclusión con el resumen global previo del usuario. No repitas hallazgos ya presentes salvo para reforzarlos o matizarlos. Devuelve un único resumen acumulado, compacto, útil para personalizar futuras propuestas y sin redundancias.
+
 Responde EXCLUSIVAMENTE con un objeto JSON:
 {
-  "deepReflection": "tu texto aquí"
+  "deepReflection": "tu texto aquí",
+  "newAccumulatedSummary": "resumen global fusionado"
 }`;
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",

@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db, signInWithGoogle } from "../firebase";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Zen() {
   const navigate = useNavigate();
@@ -57,17 +57,15 @@ export default function Zen() {
     }
 
     const userRef = doc(db, "users", user.uid);
-    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+    getDoc(userRef).then((docSnap) => {
       if (docSnap.exists()) {
         setHasDoneConsultation(docSnap.data()?.hasDoneConsultation === true);
       } else {
         setHasDoneConsultation(false);
       }
-    }, (error) => {
-      console.error("Firestore real-time error in Zen:", error);
+    }).catch((error) => {
+      console.error("Firestore error in Zen:", error);
     });
-    
-    return () => unsubscribe();
   }, [user]);
 
   const handleRegisterClick = async () => {
