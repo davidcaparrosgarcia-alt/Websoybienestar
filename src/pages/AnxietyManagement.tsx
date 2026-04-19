@@ -127,7 +127,7 @@ export default function AnxietyManagement() {
       <section className="py-32 bg-surface">
         <div className="max-w-screen-2xl mx-auto px-12">
           <div className="relative rounded-3xl overflow-hidden min-h-[600px] flex items-center shadow-xl">
-            <img alt="Distant minimalist lighthouse beacon shining through sea mist" className="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uiAvr-wXltXDThajClzoGhJAIF9bfYe5BhdHizmoNymngCnOjXsRND9vXbFc-i5t6w1xFo6fJJPa6cziNMES5ZBQbDFk41n0ofpoejAIF34tbOrAZJ5s4TuwMHN41Yw8qqLHLBI4Kp7DisIM5dB67wU0lvsjr5MNN4kaiwulBLSuOK8uWUrcuF-wFbyBlQWiaXrGikbmR3H0bJzfaAGqyyF6OCypegw-C3f_CrHYL3pvJ43hKmajxDar5dsjVe543J_sMnXu4w4rR4"/>
+            <img alt="Distant minimalist lighthouse beacon shining through sea mist" className="absolute inset-0 w-full h-full object-cover" src="/images/fondo-faro.jpg"/>
             <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px]"></div>
             <div className="relative z-10 p-12 md:p-24 max-w-2xl">
               <h2 className="font-headline text-4xl md:text-5xl text-white mb-8 italic">Un faro en la niebla.</h2>
