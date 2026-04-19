@@ -134,14 +134,14 @@ export default function Zen() {
     <div className="flex-1 bg-background text-on-surface w-full font-body relative">
 
       {/* Hero Section: "The Breathing Hero" */}
-      <header className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+      <header className="relative min-h-[80vh] flex items-center pt-24 overflow-hidden bg-surface">
         <div className="absolute inset-0 z-0">
           <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="w-full h-full object-cover" data-alt="Serene watercolor painting of a traditional oriental sanctuary nestled among misty turquoise mountains and calm waters with pink lotus flowers" src="https://lh3.googleusercontent.com/aida/ADBb0ug__gzFpMAP32jNUgacgTdng9Qh1YVlenLhh1vdJ4ioW346SlZokMGonAM1LIizE9xRg5GySe2CqTzSNGz0TaDwrNqlI8FRUMcg-NL7uOE9XXbCbhb4BtqvUPIhxNQSvV6OkB6fkGFo78MZiahX20UFkNeQwxHUHkwsgUf0bf07ewa8dEAed_yM4m1SuqlVvkTCIFq67epGOAsqbiiiKLON9P6v_3JAHt6ra4CE2KBHxL4eOpBMrgdd2-rq"/>
           <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
-          <div className="md:w-3/5 bg-surface-container-lowest/80 backdrop-blur-xl p-12 rounded-2xl border-l-4 border-primary">
-            <h1 className="text-6xl lg:text-7xl font-headline text-primary mb-8 leading-tight">Tu refugio de calma te espera.</h1>
+          <div className="md:w-3/5 bg-surface-container-lowest/80 backdrop-blur-xl p-12 xl:rounded-full border-l-4 border-primary shadow-xl">
+            <h1 className="text-5xl lg:text-7xl font-headline text-primary mb-8 leading-tight">Tu refugio de calma te espera.</h1>
             <p className="text-xl text-on-surface-variant font-body leading-relaxed mb-8 max-w-2xl">
               El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-medium">Consulta con IA</span> y el <span className="italic font-medium">Cuestionario Espejo</span>.
             </p>
@@ -149,11 +149,11 @@ export default function Zen() {
               <button 
                 onClick={handleRegisterClick} 
                 disabled={loading}
-                className="px-10 py-5 bg-primary text-on-primary font-body font-semibold rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-primary/10 disabled:opacity-50"
+                className="px-10 py-5 bg-primary text-on-primary font-body font-semibold xl:rounded-full hover:opacity-90 transition-all shadow-xl shadow-primary/10 disabled:opacity-50"
               >
                 {loading ? "CARGANDO..." : "REGISTRARSE AHORA"}
               </button>
-              <button onClick={() => navigate('/method')} className="px-10 py-5 bg-secondary-container text-on-secondary-container font-body font-semibold rounded-2xl hover:bg-surface-container-highest transition-all">
+              <button onClick={() => navigate('/method')} className="px-10 py-5 bg-secondary-container text-on-secondary-container font-body font-semibold xl:rounded-full hover:bg-surface-container-highest transition-all">
                 SABER MÁS
               </button>
             </div>
@@ -172,7 +172,7 @@ export default function Zen() {
             {/* Large card */}
             <div 
               onClick={() => setIsAudioModalOpen(true)}
-              className="cursor-pointer md:col-span-2 bg-surface-container-low p-10 rounded-2xl flex flex-col justify-between group hover:bg-surface-container transition-colors duration-500 border border-outline-variant/10"
+              className="cursor-pointer md:col-span-2 bg-surface-container-low p-10 xl:rounded-full flex flex-col justify-between group hover:bg-surface-container transition-colors duration-500 border border-outline-variant/10"
             >
               <div>
                 <span className="material-symbols-outlined text-4xl text-primary mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
@@ -186,7 +186,7 @@ export default function Zen() {
             {/* Small card */}
             <div 
               onClick={() => navigate('/emotion-diary')}
-              className="bg-surface-container-highest p-10 rounded-2xl hover:translate-y-[-4px] transition-transform duration-300 border border-outline-variant/10 cursor-pointer group"
+              className="bg-surface-container-highest p-10 xl:rounded-full hover:translate-y-[-4px] transition-transform duration-300 border border-outline-variant/10 cursor-pointer group"
             >
               <div className="flex justify-between items-start">
                 <span className="material-symbols-outlined text-4xl text-primary mb-6">edit_note</span>
@@ -198,7 +198,7 @@ export default function Zen() {
             {/* Three columns */}
             <div 
               onClick={() => navigate('/weekly-goals')}
-              className="bg-surface-container-lowest border border-outline-variant/10 p-10 rounded-2xl shadow-sm hover:translate-y-[-4px] transition-transform duration-300 cursor-pointer group"
+              className="bg-surface-container-lowest border border-outline-variant/10 p-10 xl:rounded-full shadow-sm hover:translate-y-[-4px] transition-transform duration-300 cursor-pointer group"
             >
               <div className="flex justify-between items-start">
                 <span className="material-symbols-outlined text-4xl text-primary mb-6">calendar_today</span>
@@ -207,12 +207,12 @@ export default function Zen() {
               <h3 className="text-2xl font-headline text-primary mb-4">Propósitos semanales</h3>
               <p className="text-on-surface-variant">Pequeños pasos conscientes hacia metas de bienestar realistas y transformadoras.</p>
             </div>
-            <div className="bg-surface-container-low p-10 rounded-2xl border border-outline-variant/10">
+            <div className="bg-surface-container-low p-10 xl:rounded-full border border-outline-variant/10">
               <span className="material-symbols-outlined text-4xl text-primary mb-6">air</span>
               <h3 className="text-2xl font-headline text-primary mb-4">Técnicas de respiración</h3>
               <p className="text-on-surface-variant">Ejercicios rítmicos para regular el sistema nervioso y recuperar el control en segundos.</p>
             </div>
-            <div className="bg-primary text-on-primary p-10 rounded-2xl shadow-lg">
+            <div className="bg-primary text-on-primary p-10 xl:rounded-full shadow-lg">
               <span className="material-symbols-outlined text-4xl text-on-primary-container mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
               <h3 className="text-2xl font-headline mb-4">Gestión Emocional</h3>
               <p className="text-on-primary-container">Módulos avanzados de autoconocimiento basados en arquitectura psicológica moderna.</p>
@@ -226,8 +226,8 @@ export default function Zen() {
         <div className="max-w-screen-2xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           <div className="order-2 lg:order-1">
             <div className="relative group">
-              <img alt="Person meditating in calm space" className="w-full h-[600px] object-cover rounded-2xl grayscale hover:grayscale-0 transition-all duration-700 shadow-xl" data-alt="A person sitting in a peaceful meditative pose in a bright, minimalist room with natural wood and linen textures, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDezZvAvohhg90z-FTDQW9ufFmgWrxZPty-2arqGExkoV24NqfkSISG7KE5JVsEo0ORJ2wF5JMmiOx-UyeYtMXfYQ8Qh6oUZaFp9yH0gVDPFMiVwlyRnpgbOBOJenwANXkJSf9QVLWs0AB3hmwoP_Z82QRlb1klqJ1Q8TLLLznwaOGLgsvYzxkitC15QbWUMqgI_ECGqlLzGzUtlyvTDTVjnhcptoa-6fITF7H_6ixQFsOy5FfunomGUPQ6pE2qdHNkrmfotoCFFKu9"/>
-              <div className="absolute -bottom-8 -right-8 bg-primary-container text-on-primary p-8 rounded-full hidden xl:block max-w-xs shadow-2xl">
+              <img alt="Person meditating in calm space" className="w-full h-[600px] object-cover xl:rounded-3xl grayscale hover:grayscale-0 transition-all duration-700 shadow-xl" data-alt="A person sitting in a peaceful meditative pose in a bright, minimalist room with natural wood and linen textures, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDezZvAvohhg90z-FTDQW9ufFmgWrxZPty-2arqGExkoV24NqfkSISG7KE5JVsEo0ORJ2wF5JMmiOx-UyeYtMXfYQ8Qh6oUZaFp9yH0gVDPFMiVwlyRnpgbOBOJenwANXkJSf9QVLWs0AB3hmwoP_Z82QRlb1klqJ1Q8TLLLznwaOGLgsvYzxkitC15QbWUMqgI_ECGqlLzGzUtlyvTDTVjnhcptoa-6fITF7H_6ixQFsOy5FfunomGUPQ6pE2qdHNkrmfotoCFFKu9"/>
+              <div className="absolute -bottom-8 -right-8 bg-primary-container text-on-primary p-8 rounded-3xl hidden xl:block max-w-xs shadow-2xl">
                 <p className="font-headline italic text-lg text-on-primary-container">"La paz no es la ausencia de ruido, sino la armonía dentro de él."</p>
               </div>
             </div>

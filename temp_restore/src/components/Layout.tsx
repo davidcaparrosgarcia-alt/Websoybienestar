@@ -73,29 +73,29 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-surface-container-highest dark:bg-[#2c3e50] w-full py-10 px-8 border-t border-outline-variant/10">
+      <footer className="bg-surface-container-highest dark:bg-[#2c3e50] w-full py-20 px-8 border-t border-outline-variant/10">
         <div className="flex flex-col md:flex-row justify-between items-start gap-12 max-w-7xl mx-auto">
           <div className="space-y-6">
             <div className="font-headline text-2xl text-primary dark:text-[#f9f9f8]">
               ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span>
             </div>
-            <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-primary/80 dark:text-white/80 max-w-xs leading-loose">
+            <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-on-surface-variant max-w-xs leading-loose">
               ReprogrÁmate SoyBienestar.es <br/>
               © 2024. Tu espacio de claridad.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-16 gap-y-6">
             <div className="space-y-4 flex flex-col">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Compañía</span>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/method-details">Método</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Contacto</Link>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/40 mb-2">Compañía</span>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/">Inicio</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/">Método</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/">Contacto</Link>
             </div>
             <div className="space-y-4 flex flex-col">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Legal</span>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/privacy">Privacidad</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Términos</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Cookies</Link>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/40 mb-2">Legal</span>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/privacy">Privacidad</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/">Términos</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-on-surface-variant hover:text-primary transition-colors" to="/">Cookies</Link>
             </div>
           </div>
           <div className="flex flex-col items-end gap-8">
@@ -104,7 +104,7 @@ export default function Layout() {
               <span className="material-symbols-outlined text-primary/60 text-xl">favorite</span>
               <span className="material-symbols-outlined text-primary/60 text-xl">spa</span>
             </div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 dark:text-white/80 italic">Sanando desde el centro.</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant italic">Sanando desde el centro.</p>
           </div>
         </div>
       </footer>

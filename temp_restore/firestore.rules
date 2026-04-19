@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // Diary Entries Subcollection
+      match /diaryEntries/{dateId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Weekly Goals Subcollection
+      match /weeklyGoals/{goalId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // Detached Memory Profiles (Used for privacy/summary without identity)
+    match /userProfiles/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
