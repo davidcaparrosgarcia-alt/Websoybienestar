@@ -136,7 +136,7 @@ export default function Zen() {
       {/* Hero Section: "The Breathing Hero" */}
       <header className="relative min-h-screen flex items-center pt-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="w-full h-full object-cover" data-alt="Serene watercolor painting of a traditional oriental sanctuary nestled among misty turquoise mountains and calm waters with pink lotus flowers" src="https://lh3.googleusercontent.com/aida/ADBb0ug__gzFpMAP32jNUgacgTdng9Qh1YVlenLhh1vdJ4ioW346SlZokMGonAM1LIizE9xRg5GySe2CqTzSNGz0TaDwrNqlI8FRUMcg-NL7uOE9XXbCbhb4BtqvUPIhxNQSvV6OkB6fkGFo78MZiahX20UFkNeQwxHUHkwsgUf0bf07ewa8dEAed_yM4m1SuqlVvkTCIFq67epGOAsqbiiiKLON9P6v_3JAHt6ra4CE2KBHxL4eOpBMrgdd2-rq"/>
+          <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="w-full h-full object-cover" data-alt="Serene watercolor painting of a traditional oriental sanctuary nestled among misty turquoise mountains and calm waters with pink lotus flowers" src="/zen-bg.jpg"/>
           <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">

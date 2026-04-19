@@ -89,7 +89,16 @@ export default function Layout() {
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Compañía</span>
               <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link>
               <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/method-details">Método</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Contacto</Link>
+              <a 
+                className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors cursor-pointer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/method');
+                  setTimeout(() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+              >
+                Contacto
+              </a>
             </div>
             <div className="space-y-4 flex flex-col">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Legal</span>

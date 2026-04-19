@@ -127,7 +127,7 @@ export default function Method() {
       </section>
 
       {/* Contact and Network */}
-      <section className="py-24 px-12 bg-surface">
+      <section className="py-24 px-12 bg-surface" id="contacto">
         <div className="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
           <div>
             <h2 className="text-3xl font-headline text-primary mb-8 italic">Conecta con Nosotros</h2>
@@ -174,21 +174,21 @@ export default function Method() {
                 <span className="material-symbols-outlined text-secondary">alternate_email</span>
                 <div>
                   <p className="text-xs font-label uppercase text-on-surface-variant tracking-wider mb-1">Email</p>
-                  <p className="text-lg font-label font-medium">contacto@elfarodelcentro.com</p>
+                  <p className="text-lg font-label font-medium">contacto@SoyBienestar.es</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-secondary">phone_iphone</span>
                 <div>
                   <p className="text-xs font-label uppercase text-on-surface-variant tracking-wider mb-1">Teléfono</p>
-                  <p className="text-lg font-label font-medium">+34 900 123 456</p>
+                  <p className="text-lg font-label font-medium">+34</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-secondary">public</span>
                 <div>
                   <p className="text-xs font-label uppercase text-on-surface-variant tracking-wider mb-1">Web Oficial</p>
-                  <p className="text-lg font-label font-medium">www.elfarodelcentro.com</p>
+                  <p className="text-lg font-label font-medium">www.SoyBienestar.es</p>
                 </div>
               </div>
               <div className="pt-4 mt-8 border-t border-outline-variant/30">
