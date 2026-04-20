@@ -41,7 +41,8 @@ async function run() {
     'info-procrastinacion.jpg',
     'info-rumiacion.jpg',
     'info-emociones.jpg',
-    'info-alimentacion.jpg'
+    'info-alimentacion.jpg',
+    'logo-soybienestar.svg'
   ].some(name => t.path.includes(name))).map(t => t.path);
   
   if (!fs.existsSync('public/images')) {

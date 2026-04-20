@@ -46,7 +46,7 @@ export default function Method() {
         <div className="lg:w-1/2 flex justify-center lg:justify-start">
           <div className="relative group">
             <div className="absolute bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all -inset-8"></div>
-            <img alt="SoyBienestar.es Logo Detail" className="relative h-80 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQgPvWSRGFdd3hmSBVhcWCcrYCrvpahiIKXp5bbqXldg7q5QDR5v45SPnd_zIYKvtUM7gnhbkfp51gYMBOy9733BjPA9i0ImYQpeSDGyqYia7tNIhnBgx_Nf_5nr1u3yzIz5McFKiumoiZXlUqGgJZzN627u1C9bPPL4USJKNwas-swGGEMoiAa0JQrauQdAlWCdz9wKosxOFtuFcyoIYdJNJ-bKMJOtGmHfVV_kg_vC9sGE_OmUUwy_Gr84RiVzsCCBZ-jcrRPeE2"/>
+            <img alt="SoyBienestar.es Logo Detail" className="relative h-96 w-auto object-contain" src="/images/logo-soybienestar.svg"/>
           </div>
         </div>
         <div className="lg:w-1/2 space-y-8">
@@ -159,7 +159,7 @@ export default function Method() {
             <img alt="texture" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
           </div>
           <div className="relative z-10 space-y-8 w-full max-w-md">
-            <img alt="SoyBienestar.es Logo White" className="h-24 w-auto mx-auto brightness-0 invert opacity-40 mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQgPvWSRGFdd3hmSBVhcWCcrYCrvpahiIKXp5bbqXldg7q5QDR5v45SPnd_zIYKvtUM7gnhbkfp51gYMBOy9733BjPA9i0ImYQpeSDGyqYia7tNIhnBgx_Nf_5nr1u3yzIz5McFKiumoiZXlUqGgJZzN627u1C9bPPL4USJKNwas-swGGEMoiAa0JQrauQdAlWCdz9wKosxOFtuFcyoIYdJNJ-bKMJOtGmHfVV_kg_vC9sGE_OmUUwy_Gr84RiVzsCCBZ-jcrRPeE2"/>
+            <img alt="SoyBienestar.es Logo White" className="h-32 w-auto mx-auto brightness-0 invert opacity-40 mb-4" src="/images/logo-soybienestar.svg"/>
             <h2 className="font-headline text-3xl text-white italic font-light">¿Listo para comenzar su propio viaje?</h2>
             <button 
               onClick={handleShare}

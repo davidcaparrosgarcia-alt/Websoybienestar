@@ -38,9 +38,8 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       <ScrollArrows />
       <header className="w-full top-0 sticky z-50 bg-[#f9f9f8] dark:bg-[#2c3e50] border-b border-outline-variant/10">
-        <nav className="flex justify-between items-center px-12 py-6 max-w-screen-2xl mx-auto">
+        <nav className="flex justify-between items-center px-12 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="flex items-center gap-3">
-            <img alt="Logo" className="h-12 w-auto object-contain" src="/logo.png" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/400x100/f9f9f8/2c3e50?text=Reprogr%C3%81mate"; }}/>
             <div className="text-xl font-headline font-bold text-primary dark:text-white">ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span></div>
           </Link>
           <div className="hidden md:flex items-center gap-8">
