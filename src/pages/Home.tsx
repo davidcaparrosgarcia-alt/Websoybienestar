@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, signInWithGoogle } from "../firebase";
 import { motion, AnimatePresence } from "motion/react";
+import RippleWindow from "../components/RippleWindow";
+import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -163,22 +165,32 @@ export default function Home() {
           <div className="cenefa-line right"></div>
         </div>
         <div className="max-w-7xl mx-auto px-8">
-          <div className="relative w-full h-[550px] rounded-[2.5rem] overflow-hidden group shadow-2xl border border-outline-variant/10">
-            <img alt="Lighthouse landscape" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="/images/fondo-faro.jpg"/>
-            <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
-            <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-8">
+          <LighthouseBeamFrame
+            className="relative w-full h-[550px] rounded-[2.5rem] shadow-2xl border border-outline-variant/10 group"
+            background={
+              <>
+                <img
+                  alt="Lighthouse landscape"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  src="/images/fondo-faro.jpg"
+                />
+                <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+              </>
+            }
+          >
+            <div className="relative h-full flex flex-col items-center justify-center text-center p-8">
               <span className="material-symbols-outlined text-primary text-6xl mb-6">light_mode</span>
               <h2 className="font-headline text-4xl md:text-5xl lg:text-6xl text-primary mb-6 drop-shadow-sm">Un faro en la niebla</h2>
               <h3 className="font-headline text-2xl md:text-3xl text-primary/90 mb-8 italic font-light">Tu Puente hacia el Bienestar</h3>
               <p className="font-body text-xl text-primary max-w-2xl leading-relaxed font-light mb-10">
                 Te guiamos a través de la niebla hacia un puerto seguro. Nuestra metodología combina estructura y sensibilidad para que recuperes el mando de tu vida.
               </p>
-              <button onClick={() => navigate('/session')} className="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden group">
+              <button onClick={() => navigate('/session')} className="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden text-group">
                 <span className="relative z-10">Comenzar Sesión de Claridad</span>
-                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <div className="absolute inset-0 bg-white/10 translate-y-full hover:translate-y-0 transition-transform duration-300"></div>
               </button>
             </div>
-          </div>
+          </LighthouseBeamFrame>
         </div>
         <div className="cenefa-decorative mt-16">
           <div className="cenefa-line left"></div>
@@ -191,9 +203,9 @@ export default function Home() {
       <section className="py-32 px-8 bg-surface-container-low">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
-            <div className="relative rounded-[2rem] overflow-hidden aspect-[4/5] shadow-2xl">
+            <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
               <img alt="serene lake water" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByyJgogocVjCPOxXQxHKNXYzp-G1FGJ_nU9Hce-Po8bcUcktmIrkSn5fwur3EnfxCYpIPyHXbYQMvRBAUzDTtT0h2nMm-tgTsgcjAWsr-Eau2mGYQGX60D5nnXeP-ICYZ31LRmhWL_AiorwNazJrDD0Nl2RuVZinFwHjGWa9v7tbI5uSCbXfXFKRzKCVshA98Or_KHuCaIoMdzHWnn3HTpmVuUIsHVU_09hna3wfAY1n93-W2tUyqCVXdnV7MIFn7iDiSe4xMlimqQ"/>
-            </div>
+            </RippleWindow>
           </div>
           <div className="lg:col-span-7 order-1 lg:order-2">
             <div className="space-y-12">
