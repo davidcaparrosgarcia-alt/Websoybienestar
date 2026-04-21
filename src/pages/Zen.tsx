@@ -621,31 +621,54 @@ export default function Zen() {
             <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-8 pointer-events-none">
               <motion.div 
                 layoutId={'card-' + selectedBreathingInfographic.id}
-                className="relative w-full max-w-5xl h-[85vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex items-center justify-center p-4 xl:p-12 z-50"
+                className="relative w-full max-w-5xl max-h-[90vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
               >
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedBreathingInfographic(null);
-                  }}
-                  className="absolute top-6 right-6 w-12 h-12 bg-surface/50 hover:bg-surface backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-sm transition-all z-[130] border border-outline-variant/30"
-                 >
-                  <span className="material-symbols-outlined font-light text-2xl">close</span>
-                </button>
+                {/* Elegant Action Buttons */}
+                <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
+                  <a 
+                    href={selectedBreathingInfographic.src} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    title="Abrir en pantalla completa / Descargar"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
+                  </a>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedBreathingInfographic(null);
+                    }}
+                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
+                  </button>
+                </div>
                 
-                {selectedBreathingInfographic.src.endsWith('.pdf') ? (
-                  <iframe 
-                    src={selectedBreathingInfographic.src} 
-                    className="w-full h-full rounded-2xl relative z-[120] border-none bg-white"
-                    title="Documento PDF"
-                  />
-                ) : (
-                  <img 
-                    src={selectedBreathingInfographic.src} 
-                    alt="Infografía Detalle" 
-                    className="w-full h-full object-contain rounded-2xl relative z-[120]"
-                  />
-                )}
+                {/* Scrollable document area */}
+                <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
+                  {selectedBreathingInfographic.src.endsWith('.pdf') ? (
+                    <motion.iframe 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      src={selectedBreathingInfographic.src} 
+                      className="w-full h-[80vh] rounded-2xl relative z-[120] border-none bg-white shadow-sm"
+                      title="Documento PDF"
+                    />
+                  ) : (
+                    <motion.img 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      src={selectedBreathingInfographic.src} 
+                      alt="Infografía Detalle" 
+                      className="w-full h-auto rounded-xl shadow-sm relative z-[120]"
+                    />
+                  )}
+                </div>
               </motion.div>
             </div>
           </>

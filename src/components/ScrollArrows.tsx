@@ -55,32 +55,32 @@ export default function ScrollArrows() {
   };
 
   return (
-    <>
+    <div className="fixed right-6 bottom-12 flex flex-col gap-3 z-40">
       {/* Up Arrow */}
       <div 
-        className={`fixed top-24 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ${showUp ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+        className={`transition-all duration-500 origin-bottom ${showUp ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-90 pointer-events-none'}`}
       >
         <button 
           onClick={scrollToPrev}
-          className="w-12 h-12 rounded-full bg-surface/40 backdrop-blur-md border border-outline-variant/20 flex items-center justify-center text-primary hover:bg-surface/80 hover:scale-110 transition-all shadow-sm"
+          className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur-md border border-outline-variant/30 flex items-center justify-center text-primary/80 hover:text-primary hover:bg-surface hover:scale-105 hover:shadow-lg transition-all shadow-md group"
           aria-label="Scroll Up"
         >
-          <span className="material-symbols-outlined text-2xl">keyboard_arrow_up</span>
+          <span className="material-symbols-outlined text-2xl group-hover:-translate-y-1 transition-transform">arrow_upward</span>
         </button>
       </div>
 
       {/* Down Arrow */}
       <div 
-        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ${showDown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+        className={`transition-all duration-500 origin-top ${showDown ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-90 pointer-events-none'}`}
       >
         <button 
           onClick={scrollToNext}
-          className="w-12 h-12 rounded-full bg-surface/40 backdrop-blur-md border border-outline-variant/20 flex items-center justify-center text-primary hover:bg-surface/80 hover:scale-110 transition-all shadow-sm animate-bounce"
+          className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur-md border border-outline-variant/30 flex items-center justify-center text-primary/80 hover:text-primary hover:bg-surface hover:scale-105 hover:shadow-lg transition-all shadow-md group"
           aria-label="Scroll Down"
         >
-          <span className="material-symbols-outlined text-2xl">keyboard_arrow_down</span>
+          <span className="material-symbols-outlined text-2xl group-hover:translate-y-1 transition-transform">arrow_downward</span>
         </button>
       </div>
-    </>
+    </div>
   );
 }

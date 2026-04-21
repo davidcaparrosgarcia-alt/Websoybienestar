@@ -109,3 +109,17 @@
 .zen-sand { background-color: #a69b8d; } 
 .zen-azure-fog { background-color: #4a646c; }
 .zen-light-gray { background-color: #e5e7eb; }
+
+/* Custom Scrollbar for modest modals */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-container);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
