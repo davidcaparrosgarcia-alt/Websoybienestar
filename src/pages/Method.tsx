@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function Method() {
   const navigate = useNavigate();
+  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
 
   return (
     <div className="flex-1 bg-surface w-full">
@@ -72,9 +75,9 @@ export default function Method() {
                 <h3 className="text-2xl font-headline text-white mb-4">Terapia Cognitiva</h3>
                 <p className="text-on-primary-container leading-relaxed">Reestructurando los patrones de pensamiento que alimentan la incertidumbre.</p>
               </div>
-              <a className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed z-10" href="#">
+              <button onClick={() => setSelectedInfographic({ id: 'terapia_cognitiva', src: '/images/info-terapia-cognitiva.jpg' })} className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed z-10 hover:opacity-80 transition-opacity">
                 DETALLES DEL MÉTODO <span className="material-symbols-outlined text-lg">open_in_new</span>
-              </a>
+              </button>
             </div>
             {/* Card 3 */}
             <div className="group bg-surface p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:bg-secondary-container transition-colors duration-500">
@@ -201,6 +204,46 @@ export default function Method() {
           </div>
         </div>
       </section>
+
+      {/* Organic Animated Infographic Modal */}
+      <AnimatePresence>
+        {selectedInfographic && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm"
+              onClick={() => setSelectedInfographic(null)}
+            />
+            
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
+              <motion.div 
+                layoutId={'card-' + selectedInfographic.id}
+                className="relative w-full max-w-5xl h-[85vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex items-center justify-center p-4 xl:p-12 z-50"
+              >
+                {/* Elegant Close Button */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedInfographic(null);
+                  }}
+                  className="absolute top-6 right-6 w-12 h-12 bg-surface/50 hover:bg-surface backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-sm transition-all z-10 border border-outline-variant/30"
+                 >
+                  <span className="material-symbols-outlined font-light text-2xl">close</span>
+                </button>
+                
+                <img 
+                  src={selectedInfographic.src} 
+                  alt="Infografía Detalle" 
+                  className="w-full h-full object-contain rounded-2xl"
+                />
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

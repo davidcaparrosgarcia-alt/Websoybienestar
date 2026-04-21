@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db, signInWithGoogle } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -11,7 +12,11 @@ export default function Zen() {
   // Modals state
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+  const [isBreathingModalOpen, setIsBreathingModalOpen] = useState(false);
+  const [selectedBreathingInfographic, setSelectedBreathingInfographic] = useState<{ id: string, src: string } | null>(null);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
 
   // Form states for Registration Modal
   const [emailChecked, setEmailChecked] = useState(true);
@@ -118,10 +123,21 @@ export default function Zen() {
   const handleCodeSubmit = () => {
     const code = accessCode.join("");
     if (code.length === 4) {
-      // In a real app we would validate the code here
-      alert("Código introducido: " + code + ". Funcionalidad en desarrollo.");
-      setIsCodeModalOpen(false);
-      setAccessCode(["", "", "", ""]);
+      if (code === "1234" || code === "0000") { // Códigos de prueba
+        setHasAccess(true);
+        setIsCodeModalOpen(false);
+        setAccessCode(["", "", "", ""]);
+        
+        if (pendingAction === "emocional") {
+          setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/documents/gestion-emocional.pdf' });
+        } else if (pendingAction === "reservado") {
+          alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
+        }
+        setPendingAction(null);
+      } else {
+        alert("Código incorrecto. Por favor, inténtelo de nuevo.");
+        setAccessCode(["", "", "", ""]);
+      }
     }
   };
 
@@ -207,15 +223,43 @@ export default function Zen() {
               <h3 className="text-2xl font-headline text-primary mb-4">Propósitos semanales</h3>
               <p className="text-on-surface-variant">Pequeños pasos conscientes hacia metas de bienestar realistas y transformadoras.</p>
             </div>
-            <div className="bg-surface-container-low p-10 rounded-2xl border border-outline-variant/10">
-              <span className="material-symbols-outlined text-4xl text-primary mb-6">air</span>
+            <div onClick={() => setIsBreathingModalOpen(true)} className="cursor-pointer bg-surface-container-low p-10 rounded-2xl border border-outline-variant/10 group hover:bg-surface-container transition-colors duration-500 hover:-translate-y-1">
+              <div className="flex justify-between items-start">
+                <span className="material-symbols-outlined text-4xl text-primary mb-6">air</span>
+                <span className="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+              </div>
               <h3 className="text-2xl font-headline text-primary mb-4">Técnicas de respiración</h3>
               <p className="text-on-surface-variant">Ejercicios rítmicos para regular el sistema nervioso y recuperar el control en segundos.</p>
             </div>
-            <div className="bg-primary text-on-primary p-10 rounded-2xl shadow-lg">
-              <span className="material-symbols-outlined text-4xl text-on-primary-container mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-              <h3 className="text-2xl font-headline mb-4">Gestión Emocional</h3>
-              <p className="text-on-primary-container">Módulos avanzados de autoconocimiento basados en arquitectura psicológica moderna.</p>
+            <div 
+              onClick={() => {
+                if (hasAccess) {
+                  setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/documents/gestion-emocional.pdf' });
+                } else {
+                  setPendingAction("emocional");
+                  setIsCodeModalOpen(true);
+                }
+              }}
+              className="bg-primary text-on-primary p-10 rounded-2xl shadow-lg cursor-pointer hover:bg-primary/90 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-1"
+            >
+              <div>
+                <div className="flex justify-between items-start">
+                  <span className="material-symbols-outlined text-4xl text-on-primary-container mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  <span className="material-symbols-outlined text-on-primary-container opacity-50 group-hover:opacity-100 transition-opacity">
+                    {hasAccess ? 'open_in_new' : 'lock'}
+                  </span>
+                </div>
+                <h3 className="text-2xl font-headline mb-4">Gestión Emocional</h3>
+                <p className="text-on-primary-container">Módulos avanzados de autoconocimiento basados en arquitectura psicológica moderna.</p>
+              </div>
+              
+              {!hasAccess && (
+                <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] flex flex-col justify-end p-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="font-label text-sm font-bold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">key</span> SE REQUIERE CLAVE
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -252,7 +296,14 @@ export default function Zen() {
               </li>
             </ul>
             <button 
-              onClick={() => setIsCodeModalOpen(true)} 
+              onClick={() => {
+                if (hasAccess) {
+                  alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
+                } else {
+                  setPendingAction("reservado");
+                  setIsCodeModalOpen(true);
+                }
+              }} 
               className="group flex items-center gap-4 text-primary font-bold text-lg hover:opacity-80 transition-opacity"
             >
               <span>Acceder a contenido reservado</span>
@@ -504,6 +555,102 @@ export default function Zen() {
           </div>
         </div>
       )}
+
+
+      {isBreathingModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative border border-outline-variant/10">
+            <button 
+              onClick={() => setIsBreathingModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors z-10"
+            >
+              <span className="material-symbols-outlined text-on-surface-variant">close</span>
+            </button>
+            <div className="p-8 pb-6 border-b border-outline-variant/10 bg-surface">
+              <h3 className="font-headline text-3xl text-primary mb-2">Ejercicios de Respiración</h3>
+              <p className="text-on-surface-variant text-sm">Selecciona una técnica para ver las instrucciones guiadas paso a paso.</p>
+            </div>
+            <div className="p-6 space-y-4">
+              {[
+                { id: '1', title: 'Respiración Cuadrada', type: 'ENFOQUE' },
+                { id: '2', title: 'Respiración 4-7-8', type: 'CALMA' },
+                { id: '3', title: 'Respiración Abdominal', type: 'PROFUNDA' },
+              ].map((technique) => (
+                <div 
+                  key={technique.id} 
+                  onClick={() => {
+                    setIsBreathingModalOpen(false);
+                    const imageMap: Record<string, string> = {
+                      '1': '/images/info-resp-cuadrada.jpg',
+                      '2': '/images/info-resp-478.jpg',
+                      '3': '/images/info-resp-abdominal.jpg'
+                    };
+                    setSelectedBreathingInfographic({ id: technique.id, src: imageMap[technique.id] });
+                  }}
+                  className="cursor-pointer bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 hover:bg-surface-container transition-colors group"
+                >
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                    <span className="material-symbols-outlined text-2xl">air</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-headline text-lg text-primary truncate border-b border-outline-variant/10 pb-1 mb-1">{technique.title}</p>
+                    <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+                      <span className="font-semibold uppercase tracking-wider">{technique.type}</span>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Organic Animated Infographic Modal for Breathing Techniques */}
+      <AnimatePresence>
+        {selectedBreathingInfographic && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[110] bg-white/20 backdrop-blur-sm"
+              onClick={() => setSelectedBreathingInfographic(null)}
+            />
+            
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-8 pointer-events-none">
+              <motion.div 
+                layoutId={'card-' + selectedBreathingInfographic.id}
+                className="relative w-full max-w-5xl h-[85vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex items-center justify-center p-4 xl:p-12 z-50"
+              >
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedBreathingInfographic(null);
+                  }}
+                  className="absolute top-6 right-6 w-12 h-12 bg-surface/50 hover:bg-surface backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-sm transition-all z-[130] border border-outline-variant/30"
+                 >
+                  <span className="material-symbols-outlined font-light text-2xl">close</span>
+                </button>
+                
+                {selectedBreathingInfographic.src.endsWith('.pdf') ? (
+                  <iframe 
+                    src={selectedBreathingInfographic.src} 
+                    className="w-full h-full rounded-2xl relative z-[120] border-none bg-white"
+                    title="Documento PDF"
+                  />
+                ) : (
+                  <img 
+                    src={selectedBreathingInfographic.src} 
+                    alt="Infografía Detalle" 
+                    className="w-full h-full object-contain rounded-2xl relative z-[120]"
+                  />
+                )}
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
 
     </div>
   );

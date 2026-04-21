@@ -32,11 +32,11 @@ export default function Home() {
     <div className="flex-1 flex flex-col">
       {/* Hero Section */}
       <section className="relative w-full min-h-[85vh] flex items-center mb-32">
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <img alt="misty forest path at dawn" className="w-full h-full object-cover opacity-60 grayscale-[20%]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zzoyzjJf6oT05aMgHXBc3ezEwfzBdpbxANUbwmPP3QbrrzRUUHURAhiJKyIpjk0cgpZB2HprJBAKwCSP9xL7BW5OpBVIydAhKjS83LcFmLTjyGebIz6pm-XqsWRdf-ynaK_wVPPuvGrdLYLIIvmtgH6zPvNw9J9b2rw681zHOeIDTii6mnrQYWzD8cghDiyLHHtlw2e3pc8hCyOc9TG2wpGCBoeq7IKNqN_noIKieNdZSZyac0HqVizdtPrT7Z1JDR_bySa_Udwi"/>
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent"></div>
+        <div className="absolute inset-0 overflow-hidden">
+          <img alt="misty forest path at dawn" className="w-full h-full object-cover opacity-85" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zzoyzjJf6oT05aMgHXBc3ezEwfzBdpbxANUbwmPP3QbrrzRUUHURAhiJKyIpjk0cgpZB2HprJBAKwCSP9xL7BW5OpBVIydAhKjS83LcFmLTjyGebIz6pm-XqsWRdf-ynaK_wVPPuvGrdLYLIIvmtgH6zPvNw9J9b2rw681zHOeIDTii6mnrQYWzD8cghDiyLHHtlw2e3pc8hCyOc9TG2wpGCBoeq7IKNqN_noIKieNdZSZyac0HqVizdtPrT7Z1JDR_bySa_Udwi"/>
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent/10"></div>
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-8 w-full">
+        <div className="relative max-w-7xl mx-auto px-8 w-full">
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
             {/* Left: Logo Group */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left shrink-0">
