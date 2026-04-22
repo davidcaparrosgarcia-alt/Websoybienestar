@@ -58,6 +58,7 @@ export default function App() {
               <Report />
             </ProtectedRoute>
           } />
+          <Route path="resources" element={<div className="min-h-[80vh] flex items-center justify-center font-headline text-3xl text-primary font-light">Sección de Recursos en desarrollo...</div>} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -5,6 +5,7 @@ import { auth, signInWithGoogle } from "../firebase";
 import { motion, AnimatePresence } from "motion/react";
 import RippleWindow from "../components/RippleWindow";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
+import SymptomCard from "../components/SymptomCard";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -33,30 +34,28 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Hero Section */}
-      <section className="relative w-full min-h-[85vh] flex items-center mb-32">
-        <div className="absolute inset-0 overflow-hidden">
-          <img alt="misty forest path at dawn" className="w-full h-full object-cover opacity-85" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zzoyzjJf6oT05aMgHXBc3ezEwfzBdpbxANUbwmPP3QbrrzRUUHURAhiJKyIpjk0cgpZB2HprJBAKwCSP9xL7BW5OpBVIydAhKjS83LcFmLTjyGebIz6pm-XqsWRdf-ynaK_wVPPuvGrdLYLIIvmtgH6zPvNw9J9b2rw681zHOeIDTii6mnrQYWzD8cghDiyLHHtlw2e3pc8hCyOc9TG2wpGCBoeq7IKNqN_noIKieNdZSZyac0HqVizdtPrT7Z1JDR_bySa_Udwi"/>
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent/10"></div>
+      <section className="relative w-full min-h-[85vh] flex flex-col justify-end pb-16 lg:pb-32 mb-32">
+        <div className="absolute inset-0 overflow-hidden bg-background">
+          {/* Desktop/Horizontal Image */}
+          <img 
+            alt="Soy Bienestar - Hero Desktop" 
+            className="hidden md:block w-full h-full object-cover" 
+            src="/images/hero-horizontal.jpg"
+          />
+          {/* Mobile/Vertical Image */}
+          <img 
+            alt="Soy Bienestar - Hero Mobile" 
+            className="block md:hidden w-full h-full object-cover" 
+            src="/images/hero-vertical.jpg"
+          />
+          {/* Gradiente sutil inferior para asegurar la legibilidad de la frase */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent"></div>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 w-full">
-          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-            {/* Left: Logo Group */}
-            <div className="flex flex-col items-center lg:items-start text-center lg:text-left shrink-0">
-              <img alt="Logo SoyBienestar.es" className="w-80 md:w-96 lg:w-[28rem] xl:w-[32rem] h-auto object-contain drop-shadow-sm opacity-90" src="/images/logo-soybienestar.svg" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/400x400/f9f9f8/2c3e50?text=Logo"; }}/>
-            </div>
-            {/* Right: Headline and Sub-text */}
-            <div className="max-w-2xl text-center lg:text-left">
-              <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl text-primary leading-tight mb-8">
-                Diseñando el camino hacia tu <br/><span className="italic font-light">equilibrio interior.</span>
-              </h1>
-              <p className="font-body text-2xl text-on-surface-variant leading-relaxed font-light italic mb-8">
-                Tu viaje de regreso al centro comienza aquí.
-              </p>
-            </div>
-          </div>
+        
+        <div className="relative max-w-7xl mx-auto px-8 w-full mt-auto">
           {/* Floating Quote Overlay Style */}
-          <div className="mt-20 lg:mt-32 max-w-lg hidden lg:block">
-            <p className="font-headline text-3xl text-primary/80 italic font-light tracking-wide drop-shadow-sm border-l-4 border-primary/20 pl-6 py-2">
+          <div className="max-w-lg">
+            <p className="font-headline text-2xl md:text-3xl text-primary/90 italic font-light tracking-wide drop-shadow-sm border-l-4 border-primary/40 pl-6 py-2">
               "Un espacio donde ser escuchado sin juicios"
             </p>
           </div>
@@ -240,66 +239,89 @@ export default function Home() {
             <p className="font-body text-on-surface-variant text-xl max-w-3xl mx-auto font-light leading-relaxed">Ponemos nombre a lo que sientes para empezar a sanar. No son solo síntomas, es tu historia pidiendo atención desde un lugar de compasión.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <motion.div layoutId="card-ansiedad" onClick={() => setSelectedInfographic({ id: 'ansiedad', src: '/images/info-ansiedad.jpg'})} className="cursor-pointer md:col-span-8 zen-light-gray rounded-[2.5rem] p-12 flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-primary relative">
-              <div>
-                <span className="material-symbols-outlined text-7xl text-primary/80 mb-10 transition-transform group-hover:scale-110">air</span>
-                <h3 className="font-headline text-4xl md:text-5xl mb-8">Ansiedad</h3>
-                <p className="font-body text-on-surface-variant max-w-2xl font-light text-2xl leading-relaxed">Ese ruido constante que no te deja descansar. Te ayudamos a encontrar el silencio en medio de la tormenta con herramientas de calma profunda.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-primary/30 pb-2 inline-block self-start font-body text-sm uppercase tracking-[0.2em] font-bold hover:border-primary transition-colors">Recuperar la calma</div>
-            </motion.div>
-            <motion.div layoutId="card-estres" onClick={() => setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg'})} className="cursor-pointer md:col-span-4 zen-taupe p-10 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-white relative">
-              <div>
-                <span className="material-symbols-outlined text-6xl mb-8 text-white/90 transition-transform group-hover:scale-110">speed</span>
-                <h3 className="font-headline text-4xl mb-6">Estrés</h3>
-                <p className="font-body text-white/90 font-light text-xl leading-relaxed">Cuando el mundo pesa demasiado. Estrategias prácticas para soltar lastre y reenfocar tu energía vital.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-white/30 pb-2 inline-block self-start font-body text-xs uppercase tracking-[0.2em] font-bold hover:border-white transition-colors">Soltar carga</div>
-            </motion.div>
-            <motion.div layoutId="card-insomnio" onClick={() => setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg'})} className="cursor-pointer md:col-span-4 zen-sand p-10 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-white relative">
-              <div>
-                <span className="material-symbols-outlined text-6xl text-white/90 mb-8 transition-transform group-hover:scale-110">bedtime</span>
-                <h3 className="font-headline text-4xl mb-6">Insomnio</h3>
-                <p className="font-body text-white/90 font-light text-xl leading-relaxed">Recupera el descanso sagrado. Higiene del sueño y regulación somática para noches de paz real.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-white/30 pb-2 inline-block self-start font-body text-xs uppercase tracking-[0.2em] font-bold hover:border-white transition-colors">Dulce descanso</div>
-            </motion.div>
-            <motion.div layoutId="card-procrastinacion" onClick={() => setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg'})} className="cursor-pointer md:col-span-8 zen-mist p-12 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-white relative">
-              <div>
-                <span className="material-symbols-outlined text-7xl text-white/90 mb-10 transition-transform group-hover:scale-110">schedule</span>
-                <h3 className="font-headline text-4xl md:text-5xl mb-8">Procrastinación</h3>
-                <p className="font-body text-white/80 max-w-2xl font-light text-2xl leading-relaxed">Supera la parálisis del análisis. Construimos puentes entre tus intenciones y tus acciones diarias con suavidad.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-white/30 pb-2 inline-block self-start font-body text-sm uppercase tracking-[0.2em] font-bold hover:border-white transition-colors">Activar el cambio</div>
-            </motion.div>
-            <motion.div layoutId="card-rumiacion" onClick={() => setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg'})} className="cursor-pointer md:col-span-8 zen-azure-fog p-12 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-white relative">
-              <div>
-                <span className="material-symbols-outlined text-7xl text-white/90 mb-10 transition-transform group-hover:scale-110">all_inclusive</span>
-                <h3 className="font-headline text-4xl md:text-5xl mb-8">Rumiación</h3>
-                <p className="font-body text-white/80 max-w-2xl font-light text-2xl leading-relaxed">Rompe el ciclo de pensamientos circulares. Técnicas cognitivas avanzadas para salir de la trampa mental y recuperar la presencia.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-white/30 pb-2 inline-block self-start font-body text-sm uppercase tracking-[0.2em] font-bold hover:border-white transition-colors">Liberar la mente</div>
-            </motion.div>
-            <motion.div layoutId="card-emociones" onClick={() => setSelectedInfographic({ id: 'emociones', src: '/images/info-emociones.jpg'})} className="cursor-pointer md:col-span-4 zen-stone p-10 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-white relative">
-              <div>
-                <span className="material-symbols-outlined text-6xl text-white/90 mb-8 transition-transform group-hover:scale-110">psychology_alt</span>
-                <h3 className="font-headline text-4xl mb-6">Gestión Emocional</h3>
-                <p className="font-body text-white/90 font-light text-xl leading-relaxed">Aprende a navegar tus emociones sin que ellas te gobiernen. Inteligencia emocional aplicada a tu día a día.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-white/30 pb-2 inline-block self-start font-body text-xs uppercase tracking-[0.2em] font-bold hover:border-white transition-colors">Equilibrio interno</div>
-            </motion.div>
-            <motion.div layoutId="card-alimentacion" onClick={() => setSelectedInfographic({ id: 'alimentacion', src: '/images/info-alimentacion.jpg'})} className="cursor-pointer md:col-span-4 zen-light-gray p-10 rounded-[2.5rem] flex flex-col justify-between min-h-[480px] shadow-xl hover:shadow-2xl transition-shadow duration-500 group text-primary relative">
-              <div>
-                <span className="material-symbols-outlined text-6xl text-primary/80 mb-8 transition-transform group-hover:scale-110">restaurant</span>
-                <h3 className="font-headline text-4xl mb-6">Alimentación</h3>
-                <p className="font-body text-on-surface-variant font-light text-xl leading-relaxed">Sana tu relación con el cuerpo y la comida desde un enfoque consciente y sin culpas.</p>
-              </div>
-              <div className="mt-10 border-b-2 border-primary/30 pb-2 inline-block self-start font-body text-xs uppercase tracking-[0.2em] font-bold hover:border-primary transition-colors">Nutrir el alma</div>
-            </motion.div>
-            <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[480px] shadow-xl">
+            <SymptomCard
+              id="ansiedad"
+              title="Ansiedad"
+              description="Ese ruido constante que no te deja descansar. Te ayudamos a encontrar el silencio en medio de la tormenta con herramientas de calma profunda."
+              actionText="Recuperar la calma"
+              icon="air"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-light-gray"
+              isDarkText={true}
+              onClick={() => setSelectedInfographic({ id: 'ansiedad', src: '/images/info-ansiedad.jpg'})}
+            />
+            
+            <SymptomCard
+              id="estres"
+              title="Estrés"
+              description="Cuando el mundo pesa demasiado. Estrategias prácticas para soltar lastre y reenfocar tu energía vital."
+              actionText="Soltar carga"
+              icon="speed"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-taupe"
+              onClick={() => setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg'})}
+            />
+
+            <SymptomCard
+              id="insomnio"
+              title="Insomnio"
+              description="Recupera el descanso sagrado. Higiene del sueño y regulación somática para noches de paz real."
+              actionText="Dulce descanso"
+              icon="bedtime"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-sand"
+              onClick={() => setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg'})}
+            />
+
+            <SymptomCard
+              id="procrastinacion"
+              title="Procrastinación"
+              description="Supera la parálisis del análisis. Construimos puentes entre tus intenciones y tus acciones diarias con suavidad."
+              actionText="Activar el cambio"
+              icon="schedule"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-mist"
+              onClick={() => setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg'})}
+            />
+
+            <SymptomCard
+              id="rumiacion"
+              title="Rumiación"
+              description="Rompe el ciclo de pensamientos circulares. Técnicas cognitivas avanzadas para salir de la trampa mental y recuperar la presencia."
+              actionText="Liberar la mente"
+              icon="all_inclusive"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-azure-fog"
+              onClick={() => setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg'})}
+            />
+
+            <SymptomCard
+              id="emociones"
+              title="Gestión Emocional"
+              description="Aprende a navegar tus emociones sin que ellas te gobiernen. Inteligencia emocional aplicada a tu día a día."
+              actionText="Equilibrio interno"
+              icon="psychology_alt"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-stone"
+              onClick={() => setSelectedInfographic({ id: 'emociones', src: '/images/info-emociones.jpg'})}
+            />
+
+            <SymptomCard
+              id="alimentacion"
+              title="Alimentación"
+              description="Sana tu relación con el cuerpo y la comida desde un enfoque consciente y sin culpas."
+              actionText="Nutrir el alma"
+              icon="restaurant"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-light-gray"
+              isDarkText={true}
+              onClick={() => setSelectedInfographic({ id: 'alimentacion', src: '/images/info-alimentacion.jpg'})}
+            />
+
+            <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[380px] shadow-xl">
               <img alt="soft morning sunlight" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
               <div className="absolute inset-0 bg-primary/70 backdrop-blur-[2px]"></div>
-              <div className="relative h-full p-12 flex flex-col justify-end text-on-primary">
+              <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
                 <h3 className="font-headline text-4xl md:text-5xl mb-6">Sesiones de Claridad</h3>
                 <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer encuentro hacia la luz. Un espacio dedicado exclusivamente a ti.</p>
                 <div onClick={() => navigate('/session')} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-white transition-all cursor-pointer shadow-lg active:scale-95">Reservar ahora</div>
