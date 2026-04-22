@@ -38,37 +38,40 @@ export default function LighthouseBeamFrame({
     mass: 0.45,
   });
 
-  const beamRotate = useTransform(smoothProgress, [0, 0.5, 1], [-10, 1, 12]);
+  // Pure baseline rotations (Rotated +10 degrees from previous)
+  const beamRotate1 = useTransform(smoothProgress, [0, 0.5, 1], [-50, -30, -10]);
+  const beamRotate2 = useTransform(smoothProgress, [0, 0.5, 1], [130, 150, 170]);
+  
   const beamOpacity = useTransform(
     smoothProgress,
     [0, 0.2, 0.5, 0.8, 1],
-    [0.14, 0.23, 0.34, 0.25, 0.16]
+    [0.5, 0.9, 1.0, 0.9, 0.5]
   );
-  const beamScale = useTransform(smoothProgress, [0, 0.5, 1], [0.985, 1.025, 1]);
-  const beamX = useTransform(smoothProgress, [0, 0.5, 1], ["-1.5%", "0%", "1.2%"]);
+  const beamScale = useTransform(smoothProgress, [0, 0.5, 1], [0.95, 1.1, 1]);
+  const beamX = useTransform(smoothProgress, [0, 0.5, 1], ["-5%", "0%", "5%"]);
 
   const coreOpacity = useTransform(
     smoothProgress,
     [0, 0.25, 0.5, 0.75, 1],
-    [0.08, 0.16, 0.24, 0.17, 0.1]
+    [0.4, 0.8, 1.0, 0.9, 0.4]
   );
 
   const ambientDarkness = useTransform(
     smoothProgress,
     [0, 0.5, 1],
-    [0.30, 0.22, 0.28]
+    [0.95, 0.8, 0.9]
   );
 
   const ambientGlow = useTransform(
     smoothProgress,
     [0, 0.5, 1],
-    [0.035, 0.085, 0.045]
+    [0.3, 1.0, 0.4]
   );
 
   const ambientLift = useTransform(
     smoothProgress,
     [0, 0.5, 1],
-    [0.04, 0.09, 0.05]
+    [0.2, 0.8, 0.2]
   );
 
   return (
@@ -82,10 +85,9 @@ export default function LighthouseBeamFrame({
 
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1]"
+        className="pointer-events-none absolute inset-0 z-[1] mix-blend-multiply"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(6,10,16,0.30) 0%, rgba(7,11,17,0.17) 28%, rgba(7,11,17,0.12) 60%, rgba(5,8,12,0.28) 100%)",
+          background: `radial-gradient(circle at ${originX} ${originY}, rgba(6,10,16,0.0) 0%, rgba(6,10,16,0.6) 40%, rgba(2,4,8,0.95) 100%)`,
           opacity: ambientDarkness,
         }}
       />
@@ -94,7 +96,7 @@ export default function LighthouseBeamFrame({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-[2]"
         style={{
-          background: `radial-gradient(circle at ${originX} ${originY}, rgba(255,244,214,0.22) 0%, rgba(255,244,214,0.10) 7%, rgba(255,244,214,0.04) 15%, rgba(255,244,214,0.00) 30%)`,
+          background: `radial-gradient(circle at ${originX} ${originY}, rgba(255,244,214,0.45) 0%, rgba(255,244,214,0.20) 7%, rgba(255,244,214,0.08) 15%, rgba(255,244,214,0.00) 30%)`,
           opacity: ambientGlow,
         }}
       />
@@ -104,11 +106,12 @@ export default function LighthouseBeamFrame({
         className="pointer-events-none absolute inset-0 z-[3]"
         style={{
           background:
-            "radial-gradient(120% 95% at 80% 45%, rgba(255,250,236,0.10) 0%, rgba(255,250,236,0.04) 26%, rgba(255,250,236,0.00) 60%)",
+            "radial-gradient(120% 95% at 80% 45%, rgba(255,250,236,0.25) 0%, rgba(255,250,236,0.08) 26%, rgba(255,250,236,0.00) 60%)",
           opacity: ambientLift,
         }}
       />
 
+      {/* BEAM 1 (Test Beam) */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute z-[4]"
@@ -118,17 +121,39 @@ export default function LighthouseBeamFrame({
           width: "175%",
           height: "175%",
           transformOrigin: "0% 0%",
-          rotate: beamRotate,
+          rotate: beamRotate1,
           opacity: beamOpacity,
           scale: beamScale,
           x: beamX,
           background:
-            "linear-gradient(90deg, rgba(255,244,214,0.00) 0%, rgba(255,244,214,0.03) 10%, rgba(255,244,214,0.12) 20%, rgba(255,248,228,0.24) 32%, rgba(255,244,214,0.14) 48%, rgba(255,244,214,0.05) 66%, rgba(255,244,214,0.00) 100%)",
+            "linear-gradient(90deg, rgba(255,244,214,0.00) 0%, rgba(255,244,214,0.12) 10%, rgba(255,244,214,0.48) 20%, rgba(255,248,228,0.90) 32%, rgba(255,244,214,0.56) 48%, rgba(255,244,214,0.20) 66%, rgba(255,244,214,0.00) 100%)",
           clipPath: "polygon(0 0, 100% 14%, 100% 43%, 0 8%)",
           filter: "blur(18px)",
         }}
       />
 
+      {/* BEAM 2 (Opposite Test Beam) */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute z-[4]"
+        style={{
+          left: originX,
+          top: originY,
+          width: "175%",
+          height: "175%",
+          transformOrigin: "0% 0%",
+          rotate: beamRotate2,
+          opacity: beamOpacity,
+          scale: beamScale,
+          x: beamX,
+          background:
+            "linear-gradient(90deg, rgba(255,244,214,0.00) 0%, rgba(255,244,214,0.12) 10%, rgba(255,244,214,0.48) 20%, rgba(255,248,228,0.90) 32%, rgba(255,244,214,0.56) 48%, rgba(255,244,214,0.20) 66%, rgba(255,244,214,0.00) 100%)",
+          clipPath: "polygon(0 0, 100% 14%, 100% 43%, 0 8%)",
+          filter: "blur(18px)",
+        }}
+      />
+
+      {/* BEAM 1 CORE */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute z-[5]"
@@ -138,12 +163,33 @@ export default function LighthouseBeamFrame({
           width: "150%",
           height: "150%",
           transformOrigin: "0% 0%",
-          rotate: beamRotate,
+          rotate: beamRotate1,
           opacity: coreOpacity,
           scale: beamScale,
           x: beamX,
           background:
-            "linear-gradient(90deg, rgba(255,250,236,0.00) 0%, rgba(255,250,236,0.05) 15%, rgba(255,250,236,0.18) 30%, rgba(255,250,236,0.08) 52%, rgba(255,250,236,0.00) 100%)",
+            "linear-gradient(90deg, rgba(255,250,236,0.00) 0%, rgba(255,250,236,0.20) 15%, rgba(255,250,236,0.72) 30%, rgba(255,250,236,0.32) 52%, rgba(255,250,236,0.00) 100%)",
+          clipPath: "polygon(0 0, 100% 18%, 100% 29%, 0 7%)",
+          filter: "blur(9px)",
+        }}
+      />
+
+      {/* BEAM 2 CORE */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute z-[5]"
+        style={{
+          left: originX,
+          top: originY,
+          width: "150%",
+          height: "150%",
+          transformOrigin: "0% 0%",
+          rotate: beamRotate2,
+          opacity: coreOpacity,
+          scale: beamScale,
+          x: beamX,
+          background:
+            "linear-gradient(90deg, rgba(255,250,236,0.00) 0%, rgba(255,250,236,0.20) 15%, rgba(255,250,236,0.72) 30%, rgba(255,250,236,0.32) 52%, rgba(255,250,236,0.00) 100%)",
           clipPath: "polygon(0 0, 100% 18%, 100% 29%, 0 7%)",
           filter: "blur(9px)",
         }}

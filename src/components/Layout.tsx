@@ -5,6 +5,7 @@ import { auth, logOut } from "../firebase";
 import ScrollArrows from "./ScrollArrows";
 import { runLazyDataRetentionAndCleanup } from "../services/dataRetention";
 import { motion, AnimatePresence } from "motion/react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
@@ -31,11 +32,11 @@ export default function Layout() {
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path || (path === "/method" && location.pathname === "/method-details");
     if (isActive) {
-      // Activo: Blanco puro (en tema oscuro/normal si quremos #42617c en claro y blanco en oscuro)
-      return "text-[#42617c] dark:text-white border-b-2 border-[#42617c] dark:border-white pb-1 font-bold font-headline text-lg";
+      // Activo: Blanco puro
+      return "text-white border-b-2 border-white pb-1 font-bold font-headline text-lg";
     }
-    // Hover: blanco puro en oscuro y negro/color fuerte en claro para máxima visibilidad
-    return "text-[#2c3e50] dark:text-[#e5e2de] opacity-80 hover:text-black dark:hover:text-white hover:opacity-100 transition-all font-headline text-lg";
+    // Hover: blanco puro en oscuro y color fuerte
+    return "text-[#e5e2de] opacity-80 hover:text-white hover:opacity-100 transition-all font-headline text-lg";
   };
 
   return (
@@ -58,11 +59,11 @@ export default function Layout() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-72 bg-[#f9f9f8] dark:bg-[#2c3e50] z-[100] shadow-2xl p-8 flex flex-col md:hidden"
+              className="fixed top-0 left-0 h-full w-72 bg-[#2c3e50] z-[100] shadow-2xl p-8 flex flex-col md:hidden"
             >
               <button 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="self-end mb-10 text-[#2c3e50] dark:text-white"
+                className="self-end mb-10 text-white"
               >
                 <span className="material-symbols-outlined text-3xl">close</span>
               </button>
@@ -79,9 +80,9 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      <header className="w-full top-0 sticky z-50 bg-[#f9f9f8] dark:bg-[#2c3e50] border-b border-outline-variant/10 relative">
+      <header className="w-full top-0 sticky z-50 bg-[#2c3e50] border-b border-white/10 relative">
         {/* Luxury Leather Texture Overlay - Menú */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.45] mix-blend-multiply dark:mix-blend-soft-light dark:opacity-[0.3] overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.3] overflow-hidden">
           <svg
             width="100%"
             height="100%"
@@ -118,7 +119,7 @@ export default function Layout() {
               }
             }}
           >
-            <div className="text-lg md:text-xl font-headline font-bold text-primary dark:text-white">
+            <div className="text-lg md:text-xl font-headline font-bold text-white">
               ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span>
             </div>
           </div>
@@ -130,22 +131,9 @@ export default function Layout() {
             <Link className={getLinkClass("/resources")} to="/resources">Recursos</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
-          <div className="flex items-center gap-4 md:gap-6">
-            <div className="relative group">
-              <button className="flex items-center gap-1 font-label text-sm uppercase tracking-wider text-[#2c3e50] dark:text-white hover:text-secondary transition-all py-2">
-                ES <span className="material-symbols-outlined text-sm">expand_more</span>
-              </button>
-              {/* Contenedor centralizado para no solapar espacio blanco de sobra */}
-              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1 hidden group-hover:block z-50">
-                <div className="w-24 bg-surface-container-lowest shadow-xl rounded-lg border border-outline-variant/20 overflow-hidden text-center">
-                  <a className="block px-2 py-2 text-sm text-on-surface hover:bg-surface-container-low transition-colors" href="#">Español</a>
-                  <a className="block px-2 py-2 text-sm text-on-surface hover:bg-surface-container-low transition-colors" href="#">Catalán</a>
-                  <a className="block px-2 py-2 text-sm text-on-surface hover:bg-surface-container-low transition-colors" href="#">Euskera</a>
-                  <a className="block px-2 py-2 text-sm text-on-surface hover:bg-surface-container-low transition-colors" href="#">Gallego</a>
-                </div>
-              </div>
-            </div>
-            <button onClick={handleAuthAction} className="bg-[#2c3e50] text-white px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-primary-container whitespace-nowrap">
+          <div className="flex items-center gap-2 md:gap-4">
+            <ThemeToggle />
+            <button onClick={handleAuthAction} className="bg-white text-[#11181f] px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap">
               {user ? "Cerrar Sesión" : "Iniciar Sesión"}
             </button>
           </div>
@@ -156,24 +144,35 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-surface-container-highest dark:bg-[#2c3e50] w-full py-10 px-8 border-t border-outline-variant/10">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-12 max-w-7xl mx-auto">
+      <footer className="bg-[#2c3e50] w-full py-10 px-8 border-t border-white/10 relative overflow-hidden">
+        {/* Luxury Leather Texture Overlay - Footer */}
+        <div className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.3] overflow-hidden">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <filter id="leather-footer">
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" />
+              <feColorMatrix type="matrix" values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 1 0 0 0 0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#leather-footer)" />
+          </svg>
+        </div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-12 max-w-7xl mx-auto">
           <div className="space-y-6">
-            <div className="font-headline text-2xl text-primary dark:text-[#f9f9f8]">
+            <div className="font-headline text-2xl text-[#f9f9f8]">
               ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span>
             </div>
-            <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-primary/80 dark:text-white/80 max-w-xs leading-loose">
+            <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-white/80 max-w-xs leading-loose">
               ReprogrÁmate SoyBienestar.es <br/>
               © 2024. Tu espacio de claridad.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-16 gap-y-6">
             <div className="space-y-4 flex flex-col">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Compañía</span>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/method-details">Método</Link>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 mb-2">Compañía</span>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Inicio</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/method-details">Método</Link>
               <a 
-                className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors cursor-pointer" 
+                className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors cursor-pointer" 
                 onClick={(e) => {
                   e.preventDefault();
                   navigate('/method');
@@ -184,19 +183,19 @@ export default function Layout() {
               </a>
             </div>
             <div className="space-y-4 flex flex-col">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary/70 dark:text-white/70 mb-2">Legal</span>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/privacy">Privacidad</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Términos</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-primary/80 dark:text-white/80 hover:text-primary dark:hover:text-white transition-colors" to="/">Cookies</Link>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 mb-2">Legal</span>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/privacy">Privacidad</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Términos</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Cookies</Link>
             </div>
           </div>
           <div className="flex flex-col items-end gap-8">
             <div className="flex gap-6">
-              <span className="material-symbols-outlined text-primary/60 text-xl">psychology</span>
-              <span className="material-symbols-outlined text-primary/60 text-xl">favorite</span>
-              <span className="material-symbols-outlined text-primary/60 text-xl">spa</span>
+              <span className="material-symbols-outlined text-white/60 text-xl">psychology</span>
+              <span className="material-symbols-outlined text-white/60 text-xl">favorite</span>
+              <span className="material-symbols-outlined text-white/60 text-xl">spa</span>
             </div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 dark:text-white/80 italic">Sanando desde el centro.</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-white/80 italic">Sanando desde el centro.</p>
           </div>
         </div>
       </footer>

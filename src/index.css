@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --radius-full: 0.75rem;
   --radius-xl: 0.5rem;
@@ -68,7 +70,43 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary;
+    @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary transition-colors duration-500;
+  }
+  
+  html.dark {
+    --color-background: #11181f;
+    --color-surface: #161f28; 
+    --color-surface-dim: #0d1318;
+    --color-surface-bright: #1c2732;
+    --color-surface-container-lowest: #0c1117;
+    --color-surface-container-low: #131c24;
+    --color-surface-container: #161f28;
+    --color-surface-container-high: #1c2732;
+    --color-surface-container-highest: #23303e;
+    
+    --color-on-background: #ebf0f5;
+    --color-on-surface: #ebf0f5;
+    --color-on-surface-variant: #b0becd;
+    
+    --color-primary: #ebf0f5;
+    --color-on-primary: #11181f;
+    --color-secondary: #a3b8cc;
+    
+    --color-primary-container: #23303e;
+    --color-on-primary-container: #c4d7ec;
+    
+    --color-outline: #475a6c;
+    --color-outline-variant: #304152;
+  }
+  
+  html.dark .bg-white, 
+  html.dark .zen-light-gray,
+  html.dark .hover\:bg-secondary-container:hover {
+    --color-on-background: #191c1c;
+    --color-on-surface: #191c1c;
+    --color-on-surface-variant: #43474c;
+    --color-primary: #2c3e50;
+    --color-secondary: #7c8c8a;
   }
 }
 

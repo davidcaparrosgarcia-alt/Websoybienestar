@@ -350,7 +350,7 @@ export default function WeeklyGoals() {
               }
 
               return (
-                <div key={goal.id} className={`group bg-surface-container-lowest hover:bg-white p-6 sm:p-8 rounded-xl flex items-start gap-4 sm:gap-6 transition-all duration-500 shadow-sm border border-transparent hover:border-outline-variant/10 ${goal.isHistorical ? 'opacity-60 grayscale-[30%]' : ''}`}>
+                <div key={goal.id} className={`group bg-surface-container-lowest hover:bg-surface-container p-6 sm:p-8 rounded-xl flex items-start gap-4 sm:gap-6 transition-all duration-500 shadow-sm border border-transparent hover:border-outline-variant/10 ${goal.isHistorical ? 'opacity-60 grayscale-[30%]' : ''}`}>
                   <div className="pt-1 shrink-0">
                     <button 
                       onClick={() => toggleComplete(goal)}

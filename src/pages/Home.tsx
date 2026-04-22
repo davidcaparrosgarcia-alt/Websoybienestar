@@ -39,14 +39,14 @@ export default function Home() {
           {/* Desktop/Horizontal Image */}
           <img 
             alt="Soy Bienestar - Hero Desktop" 
-            className="hidden md:block w-full h-auto" 
+            className="hidden md:block w-full h-auto object-contain object-top" 
             src="/images/inicio-horizontal.jpg"
             referrerPolicy="no-referrer"
           />
           {/* Mobile/Vertical Image */}
           <img 
             alt="Soy Bienestar - Hero Mobile" 
-            className="block md:hidden w-full h-auto" 
+            className="block md:hidden w-full h-auto object-contain object-top" 
             src="/images/inicio-movil.jpg"
             referrerPolicy="no-referrer"
           />
@@ -107,7 +107,7 @@ export default function Home() {
         <div className="lg:col-span-7">
           <div className="bg-surface-container-lowest p-8 md:p-12 rounded-[2rem] shadow-sm border border-outline-variant/10">
             <div className="mb-10">
-              <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-4 bg-white border border-outline-variant/30 py-4 rounded-full shadow-sm hover:shadow-md hover:bg-surface-container-lowest transition-all duration-300 group">
+              <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-4 bg-surface border border-outline-variant/30 py-4 rounded-full shadow-sm hover:shadow-md hover:bg-surface-container-low transition-all duration-300 group">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
@@ -325,7 +325,7 @@ export default function Home() {
               <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
                 <h3 className="font-headline text-4xl md:text-5xl mb-6">Sesiones de Claridad</h3>
                 <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer encuentro hacia la luz. Un espacio dedicado exclusivamente a ti.</p>
-                <div onClick={() => navigate('/session')} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-white transition-all cursor-pointer shadow-lg active:scale-95">Reservar ahora</div>
+                <div onClick={() => navigate('/session')} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-surface-container-high transition-all cursor-pointer shadow-lg active:scale-95">Reservar ahora</div>
               </div>
             </div>
           </div>

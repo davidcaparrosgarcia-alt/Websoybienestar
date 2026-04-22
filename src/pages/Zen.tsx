@@ -589,7 +589,7 @@ export default function Zen() {
                   }}
                   className="cursor-pointer bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 hover:bg-surface-container transition-colors group"
                 >
-                  <div className="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all shadow-sm">
                     <span className="material-symbols-outlined text-2xl">air</span>
                   </div>
                   <div className="flex-1 min-w-0">

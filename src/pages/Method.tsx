@@ -98,20 +98,33 @@ export default function Method() {
       <section className="py-24 px-12 relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-secondary-container/40 via-surface to-surface"></div>
         <div className="max-w-screen-2xl mx-auto">
-          <div className="bg-white/60 backdrop-blur-md border border-outline-variant/10 p-12 md:p-24 rounded-[2rem] text-center max-w-5xl mx-auto shadow-sm">
-            <div className="text-3xl md:text-4xl font-headline font-light tracking-widest text-secondary/60 mb-12 uppercase">ReprogrÁmate</div>
-            <h2 className="text-4xl md:text-5xl font-headline text-primary mb-8 italic">¿Conoces a alguien perdido en la niebla?</h2>
-            <p className="text-xl text-on-surface-variant mb-12 max-w-3xl mx-auto leading-relaxed font-body">
+          <div className="bg-[#1e293b] backdrop-blur-md border border-white/10 p-12 md:p-24 rounded-[2rem] text-center max-w-5xl mx-auto shadow-sm">
+            <div className="text-3xl md:text-4xl font-headline font-light tracking-widest text-primary-fixed-dim/70 mb-12 uppercase">ReprogrÁmate</div>
+            <h2 className="text-4xl md:text-5xl font-headline text-white mb-8 italic">¿Conoces a alguien perdido en la niebla?</h2>
+            <p className="text-xl text-[#c4d7ec] mb-12 max-w-3xl mx-auto leading-relaxed font-body">
               Aunque no seas nuestro paciente hoy, tu recomendación puede ser el faro que alguien más necesita encontrar. Ayúdanos a llevar claridad y calma a quienes más lo necesitan. Comparte esta arquitectura del bienestar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-              <button className="flex items-center gap-3 px-10 py-4 rounded-full bg-primary hover:bg-primary-container transition-all text-white font-label font-medium shadow-lg shadow-primary/20">
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'ReprogrÁmate',
+                      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad.',
+                      url: window.location.origin
+                    }).catch(console.error);
+                  } else {
+                    alert('La función de compartir no está soportada en este navegador, pero puedes copiar este enlace: ' + window.location.origin);
+                  }
+                }}
+                className="flex items-center gap-3 px-10 py-4 rounded-full bg-[#2c3e50] hover:bg-[#42617c] transition-all text-white font-label font-medium shadow-lg shadow-black/20"
+              >
                 <span className="material-symbols-outlined text-xl">share</span>
                 Compartir Experiencia
               </button>
               <div className="flex items-center gap-6">
                 <a 
-                  className="flex items-center gap-2 text-on-surface-variant hover:text-secondary transition-colors font-label text-sm uppercase tracking-widest" 
+                  className="flex items-center gap-2 text-[#b5c8df] hover:text-white transition-colors font-label text-sm uppercase tracking-widest" 
                   href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -119,7 +132,12 @@ export default function Method() {
                   <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.29-4.143c1.589.943 3.197 1.441 4.934 1.442 5.333 0 9.673-4.34 9.676-9.674.002-5.332-4.338-9.674-9.671-9.675-2.585-.001-5.015 1.007-6.843 2.837-1.828 1.83-2.834 4.26-2.835 6.844-.001 1.705.469 3.376 1.36 4.827l-1.055 3.854 3.954-1.035zm12.188-4.63c-.334-.167-1.974-.974-2.279-1.084-.303-.11-.524-.167-.745.167-.221.334-.856 1.084-1.05 1.308-.194.223-.389.25-.723.084-.333-.167-1.408-.52-2.681-1.656-.991-.884-1.659-1.976-1.853-2.31-.194-.334-.021-.514.146-.68.15-.15.334-.389.501-.584.166-.194.222-.333.333-.556.111-.223.056-.417-.028-.584-.084-.167-.745-1.794-1.021-2.459-.269-.646-.543-.558-.745-.568-.192-.01-.413-.012-.634-.012-.221 0-.579.083-.883.417-.304.334-1.162 1.14-1.162 2.783 0 1.643 1.198 3.226 1.365 3.449.167.222 2.358 3.599 5.712 5.048.798.344 1.42.55 1.905.706.802.255 1.533.219 2.11.134.643-.095 1.974-.807 2.251-1.587.277-.779.277-1.447.194-1.586-.083-.14-.304-.223-.637-.39z"></path></svg>
                   WhatsApp
                 </a>
-                <a className="flex items-center gap-2 text-on-surface-variant hover:text-secondary transition-colors font-label text-sm uppercase tracking-widest" href="#">
+                <a 
+                  className="flex items-center gap-2 text-[#b5c8df] hover:text-white transition-colors font-label text-sm uppercase tracking-widest" 
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita con un terapeuta de IA y máxima privacidad.")}&url=${encodeURIComponent(window.location.origin)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.045 4.126H5.078z"></path></svg>
                   Twitter / X
                 </a>
@@ -139,7 +157,7 @@ export default function Method() {
             </p>
             <div className="space-y-6">
               <a className="flex items-center gap-4 group" href="#">
-                <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-on-primary transition-all">
                   <span className="material-symbols-outlined">video_library</span>
                 </div>
                 <div>
@@ -148,7 +166,7 @@ export default function Method() {
                 </div>
               </a>
               <a className="flex items-center gap-4 group" href="#">
-                <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-on-primary transition-all">
                   <span className="material-symbols-outlined">photo_camera</span>
                 </div>
                 <div>

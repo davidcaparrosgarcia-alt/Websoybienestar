@@ -437,7 +437,7 @@ export default function EmotionDiary() {
                     <h4 className="font-headline text-xl text-primary font-bold">Reflexión de tu Guía</h4>
                     <button 
                       onClick={toggleSilence} 
-                      className="text-secondary font-label text-xs uppercase tracking-widest font-bold px-4 py-2 hover:bg-white rounded-lg transition-colors border border-outline-variant/30"
+                      className="text-secondary font-label text-xs uppercase tracking-widest font-bold px-4 py-2 hover:bg-surface-container rounded-lg transition-colors border border-outline-variant/30"
                     >
                       {isSilenced ? "Reanudar" : "Silenciar"}
                     </button>

@@ -7,17 +7,17 @@ export default function AnxietyManagement() {
   return (
     <div className="flex-1 bg-surface w-full font-body text-on-surface">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-primary-container">
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#c4d7ec]">
         <div className="absolute inset-0 z-0">
           <img alt="Dense atmospheric fog in a quiet forest at dawn" className="w-full h-full object-cover opacity-60 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnnB7Ri9_5dSaSdsK_BkgG4rziV6DZIoGpkJ3zMhRngUFRR_7T7tCPOiTzIGMzRSFUltxwbdc8kEcpgU4ypflTyI5keY0OVeOow8oLCAzpzkDn5QBy4xAh2I3yf5aLWOeOj2vnWEwaQjkAED7T02OhL9OJz9QDy9hMVDx_bLCL7uGZaxwRwvw1Ix3azBczHI9jblyTPtzArdwkhSWxnTMUbtetuxh7_5aTCEgKSdGuOg1PtUF2BZbApoAFT98ID2wIzdkUP0sI7UaO"/>
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#2c3e50]/80 to-transparent"></div>
         </div>
         <div className="relative z-10 max-w-screen-2xl mx-auto px-12 w-full">
           <div className="max-w-3xl">
-            <h1 className="font-headline text-5xl md:text-7xl text-white leading-relaxed tracking-tight italic mb-8">
+            <h1 className="font-headline text-5xl md:text-7xl text-white leading-relaxed tracking-tight italic mb-8 drop-shadow-lg">
               ¿Sientes que la niebla te impide avanzar?
             </h1>
-            <p className="text-on-primary-container text-xl md:text-2xl font-light tracking-wide max-w-xl">
+            <p className="text-[#c4d7ec] text-xl md:text-2xl font-light tracking-wide max-w-xl drop-shadow-md">
               Entendiendo la arquitectura de tu paz interior.
             </p>
           </div>
@@ -109,10 +109,10 @@ export default function AnxietyManagement() {
       </section>
 
       {/* Section 1: Restructured 'La naturaleza del ruido' */}
-      <section className="relative py-48 overflow-hidden bg-primary">
+      <section className="relative py-48 overflow-hidden bg-[#2c3e50]">
         <div className="absolute inset-0 z-0">
           <img alt="A path lost in thick fog with ethereal light" className="w-full h-full object-cover opacity-30 blur-sm scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtL5pbugnZtI7y7kA6u94AMwx1UOLEtjgIvSEHB_SDrv1TUSkFnx_lm34dIAPqsY6B9BLKf3RLkwpO3xMlbMptJQV3DK974c25wgawr2BinFvuXiluqVRLFxRVAqHEFhdFCio528VckhE64vvoGkLswWK8UDURAHwhYu-aVPJyQHwJ8aRGz5XyX9dqIDfLRcUNwohqgjMobaHKfSalPT0LRYK8ZjcG-ZkhCYfb38CwVKqLJa7g4o97ZgI-W1Wp86VCE3IAQhl2o9ZF"/>
-          <div className="absolute inset-0 bg-primary/40"></div>
+          <div className="absolute inset-0 bg-[#2c3e50]/40"></div>
         </div>
         <div className="relative z-10 max-w-screen-xl mx-auto px-12 text-center">
           <h2 className="font-headline text-3xl text-primary-fixed-dim mb-12 italic uppercase tracking-widest">La naturaleza del ruido</h2>
@@ -125,7 +125,7 @@ export default function AnxietyManagement() {
       </section>
 
       {/* Section 3: The Solution */}
-      <section className="py-32 bg-surface">
+      <section className="py-32 bg-slate-50">
         <div className="max-w-screen-2xl mx-auto px-12">
           <LighthouseBeamFrame
             className="relative rounded-3xl min-h-[600px] flex items-center shadow-xl group"
@@ -136,10 +136,10 @@ export default function AnxietyManagement() {
             <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px]"></div>
             <div className="relative z-10 p-12 md:p-24 max-w-2xl">
               <h2 className="font-headline text-4xl md:text-5xl text-white mb-8 italic">Un faro en la niebla.</h2>
-              <p className="text-surface-container text-lg md:text-xl font-light leading-relaxed mb-12">No es posible navegar sin saber dónde se encuentra uno exactamente. Nuestro método actúa como un radar emocional: localizamos su estado actual para poder ofrecerle un rescate preciso. En ReprogrÁmate todo comienza con la ubicación de tu posición exacta.</p>
+              <p className="text-slate-100 text-lg md:text-xl font-light leading-relaxed mb-12">No es posible navegar sin saber dónde se encuentra uno exactamente. Nuestro método actúa como un radar emocional: localizamos su estado actual para poder ofrecerle un rescate preciso. En ReprogrÁmate todo comienza con la ubicación de tu posición exacta.</p>
               <div className="flex flex-col sm:flex-row gap-6">
-                <button onClick={() => navigate('/session')} className="px-8 py-5 bg-white text-primary font-bold rounded-full text-lg hover:bg-surface-container-high transition-all duration-300">
-                  Iniciar Consulta Gratuita con IA
+                <button onClick={() => navigate('/session')} className="px-8 py-5 bg-[#2c3e50] text-white font-bold rounded-full text-lg hover:bg-[#42617c] transition-all duration-300">
+                  Iniciar Consulta Gratuita
                 </button>
                 <button onClick={() => navigate('/method')} className="px-8 py-5 border border-white/30 text-white font-medium rounded-full text-lg hover:bg-white/10 transition-all duration-300">
                   Regresar

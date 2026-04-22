@@ -102,7 +102,9 @@ export default function SymptomCard({
       ref={containerRef}
       layoutId={`card-${id}`}
       onClick={onClick}
-      className={`cursor-pointer ${colSpanClass} ${bgColorClass} rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between min-h-[380px] shadow-xl hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out group ${textColorClass} relative overflow-hidden`}
+      whileHover={{ y: -12, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`cursor-pointer ${colSpanClass} ${bgColorClass} rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between min-h-[380px] shadow-xl group ${textColorClass} relative overflow-hidden`}
     >
       {/* Luxury Leather Texture Overlay - Visibilidad y textura real garantizadas */}
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.25] mix-blend-multiply">
