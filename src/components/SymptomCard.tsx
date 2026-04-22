@@ -102,7 +102,7 @@ export default function SymptomCard({
       ref={containerRef}
       layoutId={`card-${id}`}
       onClick={onClick}
-      className={`cursor-pointer ${colSpanClass} ${bgColorClass} rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between min-h-[380px] shadow-xl hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-500 group ${textColorClass} relative overflow-hidden`}
+      className={`cursor-pointer ${colSpanClass} ${bgColorClass} rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between min-h-[380px] shadow-xl hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out group ${textColorClass} relative overflow-hidden`}
     >
       {/* Luxury Leather Texture Overlay - Visibilidad y textura real garantizadas */}
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.25] mix-blend-multiply">
@@ -136,7 +136,7 @@ export default function SymptomCard({
         <span
           className={`material-symbols-outlined ${
             isLarge ? "mb-8 text-[108px]" : "mb-6 text-[90px]"
-          } ${iconColorClass} transition-transform duration-500 group-hover:scale-125 origin-bottom-left`}
+          } ${iconColorClass} transition-transform duration-300 ease-out group-hover:scale-125 origin-bottom-left`}
         >
           {icon}
         </span>

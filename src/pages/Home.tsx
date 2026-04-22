@@ -34,28 +34,28 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Hero Section */}
-      <section className="relative w-full min-h-[85vh] flex flex-col justify-end pb-16 lg:pb-32 mb-32">
-        <div className="absolute inset-0 overflow-hidden bg-background">
+      <section className="relative w-full mb-20 md:mb-32">
+        <div className="relative w-full">
           {/* Desktop/Horizontal Image */}
           <img 
             alt="Soy Bienestar - Hero Desktop" 
-            className="hidden md:block w-full h-full object-cover" 
-            src="/images/hero-horizontal.jpg"
+            className="hidden md:block w-full h-auto" 
+            src="/images/inicio-horizontal.jpg"
+            referrerPolicy="no-referrer"
           />
           {/* Mobile/Vertical Image */}
           <img 
             alt="Soy Bienestar - Hero Mobile" 
-            className="block md:hidden w-full h-full object-cover" 
-            src="/images/hero-vertical.jpg"
+            className="block md:hidden w-full h-auto" 
+            src="/images/inicio-movil.jpg"
+            referrerPolicy="no-referrer"
           />
           {/* Gradiente sutil inferior para asegurar la legibilidad de la frase */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-8 w-full mt-auto">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"></div>
+          
           {/* Floating Quote Overlay Style */}
-          <div className="max-w-lg">
-            <p className="font-headline text-2xl md:text-3xl text-primary/90 italic font-light tracking-wide drop-shadow-sm border-l-4 border-primary/40 pl-6 py-2">
+          <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-lg z-10 w-[calc(100%-2.5rem)]">
+            <p className="font-headline text-2xl md:text-3xl lg:text-4xl text-primary/90 italic font-light tracking-wide drop-shadow-md border-l-4 border-primary/40 pl-4 md:pl-6 py-2">
               "Un espacio donde ser escuchado sin juicios"
             </p>
           </div>
@@ -172,6 +172,7 @@ export default function Home() {
                   alt="Lighthouse landscape"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                   src="/images/fondo-faro.jpg"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
               </>
