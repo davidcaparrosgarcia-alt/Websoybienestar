@@ -113,15 +113,15 @@ export default function AnxietyManagement() {
     : CIRCUMFERENCE - (Math.min(pressureDegrees, 180) / 180) * ARC_LENGTH;
 
   const getProjectionColor = (deg: number) => {
-    if (deg >= 141) return '#ff0000'; // Rojo puro saturado
-    if (deg >= 101) return '#ef4444'; // Rojo fuerte
+    if (deg >= 141) return '#ef4444'; // Rojo normal equilibrado
+    if (deg >= 101) return '#f87171'; // Rojo suave
     if (deg >= 61) return '#f97316';  // Naranja
     if (deg >= 31) return '#eab308';  // Amarillo
     return '#00d4ff'; // Azul
   };
 
   const getProjectionGlow = (deg: number) => {
-    if (deg >= 141) return '0 0 30px #ff0000';
+    if (deg >= 141) return '0 0 20px #ef4444';
     if (deg >= 101) return '0 0 15px #ef4444';
     if (deg >= 61) return '0 0 15px #f97316';
     if (deg >= 31) return '0 0 15px #eab308';
@@ -225,11 +225,11 @@ export default function AnxietyManagement() {
                   className="absolute inset-0 w-full h-full object-contain z-0"
                 />
 
-                {/* Projection Layer: Moved further LEFT to 18% */}
+                {/* Projection Layer: Centered over the dial (Adjusted to 29% left, 53% top) */}
                 <div className="relative z-10 w-full h-full pointer-events-none">
                   
                   {/* Digital Display (WHITE) */}
-                  <div className="absolute top-[55%] left-[18%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <div className="absolute top-[53%] left-[29%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] mb-1 drop-shadow-xl" style={{ color: selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#ffffff' }}>Presión</span>
                     <div className="flex items-start">
                       <span className="font-headline text-6xl leading-none tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: selectedSymptoms.length > 0 ? getProjectionGlow(pressureDegrees) : 'none' }}>{pressureDegrees}</span>
@@ -239,11 +239,12 @@ export default function AnxietyManagement() {
                   </div>
 
                   {/* SVG Arc - Scaled to match dial borders */}
-                  <div className="absolute top-[55%] left-[18%] -translate-x-1/2 -translate-y-1/2 w-[44%] h-[66%]">
+                  <div className="absolute top-[53%] left-[29%] -translate-x-1/2 -translate-y-1/2 w-[44%] h-[66%]">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <defs>
                         <linearGradient id="vGrad" x1="0%" x2="100%">
-                          <stop offset="0%" stopColor={pressureDegrees >= 141 ? '#ff0000' : '#ffffff'} stopOpacity={pressureDegrees >= 141 ? "0.9" : "0.1"}></stop>
+                          {/* Sólido de punta a punta en niveles críticos */}
+                          <stop offset="0%" stopColor={pressureDegrees >= 141 ? getProjectionColor(pressureDegrees) : (pressureDegrees >= 61 ? getProjectionColor(pressureDegrees) : "#ffffff")} stopOpacity={pressureDegrees >= 61 ? "1" : "0.1"}></stop>
                           <stop offset="100%" stopColor={selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#00d4ff'} stopOpacity="1"></stop>
                         </linearGradient>
                       </defs>
@@ -262,9 +263,9 @@ export default function AnxietyManagement() {
                     </svg>
                   </div>
 
-                  {/* 0 and 180 (White, floating labels positioned relative to the center) */}
-                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '4%', top: '82%' }}>0</span>
-                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '32.5%', top: '82%' }}>180</span>
+                  {/* 0 and 180 (Positioned relative to 29% center) */}
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '15%', top: '80%' }}>0</span>
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '43.5%', top: '80%' }}>180</span>
                 </div>
               </div>
             </div>
