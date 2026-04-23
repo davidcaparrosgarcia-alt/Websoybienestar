@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { api } from "../services/api";
@@ -21,9 +21,16 @@ export default function Session() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
+  const [showHelpText, setShowHelpText] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const baseInputRef = useRef("");
+  
+  // Custom refs for robust state handling independently of closure states
+  const isRecordingRef = useRef(false);
+  const restartAttemptsRef = useRef(0);
+
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
@@ -36,53 +43,94 @@ export default function Session() {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    // Initialize Web Speech API
+  const initSpeechRecognition = useCallback(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'es-ES';
+    if (!SpeechRecognition) return null;
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
 
-      recognition.onresult = (event: any) => {
-        let currentTranscript = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          currentTranscript += event.results[i][0].transcript;
-        }
-        
-        const space = baseInputRef.current && !baseInputRef.current.endsWith(' ') ? ' ' : '';
-        setInput(baseInputRef.current + space + currentTranscript);
-      };
+    recognition.onresult = (event: any) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
 
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        setIsRecording(false);
-        if (event.error === 'not-allowed') {
-          setRecordingError("Permiso de micrófono denegado. Por favor, actívalo en tu navegador.");
-        } else if (event.error === 'no-speech') {
-          setRecordingError("No se detectó voz. Inténtalo de nuevo.");
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
         } else {
-          setRecordingError(`Error de micrófono: ${event.error}`);
+          interimTranscript += event.results[i][0].transcript;
         }
-        setTimeout(() => setRecordingError(null), 5000);
-      };
+      }
+      
+      if (finalTranscript) {
+        const space = baseInputRef.current && !baseInputRef.current.endsWith(' ') && !finalTranscript.startsWith(' ') ? ' ' : '';
+        baseInputRef.current = baseInputRef.current + space + finalTranscript;
+      }
 
-      recognition.onend = () => {
+      const space2 = baseInputRef.current && !baseInputRef.current.endsWith(' ') && interimTranscript && !interimTranscript.startsWith(' ') ? ' ' : '';
+      setInput(baseInputRef.current + space2 + interimTranscript);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      
+      if (event.error === 'not-allowed') {
+        setRecordingError("Permiso de micrófono denegado. Actívalo en los ajustes del navegador.");
+        setShowHelpText(false);
+      } else if (event.error === 'no-speech') {
+        setRecordingError("No se detectó voz. Inténtalo de nuevo acercando más el micrófono.");
+        setShowHelpText(false);
+      } else if (['network', 'audio-capture', 'bad-grammar'].includes(event.error)) {
+        setRecordingError("La función de voz no está disponible temporalmente en este dispositivo.");
+        setShowHelpText(true);
+      } else {
+        setRecordingError("Este navegador móvil no ofrece una compatibilidad suficiente con el dictado por voz.");
+        setShowHelpText(true);
+      }
+      setTimeout(() => setRecordingError(null), 8000);
+    };
+
+    recognition.onend = () => {
+      if (isRecordingRef.current) {
+        // Unintended stop, try to restart once
+        if (restartAttemptsRef.current < 1) {
+          restartAttemptsRef.current += 1;
+          try {
+            recognition.start();
+            return; // Don't trigger stop states
+          } catch (e) {
+            console.error("No se pudo reiniciar el reconocimiento", e);
+          }
+        }
+        // If we get here, restart failed or max attempts reached
         setIsRecording(false);
-      };
+        isRecordingRef.current = false;
+        setRecordingError("La grabación por voz se ha detenido en este dispositivo. Puedes volver a intentarlo o escribir manualmente.");
+        setShowHelpText(true);
+        setTimeout(() => setRecordingError(null), 8000);
+      } else {
+        // Intended normal manual stop
+        setIsRecording(false);
+      }
+    };
 
-      recognitionRef.current = recognition;
-    }
+    return recognition;
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    if (isRecording) {
-      recognitionRef.current?.stop();
+    if (isRecordingRef.current) {
+      isRecordingRef.current = false;
       setIsRecording(false);
+      try {
+        recognitionRef.current?.stop();
+      } catch (err) {}
     }
 
     const userMessage: Message = { id: Date.now().toString(), role: "user", content: input };
@@ -122,27 +170,55 @@ export default function Session() {
   };
 
   const toggleRecording = async () => {
-    if (isRecording) {
-      recognitionRef.current?.stop();
+    if (isRecordingRef.current) {
+      // Manual stop
+      isRecordingRef.current = false;
       setIsRecording(false);
+      try {
+        recognitionRef.current?.stop();
+      } catch (err) {}
     } else {
+      // First, check basic support
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        setRecordingError("Tu navegador no ofrece compatibilidad suficiente con el dictado por voz en esta función. Puedes seguir escribiendo manualmente.");
+        setShowHelpText(true);
+        setTimeout(() => setRecordingError(null), 10000);
+        return;
+      }
+
+      // Then verify media devices / request permissions
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e: any) {
+        console.error("Could not start microphone", e);
+        setRecordingError("Permiso de micrófono denegado. Actívalo en los ajustes del navegador.");
+        setShowHelpText(false);
+        setTimeout(() => setRecordingError(null), 8000);
+        return;
+      }
+
+      // Initialize if missing
+      if (!recognitionRef.current) {
+         recognitionRef.current = initSpeechRecognition();
+      }
+      
+      // Attempt start
       if (recognitionRef.current) {
+        baseInputRef.current = input;
+        restartAttemptsRef.current = 0; // Reset restart attempts
         try {
-          // Force permission prompt just in case
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-          
-          baseInputRef.current = input;
           recognitionRef.current.start();
+          isRecordingRef.current = true;
           setIsRecording(true);
           setRecordingError(null);
-        } catch (e: any) {
-          console.error("Could not start recording", e);
-          setRecordingError("No se pudo acceder al micrófono. Verifica los permisos.");
-          setTimeout(() => setRecordingError(null), 5000);
+          setShowHelpText(false);
+        } catch (err) {
+          console.error("Start error:", err);
+          setRecordingError("La función de voz no está disponible temporalmente en este dispositivo.");
+          setShowHelpText(true);
+          setTimeout(() => setRecordingError(null), 8000);
         }
-      } else {
-        setRecordingError("Tu navegador no soporta el reconocimiento de voz nativo.");
-        setTimeout(() => setRecordingError(null), 5000);
       }
     }
   };
@@ -210,12 +286,25 @@ export default function Session() {
       {/* Input Area */}
       <div className="bg-surface-container-lowest border-t border-outline-variant/10 p-4 md:p-6">
         <div className="max-w-3xl mx-auto">
-          {recordingError && (
-            <div className="mb-4 p-3 bg-error-container text-on-error-container rounded-lg text-sm font-label flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-              <span className="material-symbols-outlined text-error text-lg">error</span>
-              {recordingError}
+          
+          {/* Error and Help Messages */}
+          {(recordingError || showHelpText) && (
+            <div className="mb-4 animate-in fade-in slide-in-from-bottom-2 flex flex-col gap-2">
+              {recordingError && (
+                <div className="p-3 bg-error-container text-on-error-container rounded-lg text-sm font-label flex items-start gap-2 shadow-sm">
+                  <span className="material-symbols-outlined text-error text-lg mt-[1px]">error</span>
+                  <span className="leading-snug">{recordingError}</span>
+                </div>
+              )}
+              {showHelpText && (
+                <div className="p-3 bg-surface-variant text-on-surface-variant rounded-lg text-xs font-body flex items-start gap-2 shadow-sm border border-outline-variant/20">
+                  <span className="material-symbols-outlined text-secondary text-base mt-[1px]">lightbulb</span>
+                  <span className="leading-relaxed">Recomendación: prueba con Chrome actualizado en Android. Si estás en iPhone o iPad, el soporte puede ser limitado.</span>
+                </div>
+              )}
             </div>
           )}
+
           <form onSubmit={handleSubmit} className="flex items-end gap-4">
             <button
               type="button"
