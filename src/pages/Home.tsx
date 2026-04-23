@@ -585,7 +585,7 @@ export default function Home() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
               <motion.div 
                 layoutId={`card-${selectedInfographic.id}`}
-                className="relative w-full max-w-5xl max-h-[90vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
+                className="relative w-full max-w-5xl max-h-[90vh] bg-[#0b1221] text-white rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
               >
                 {/* Elegant Action Buttons */}
                 <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
@@ -593,7 +593,7 @@ export default function Home() {
                     href={selectedInfographic.src} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
@@ -603,7 +603,7 @@ export default function Home() {
                       e.stopPropagation();
                       setSelectedInfographic(null);
                     }}
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
                     aria-label="Cerrar infographic"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>

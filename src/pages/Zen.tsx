@@ -17,6 +17,7 @@ export default function Zen() {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
+  const [isGrayscaleForceOff, setIsGrayscaleForceOff] = useState(false);
 
   // Form states for Registration Modal
   const [emailChecked, setEmailChecked] = useState(true);
@@ -269,30 +270,33 @@ export default function Zen() {
       <section className="py-32 bg-stone-100">
         <div className="max-w-screen-2xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           <div className="order-2 lg:order-1">
-            <div className="relative group">
-              <img alt="Person meditating in calm space" className="w-full h-[600px] object-cover rounded-2xl grayscale hover:grayscale-0 transition-all duration-700 shadow-xl" data-alt="A person sitting in a peaceful meditative pose in a bright, minimalist room with natural wood and linen textures, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDezZvAvohhg90z-FTDQW9ufFmgWrxZPty-2arqGExkoV24NqfkSISG7KE5JVsEo0ORJ2wF5JMmiOx-UyeYtMXfYQ8Qh6oUZaFp9yH0gVDPFMiVwlyRnpgbOBOJenwANXkJSf9QVLWs0AB3hmwoP_Z82QRlb1klqJ1Q8TLLLznwaOGLgsvYzxkitC15QbWUMqgI_ECGqlLzGzUtlyvTDTVjnhcptoa-6fITF7H_6ixQFsOy5FfunomGUPQ6pE2qdHNkrmfotoCFFKu9"/>
+            <div className="relative group cursor-pointer" 
+                 onClick={() => setIsGrayscaleForceOff(!isGrayscaleForceOff)}
+                 onTouchStart={() => setIsGrayscaleForceOff(true)}
+            >
+              <img alt="Person meditating in calm space" className={`w-full h-[600px] object-cover rounded-2xl transition-all duration-700 shadow-xl ${isGrayscaleForceOff ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`} data-alt="A person sitting in a peaceful meditative pose in a bright, minimalist room with natural wood and linen textures, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDezZvAvohhg90z-FTDQW9ufFmgWrxZPty-2arqGExkoV24NqfkSISG7KE5JVsEo0ORJ2wF5JMmiOx-UyeYtMXfYQ8Qh6oUZaFp9yH0gVDPFMiVwlyRnpgbOBOJenwANXkJSf9QVLWs0AB3hmwoP_Z82QRlb1klqJ1Q8TLLLznwaOGLgsvYzxkitC15QbWUMqgI_ECGqlLzGzUtlyvTDTVjnhcptoa-6fITF7H_6ixQFsOy5FfunomGUPQ6pE2qdHNkrmfotoCFFKu9"/>
               <div className="absolute -bottom-8 -right-8 bg-primary-container text-on-primary p-8 rounded-full hidden xl:block max-w-xs shadow-2xl">
                 <p className="font-headline italic text-lg text-on-primary-container">"La paz no es la ausencia de ruido, sino la armonía dentro de él."</p>
               </div>
             </div>
           </div>
           <div className="order-1 lg:order-2">
-            <h2 className="text-4xl lg:text-5xl font-headline text-primary mb-8">Guías de relajación progresiva</h2>
-            <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-10">
+            <h2 className="text-4xl lg:text-5xl font-headline text-primary mb-8 !text-primary">Guías de relajación progresiva</h2>
+            <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-10 !text-slate-700">
               Nuestra biblioteca exclusiva ofrece un viaje sensorial a través de paisajes visuales y auditivos diseñados para desarticular la tensión acumulada. Cada guía ha sido curada para ofrecer una experiencia inmersiva que trasciende lo digital.
             </p>
             <ul className="space-y-6 mb-12">
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs">Contenido validado por expertos</span>
+                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
+                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Contenido validado por expertos</span>
               </li>
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs">Disponible 24/7 en cualquier dispositivo</span>
+                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
+                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Disponible 24/7 en cualquier dispositivo</span>
               </li>
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs">Acceso sólo a pacientes ya tratados</span>
+                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
+                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Acceso sólo a pacientes ya tratados</span>
               </li>
             </ul>
             <button 
@@ -304,7 +308,7 @@ export default function Zen() {
                   setIsCodeModalOpen(true);
                 }
               }} 
-              className="group flex items-center gap-4 text-primary font-bold text-lg hover:opacity-80 transition-opacity"
+              className="group flex items-center gap-4 text-primary font-bold text-lg hover:opacity-80 transition-opacity !text-primary"
             >
               <span>Acceder a contenido reservado</span>
               <span className="material-symbols-outlined transition-transform group-hover:translate-x-2">lock_open</span>
@@ -315,7 +319,7 @@ export default function Zen() {
 
       {/* Final CTA Area */}
       <section className="py-24 bg-surface flex justify-center border-t border-outline-variant/10">
-        <button onClick={() => navigate('/session')} className="px-16 py-8 bg-primary-container text-on-primary font-headline text-2xl rounded-full shadow-2xl hover:bg-primary transition-colors duration-500">
+        <button onClick={() => navigate('/session')} className="px-16 py-8 bg-primary-container text-on-primary font-headline text-2xl rounded-full shadow-2xl hover:bg-primary transition-colors duration-500 !text-white dark:!text-white">
           Iniciar Consulta Gratuita
         </button>
       </section>

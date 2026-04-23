@@ -50,6 +50,7 @@ export default function AnxietyManagement() {
   let zoneColor = "text-[#4f6260]"; 
   let zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
   let iconName = "check_circle";
+  let gradientId = "gradCalm";
 
   let zoneText = "Estado de Calma o Estrés Leve";
   let analysisText = "Capacidad de procesamiento óptima. La carga neuroemocional se encuentra dentro de un margen seguro y sostenible. Mantenimiento correcto de tu energía.";
@@ -57,17 +58,28 @@ export default function AnxietyManagement() {
   let tolerance = "ALTA";
 
   if (pressureDegrees >= 131) {
-    zoneColor = "text-[#ef4444]";
-    zoneGradient = "from-[#fcd3d3] to-[#fca5a5]";
+    zoneColor = "text-[#991b1b]";
+    zoneGradient = "from-[#fca5a5] to-[#7f1d1d]";
     iconName = "warning";
+    gradientId = "gradCritical";
     zoneText = "Crisis de Angustia / Burnout Agudo";
     analysisText = "Cuando el hashrate de tus pensamientos sube tanto que no genera bloques de solución, sino que solo consume energía, ocurre el bloqueo funcional. El gasto innecesario de energía ha saturado el sistema, validando tu sufrimiento de forma empírica. Necesitas intervención y descompresión urgente.";
     riskIndex = "CRÍTICO";
     tolerance = "MÍNIMA";
+  } else if (pressureDegrees >= 106) {
+    zoneColor = "text-[#ef4444]";
+    zoneGradient = "from-[#fcd3d3] to-[#f87171]";
+    iconName = "error";
+    gradientId = "gradSevere";
+    zoneText = "Ansiedad Severa / Pre-bloqueo";
+    analysisText = "Tu sistema está reportando sobrecarga severa. Estás empezando a perder resiliencia frente a nuevos estímulos y el riesgo de un ataque de pánico o bloqueo funcional está escalando drásticamente.";
+    riskIndex = "MUY ALTO";
+    tolerance = "BAJA";
   } else if (pressureDegrees >= 81) {
     zoneColor = "text-[#f97316]";
     zoneGradient = "from-[#fed7aa] to-[#fdba74]";
     iconName = "notifications_active";
+    gradientId = "gradHigh";
     zoneText = "Ansiedad Clínica / Estrés Crónico";
     analysisText = "Tu sistema está drenando energía rápidamente sin llegar a un consenso interno sano. La acumulación sintomática está consumiendo tus recursos como un bucle infinito, elevando inminentemente el riesgo de agotamiento funcional.";
     riskIndex = "ALTO";
@@ -76,6 +88,7 @@ export default function AnxietyManagement() {
     zoneColor = "text-[#eab308]";
     zoneGradient = "from-[#fef08a] to-[#fde047]";
     iconName = "info";
+    gradientId = "gradModerate";
     zoneText = "Estrés Moderado";
     analysisText = "El sistema empieza a drenar energía. Está procesando eventos en segundo plano de forma constante. Cuidado con no optimizar o soltar estas pesadas cargas a tiempo, pues se acumularán como estrés crónico.";
     riskIndex = "MEDIO";
@@ -88,11 +101,16 @@ export default function AnxietyManagement() {
     zoneColor = "text-[#4f6260]";
     zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
     iconName = "query_stats";
+    gradientId = "gradInactive";
     riskIndex = "--";
     tolerance = "--";
   }
 
-  const strokeDashoffset = selectedSymptoms.length === 0 ? 289 : 289 - (289 * Math.min(pressureDegrees, 180) / 180);
+  const ARC_LENGTH = 216.77; // 270 degrees
+  const CIRCUMFERENCE = 289.03; // Full circle
+  const strokeDashoffsetValue = selectedSymptoms.length === 0 
+    ? CIRCUMFERENCE 
+    : CIRCUMFERENCE - (Math.min(pressureDegrees, 180) / 180) * ARC_LENGTH;
 
   return (
     <div className="flex-1 bg-surface w-full font-body text-on-surface">
@@ -163,88 +181,134 @@ export default function AnxietyManagement() {
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          <div className="flex flex-col lg:flex-row gap-8 items-stretch justify-center max-w-7xl mx-auto">
             {/* Left Card: Análisis de Telemetría */}
-            <div className="bg-white/80 backdrop-blur-xl border border-primary/10 p-8 rounded-2xl shadow-[0_8px_32px_-12px_rgba(22,40,57,0.1)] relative overflow-hidden group">
+            <div className="lg:w-[25%] bg-white/90 backdrop-blur-xl border border-primary/10 p-6 rounded-2xl shadow-xl relative overflow-hidden flex flex-col self-start">
               <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#b5c8df] to-[#d1e4fb]"></div>
-              <div className="flex items-center gap-3 mb-6">
-                <span className="material-symbols-outlined text-primary-fixed-dim text-xl">query_stats</span>
-                <h3 className="font-headline text-sm font-bold text-primary uppercase tracking-widest">Análisis de Telemetría</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-lg" style={{ color: '#162839', fontVariationSettings: "'FILL' 1" }}>query_stats</span>
+                <h3 className="font-headline text-xs font-bold uppercase tracking-widest" style={{ color: '#162839' }}>Análisis de Telemetría</h3>
               </div>
-              <p className="font-body text-on-surface-variant font-light leading-relaxed mb-6">
-                <strong className="text-primary font-medium block mb-2">
+              <p className="font-body text-sm font-light leading-relaxed mb-4 flex-1" style={{ color: '#334155' }}>
+                <strong className="font-medium block mb-1" style={{ color: '#162839' }}>
                   {selectedSymptoms.length === 0 ? "Sistema inactivo." : "Estudio cognitivo procesado."}
                 </strong>
                 {analysisText}
               </p>
-              <div className="flex justify-between items-center text-xs font-mono text-on-surface-variant/70 border-t border-black/5 pt-4">
-                <span>SENSOR_ID: {selectedSymptoms.length > 0 ? "RX-ACT" : "RX-78"}</span>
-                <span>ACTUALIZADO: {selectedSymptoms.length > 0 ? "TIEMPO REAL" : "ESPERANDO"}</span>
+              <div className="flex justify-between items-center text-[10px] font-mono border-t border-black/5 pt-3" style={{ color: '#64748b' }}>
+                <span>ID: {selectedSymptoms.length > 0 ? "RX-ACT" : "RX-78"}</span>
+                <span>STATUS: {selectedSymptoms.length > 0 ? "LIVE" : "IDLE"}</span>
               </div>
             </div>
 
-            {/* Center: Barometer Visual */}
-            <div className="flex flex-col items-center justify-center relative">
-              {/* Luxury Zen / Cyberpunk Dial */}
-              <div className="relative w-72 h-72 rounded-full border border-primary/5 bg-gradient-to-br from-white to-surface-container-low shadow-[inset_0_2px_20px_rgba(0,0,0,0.02),0_20px_40px_-10px_rgba(22,40,57,0.08)] flex items-center justify-center before:absolute before:inset-2 before:rounded-full before:border before:border-primary/10 before:bg-white/50">
-                {/* Decorative ticks */}
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
-                  <circle cx="100" cy="100" fill="none" r="85" stroke="#e1e3e2" strokeDasharray="2 6" strokeWidth="2"></circle>
-                  <circle className="origin-center rotate-[45deg]" cx="100" cy="100" fill="none" r="75" stroke="#b5c8df" strokeDasharray="60 200" strokeWidth="4"></circle>
-                </svg>
-                {/* Pressure Ring */}
-                <svg className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] -rotate-90" viewBox="0 0 100 100">
-                  {/* Background track */}
-                  <circle cx="50" cy="50" fill="none" r="46" stroke="#f3f4f3" strokeWidth="3"></circle>
-                  {/* Active pressure track (Blue/Gold gradient) */}
-                  <defs>
-                    <linearGradient id="pressureGrad" x1="0%" x2="100%" y1="0%" y2="100%">
-                      <stop offset="0%" stopColor="#b5c8df"></stop>
-                      <stop offset="100%" stopColor="#d1e7e4"></stop>
-                    </linearGradient>
-                  </defs>
-                  <circle 
-                    className="transition-all duration-1000 ease-out" 
-                    cx="50" cy="50" fill="none" r="46" 
-                    stroke="url(#pressureGrad)" 
-                    strokeDasharray="289" 
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round" 
-                    strokeWidth="4"></circle>
-                </svg>
-                {/* Center Display */}
-                <div className="relative z-10 flex flex-col items-center justify-center w-40 h-40 rounded-full bg-white shadow-[inset_0_2px_10px_rgba(22,40,57,0.05)] border border-primary/5">
-                  <span className="text-[10px] font-bold text-primary-fixed-dim uppercase tracking-[0.2em] mb-1">Presión</span>
-                  <div className="flex items-start">
-                    <span className="font-headline text-5xl text-primary leading-none tracking-tighter">{pressureDegrees}</span>
-                    <span className="text-primary-fixed-dim text-lg font-medium ml-1 mt-1">°</span>
+            {/* Center: New Valve Image Projection Area */}
+            <div className="lg:w-[50%] flex flex-col items-center justify-center relative py-8">
+              <div className="relative w-full max-w-[640px] aspect-[1.6/1]">
+                {/* Background Image */}
+                <img 
+                  src="/images/valvula-presion.png" 
+                  alt="Válvula de presión profesional" 
+                  className="w-full h-full object-contain"
+                />
+
+                {/* PROJECTION OVERLAY OVER THE IMAGE DIAL */}
+                {/* All positions are calculated relative to the image container */}
+                {/* The dial center is roughly at 30.5% left, 50% top */}
+                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                  
+                  {/* Digital Meter & Text (Centered in the dial) */}
+                  <div className="absolute top-[48%] left-[29.5%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-30">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] mb-0.5 transition-colors duration-500 drop-shadow-md" style={{ color: selectedSymptoms.length > 0 ? (pressureDegrees >= 131 ? '#ff4d4d' : pressureDegrees >= 106 ? '#ff6b6b' : pressureDegrees >= 81 ? '#ff9f43' : pressureDegrees >= 41 ? '#feca57' : '#54a0ff') : '#ffffff' }}>Presión</span>
+                    <div className="flex items-start">
+                      <span className="font-headline text-4xl leading-none tracking-tighter text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{pressureDegrees}</span>
+                      <span className="text-white text-base font-medium ml-0.5 mt-0.5 drop-shadow-md">°</span>
+                    </div>
+                    <span className="text-[8px] text-white/50 font-mono mt-1 tracking-widest uppercase">Calc_psi</span>
                   </div>
-                  <span className="text-[9px] text-on-surface-variant/60 font-mono mt-2 tracking-widest">PSI_CALC</span>
+
+                  {/* Pressure Arc (SVG) - Sized to match the image dial inner screen */}
+                  <div className="absolute top-[48%] left-[29.5%] -translate-x-1/2 -translate-y-1/2 w-[70.5%] h-[70.5%] md:w-[71%] md:h-[71%]">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <defs>
+                        <linearGradient id="pGradCalm" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#81a4ce" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#81a4ce" stopOpacity="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="pGradMod" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#eab308" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#eab308" stopOpacity="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="pGradHigh" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#f97316" stopOpacity="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="pGradSevere" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#ef4444" stopOpacity="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="pGradCrit" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#991b1b" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#991b1b" stopOpacity="1"></stop>
+                        </linearGradient>
+                      </defs>
+                      <circle 
+                        cx="50" cy="50" fill="none" r="41" 
+                        stroke="rgba(255,255,255,0.05)" strokeWidth="4" 
+                        strokeDasharray="193 257.6" 
+                        transform="rotate(135 50 50)"></circle>
+                      <circle 
+                        className="transition-all duration-1000 ease-out" 
+                        cx="50" cy="50" fill="none" r="41" 
+                        stroke={`url(#p${gradientId.charAt(0).toUpperCase() + gradientId.slice(1)})`} 
+                        strokeDasharray="257.6 257.6" 
+                        strokeDashoffset={257.6 - (pressureDegrees / 180) * 193}
+                        strokeLinecap="round" 
+                        strokeWidth="5"
+                        transform="rotate(135 50 50)"></circle>
+                    </svg>
+                  </div>
+
+                  {/* 0 and 180 Labels (Floating, White, position synced with start/end of arc) */}
+                  <span className="absolute font-headline text-base font-bold text-white/40 z-20" style={{ left: '5%', top: '85%' }}>0</span>
+                  <span className="absolute font-headline text-base font-bold text-white/40 z-20" style={{ left: '54%', top: '85%' }}>180</span>
                 </div>
-                {/* Glowing accent */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#b5c8df] shadow-[0_0_10px_2px_rgba(181,200,223,0.6)]"></div>
               </div>
             </div>
 
-            {/* Right Card: Estado de Situación */}
-            <div className="bg-white/80 backdrop-blur-xl border border-primary/10 p-8 rounded-2xl shadow-[0_8px_32px_-12px_rgba(22,40,57,0.1)] relative overflow-hidden group">
+            {/* Right Card: Estado de Situación (Narrower and Taller) */}
+            <div className="lg:w-[25%] bg-white/90 backdrop-blur-xl border border-primary/10 p-6 rounded-2xl shadow-xl relative overflow-hidden flex flex-col min-h-[460px]">
               <div className={`absolute top-0 right-0 w-1 h-full bg-gradient-to-b ${zoneGradient}`}></div>
-              <div className="flex items-center gap-3 mb-6">
-                <span className={`material-symbols-outlined text-xl ${zoneColor}`} style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
-                <h3 className="font-headline text-sm font-bold text-primary uppercase tracking-widest">Estado de Situación</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-lg" style={{ color: pressureDegrees >= 131 ? '#991b1b' : pressureDegrees >= 106 ? '#ef4444' : pressureDegrees >= 81 ? '#f97316' : pressureDegrees >= 41 ? '#eab308' : '#4f6260', fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
+                <h3 className="font-headline text-xs font-bold uppercase tracking-widest" style={{ color: '#162839' }}>Estado de Situación</h3>
               </div>
-              <div className="mb-6">
-                <h4 className={`text-2xl font-headline mb-3 ${zoneColor}`}>{zoneText}</h4>
-                <p className="font-body text-on-surface-variant font-light leading-relaxed">
+              
+              <div className="flex-1 flex flex-col">
+                <h4 className="text-xl font-headline mb-2 leading-tight" style={{ color: pressureDegrees >= 131 ? '#991b1b' : pressureDegrees >= 106 ? '#ef4444' : pressureDegrees >= 81 ? '#f97316' : pressureDegrees >= 41 ? '#eab308' : '#4f6260' }}>{zoneText}</h4>
+                <p className="font-body text-sm font-light leading-relaxed text-slate-700 mb-6">
                   {selectedSymptoms.length === 0 
-                  ? "Analizando... seleccione sus marcadores de incomodidad en el panel superior."
-                  : "Las fluctuaciones detectadas corresponden al sumatorio iterativo de los síntomas seleccionados."}
+                  ? "Analizando... seleccione sus marcadores de incomodidad arriba."
+                  : "Las fluctuaciones detectadas corresponden al sumatorio iterativo de los síntomas seleccionados en el sistema."}
                 </p>
+                
+                <div className="mt-auto space-y-4">
+                  <div className="p-4 bg-black/5 rounded-xl border border-black/5">
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Índice de Riesgo</p>
+                    <p className="text-lg font-headline text-slate-900">{riskIndex}</p>
+                  </div>
+                  <div className="p-4 bg-black/5 rounded-xl border border-black/5">
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Tolerancia</p>
+                    <p className="text-lg font-headline text-slate-900">{tolerance}</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-xs font-mono text-on-surface-variant/70 border-t border-black/5 pt-4">
-                <span>ÍNDICE DE RIESGO: {riskIndex}</span>
-                <span>TOLERANCIA: {tolerance}</span>
+
+              <div className="flex justify-between items-center text-[10px] font-mono border-t border-black/5 pt-3 mt-4" style={{ color: '#64748b' }}>
+                <span>PROCESO: ACTIVO</span>
+                <span>DATA: ENCR</span>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </section>
