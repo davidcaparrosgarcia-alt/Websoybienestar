@@ -46,7 +46,7 @@ export default function AnxietyManagement() {
 
   const pressureDegrees = calcularPresion(selectedSymptoms);
   
-  // Zone determination
+  // Zone determination (RESTORED 5-ZONE RIGOROUS SCALE)
   let zoneColor = "text-[#4f6260]"; 
   let zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
   let iconName = "check_circle";
@@ -57,40 +57,40 @@ export default function AnxietyManagement() {
   let riskIndex = "BAJO";
   let tolerance = "ALTA";
 
-  if (pressureDegrees >= 131) {
+  if (pressureDegrees >= 141) {
     zoneColor = "text-[#991b1b]";
-    zoneGradient = "from-[#fca5a5] to-[#7f1d1d]";
+    zoneGradient = "from-[#7f1d1d] to-[#991b1b]";
     iconName = "warning";
     gradientId = "gradCritical";
     zoneText = "Crisis de Angustia / Burnout Agudo";
-    analysisText = "Cuando el hashrate de tus pensamientos sube tanto que no genera bloques de solución, sino que solo consume energía, ocurre el bloqueo funcional. El gasto innecesario de energía ha saturado el sistema, validando tu sufrimiento de forma empírica. Necesitas intervención y descompresión urgente.";
+    analysisText = "Cuando el hashrate de tus pensamientos sube tanto que no genera bloques de solución, sino que solo consume energía, ocurre el bloqueo funcional. El gasto innecesario de energía ha saturado el sistema. Necesitas intervención y descompresión urgente.";
     riskIndex = "CRÍTICO";
     tolerance = "MÍNIMA";
-  } else if (pressureDegrees >= 106) {
+  } else if (pressureDegrees >= 101) {
     zoneColor = "text-[#ef4444]";
-    zoneGradient = "from-[#fcd3d3] to-[#f87171]";
+    zoneGradient = "from-[#ef4444] to-[#991b1b]";
     iconName = "error";
     gradientId = "gradSevere";
     zoneText = "Ansiedad Severa / Pre-bloqueo";
     analysisText = "Tu sistema está reportando sobrecarga severa. Estás empezando a perder resiliencia frente a nuevos estímulos y el riesgo de un ataque de pánico o bloqueo funcional está escalando drásticamente.";
     riskIndex = "MUY ALTO";
     tolerance = "BAJA";
-  } else if (pressureDegrees >= 81) {
+  } else if (pressureDegrees >= 61) {
     zoneColor = "text-[#f97316]";
-    zoneGradient = "from-[#fed7aa] to-[#fdba74]";
+    zoneGradient = "from-[#f97316] to-[#ef4444]";
     iconName = "notifications_active";
     gradientId = "gradHigh";
     zoneText = "Ansiedad Clínica / Estrés Crónico";
-    analysisText = "Tu sistema está drenando energía rápidamente sin llegar a un consenso interno sano. La acumulación sintomática está consumiendo tus recursos como un bucle infinito, elevando inminentemente el riesgo de agotamiento funcional.";
+    analysisText = "Tu sistema está drenando energía rápidamente sin llegar a un consenso interno sano. La acumulación sintomática está consumiendo tus recursos como un bucle infinito, elevando el riesgo de agotamiento funcional.";
     riskIndex = "ALTO";
     tolerance = "MEDIA-BAJA";
-  } else if (pressureDegrees >= 41) {
+  } else if (pressureDegrees >= 31) {
     zoneColor = "text-[#eab308]";
-    zoneGradient = "from-[#fef08a] to-[#fde047]";
+    zoneGradient = "from-[#eab308] to-[#f97316]";
     iconName = "info";
     gradientId = "gradModerate";
     zoneText = "Estrés Moderado";
-    analysisText = "El sistema empieza a drenar energía. Está procesando eventos en segundo plano de forma constante. Cuidado con no optimizar o soltar estas pesadas cargas a tiempo, pues se acumularán como estrés crónico.";
+    analysisText = "El sistema empieza a drenar energía. Está procesando eventos en segundo plano de forma constante. Cuidado con no optimizar o soltar estas pesadas cargas a tiempo para evitar la cronicidad.";
     riskIndex = "MEDIO";
     tolerance = "MEDIA";
   }
@@ -106,11 +106,27 @@ export default function AnxietyManagement() {
     tolerance = "--";
   }
 
-  const ARC_LENGTH = 216.77; // 270 degrees
-  const CIRCUMFERENCE = 289.03; // Full circle
+  const ARC_LENGTH = 216.77; 
+  const CIRCUMFERENCE = 289.03; 
   const strokeDashoffsetValue = selectedSymptoms.length === 0 
     ? CIRCUMFERENCE 
     : CIRCUMFERENCE - (Math.min(pressureDegrees, 180) / 180) * ARC_LENGTH;
+
+  const getProjectionColor = (deg: number) => {
+    if (deg >= 141) return '#ff0000'; // Rojo puro saturado
+    if (deg >= 101) return '#ef4444'; // Rojo fuerte
+    if (deg >= 61) return '#f97316';  // Naranja
+    if (deg >= 31) return '#eab308';  // Amarillo
+    return '#00d4ff'; // Azul
+  };
+
+  const getProjectionGlow = (deg: number) => {
+    if (deg >= 141) return '0 0 30px #ff0000';
+    if (deg >= 101) return '0 0 15px #ef4444';
+    if (deg >= 61) return '0 0 15px #f97316';
+    if (deg >= 31) return '0 0 15px #eab308';
+    return '0 0 15px #00d4ff';
+  };
 
   return (
     <div className="flex-1 bg-surface w-full font-body text-on-surface">
@@ -209,45 +225,46 @@ export default function AnxietyManagement() {
                   className="absolute inset-0 w-full h-full object-contain z-0"
                 />
 
-                {/* Projection Layer: Centered over the dial part of the image (approx 31% from left) */}
+                {/* Projection Layer: Moved further LEFT to 18% */}
                 <div className="relative z-10 w-full h-full pointer-events-none">
                   
                   {/* Digital Display (WHITE) */}
-                  <div className="absolute top-[52%] left-[31.5%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] mb-1 drop-shadow-lg" style={{ color: selectedSymptoms.length > 0 ? (pressureDegrees >= 131 ? '#ff5555' : pressureDegrees >= 81 ? '#ffaa00' : '#00d4ff') : '#ffffff' }}>Presión</span>
+                  <div className="absolute top-[55%] left-[18%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] mb-1 drop-shadow-xl" style={{ color: selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#ffffff' }}>Presión</span>
                     <div className="flex items-start">
-                      <span className="font-headline text-5xl leading-none tracking-tighter text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">{pressureDegrees}</span>
-                      <span className="text-white text-xl font-medium ml-1 mt-1 drop-shadow-md">°</span>
+                      <span className="font-headline text-6xl leading-none tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: selectedSymptoms.length > 0 ? getProjectionGlow(pressureDegrees) : 'none' }}>{pressureDegrees}</span>
+                      <span className="text-white text-2xl font-medium ml-1 mt-1 drop-shadow-md">°</span>
                     </div>
-                    <span className="text-[9px] text-white/40 font-mono mt-2 tracking-widest uppercase">CALC_DYNAMIC</span>
+                    <span className="text-[9px] text-white/50 font-mono mt-1 tracking-widest uppercase">CALC_DYNAMIC</span>
                   </div>
 
-                  {/* SVG Arc - Perfectly aligned with dial radius */}
-                  <div className="absolute top-[52%] left-[31.5%] -translate-x-1/2 -translate-y-1/2 w-[34%] h-[51%]">
+                  {/* SVG Arc - Scaled to match dial borders */}
+                  <div className="absolute top-[55%] left-[18%] -translate-x-1/2 -translate-y-1/2 w-[44%] h-[66%]">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <defs>
                         <linearGradient id="vGrad" x1="0%" x2="100%">
-                          <stop offset="0%" stopColor={pressureDegrees >= 131 ? '#991b1b' : pressureDegrees >= 81 ? '#f97316' : '#81a4ce'} stopOpacity="0.1"></stop>
-                          <stop offset="100%" stopColor={pressureDegrees >= 131 ? '#991b1b' : pressureDegrees >= 81 ? '#f97316' : '#81a4ce'} stopOpacity="1"></stop>
+                          <stop offset="0%" stopColor={pressureDegrees >= 141 ? '#ff0000' : '#ffffff'} stopOpacity={pressureDegrees >= 141 ? "0.9" : "0.1"}></stop>
+                          <stop offset="100%" stopColor={selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#00d4ff'} stopOpacity="1"></stop>
                         </linearGradient>
                       </defs>
                       {/* Track background */}
-                      <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3.5" strokeDasharray="207 276.5" transform="rotate(135 50 50)" />
+                      <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" strokeDasharray="216 288" transform="rotate(135 50 50)" />
                       {/* Active indicator */}
                       <circle 
                         className="transition-all duration-1000 ease-out" 
-                        cx="50" cy="50" r="44" fill="none" 
-                        stroke="url(#vGrad)" strokeWidth="4.5" 
-                        strokeDasharray="276.5 276.5" 
-                        strokeDashoffset={276.5 - (pressureDegrees / 180) * 207}
+                        cx="50" cy="50" r="46" fill="none" 
+                        stroke="url(#vGrad)" strokeWidth="6" 
+                        strokeDasharray="288 288" 
+                        strokeDashoffset={288 - (pressureDegrees / 180) * 216}
                         strokeLinecap="round" transform="rotate(135 50 50)" 
+                        style={{ filter: selectedSymptoms.length > 0 ? `drop-shadow(${getProjectionGlow(pressureDegrees)})` : 'none' }}
                       />
                     </svg>
                   </div>
 
-                  {/* 0 and 180 (White, no shadow) */}
-                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ left: '19%', top: '78%' }}>0</span>
-                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ left: '41%', top: '78%' }}>180</span>
+                  {/* 0 and 180 (White, floating labels positioned relative to the center) */}
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '4%', top: '82%' }}>0</span>
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '32.5%', top: '82%' }}>180</span>
                 </div>
               </div>
             </div>

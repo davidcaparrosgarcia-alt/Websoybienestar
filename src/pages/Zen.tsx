@@ -255,10 +255,11 @@ export default function Zen() {
               </div>
               
               {!hasAccess && (
-                <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] flex flex-col justify-end p-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="font-label text-sm font-bold flex items-center gap-2 !text-[#162839]">
-                    <span className="material-symbols-outlined text-sm !text-[#162839]">key</span> SE REQUIERE CLAVE
-                  </span>
+                <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] flex flex-col items-center justify-start py-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-white/90 px-6 py-3 rounded-full shadow-lg border border-[#162839]/10 flex items-center gap-3">
+                    <span className="material-symbols-outlined text-sm !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>key</span>
+                    <span className="font-label text-sm font-bold !text-[#162839] tracking-widest">SE REQUIERE CLAVE</span>
+                  </div>
                 </div>
               )}
             </div>
