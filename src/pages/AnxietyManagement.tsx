@@ -194,9 +194,8 @@ export default function AnxietyManagement() {
                 </strong>
                 {analysisText}
               </p>
-              <div className="flex justify-between items-center text-xs font-mono border-t border-black/5 pt-4" style={{ color: '#64748b' }}>
-                <span>SENSOR_ID: {selectedSymptoms.length > 0 ? "RX-ACT" : "RX-78"}</span>
-                <span>ACTUALIZADO: {selectedSymptoms.length > 0 ? "TIEMPO REAL" : "ESPERANDO"}</span>
+              <div className="flex justify-start items-center text-xs font-mono border-t border-black/5 pt-4" style={{ color: '#64748b' }}>
+                <span>ACTUALIZADO: {selectedSymptoms.length > 0 ? "TIEMPO REAL" : "ESPERANDO SENSOR"}</span>
               </div>
             </div>
 
@@ -211,7 +210,7 @@ export default function AnxietyManagement() {
                 />
 
                 {/* Projection Layer: Centered over the dial part of the image (approx 31% from left) */}
-                <div className="relative z-10 w-full h-full pointer-events-none" style={{ marginLeft: '-19%' }}>
+                <div className="relative z-10 w-full h-full pointer-events-none" style={{ marginLeft: '-21.5%' }}>
                   
                   {/* Digital Display (WHITE) */}
                   <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
@@ -272,16 +271,13 @@ export default function AnxietyManagement() {
                     <span className="text-[10px] font-mono uppercase text-slate-500">Riesgo</span>
                     <span className="font-bold text-[#162839]">{riskIndex}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-black/5 p-3 rounded-lg">
-                    <span className="text-[10px] font-mono uppercase text-slate-500">Tol.</span>
-                    <span className="font-bold text-[#162839]">{tolerance}</span>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Section 1: Restructured 'La naturaleza del ruido' */}
       <section className="relative py-48 overflow-hidden bg-[#2c3e50]">

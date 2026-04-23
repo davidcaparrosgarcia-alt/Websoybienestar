@@ -157,9 +157,9 @@ export default function Zen() {
           <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
-          <div className="md:w-3/5 bg-surface-container-lowest/80 backdrop-blur-xl p-12 rounded-2xl border-l-4 border-primary">
-            <h1 className="text-6xl lg:text-7xl font-headline text-primary mb-8 leading-tight">Tu refugio de calma te espera.</h1>
-            <p className="text-xl text-on-surface-variant font-body leading-relaxed mb-8 max-w-2xl">
+          <div className="md:w-3/5 bg-white/20 backdrop-blur-2xl p-12 rounded-2xl border-l-4 border-primary shadow-2xl">
+            <h1 className="text-6xl lg:text-7xl font-headline mb-8 leading-tight !text-[#162839]">Tu refugio de calma te espera.</h1>
+            <p className="text-xl font-body leading-relaxed mb-8 max-w-2xl !text-[#334155]">
               El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-medium">Consulta con IA</span> y el <span className="italic font-medium">Cuestionario Espejo</span>.
             </p>
             <div className="flex flex-wrap gap-6">
@@ -281,22 +281,22 @@ export default function Zen() {
             </div>
           </div>
           <div className="order-1 lg:order-2">
-            <h2 className="text-4xl lg:text-5xl font-headline text-primary mb-8 !text-primary">Guías de relajación progresiva</h2>
-            <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-10 !text-slate-700">
+            <h2 className="text-4xl lg:text-5xl font-headline mb-8 !text-[#162839]">Guías de relajación progresiva</h2>
+            <p className="font-body text-lg leading-relaxed mb-10 !text-[#334155]">
               Nuestra biblioteca exclusiva ofrece un viaje sensorial a través de paisajes visuales y auditivos diseñados para desarticular la tensión acumulada. Cada guía ha sido curada para ofrecer una experiencia inmersiva que trasciende lo digital.
             </p>
             <ul className="space-y-6 mb-12">
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Contenido validado por expertos</span>
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs !text-[#162839]">Contenido validado por expertos</span>
               </li>
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Disponible 24/7 en cualquier dispositivo</span>
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs !text-[#162839]">Disponible 24/7 en cualquier dispositivo</span>
               </li>
               <li className="flex items-center gap-4 group">
-                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform !text-primary">check_circle</span>
-                <span className="text-on-surface font-medium uppercase tracking-widest text-xs !text-slate-800">Acceso sólo a pacientes ya tratados</span>
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs !text-[#162839]">Acceso sólo a pacientes ya tratados</span>
               </li>
             </ul>
             <button 
@@ -308,10 +308,10 @@ export default function Zen() {
                   setIsCodeModalOpen(true);
                 }
               }} 
-              className="group flex items-center gap-4 text-primary font-bold text-lg hover:opacity-80 transition-opacity !text-primary"
+              className="group flex items-center gap-4 font-bold text-lg hover:opacity-80 transition-opacity !text-[#162839]"
             >
-              <span>Acceder a contenido reservado</span>
-              <span className="material-symbols-outlined transition-transform group-hover:translate-x-2">lock_open</span>
+              <span className="!text-[#162839]">Acceder a contenido reservado</span>
+              <span className="material-symbols-outlined transition-transform group-hover:translate-x-2 !text-[#162839]">lock_open</span>
             </button>
           </div>
         </div>
