@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
-import PressureValve from "../components/PressureValve";
 
 const SYMPTOMS = [
   { id: 1, icon: 'compress', title: 'Presión en el pecho', desc: 'Un peso invisible que parece restringir la entrada de aire y la expansión natural de la calma.', weight: 15 },
@@ -48,23 +47,52 @@ export default function AnxietyManagement() {
   const pressureDegrees = calcularPresion(selectedSymptoms);
   
   // Zone determination
-  let zoneColor = "text-[#22c55e]";
+  let zoneColor = "text-[#4f6260]"; 
+  let zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
+  let iconName = "check_circle";
+
   let zoneText = "Estado de Calma o Estrés Leve";
   let analysisText = "Capacidad de procesamiento óptima. La carga neuroemocional se encuentra dentro de un margen seguro y sostenible. Mantenimiento correcto de tu energía.";
-  
+  let riskIndex = "BAJO";
+  let tolerance = "ALTA";
+
   if (pressureDegrees >= 131) {
     zoneColor = "text-[#ef4444]";
+    zoneGradient = "from-[#fcd3d3] to-[#fca5a5]";
+    iconName = "warning";
     zoneText = "Crisis de Angustia / Burnout Agudo";
     analysisText = "Cuando el hashrate de tus pensamientos sube tanto que no genera bloques de solución, sino que solo consume energía, ocurre el bloqueo funcional. El gasto innecesario de energía ha saturado el sistema, validando tu sufrimiento de forma empírica. Necesitas intervención y descompresión urgente.";
+    riskIndex = "CRÍTICO";
+    tolerance = "MÍNIMA";
   } else if (pressureDegrees >= 81) {
     zoneColor = "text-[#f97316]";
+    zoneGradient = "from-[#fed7aa] to-[#fdba74]";
+    iconName = "notifications_active";
     zoneText = "Ansiedad Clínica / Estrés Crónico";
     analysisText = "Tu sistema está drenando energía rápidamente sin llegar a un consenso interno sano. La acumulación sintomática está consumiendo tus recursos como un bucle infinito, elevando inminentemente el riesgo de agotamiento funcional.";
+    riskIndex = "ALTO";
+    tolerance = "MEDIA-BAJA";
   } else if (pressureDegrees >= 41) {
     zoneColor = "text-[#eab308]";
+    zoneGradient = "from-[#fef08a] to-[#fde047]";
+    iconName = "info";
     zoneText = "Estrés Moderado";
     analysisText = "El sistema empieza a drenar energía. Está procesando eventos en segundo plano de forma constante. Cuidado con no optimizar o soltar estas pesadas cargas a tiempo, pues se acumularán como estrés crónico.";
+    riskIndex = "MEDIO";
+    tolerance = "MEDIA";
   }
+
+  if (selectedSymptoms.length === 0) {
+    analysisText = "El radar está a la espera. Señala los indicadores para realizar el escáner de carga emocional de tu sistema central.";
+    zoneText = "Modo Espera";
+    zoneColor = "text-[#4f6260]";
+    zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
+    iconName = "query_stats";
+    riskIndex = "--";
+    tolerance = "--";
+  }
+
+  const strokeDashoffset = selectedSymptoms.length === 0 ? 289 : 289 - (289 * Math.min(pressureDegrees, 180) / 180);
 
   return (
     <div className="flex-1 bg-surface w-full font-body text-on-surface">
@@ -123,41 +151,98 @@ export default function AnxietyManagement() {
         </div>
       </section>
 
-      {/* Section 2.5: Pressure Valve Analysis */}
-      <section className="py-24 relative overflow-hidden border-t border-b border-[#8b6b4a]/20" style={{ backgroundColor: '#0d131a' }}>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-        <div className="relative z-10 max-w-screen-2xl mx-auto px-8 md:px-12">
-          
-          <div className="text-center mb-20">
-            <h2 className="font-headline text-4xl md:text-5xl text-[#d4af37] italic tracking-wide">Radar de Presión Interna</h2>
-            <p className="text-white/60 text-lg mt-4 font-light max-w-2xl mx-auto">Selecciona tus síntomas activos en el panel superior para calcular el estado de saturación de tu sistema neuroemocional.</p>
+      {/* Barometer Section */}
+      <section className="py-24 bg-surface-container-low border-t border-b border-black/5 relative overflow-hidden">
+        {/* Subtle background accents */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-fixed/20 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="max-w-screen-2xl mx-auto px-12 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-headline text-4xl text-primary mb-4 tracking-tight">Radar de Presión Interna</h2>
+            <p className="text-lg text-on-surface-variant font-light max-w-2xl mx-auto">
+              Monitoreo en tiempo real de su carga neuroemocional. Los indicadores reflejan la tensión acumulada y la capacidad de procesamiento actual de su sistema.
+            </p>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
-            {/* Left: Interactive Analysis */}
-            <div className="bg-[#16202a] border border-[#8b6b4a]/30 p-8 md:p-10 rounded-2xl shadow-2xl relative h-full flex flex-col justify-center">
-              <div className="absolute -top-4 left-8 bg-[#0d131a] px-4 py-1 text-[#d4af37] font-body text-sm tracking-widest border border-[#8b6b4a]/30 rounded uppercase">ANÁLISIS DE TELEMETRÍA</div>
-              <p className="text-white/80 font-body text-lg leading-relaxed font-light">
-                {selectedSymptoms.length === 0 ? "El radar está a la espera. Señala los indicadores para realizar el escáner de carga emocional de tu sistema central." : analysisText}
+            {/* Left Card: Análisis de Telemetría */}
+            <div className="bg-white/80 backdrop-blur-xl border border-primary/10 p-8 rounded-2xl shadow-[0_8px_32px_-12px_rgba(22,40,57,0.1)] relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#b5c8df] to-[#d1e4fb]"></div>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-primary-fixed-dim text-xl">query_stats</span>
+                <h3 className="font-headline text-sm font-bold text-primary uppercase tracking-widest">Análisis de Telemetría</h3>
+              </div>
+              <p className="font-body text-on-surface-variant font-light leading-relaxed mb-6">
+                <strong className="text-primary font-medium block mb-2">
+                  {selectedSymptoms.length === 0 ? "Sistema inactivo." : "Estudio cognitivo procesado."}
+                </strong>
+                {analysisText}
               </p>
+              <div className="flex justify-between items-center text-xs font-mono text-on-surface-variant/70 border-t border-black/5 pt-4">
+                <span>SENSOR_ID: {selectedSymptoms.length > 0 ? "RX-ACT" : "RX-78"}</span>
+                <span>ACTUALIZADO: {selectedSymptoms.length > 0 ? "TIEMPO REAL" : "ESPERANDO"}</span>
+              </div>
             </div>
 
-            {/* Center: The Valve */}
-            <div className="flex justify-center my-8 lg:my-0 scale-110">
-              <PressureValve degrees={pressureDegrees} />
+            {/* Center: Barometer Visual */}
+            <div className="flex flex-col items-center justify-center relative">
+              {/* Luxury Zen / Cyberpunk Dial */}
+              <div className="relative w-72 h-72 rounded-full border border-primary/5 bg-gradient-to-br from-white to-surface-container-low shadow-[inset_0_2px_20px_rgba(0,0,0,0.02),0_20px_40px_-10px_rgba(22,40,57,0.08)] flex items-center justify-center before:absolute before:inset-2 before:rounded-full before:border before:border-primary/10 before:bg-white/50">
+                {/* Decorative ticks */}
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" fill="none" r="85" stroke="#e1e3e2" strokeDasharray="2 6" strokeWidth="2"></circle>
+                  <circle className="origin-center rotate-[45deg]" cx="100" cy="100" fill="none" r="75" stroke="#b5c8df" strokeDasharray="60 200" strokeWidth="4"></circle>
+                </svg>
+                {/* Pressure Ring */}
+                <svg className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] -rotate-90" viewBox="0 0 100 100">
+                  {/* Background track */}
+                  <circle cx="50" cy="50" fill="none" r="46" stroke="#f3f4f3" strokeWidth="3"></circle>
+                  {/* Active pressure track (Blue/Gold gradient) */}
+                  <defs>
+                    <linearGradient id="pressureGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+                      <stop offset="0%" stopColor="#b5c8df"></stop>
+                      <stop offset="100%" stopColor="#d1e7e4"></stop>
+                    </linearGradient>
+                  </defs>
+                  <circle 
+                    className="transition-all duration-1000 ease-out" 
+                    cx="50" cy="50" fill="none" r="46" 
+                    stroke="url(#pressureGrad)" 
+                    strokeDasharray="289" 
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round" 
+                    strokeWidth="4"></circle>
+                </svg>
+                {/* Center Display */}
+                <div className="relative z-10 flex flex-col items-center justify-center w-40 h-40 rounded-full bg-white shadow-[inset_0_2px_10px_rgba(22,40,57,0.05)] border border-primary/5">
+                  <span className="text-[10px] font-bold text-primary-fixed-dim uppercase tracking-[0.2em] mb-1">Presión</span>
+                  <div className="flex items-start">
+                    <span className="font-headline text-5xl text-primary leading-none tracking-tighter">{pressureDegrees}</span>
+                    <span className="text-primary-fixed-dim text-lg font-medium ml-1 mt-1">°</span>
+                  </div>
+                  <span className="text-[9px] text-on-surface-variant/60 font-mono mt-2 tracking-widest">PSI_CALC</span>
+                </div>
+                {/* Glowing accent */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#b5c8df] shadow-[0_0_10px_2px_rgba(181,200,223,0.6)]"></div>
+              </div>
             </div>
 
-            {/* Right: Zone Status */}
-            <div className="bg-[#16202a] border border-[#8b6b4a]/30 p-8 md:p-10 rounded-2xl shadow-2xl relative h-full flex flex-col justify-center">
-              <div className="absolute -top-4 right-8 bg-[#0d131a] px-4 py-1 text-[#d4af37] font-body text-sm tracking-widest border border-[#8b6b4a]/30 rounded uppercase">ESTADO DE SITUACIÓN</div>
-              <div className="flex flex-col items-center text-center">
-                <span className={`material-symbols-outlined text-6xl mb-6 ${zoneColor}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                  {pressureDegrees >= 131 ? 'warning' : pressureDegrees >= 81 ? 'notifications_active' : pressureDegrees >= 41 ? 'info' : 'check_circle'}
-                </span>
-                <h3 className={`font-headline text-3xl mb-3 ${zoneColor}`}>{selectedSymptoms.length === 0 ? 'Modo Espera' : zoneText}</h3>
-                <p className="text-white/40 text-sm font-mono mt-6 tracking-widest">
-                  PRESIÓN CALCULADA: {pressureDegrees.toFixed(0)} PSI
+            {/* Right Card: Estado de Situación */}
+            <div className="bg-white/80 backdrop-blur-xl border border-primary/10 p-8 rounded-2xl shadow-[0_8px_32px_-12px_rgba(22,40,57,0.1)] relative overflow-hidden group">
+              <div className={`absolute top-0 right-0 w-1 h-full bg-gradient-to-b ${zoneGradient}`}></div>
+              <div className="flex items-center gap-3 mb-6">
+                <span className={`material-symbols-outlined text-xl ${zoneColor}`} style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
+                <h3 className="font-headline text-sm font-bold text-primary uppercase tracking-widest">Estado de Situación</h3>
+              </div>
+              <div className="mb-6">
+                <h4 className={`text-2xl font-headline mb-3 ${zoneColor}`}>{zoneText}</h4>
+                <p className="font-body text-on-surface-variant font-light leading-relaxed">
+                  {selectedSymptoms.length === 0 
+                  ? "Analizando... seleccione sus marcadores de incomodidad en el panel superior."
+                  : "Las fluctuaciones detectadas corresponden al sumatorio iterativo de los síntomas seleccionados."}
                 </p>
+              </div>
+              <div className="flex justify-between items-center text-xs font-mono text-on-surface-variant/70 border-t border-black/5 pt-4">
+                <span>ÍNDICE DE RIESGO: {riskIndex}</span>
+                <span>TOLERANCIA: {tolerance}</span>
               </div>
             </div>
           </div>
