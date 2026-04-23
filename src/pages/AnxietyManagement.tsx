@@ -210,11 +210,11 @@ export default function AnxietyManagement() {
                 />
 
                 {/* Projection Layer: Centered over the dial part of the image (approx 31% from left) */}
-                <div className="relative z-10 w-full h-full pointer-events-none" style={{ marginLeft: '-21.5%' }}>
+                <div className="relative z-10 w-full h-full pointer-events-none">
                   
                   {/* Digital Display (WHITE) */}
-                  <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1 drop-shadow-lg" style={{ color: selectedSymptoms.length > 0 ? (pressureDegrees >= 131 ? '#ff5555' : pressureDegrees >= 81 ? '#ffaa00' : '#00d4ff') : '#ffffff' }}>Presión</span>
+                  <div className="absolute top-[52%] left-[31.5%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] mb-1 drop-shadow-lg" style={{ color: selectedSymptoms.length > 0 ? (pressureDegrees >= 131 ? '#ff5555' : pressureDegrees >= 81 ? '#ffaa00' : '#00d4ff') : '#ffffff' }}>Presión</span>
                     <div className="flex items-start">
                       <span className="font-headline text-5xl leading-none tracking-tighter text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">{pressureDegrees}</span>
                       <span className="text-white text-xl font-medium ml-1 mt-1 drop-shadow-md">°</span>
@@ -223,7 +223,7 @@ export default function AnxietyManagement() {
                   </div>
 
                   {/* SVG Arc - Perfectly aligned with dial radius */}
-                  <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[68%] h-[68%]">
+                  <div className="absolute top-[52%] left-[31.5%] -translate-x-1/2 -translate-y-1/2 w-[34%] h-[51%]">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <defs>
                         <linearGradient id="vGrad" x1="0%" x2="100%">
@@ -246,8 +246,8 @@ export default function AnxietyManagement() {
                   </div>
 
                   {/* 0 and 180 (White, no shadow) */}
-                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ left: '16%', top: '86%' }}>0</span>
-                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ right: '48%', top: '86%' }}>180</span>
+                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ left: '19%', top: '78%' }}>0</span>
+                  <span className="absolute font-headline text-lg font-bold text-white/30" style={{ left: '41%', top: '78%' }}>180</span>
                 </div>
               </div>
             </div>

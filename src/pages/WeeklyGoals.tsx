@@ -343,7 +343,7 @@ export default function WeeklyGoals() {
                     
                     <div className="flex justify-end gap-3 mt-4">
                       <button onClick={() => setEditingGoalId(null)} className="px-4 py-2 font-label text-sm text-secondary hover:text-primary transition-colors">Cancelar</button>
-                      <button onClick={saveEdit} className="px-6 py-2 bg-primary text-white rounded-lg font-label text-sm hover:bg-primary-container transition-colors">Guardar</button>
+                      <button onClick={saveEdit} className="px-6 py-2 bg-[#162839] hover:bg-[#2c3e50] text-white rounded-lg font-label text-sm transition-colors">Guardar</button>
                     </div>
                   </div>
                 )
@@ -372,7 +372,7 @@ export default function WeeklyGoals() {
                       <button 
                         onClick={() => generateAIGoal(goal.id, goal.type)}
                         disabled={!!isGenerating || goal.isHistorical}
-                        className="px-3 py-1 bg-secondary-container/30 text-on-secondary-container text-xs font-label rounded-full hover:bg-secondary-container/60 transition-colors group/ai relative"
+                        className="px-3 py-1 bg-[#dcfce7] hover:bg-[#bbf7d0] text-[#166534] text-xs font-bold font-label rounded-full transition-colors group/ai relative"
                       >
                         {isGenerating === goal.id ? "Generando..." : goal.type}
                         
@@ -450,22 +450,22 @@ export default function WeeklyGoals() {
           {/* Sidebar Info/Carry Over Logic */}
           <div className="lg:col-span-4 space-y-8">
             {/* Carry Over Information Card */}
-            <div className="bg-primary text-on-primary p-8 rounded-xl relative overflow-hidden shadow-lg shadow-primary/10">
+            <div className="bg-[#f8fafc] p-8 rounded-xl relative overflow-hidden shadow-lg border border-primary/10">
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary-fixed">auto_mode</span>
-                  <h4 className="font-headline text-xl">Lógica de Continuidad</h4>
+                  <span className="material-symbols-outlined !text-[#162839]">auto_mode</span>
+                  <h4 className="font-headline text-xl !text-[#162839]">Lógica de Continuidad</h4>
                 </div>
-                <p className="font-body text-sm text-on-primary-container leading-relaxed">
+                <p className="font-body text-sm !text-[#334155] leading-relaxed">
                   En nuestra filosofía, el tiempo no es un juez. Las metas marcadas como "pendientes" al finalizar el domingo se trasladarán automáticamente a tu plan de la siguiente semana.
                 </p>
-                <div className="pt-4 border-t border-on-primary/10">
-                  <span className="font-label text-xs uppercase tracking-wider block mb-2 opacity-70">Próximo Reinicio</span>
-                  <span className="font-headline text-lg">{nextResetStr()}</span>
+                <div className="pt-4 border-t border-[#162839]/10">
+                  <span className="font-label text-xs uppercase tracking-wider block mb-2 !text-[#64748b]">Próximo Reinicio</span>
+                  <span className="font-headline text-lg !text-[#162839]">{nextResetStr()}</span>
                 </div>
               </div>
               {/* Decorative Foggy Background Element */}
-              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary rounded-full blur-[60px] opacity-20"></div>
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/5 rounded-full blur-[60px] opacity-20"></div>
             </div>
             
             {/* Visual Anchor Image */}

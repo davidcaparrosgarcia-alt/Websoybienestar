@@ -157,7 +157,7 @@ export default function Zen() {
           <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
-          <div className="md:w-3/5 bg-white/20 backdrop-blur-2xl p-12 rounded-2xl border-l-4 border-primary shadow-2xl">
+          <div className="md:w-3/5 bg-white/5 backdrop-blur-md p-12 rounded-2xl shadow-xl">
             <h1 className="text-6xl lg:text-7xl font-headline mb-8 leading-tight !text-[#162839]">Tu refugio de calma te espera.</h1>
             <p className="text-xl font-body leading-relaxed mb-8 max-w-2xl !text-[#334155]">
               El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-medium">Consulta con IA</span> y el <span className="italic font-medium">Cuestionario Espejo</span>.
@@ -241,23 +241,23 @@ export default function Zen() {
                   setIsCodeModalOpen(true);
                 }
               }}
-              className="bg-primary text-on-primary p-10 rounded-2xl shadow-lg cursor-pointer hover:bg-primary/90 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-1"
+              className="bg-[#f1f5f9] p-10 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-200 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-1 border border-primary/10"
             >
               <div>
                 <div className="flex justify-between items-start">
-                  <span className="material-symbols-outlined text-4xl text-on-primary-container mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                  <span className="material-symbols-outlined text-on-primary-container opacity-50 group-hover:opacity-100 transition-opacity">
+                  <span className="material-symbols-outlined text-4xl mb-6 !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  <span className="material-symbols-outlined opacity-50 group-hover:opacity-100 transition-opacity !text-[#162839]">
                     {hasAccess ? 'open_in_new' : 'lock'}
                   </span>
                 </div>
-                <h3 className="text-2xl font-headline mb-4">Gestión Emocional</h3>
-                <p className="text-on-primary-container">Módulos avanzados de autoconocimiento basados en arquitectura psicológica moderna.</p>
+                <h3 className="text-2xl font-headline mb-4 !text-[#162839]">Gestión Emocional</h3>
+                <p className="!text-[#334155]">Módulos avanzados de autoconocimiento basados en arquitectura psicológica moderna.</p>
               </div>
               
               {!hasAccess && (
-                <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] flex flex-col justify-end p-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="font-label text-sm font-bold flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">key</span> SE REQUIERE CLAVE
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] flex flex-col justify-end p-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="font-label text-sm font-bold flex items-center gap-2 !text-[#162839]">
+                    <span className="material-symbols-outlined text-sm !text-[#162839]">key</span> SE REQUIERE CLAVE
                   </span>
                 </div>
               )}
