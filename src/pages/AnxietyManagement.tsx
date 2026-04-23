@@ -229,7 +229,7 @@ export default function AnxietyManagement() {
                 <div className="relative z-10 w-full h-full pointer-events-none">
                   
                   {/* Digital Display (WHITE) */}
-                  <div className="absolute top-[53%] left-[29%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <div className="absolute top-[52%] left-[27%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] mb-1 drop-shadow-xl" style={{ color: selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#ffffff' }}>Presión</span>
                     <div className="flex items-start">
                       <span className="font-headline text-6xl leading-none tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: selectedSymptoms.length > 0 ? getProjectionGlow(pressureDegrees) : 'none' }}>{pressureDegrees}</span>
@@ -239,12 +239,12 @@ export default function AnxietyManagement() {
                   </div>
 
                   {/* SVG Arc - Scaled to match dial borders */}
-                  <div className="absolute top-[53%] left-[29%] -translate-x-1/2 -translate-y-1/2 w-[44%] h-[66%]">
+                  <div className="absolute top-[52%] left-[27%] -translate-x-1/2 -translate-y-1/2 w-[44%] h-[66%]">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <defs>
                         <linearGradient id="vGrad" x1="0%" x2="100%">
-                          {/* Sólido de punta a punta en niveles críticos */}
-                          <stop offset="0%" stopColor={pressureDegrees >= 141 ? getProjectionColor(pressureDegrees) : (pressureDegrees >= 61 ? getProjectionColor(pressureDegrees) : "#ffffff")} stopOpacity={pressureDegrees >= 61 ? "1" : "0.1"}></stop>
+                          {/* Sólido de punta a punta en el nivel crítico final */}
+                          <stop offset="0%" stopColor={pressureDegrees >= 141 ? '#ef4444' : (pressureDegrees >= 61 ? getProjectionColor(pressureDegrees) : "#ffffff")} stopOpacity={pressureDegrees >= 61 ? "1" : "0.1"}></stop>
                           <stop offset="100%" stopColor={selectedSymptoms.length > 0 ? getProjectionColor(pressureDegrees) : '#00d4ff'} stopOpacity="1"></stop>
                         </linearGradient>
                       </defs>
@@ -263,9 +263,9 @@ export default function AnxietyManagement() {
                     </svg>
                   </div>
 
-                  {/* 0 and 180 (Positioned relative to 29% center) */}
-                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '15%', top: '80%' }}>0</span>
-                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '43.5%', top: '80%' }}>180</span>
+                  {/* 0 and 180 (Positioned relative to 27% center) */}
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '13%', top: '79%' }}>0</span>
+                  <span className="absolute font-headline text-xl font-bold text-white/30" style={{ left: '41.5%', top: '79%' }}>180</span>
                 </div>
               </div>
             </div>
