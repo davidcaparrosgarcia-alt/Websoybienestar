@@ -2,6 +2,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { api } from "../services/api";
+import { auth } from "../firebase";
+import { setDoc, updateDoc } from "firebase/firestore";
+import { getOrMigrateUserProfile } from "../services/userProfile";
 
 interface Message {
   id: string;
@@ -32,6 +35,33 @@ export default function Session() {
   const restartAttemptsRef = useRef(0);
 
   const navigate = useNavigate();
+  const [hasDoneConsultation, setHasDoneConsultation] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkAuth = async () => {
+      // Small delay to let Auth state settle
+      await new Promise(r => setTimeout(r, 500));
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const { userRef } = await getOrMigrateUserProfile(user.uid);
+          const { getDoc } = await import("firebase/firestore");
+          const userDoc = await getDoc(userRef);
+          if (isMounted) {
+            setHasDoneConsultation(!!userDoc.data()?.hasDoneConsultation);
+          }
+        } catch (e) {
+          console.error("Auth check failed", e);
+          if (isMounted) setHasDoneConsultation(false);
+        }
+      } else {
+        if (isMounted) setHasDoneConsultation(false);
+      }
+    };
+    checkAuth();
+    return () => { isMounted = false; };
+  }, []);
 
   const scrollToBottom = () => {
     if (messages.length > 1) {
@@ -223,9 +253,110 @@ export default function Session() {
     }
   };
 
-  const finishSession = () => {
-    navigate("/session-ended", { state: { messages } });
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [finishingError, setFinishingError] = useState<string | null>(null);
+
+  const finishSession = async () => {
+    if (messages.length <= 1) {
+      setFinishingError("No hay suficiente información. Por favor comunícate más con el asistente antes de finalizar.");
+      setTimeout(() => setFinishingError(null), 8000);
+      return;
+    }
+
+    setIsFinishing(true);
+    setFinishingError(null);
+
+    const user = auth.currentUser;
+    let accumulatedSummary = "";
+    let profileReference: any = null;
+    let userReference: any = null;
+
+    if (user) {
+      try {
+        const { userRef, profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
+        userReference = userRef;
+        profileReference = profileRef;
+        accumulatedSummary = profileData.globalUserSummary || "";
+      } catch (e) {
+        console.error("Firebase read error", e);
+      }
+    }
+
+    try {
+      const parsedData = await api.report(messages, accumulatedSummary);
+      
+      const isDeveloper = user?.email === "davidcaparrosgarcia@gmail.com";
+      
+      if (parsedData && (parsedData.validConclusion || isDeveloper)) {
+        if (user && profileReference && userReference) {
+          const updateDataUser = {
+            hasDoneConsultation: true,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          const updateDataProfile = {
+            globalUserSummary: parsedData.newAccumulatedSummary || accumulatedSummary,
+            latestClinicalConclusion: parsedData.markdownReport || "Reporte generado (bypass de desarrollo)",
+          };
+
+          await updateDoc(userReference, updateDataUser).catch(async () => {
+             await setDoc(userReference, updateDataUser, { merge: true });
+          });
+          
+          await updateDoc(profileReference, updateDataProfile).catch(async () => {
+             await setDoc(profileReference, updateDataProfile, { merge: true });
+          });
+        }
+        
+        navigate("/session-ended", { state: { messages, reportData: parsedData.markdownReport } });
+      } else {
+        setFinishingError("La IA ha determinado que la sesión no tiene suficiente información o no ha llegado a una conclusión válida. Por favor, expande más tus respuestas.");
+      }
+    } catch (err) {
+      console.error(err);
+      setFinishingError("Ocurrió un error al evaluar la sesión. Por favor, intenta de nuevo.");
+    } finally {
+      setIsFinishing(false);
+    }
   };
+
+  if (hasDoneConsultation === null) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-5.5rem)]">
+        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      </div>
+    );
+  }
+
+  if (hasDoneConsultation) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
+        <div className="max-w-md w-full bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
+          <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+            <span className="material-symbols-outlined text-4xl">fact_check</span>
+          </div>
+          <h2 className="font-headline text-3xl text-primary leading-tight">Consulta Gratuita Completada</h2>
+          <p className="text-on-surface-variant font-light text-lg">
+            Tu próximo paso es solicitar el <strong className="text-primary font-medium">Cuestionario Espejo</strong>. ¿Deseas solicitarlo ahora?
+          </p>
+          <div className="w-full flex flex-col gap-4 mt-4">
+            <button 
+              onClick={() => navigate('/method-details')}
+              className="w-full bg-primary text-on-primary py-4 rounded-full font-headline text-lg tracking-wide hover:bg-primary-container hover:text-on-primary-container transition-all shadow-md active:scale-95"
+            >
+              Solicitar Cuestionario Espejo
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="w-full bg-surface-container-lowest text-primary border border-outline-variant/30 py-4 rounded-full font-headline hover:bg-surface-container-low transition-colors"
+            >
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)]">
@@ -240,19 +371,31 @@ export default function Session() {
         </div>
         <button
           onClick={finishSession}
-          className="font-label text-sm uppercase tracking-widest bg-primary text-on-primary transition-opacity hover:opacity-90 flex items-center gap-2 px-6 py-2 rounded-full shadow-sm"
+          disabled={isFinishing}
+          className="font-label text-sm uppercase tracking-widest bg-primary text-on-primary transition-opacity hover:opacity-90 flex items-center gap-2 px-6 py-2 rounded-full shadow-sm disabled:opacity-50"
         >
-          Finalizar Sesión <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          {isFinishing ? (
+            <>Evaluando <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span></>
+          ) : (
+            <>Finalizar Sesión <span className="material-symbols-outlined text-sm">arrow_forward</span></>
+          )}
         </button>
       </div>
 
+      {finishingError && (
+        <div className="bg-error/10 text-error p-3 text-center text-sm font-label flex items-center justify-center gap-2">
+          <span className="material-symbols-outlined">error</span>
+          <span>{finishingError}</span>
+        </div>
+      )}
+
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto relative p-4 md:p-8 bg-[#64748b]/90 dark:bg-[#1e293b]/90 backdrop-blur-sm border-y border-outline-variant/10">
+      <div className="flex-1 overflow-y-auto relative p-4 md:p-8 bg-[#64748b]/90 backdrop-blur-sm border-y border-outline-variant/10">
         {/* Fractal Noise Texture Overlay */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-20 mix-blend-multiply dark:mix-blend-overlay">
+        <div className="pointer-events-none absolute inset-0 z-0 opacity-5 mix-blend-multiply dark:mix-blend-overlay">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
             <filter id="chat-texture">
-              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" />
+              <feTurbulence type="fractalNoise" baseFrequency="0.005" numOctaves="3" />
               <feColorMatrix type="matrix" values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 1 0 0 0 0" />
             </filter>
             <rect width="100%" height="100%" filter="url(#chat-texture)" />
@@ -266,10 +409,10 @@ export default function Session() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] md:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-md hover:-translate-y-1 transition-transform duration-300 ${
+                className={`max-w-[85%] md:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-md border border-gray-800 dark:border-gray-200 ${
                   msg.role === "user"
-                    ? "bg-primary text-on-primary rounded-br-sm shadow-primary/20"
-                    : "bg-surface-container-low text-on-surface rounded-bl-sm border border-outline-variant/10 shadow-black/5 dark:shadow-black/20"
+                    ? "bg-primary text-on-primary rounded-br-sm shadow-black/30 dark:shadow-black/50"
+                    : "bg-surface-container-low text-on-surface rounded-bl-sm shadow-black/30 dark:shadow-black/50"
                 }`}
               >
                 {msg.role === "assistant" ? (
@@ -284,7 +427,7 @@ export default function Session() {
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-surface-container-low text-on-surface rounded-[2rem] rounded-bl-sm border border-outline-variant/10 px-8 py-6 shadow-sm flex items-center gap-3">
+              <div className="bg-surface-container-low text-on-surface rounded-[2rem] rounded-bl-sm border border-gray-800 dark:border-gray-200 px-8 py-6 shadow-md shadow-black/30 dark:shadow-black/50 flex items-center gap-3">
                 <span className="material-symbols-outlined animate-spin text-secondary">progress_activity</span>
                 <span className="font-body text-on-surface-variant text-sm font-light italic">Escribiendo...</span>
               </div>
@@ -320,7 +463,7 @@ export default function Session() {
             <button
               type="button"
               onClick={toggleRecording}
-              className={`p-4 rounded-full flex-shrink-0 transition-all duration-300 ${
+              className={`p-4 rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 ${
                 isRecording 
                   ? "bg-error/10 text-error hover:bg-error/20" 
                   : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -341,14 +484,14 @@ export default function Session() {
                   }
                 }}
                 placeholder="Escribe tu mensaje aquí..."
-                className="w-full bg-surface-container-low border-0 focus:ring-0 focus:bg-surface-container rounded-[2rem] px-8 py-4 resize-none min-h-[60px] max-h-[200px] transition-all font-body font-light text-on-surface"
+                className="w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-8 py-4 resize-none min-h-[60px] max-h-[200px] transition-all font-body font-light text-on-surface"
                 rows={1}
               />
             </div>
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="bg-primary text-on-primary p-4 rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="bg-primary text-on-primary p-4 rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200"
             >
               <span className="material-symbols-outlined">send</span>
             </button>

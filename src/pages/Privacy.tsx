@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Privacy() {
   return (
-    <div className="flex-1 bg-surface w-full">
+    <div className="flex-1 bg-transparent w-full">
       {/* Hero Section: The Breathing Hero */}
       <section className="relative h-[614px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -26,7 +26,7 @@ export default function Privacy() {
       </section>
 
       {/* Ethics & IA Bridge Section (Bento Grid) */}
-      <section className="py-24 bg-surface px-8">
+      <section className="py-24 bg-transparent px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Professional Ethics Card */}
@@ -76,7 +76,7 @@ export default function Privacy() {
       </section>
 
       {/* Detailed Policy Content */}
-      <section className="py-24 bg-surface-container-low px-8">
+      <section className="py-24 bg-transparent px-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-16">
             <h2 className="font-headline text-4xl text-primary mb-8 border-l-4 border-primary pl-8">Transparencia en el Uso de Datos</h2>

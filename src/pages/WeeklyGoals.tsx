@@ -440,8 +440,11 @@ export default function WeeklyGoals() {
             )}
 
             <div className="mt-8">
-              <button onClick={() => navigate('/zen')} className="group flex items-center gap-2 text-secondary font-label text-sm hover:text-primary transition-colors">
-                <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <button 
+                onClick={() => navigate(-1)}
+                className="group flex items-center gap-2 text-secondary font-label text-sm hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
                 Regresar
               </button>
             </div>

@@ -27,6 +27,7 @@ export default function Home() {
   const [contactEmail, setContactEmail] = useState("");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
 
   // Load user data from Firestore
   useEffect(() => {
@@ -41,6 +42,9 @@ export default function Home() {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists() && isMounted) {
           const data = userDoc.data();
+          if (data.hasDoneConsultation) {
+            setHasDoneConsultation(true);
+          }
           if (data.contactPreferencesSaved) {
             setPhone(data.contactPhone || "");
             setContactEmail(data.contactEmail || user.email || "");
@@ -263,9 +267,11 @@ export default function Home() {
               <>
                 <div className="mb-8">
                   <h2 className="font-headline text-3xl text-primary mb-4">Acceso a recursos y cuestionario espejo</h2>
-                  <p className="text-on-surface-variant text-lg font-light mb-4 leading-relaxed">
-                    Si deseas recibir enlaces directos a recursos y al cuestionario espejo, puedes añadir también tu teléfono para que podamos enviártelos por WhatsApp.
-                  </p>
+                  {(!profileSaved || isEditingProfile) && (
+                    <p className="text-on-surface-variant text-lg font-light mb-4 leading-relaxed">
+                      Si deseas recibir enlaces directos a recursos y al cuestionario espejo, puedes añadir también tu teléfono para que podamos enviártelos por WhatsApp.
+                    </p>
+                  )}
                   <div className="bg-surface-variant/30 p-4 rounded-xl border border-outline-variant/20 mb-8">
                     <div className="flex gap-3 items-start">
                       <span className="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">info</span>
@@ -278,9 +284,11 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs text-on-surface-variant/60 mt-4 leading-relaxed mb-8">
-                    Tu teléfono solo se utilizará para el envío de enlaces y recursos solicitados por ti. Nunca se usará con fines publicitarios ni se cederá a terceros.
-                  </p>
+                  {(!profileSaved || isEditingProfile) && (
+                    <p className="text-xs text-on-surface-variant/60 mt-4 leading-relaxed mb-8">
+                      Tu teléfono solo se utilizará para el envío de enlaces y recursos solicitados por ti. Nunca se usará con fines publicitarios ni se cederá a terceros.
+                    </p>
+                  )}
                 </div>
 
                 {isLoadingProfile ? (
@@ -481,8 +489,19 @@ export default function Home() {
               <p className="font-body text-xl text-primary max-w-2xl leading-relaxed font-light mb-10">
                 Te guiamos a través de la niebla hacia un puerto seguro. Nuestra metodología combina estructura y sensibilidad para que recuperes el mando de tu vida.
               </p>
-              <button onClick={() => navigate('/session')} className="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden text-group">
-                <span className="relative z-10">Comenzar Sesión de Claridad</span>
+              <button 
+                onClick={() => {
+                  if (hasDoneConsultation) {
+                    navigate('/method-details');
+                  } else {
+                    navigate('/session');
+                  }
+                }} 
+                className="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden text-group"
+              >
+                <span className="relative z-10">
+                  {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Comenzar Consulta Gratuita"}
+                </span>
                 <div className="absolute inset-0 bg-white/10 translate-y-full hover:translate-y-0 transition-transform duration-300"></div>
               </button>
             </div>

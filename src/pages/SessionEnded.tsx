@@ -1,10 +1,47 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function SessionEnded() {
   const location = useLocation();
   const navigate = useNavigate();
   const messages = location.state?.messages || [];
+  const reportData = location.state?.reportData || null;
+  const [user, loading] = useAuthState(auth);
+  
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (loading) return;
+      
+      const isDeveloper = user?.email === "davidcaparrosgarcia@gmail.com";
+      if (isDeveloper) {
+        setIsAuthorized(true);
+        return;
+      }
+
+      if (!user) {
+        setIsAuthorized(false);
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data()?.hasDoneConsultation) {
+          setIsAuthorized(true);
+        } else {
+          setIsAuthorized(false);
+        }
+      } catch (err) {
+        setIsAuthorized(false);
+      }
+    };
+
+    checkAuth();
+  }, [user, loading]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
@@ -68,8 +105,38 @@ export default function SessionEnded() {
     }
   };
 
+  if (isAuthorized === null) {
+    return (
+      <div className="flex-1 w-full bg-transparent flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
+          <p className="font-label text-on-surface-variant">Verificando estado de la sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex-1 w-full bg-transparent p-8 flex items-center justify-center min-h-[50vh]">
+        <div className="max-w-md w-full bg-surface-container-low p-8 rounded-2xl border border-outline-variant/10 text-center space-y-6">
+          <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
+            <span className="material-symbols-outlined text-3xl">lock</span>
+          </div>
+          <h2 className="font-headline text-2xl text-primary">Acceso Restringido</h2>
+          <p className="text-on-surface-variant leading-relaxed">
+            Esta página solo está disponible tras completar con éxito y validar la Consulta Gratuita. Por favor, finalice una sesión validada por la IA para continuar.
+          </p>
+          <button onClick={() => navigate("/")} className="w-full bg-primary text-on-primary py-3 rounded-xl font-label flex items-center justify-center gap-2 hover:bg-secondary transition-all">
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 w-full bg-surface">
+    <div className="flex-1 w-full bg-transparent">
       <div className="pt-8 pb-32 px-4 md:px-6 max-w-4xl mx-auto w-full">
         {/* Hero Section */}
         <section className="relative min-h-[400px] flex flex-col justify-end mb-12 overflow-hidden rounded-2xl shadow-xl">
@@ -153,7 +220,7 @@ export default function SessionEnded() {
                 </div>
                 <h4 className="font-headline text-xl text-primary mb-2">Ejercicios de Claridad</h4>
                 <p className="text-on-surface-variant text-sm leading-relaxed mb-4">Prácticas para integrar tus descubrimientos.</p>
-                <button onClick={() => navigate("/report", { state: { messages } })} className="text-primary text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                <button onClick={() => navigate("/report", { state: { messages, reportData } })} className="text-primary text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
                   Ver mi Informe <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -10,11 +10,30 @@ export default function Resources() {
   
   // Modals state
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-  const [isBreathingModalOpen, setIsBreathingModalOpen] = useState(false);
   const [selectedBreathingInfographic, setSelectedBreathingInfographic] = useState<{ id: string, src: string } | null>(null);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
+
+  useEffect(() => {
+    // Scroll to color effect
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('grayscale', 'contrast-110');
+          entry.target.classList.add('grayscale-0', 'contrast-100');
+        } else {
+          entry.target.classList.add('grayscale', 'contrast-110');
+          entry.target.classList.remove('grayscale-0', 'contrast-100');
+        }
+      });
+    }, { threshold: 0.5 });
+
+    const imgs = document.querySelectorAll('.dynamic-color-img');
+    imgs.forEach(img => observer.observe(img));
+
+    return () => observer.disconnect();
+  }, []);
 
   // Audio Player State
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
@@ -96,7 +115,7 @@ export default function Resources() {
   };
 
   return (
-    <div className="flex-1 bg-background text-on-surface w-full font-body relative">
+    <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
       <main className="pt-12 md:pt-24 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
         <header className="mb-24 mt-12">
@@ -160,18 +179,16 @@ export default function Resources() {
           </div>
 
           {/* Técnicas de Respiración */}
-          <div className="md:col-span-7 group cursor-pointer" onClick={() => setIsBreathingModalOpen(true)}>
+          <div className="md:col-span-7 group">
             <div className="relative overflow-hidden aspect-[16/10] rounded-2xl border border-outline-variant/10">
-              <img alt="Respiración" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 grayscale contrast-110 group-hover:grayscale-0 group-hover:contrast-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzB_r9BPB3VzAcTeEtEwoXr_B9OS8zvGnquAlXew-sX64ld0VA5uhRFO9LtovA2kPqfNPKkVlKymbuelvymKZMzCadimgnRBY3ZzMjOdgc8KvxD7PULDXIAwq7THeZnNdvylYTfspESWTgyXi8aT9UwsUj2fzhZwOmarvkrq4Lh_EsS88hpp5FqvD03evv4-FvMWV53cskZdoT3G_0B0hg0fxpBcffTS3eTo-W2GMq9QDZwf7h3vjkPKAzZs_-RJ-JBmnHMeqRgpnw" />
+              <img alt="Respiración" className="dynamic-color-img w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo-respira.jpg" />
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
-              <div className="absolute inset-0 flex items-center justify-center p-12 text-center pointer-events-none">
-                <div className="max-w-md">
-                  <h3 className="font-headline text-4xl text-white mb-6">Técnicas de Respiración</h3>
-                  <p className="text-white/90 font-light text-lg mb-6">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
-                  <ul className="text-white/90 text-sm font-light text-left mx-auto w-fit space-y-3 p-6 bg-black/20 backdrop-blur-sm rounded-xl">
-                    <li><span className="font-bold opacity-80 uppercase tracking-wider text-xs">Síntoma 1:</span> Presión en el pecho</li>
-                    <li><span className="font-bold opacity-80 uppercase tracking-wider text-xs">Síntoma 2:</span> Falta de aire</li>
-                  </ul>
+              <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-12 text-center pointer-events-none">
+                <div className="w-full">
+                  <p className="text-white/90 font-light text-xl">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
+                </div>
+                <div className="w-full">
+                  <h3 className="font-headline text-4xl text-white">Técnicas de Respiración</h3>
                 </div>
               </div>
             </div>
@@ -200,13 +217,14 @@ export default function Resources() {
                   <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
                   <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para pacientes en sus zonas personalizadas</span></li>
                 </ul>
-                <button className="w-fit bg-primary text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary transition-all">
+                <button className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all">
                     Explorar Metodología
+                    <span className="material-symbols-outlined text-sm">open_in_new</span>
                 </button>
               </div>
               <div className="relative min-h-[300px] md:min-h-[400px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/50 to-transparent z-10 md:block hidden"></div>
-                <img alt="Gestión Emocional" className="absolute inset-0 w-full h-full object-cover grayscale contrast-105 opacity-90 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXX3cRIQgmdqYRav-zY1l4cT7CLNKosITf4_J5e8H1hp5-QLQynLAokY6O1EVpVCY-kLMajOKJiydMG_G5Kab40Rex_IEqa8Cr2u-5HZRS17_qVcCmupFpOZU1pUmRaylWRI4WjQCUWCFifP4snDtgDcH_tcqFlFi-QUE2jV9-Y60qDUkQTZ3TCvDjuoVahnbacOcjsKAuUzUokW8gAXAvFk2TBpvNKlbrCPmP7z7YDlX1MqJZ4DQ19qZqAUJ9toyweejeN5FlWhOJ" />
+                <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100" src="/images/fondo-gestion-emocional.jpg" />
               </div>
             </div>
           </div>
@@ -217,7 +235,7 @@ export default function Resources() {
           <div className="flex flex-col md:flex-row gap-16 items-center">
             <div className="w-full md:w-1/2">
               <div className="relative overflow-hidden aspect-[4/3] rounded-2xl group border border-outline-variant/10">
-                <img alt="Recursos Personalizados" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale contrast-110 group-hover:grayscale-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6d-C6_-JiCS2aQaSoooPz8vZFYZnxFWFRcOqprgvpAU6u7I7qJy6K4PsQuSmUFSX_UuG7Xo7sqe97NXsqn9Gj349DFIZQGPj-zhpuywLS42ziamWmL_V4-ymDoAve4kktqnlo8oZW7gNnQFU07bTSPdCz0ooBjxZ0xFOXNFbmTEAyB-09mNvlw3DIH5IJgXi9vfeggzX5CAVii6VUltlkBsf5og2Q1o1kbE0REdU-RO2QdZ0LK56u5GxTtvczqKrH9SA8gOI6j-oV" />
+                <img alt="Recursos Personalizados" className="dynamic-color-img w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-105 grayscale contrast-110 transition-all group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/logo-recursos.jpg" />
                 <div className="absolute inset-0 bg-primary/20 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
               </div>
             </div>
@@ -236,10 +254,10 @@ export default function Resources() {
                     setIsCodeModalOpen(true);
                   }
                 }} 
-                className="flex items-center justify-center gap-4 w-fit bg-primary text-white px-8 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary transition-all"
+                className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-8 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all"
               >
                 {hasAccess ? "Ver Colección" : "Introducir Clave"}
-                <span className="material-symbols-outlined text-sm">{hasAccess ? "arrow_forward" : "lock"}</span>
+                <span className="material-symbols-outlined text-sm dark:text-white">{hasAccess ? "arrow_forward" : "lock"}</span>
               </button>
             </div>
           </div>
@@ -347,55 +365,6 @@ export default function Resources() {
               >
                 Desbloquear
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isBreathingModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative border border-outline-variant/10">
-            <button 
-              onClick={() => setIsBreathingModalOpen(false)}
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors z-10"
-            >
-              <span className="material-symbols-outlined text-on-surface-variant">close</span>
-            </button>
-            <div className="p-8 pb-6 border-b border-outline-variant/10 bg-surface">
-              <h3 className="font-headline text-3xl text-primary mb-2">Ejercicios de Respiración</h3>
-              <p className="text-on-surface-variant text-sm">Selecciona una técnica para ver las instrucciones guiadas paso a paso.</p>
-            </div>
-            <div className="p-6 space-y-4">
-              {[
-                { id: '1', title: 'Respiración Cuadrada', type: 'ENFOQUE' },
-                { id: '2', title: 'Respiración 4-7-8', type: 'CALMA' },
-                { id: '3', title: 'Respiración Abdominal', type: 'PROFUNDA' },
-              ].map((technique) => (
-                <div 
-                  key={technique.id} 
-                  onClick={() => {
-                    setIsBreathingModalOpen(false);
-                    const imageMap: Record<string, string> = {
-                      '1': '/images/info-resp-cuadrada.jpg',
-                      '2': '/images/info-resp-478.jpg',
-                      '3': '/images/info-resp-abdominal.jpg'
-                    };
-                    setSelectedBreathingInfographic({ id: technique.id, src: imageMap[technique.id] });
-                  }}
-                  className="cursor-pointer bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 hover:bg-surface-container transition-colors group"
-                >
-                  <div className="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all shadow-sm">
-                    <span className="material-symbols-outlined text-2xl">air</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-headline text-lg text-primary truncate border-b border-outline-variant/10 pb-1 mb-1">{technique.title}</p>
-                    <div className="flex items-center gap-3 text-xs text-on-surface-variant">
-                      <span className="font-semibold uppercase tracking-wider">{technique.type}</span>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
-                </div>
-              ))}
             </div>
           </div>
         </div>

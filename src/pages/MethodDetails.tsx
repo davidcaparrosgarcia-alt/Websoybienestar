@@ -1,6 +1,50 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-export default function Method() {
+export default function MethodDetails() {
+  const navigate = useNavigate();
+  const [progressStep, setProgressStep] = useState(1);
+  const [user] = useAuthState(auth);
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            // Step 1 is default (Consultation)
+            // If they did consultation, Step is 2 (Cuestionario)
+            // Assume we add 'hasDoneCuestionario' in the future
+            if (data.hasDoneCuestionario) {
+              setProgressStep(3);
+            } else if (data.hasDoneConsultation) {
+              setProgressStep(2);
+            } else {
+              setProgressStep(1);
+            }
+          }
+        } catch (e) {
+           console.error("Error fetching user progress", e);
+        }
+      } else {
+         setProgressStep(1);
+      }
+    };
+    fetchProgress();
+  }, [user]);
+
+  const handleConsultaClick = () => {
+    navigate('/session');
+  };
+
+  const handleCuestionarioClick = () => {
+    // navigate('/cuestionario');
+  };
+
   const handleShare = async () => {
     const shareData = {
       title: 'ReprogrÁmate - Nuestro Método',
@@ -26,15 +70,14 @@ export default function Method() {
       {/* Hero: Professional Presentation with Large Logo Integration */}
       <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
         <div className="absolute inset-0 z-0">
-          <img alt="Professional therapy environment" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyQXx5lJRIFmDG5S9_7U3EYycNLlzqz0C1QdV2Tj6Ngbwvkc4Re3Pek8xzpi9hAwOCNj2t-SMAsFP8VnSvK0T2559YeF-zvcjSJ6Ygkojli2uX4wxxBr_Rv8E8NTYguRrbsURCiRbS-wJHDxlrCFe5LqLKBILRCaRUk-OU-gD0wTCr4ZBrzkJi37f8u6n23C7WcWeyUR1nUqyq3gxsGYByoJRMhiAtGAENdQ00usnlu2UBAJyrq2MwS5K1C5wKE4h9GsYs8vzVTKS9"/>
+          <picture>
+            <source media="(min-width: 768px)" srcSet="/images/viaje-transformacion.jpg" />
+            <img alt="Viaje Transformación" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="/images/viaje-transformacion.jpg"/>
+          </picture>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-8 text-center">
-          <div className="space-y-4">
-            <h1 className="font-headline text-white text-5xl md:text-7xl font-light tracking-tight">Nuestro Método</h1>
-            <p className="text-white/90 text-xl font-light italic font-headline">Un viaje desde el dato hacia la calma.</p>
-          </div>
           <div className="mt-12 w-20 h-20 rounded-full border border-white/40 backdrop-blur-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white/5">
             <span className="material-symbols-outlined text-white text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
           </div>
@@ -44,9 +87,14 @@ export default function Method() {
       {/* Intro Content */}
       <section className="px-8 md:px-24 py-24 flex flex-col lg:flex-row items-center gap-20 max-w-screen-2xl mx-auto">
         <div className="lg:w-1/2 flex justify-center lg:justify-start">
-          <div className="relative group">
+          <div className="relative group w-96 h-96 flex items-center justify-center overflow-hidden p-8">
             <div className="absolute bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all -inset-8"></div>
-            <img alt="SoyBienestar.es Logo Detail" className="relative h-96 w-auto object-contain" src="/images/logo-soybienestar.svg"/>
+            <img 
+              alt="Logo Integrado" 
+              className="relative w-full h-full object-cover scale-110" 
+              style={{ maskImage: 'radial-gradient(circle at center, black 40%, rgba(0,0,0,0) 65%)', WebkitMaskImage: 'radial-gradient(circle at center, black 40%, rgba(0,0,0,0) 65%)' }}
+              src="/images/logo-integrado.jpg"
+            />
           </div>
         </div>
         <div className="lg:w-1/2 space-y-8">
@@ -86,29 +134,60 @@ export default function Method() {
             </div>
           </div>
         </div>
-        <div className="relative py-12 flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-          <div className="relative bg-surface-container-low px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
+        <div className="relative py-12 flex flex-col items-center justify-center space-y-12">
+          <div className="relative w-full flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
+            <div className="relative bg-surface-container-low px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
+          </div>
+          
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+            <button
+              onClick={progressStep === 1 ? handleConsultaClick : undefined}
+              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                progressStep > 1 
+                  ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
+                  : progressStep === 1 
+                    ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer' 
+                    : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
+              }`}
+            >
+              Consulta Gratuita
+            </button>
+            <button
+              disabled={progressStep !== 2}
+              onClick={progressStep === 2 ? handleCuestionarioClick : undefined}
+              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                progressStep > 2 
+                  ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
+                  : progressStep === 2
+                    ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer'
+                    : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
+              }`}
+            >
+              Cuestionario Espejo
+            </button>
+            <button
+              disabled={progressStep !== 3}
+              onClick={progressStep === 3 ? () => navigate('/report') : undefined}
+              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                progressStep === 3
+                  ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer'
+                  : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
+              }`}
+            >
+              Dossier Personalizado
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Symbolic Imagery: El Faro */}
-      <section className="px-8 md:px-24 mb-32 max-w-screen-2xl mx-auto w-full">
-        <div className="relative w-full min-h-[500px] rounded-[3rem] overflow-hidden flex items-center justify-center text-center p-12 shadow-inner">
-          <img alt="Serene lighthouse in the mist" className="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zzoyzjJf6oT05aMgHXBc3ezEwfzBdpbxANUbwmPP3QbrrzRUUHURAhiJKyIpjk0cgpZB2HprJBAKwCSP9xL7BW5OpBVIydAhKjS83LcFmLTjyGebIz6pm-XqsWRdf-ynaK_wVPPuvGrdLYLIIvmtgH6zPvNw9J9b2rw681zHOeIDTii6mnrQYWzD8cghDiyLHHtlw2e3pc8hCyOc9TG2wpGCBoeq7IKNqN_noIKieNdZSZyac0HqVizdtPrT7Z1JDR_bySa_Udwi"/>
-          <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px]"></div>
-          <div className="relative z-10 max-w-2xl space-y-8">
-            <span className="material-symbols-outlined text-7xl text-primary" style={{ fontVariationSettings: "'wght' 200" }}>temple_buddhist</span>
-            <h3 className="font-headline text-5xl italic text-primary">El Faro en la Niebla</h3>
-            <p className="text-xl font-light text-on-surface-variant leading-relaxed">
-              No pretendemos curar con fórmulas, sino iluminar el camino para que usted mismo encuentre su centro.
-            </p>
-            <div className="cenefa-decorative pt-4">
-              <div className="cenefa-line"></div>
-              <span className="material-symbols-outlined text-primary text-xl">flare</span>
-              <div className="cenefa-line"></div>
-            </div>
-          </div>
+      {/* Infografía: Puente Digital */}
+      <section className="mx-8 xl:mx-auto mb-32 max-w-screen-2xl">
+        <div className="w-full rounded-[3rem] overflow-hidden shadow-sm border border-outline-variant/10 bg-surface-container-low">
+          <picture>
+            <source media="(min-width: 768px)" srcSet="/images/puente-digital.jpg" />
+            <img alt="Infografía Puente Digital" className="w-full h-auto block" src="/images/puente-digital-vertical.jpg" />
+          </picture>
         </div>
       </section>
 

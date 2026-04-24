@@ -31,88 +31,79 @@ export default function Report() {
     }
   };
 
+  const reportData = location.state?.reportData || null;
+
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [userData, setUserData] = useState<any>(null);
+
   useEffect(() => {
     let isMounted = true;
-    const generateReport = async () => {
-      // Small delay or check to ensure auth state is resolved or we don't care initially if they are anonymous.
-      // We will save if user is present.
-      if (!messages || messages.length <= 1) {
-        if (isMounted) setReport("No hay suficiente información en la sesión para generar un informe detallado.");
-        if (isMounted) setIsLoading(false);
-        return;
+    const loadReportData = async () => {
+      // First check authorization
+      const isDeveloper = user?.email === "davidcaparrosgarcia@gmail.com";
+      let authState = false;
+
+      if (isDeveloper) {
+        authState = true;
+      } else if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+             if (isMounted) setUserData(userDoc.data());
+             if (userDoc.data()?.hasDoneConsultation) {
+               authState = true;
+             }
+          }
+        } catch (e) {
+          console.error("Auth check failed", e);
+        }
       }
 
+      if (!isMounted) return;
+      setIsAuthorized(authState);
+
+      if (!authState && !isDeveloper && !reportData) {
+         setReport("No hay informe disponible o no tienes acceso.");
+         setIsLoading(false);
+         return;
+      }
+
+      // Load Report
       try {
-        let accumulatedSummary = "";
-        let profileReference: any = null;
-        let userReference: any = null;
-        
-        // Obtenemos historial si el usuario está logueado
-        if (user) {
-          try {
-            const { userRef, profileRef, profileData } = await getOrMigrateUserProfile(user.uid);
-            userReference = userRef;
-            profileReference = profileRef;
-            accumulatedSummary = profileData.globalUserSummary || "";
-          } catch (e) {
-            console.error("Firebase read error", e);
-          }
-        }
-
-        const parsedData = await api.report(messages, accumulatedSummary);
-        if (!isMounted) return;
-
-        if (parsedData) {
-          if (parsedData.validConclusion) {
-            setReport(parsedData.markdownReport);
-            
-            // Guardar en Firebase si hay usuario
-            if (user && profileReference && userReference) {
-              const conversationText = messages
-                .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content}`)
-                .join("\n\n");
-              
-              // Actualizamos el Identity minimal record
-              const updateDataUser = {
-                hasDoneConsultation: true,
-                lastUpdated: new Date().toISOString()
-              };
-              
-              // Actualizamos la Memory separada (NO crudos, solo conclusiones útiles)
-              const updateDataProfile = {
-                globalUserSummary: parsedData.newAccumulatedSummary,
-                latestClinicalConclusion: parsedData.markdownReport,
-              };
-
-              await updateDoc(userReference, updateDataUser).catch(async () => {
-                 await setDoc(userReference, updateDataUser, { merge: true });
-              });
-              
-              await updateDoc(profileReference, updateDataProfile).catch(async () => {
-                 await setDoc(profileReference, updateDataProfile, { merge: true });
-              });
-            }
+        if (reportData) {
+          // Passed from SessionEnded -> Session
+          setReport(reportData);
+        } else if (user) {
+          // Try loading from Firebase
+          const { profileData } = await getOrMigrateUserProfile(user.uid);
+          if (profileData.latestClinicalConclusion) {
+            setReport(profileData.latestClinicalConclusion);
           } else {
-            setReport("La sesión no proporcionó suficiente información estructurada para alcanzar una conclusión clínica válida y guardarla en el historial. Por favor, realice una sesión más profunda.");
+             if (isDeveloper) {
+               setReport("No hay informe guardado, pero eres desarrollador. Intenta hacer una sesión primero.");
+             } else {
+               setReport("No encontramos un informe guardado para tu cuenta.");
+             }
           }
-
         } else {
-          setError("No se pudo generar el informe.");
+           setReport("No hay informe dispoible.");
         }
       } catch (err) {
-        console.error("Error generating report:", err);
-        if (isMounted) setError("Ocurrió un error al analizar la clínica o el formato de respuesta de la IA.");
+        console.error("Error loading report:", err);
+        if (isMounted) setError("Ocurrió un error al cargar su informe clínico.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
 
-    generateReport();
+    if (user !== undefined) { 
+        loadReportData();
+    }
     
     return () => {
       isMounted = false;
     }
-  }, [messages, user]);
+  }, [user, reportData]);
 
   const handleShare = async () => {
     const shareData = {
@@ -134,21 +125,46 @@ export default function Report() {
     }
   };
 
+  if (isAuthorized === null || isLoading) {
+    return (
+      <div className="flex-1 w-full bg-transparent flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
+          <p className="font-label text-on-surface-variant">Cargando su informe...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex-1 w-full bg-transparent p-8 flex items-center justify-center min-h-[50vh]">
+        <div className="max-w-md w-full bg-surface-container-low p-8 rounded-2xl border border-outline-variant/10 text-center space-y-6">
+          <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
+            <span className="material-symbols-outlined text-3xl">lock</span>
+          </div>
+          <h2 className="font-headline text-2xl text-primary">Acceso Restringido</h2>
+          <p className="text-on-surface-variant leading-relaxed">
+            Esta página solo está disponible tras completar con éxito y validar la Consulta Gratuita.
+          </p>
+          <button onClick={() => navigate("/")} className="w-full bg-primary text-on-primary py-3 rounded-xl font-label flex items-center justify-center gap-2 hover:bg-secondary transition-all">
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 bg-surface w-full">
+    <div className="flex-1 bg-transparent w-full">
       {/* POST-ACCESS CONTENT: BENTO GRID SUMMARY */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-12 py-16">
         <div className="mb-16 border-l-4 border-secondary pl-8">
           <h2 className="text-5xl font-headline font-bold text-primary mb-4">Su Informe de Bienestar</h2>
-          <p className="text-xl text-on-surface-variant max-w-2xl">Resultados preliminares basados en su sesión. Una brújula para navegar su momento actual.</p>
+          <p className="text-xl text-on-surface-variant max-w-2xl">Resultados basados en su sesión. Una brújula para navegar su momento actual.</p>
         </div>
         
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
-            <p className="font-label text-on-surface-variant">Analizando su sesión y generando el informe...</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="bg-error-container text-on-error-container p-8 rounded-xl border border-error/20">
             <p className="font-headline text-xl mb-2">No se pudo generar el informe</p>
             <p className="font-body">{error}</p>
@@ -200,33 +216,53 @@ export default function Report() {
             </div>
 
             {/* Next Steps Checklist */}
-            <div className="md:col-span-6 bg-white p-8 rounded-xl shadow-sm border border-outline-variant/10">
-              <h4 className="text-2xl font-headline font-bold text-primary mb-6">Próximos Pasos</h4>
+            <div className="md:col-span-6 bg-white p-8 rounded-[2rem] shadow-sm border border-outline-variant/10 flex flex-col justify-center">
+              <h4 className="text-3xl font-headline font-bold text-primary mb-8">Próximos Pasos</h4>
               <div className="space-y-6">
+                
+                {/* 1. Consulta Gratuita */}
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 border-2 border-secondary rounded-md flex items-center justify-center">
-                    <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
+                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
                   </div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Sesión de Validación</p>
-                    <p className="text-sm text-on-surface-variant">Reserve su encuentro individual con un especialista para validar estos hallazgos.</p>
-                    <button className="mt-2 text-secondary text-sm font-label font-bold underline">Agendar ahora</button>
+                    <p className="font-headline font-bold text-primary">Consulta Gratuita</p>
+                    <p className="text-sm text-on-surface-variant font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
                   </div>
                 </div>
+
+                {/* 2. Cuestionario Espejo */}
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant rounded-md"></div>
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneCuestionario ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
+                    {userData?.hasDoneCuestionario && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
+                  </div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Cuestionario "El Espejo"</p>
-                    <p className="text-sm text-on-surface-variant">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                    <p className="font-headline font-bold text-primary">Cuestionario Espejo</p>
+                    <p className="text-sm text-on-surface-variant font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
                   </div>
                 </div>
+
+                {/* 3. Descarga de Guía */}
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant rounded-md"></div>
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDownloadedGuide ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
+                    {userData?.hasDownloadedGuide && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
+                  </div>
                   <div>
                     <p className="font-headline font-bold text-primary">Descarga de Guía</p>
-                    <p className="text-sm text-on-surface-variant">Obtenga el PDF con ejercicios prácticos para su rutina diaria.</p>
+                    <p className="text-sm text-on-surface-variant font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
                   </div>
                 </div>
+
+                {/* 4. Sesión de Validación */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant rounded-md flex items-center justify-center"></div>
+                  <div>
+                    <p className="font-headline font-bold text-primary">Sesión de Validación</p>
+                    <p className="text-sm text-on-surface-variant font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
+                    <button className="text-secondary text-sm font-label font-bold underline">Agendar ahora</button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
