@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, signInWithGoogle } from "../firebase";
+import { auth, signInWithGoogle, db } from "../firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
 import RippleWindow from "../components/RippleWindow";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
@@ -24,12 +25,45 @@ export default function Home() {
   const [profileSaved, setProfileSaved] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync email when user loads
+  // Load user data from Firestore
   useEffect(() => {
-    if (user?.email && !contactEmail) {
-      setContactEmail(user.email);
+    let isMounted = true;
+    async function loadUserData() {
+      if (!user) {
+        if (isMounted) setIsLoadingProfile(false);
+        return;
+      }
+      if (isMounted) setIsLoadingProfile(true);
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && isMounted) {
+          const data = userDoc.data();
+          if (data.contactPreferencesSaved) {
+            setPhone(data.contactPhone || "");
+            setContactEmail(data.contactEmail || user.email || "");
+            setWantsAlerts(data.contactAlertsEnabled || false);
+            setChannels(data.contactAlertChannels || { whatsapp: false, sms: false, telegram: false });
+            setProfileSaved(true);
+            setIsEditingProfile(false);
+          } else {
+            setContactEmail(user.email || "");
+            setProfileSaved(false);
+          }
+        } else if (isMounted) {
+          setContactEmail(user.email || "");
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        if (isMounted) setContactEmail(user.email || "");
+      } finally {
+        if (isMounted) setIsLoadingProfile(false);
+      }
     }
+    loadUserData();
+    return () => { isMounted = false; };
   }, [user]);
 
   const handleStartSession = (e: React.FormEvent) => {
@@ -37,16 +71,53 @@ export default function Home() {
     navigate("/session");
   };
 
-  const handleContinueLogged = (e: React.FormEvent) => {
+  const handleContinueLogged = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError("");
+
+    let cleanedPhone = phone.replace(/\s+/g, '').replace(/-/g, '');
+    
     if (wantsAlerts && !channels.whatsapp && !channels.sms && !channels.telegram) {
       setValidationError("Selecciona al menos un canal si deseas recibir alertas.");
       return;
     }
-    setValidationError("");
-    // Save to local view state 
-    setProfileSaved(true);
-    setIsEditingProfile(false);
+
+    const needsPhone = (wantsAlerts && (channels.whatsapp || channels.sms)) || cleanedPhone.length > 0;
+    
+    if (needsPhone) {
+      if (!/^\d{9}$/.test(cleanedPhone)) {
+        setValidationError("Introduce un número de teléfono válido de 9 dígitos.");
+        return;
+      }
+    }
+
+    if (!user) return;
+
+    setIsSaving(true);
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        contactPhone: cleanedPhone,
+        contactPhoneCountryCode: "+34",
+        contactAlertsEnabled: wantsAlerts,
+        contactAlertChannels: {
+          whatsapp: channels.whatsapp,
+          sms: channels.sms,
+          telegram: channels.telegram
+        },
+        contactEmail: contactEmail,
+        contactPreferencesSaved: true,
+        contactPreferencesUpdatedAt: serverTimestamp()
+      }, { merge: true });
+
+      setPhone(cleanedPhone);
+      setProfileSaved(true);
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      setValidationError("No se pudieron guardar tus datos. Inténtalo de nuevo.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -212,7 +283,11 @@ export default function Home() {
                   </p>
                 </div>
 
-                {profileSaved && !isEditingProfile ? (
+                {isLoadingProfile ? (
+                  <div className="flex justify-center py-12 opacity-60">
+                    <span className="material-symbols-outlined animate-spin text-5xl text-primary">progress_activity</span>
+                  </div>
+                ) : profileSaved && !isEditingProfile ? (
                   <div className="space-y-8 animate-in fade-in duration-500">
                     <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl flex items-start gap-3">
                       <span className="material-symbols-outlined text-primary">check_circle</span>
@@ -339,24 +414,22 @@ export default function Home() {
                                 </div>
                                 <span className="text-on-surface-variant text-sm">Telegram</span>
                               </label>
-
-                              {validationError && (
-                                <motion.div 
-                                  initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} 
-                                  className="flex items-center gap-2 text-error text-sm mt-3 bg-error/10 p-2 rounded"
-                                >
-                                  <span className="material-symbols-outlined text-base">error</span>
-                                  {validationError}
-                                </motion.div>
-                              )}
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
 
+                    {validationError && (
+                      <div className="flex items-center gap-2 text-error text-sm mt-4 bg-error/10 p-3 rounded font-medium">
+                        <span className="material-symbols-outlined text-base">error</span>
+                        {validationError}
+                      </div>
+                    )}
+
                     <div className="pt-6">
-                      <button type="submit" className="w-full bg-primary text-on-primary py-5 rounded-full font-headline text-lg tracking-wide hover:bg-primary-container transition-all duration-300 active:scale-[0.98]">
+                      <button type="submit" disabled={isSaving} className="w-full bg-primary text-on-primary py-5 rounded-full font-headline text-lg tracking-wide hover:bg-primary-container transition-all duration-300 active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2">
+                        {isSaving ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : null}
                         {isEditingProfile ? "Guardar Cambios" : "Validar y Continuar Sesión"}
                       </button>
                       

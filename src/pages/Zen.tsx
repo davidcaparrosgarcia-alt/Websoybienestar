@@ -479,9 +479,9 @@ export default function Zen() {
                   <div key={meditation.id} className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 hover:bg-surface-container transition-colors">
                     <button 
                       onClick={() => handlePlay(meditation.src)}
-                      className="w-14 h-14 shrink-0 rounded-full bg-primary flex items-center justify-center text-white hover:bg-primary/90 transition-all shadow-sm"
+                      className="w-14 h-14 shrink-0 rounded-full bg-primary flex items-center justify-center text-on-primary hover:opacity-90 transition-all shadow-sm"
                     >
-                      <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      <span className="material-symbols-outlined text-2xl text-white dark:!text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>
                         {isPlaying ? 'pause' : 'play_arrow'}
                       </span>
                     </button>

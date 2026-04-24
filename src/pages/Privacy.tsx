@@ -53,20 +53,20 @@ export default function Privacy() {
             </div>
 
             {/* IA Bridge & Consent Card */}
-            <div className="md:col-span-4 bg-primary-container p-10 rounded-xl text-on-primary flex flex-col justify-between">
+            <div className="md:col-span-4 !bg-[#162839] p-10 rounded-xl !text-white flex flex-col justify-between">
               <div>
-                <span className="material-symbols-outlined text-4xl mb-6">neurology</span>
-                <h3 className="font-headline text-2xl mb-4">El Puente de la IA</h3>
-                <p className="text-on-primary/80 font-light leading-relaxed mb-6">
+                <span className="material-symbols-outlined text-4xl mb-6 !text-[#cca969]">neurology</span>
+                <h3 className="font-headline text-2xl mb-4 !text-white italic">El Puente de la IA</h3>
+                <p className="!text-white/80 font-light leading-relaxed mb-6">
                   Utilizamos inteligencia artificial como un puente hacia la claridad emocional, nunca como un sustituto del alma humana. Sus datos son anonimizados y procesados bajo cifrado de grado militar.
                 </p>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 bg-white/10 p-4 rounded-lg">
-                  <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <span className="text-sm">Consentimiento de Procesamiento</span>
+                <div className="flex items-center gap-3 !bg-white/10 p-4 rounded-lg">
+                  <span className="material-symbols-outlined text-xl !text-[#cca969]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <span className="text-sm !text-white">Consentimiento de Procesamiento</span>
                 </div>
-                <button className="w-full bg-surface text-primary py-4 rounded-xl font-semibold hover:bg-surface-variant transition-colors">
+                <button className="w-full !bg-[#cca969] !text-[#162839] py-4 rounded-xl font-semibold hover:opacity-90 transition-opacity">
                   Validar Consentimiento
                 </button>
               </div>

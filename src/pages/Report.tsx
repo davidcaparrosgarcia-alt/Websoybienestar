@@ -170,7 +170,7 @@ export default function Report() {
                   <h4 className="text-2xl font-headline font-bold text-primary mb-2">Meditación: "La Niebla Mental"</h4>
                   <p className="text-on-surface-variant font-label">Ejercicio guiado • 5 minutos</p>
                 </div>
-                <button onClick={togglePlay} className="w-12 h-12 rounded-full bg-primary hover:bg-primary-container hover:scale-105 transition-all flex items-center justify-center text-white cursor-pointer shadow-md">
+                <button onClick={togglePlay} className="w-12 h-12 rounded-full bg-primary hover:bg-primary-container hover:scale-105 transition-all flex items-center justify-center text-white dark:!text-[#162839] cursor-pointer shadow-md">
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{isPlaying ? 'pause' : 'play_arrow'}</span>
                 </button>
               </div>
@@ -235,11 +235,11 @@ export default function Report() {
 
       {/* SHARE THE LIGHT FOOTER CTA */}
       <section className="max-w-screen-xl mx-auto px-6 mb-24">
-        <div className="bg-secondary-fixed p-12 md:p-20 rounded-3xl text-center relative overflow-hidden">
+        <div className="!bg-[#f1f5f9] dark:!bg-[#f1f5f9] p-12 md:p-20 rounded-3xl text-center relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-headline font-bold text-primary mb-6">¿Le ha servido este proceso?</h2>
-            <p className="text-lg text-on-secondary-container max-w-2xl mx-auto mb-10">Creemos que nadie debería navegar la oscuridad a solas. Comparta la posibilidad de encontrar un faro con alguien que lo necesite.</p>
-            <button onClick={handleShare} className="bg-primary text-white px-10 py-4 rounded-full font-label font-semibold flex items-center gap-3 mx-auto hover:scale-105 transition-transform">
+            <h2 className="text-3xl md:text-5xl font-headline font-bold !text-[#162839] mb-6">¿Le ha servido este proceso?</h2>
+            <p className="text-lg !text-[#334155] max-w-2xl mx-auto mb-10">Creemos que nadie debería navegar la oscuridad a solas. Comparta la posibilidad de encontrar un faro con alguien que lo necesite.</p>
+            <button onClick={handleShare} className="!bg-[#162839] !text-white px-10 py-4 rounded-full font-label font-semibold flex items-center gap-3 mx-auto hover:scale-105 transition-transform">
               <span className="material-symbols-outlined">share</span>
               Compartir la Luz
             </button>
