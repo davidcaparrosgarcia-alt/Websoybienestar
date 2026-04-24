@@ -7,9 +7,9 @@ export default function Method() {
   const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
 
   return (
-    <div className="flex-1 bg-surface w-full">
+    <div className="flex-1 w-full">
       {/* Hero Section: The Bridge Metaphor */}
-      <section className="relative min-h-[60vh] flex items-center pt-8 pb-16 px-12 overflow-hidden bg-surface">
+      <section className="relative min-h-[60vh] flex items-center pt-8 pb-16 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-6 z-10">
             <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block">Nuestra Esencia</span>
@@ -44,7 +44,7 @@ export default function Method() {
       </section>
 
       {/* Treatments Bento Grid */}
-      <section className="bg-surface-container-low py-24 px-12">
+      <section className="py-24 px-12">
         <div className="max-w-screen-2xl mx-auto">
           <div className="mb-16 flex flex-col md:flex-row justify-between items-end gap-6">
             <div className="max-w-2xl">
@@ -55,40 +55,52 @@ export default function Method() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
-            <div className="group bg-surface p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:bg-secondary-container transition-colors duration-500">
-              <div>
-                <span className="material-symbols-outlined text-secondary text-4xl mb-6">waves</span>
-                <h3 className="text-2xl font-headline text-primary mb-4">Gestión de Ansiedad</h3>
-                <p className="text-on-surface-variant leading-relaxed">Técnicas de anclaje para calmar las tormentas internas y recuperar el control del presente.</p>
+            <div className="group bg-surface dark:bg-[#d1e7e4] p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+              <div className="hidden dark:block pointer-events-none absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/leather.png')] opacity-30 mix-blend-overlay"></div>
+              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                <div>
+                  <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">waves</span>
+                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">Gestión de Ansiedad</h3>
+                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Técnicas de anclaje para calmar las tormentas internas y recuperar el control del presente.</p>
+                </div>
+                <div className="w-fit">
+                  <button onClick={() => navigate('/anxiety')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">
+                    LEER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
+                  </button>
+                </div>
               </div>
-              <button onClick={() => navigate('/anxiety')} className="font-label text-sm font-semibold flex items-center gap-2 group-hover:text-primary transition-colors text-left">
-                LEER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
-              </button>
             </div>
             {/* Card 2 (Highlight/Dark) */}
-            <div className="group bg-primary-container p-10 rounded-2xl flex flex-col justify-between h-[400px] relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-20">
-                <span className="material-symbols-outlined text-8xl text-secondary-fixed">light_mode</span>
+            <div className="group bg-primary-container p-10 rounded-2xl flex flex-col justify-between h-[400px] relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500">
+              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity duration-500">
+                <span className="material-symbols-outlined text-8xl text-secondary-fixed group-hover:scale-110 transition-transform duration-500">light_mode</span>
               </div>
               <div className="z-10">
-                <span className="material-symbols-outlined text-secondary-container text-4xl mb-6">psychology</span>
+                <span className="material-symbols-outlined text-secondary-container text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">psychology</span>
                 <h3 className="text-2xl font-headline text-white mb-4">Terapia Cognitiva</h3>
                 <p className="text-on-primary-container leading-relaxed">Reestructurando los patrones de pensamiento que alimentan la incertidumbre.</p>
               </div>
-              <button onClick={() => setSelectedInfographic({ id: 'terapia_cognitiva', src: '/images/info-terapia-cognitiva.jpg' })} className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed z-10 hover:opacity-80 transition-opacity">
-                DETALLES DEL MÉTODO <span className="material-symbols-outlined text-lg">open_in_new</span>
-              </button>
+              <div className="w-fit z-10">
+                <button onClick={() => setSelectedInfographic({ id: 'terapia_cognitiva', src: '/images/info-terapia-cognitiva.jpg' })} className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed hover:opacity-80 transition-all duration-500 group-hover:scale-[1.8] origin-left">
+                  DETALLES DEL MÉTODO <span className="material-symbols-outlined text-lg">open_in_new</span>
+                </button>
+              </div>
             </div>
             {/* Card 3 */}
-            <div className="group bg-surface p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:bg-secondary-container transition-colors duration-500">
-              <div>
-                <span className="material-symbols-outlined text-secondary text-4xl mb-6">self_improvement</span>
-                <h3 className="text-2xl font-headline text-primary mb-4">Acompañamiento Zen</h3>
-                <p className="text-on-surface-variant leading-relaxed">Espacios de silencio y reflexión guiada para conectar con tu centro interior.</p>
+            <div className="group bg-surface dark:bg-[#d1e7e4] p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+              <div className="hidden dark:block pointer-events-none absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/leather.png')] opacity-30 mix-blend-overlay"></div>
+              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                <div>
+                  <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">self_improvement</span>
+                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">Acompañamiento Zen</h3>
+                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Espacios de silencio y reflexión guiada para conectar con tu centro interior.</p>
+                </div>
+                <div className="w-fit">
+                  <button onClick={() => navigate('/zen')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">
+                    SABER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
+                  </button>
+                </div>
               </div>
-              <button onClick={() => navigate('/zen')} className="font-label text-sm font-semibold flex items-center gap-2 group-hover:text-primary transition-colors text-left">
-                SABER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
-              </button>
             </div>
           </div>
         </div>
@@ -148,7 +160,7 @@ export default function Method() {
       </section>
 
       {/* Contact and Network */}
-      <section className="py-24 px-12 bg-surface" id="contacto">
+      <section className="py-24 px-12" id="contacto">
         <div className="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
           <div>
             <h2 className="text-3xl font-headline text-primary mb-8 italic">Conecta con Nosotros</h2>

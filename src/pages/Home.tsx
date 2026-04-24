@@ -496,7 +496,7 @@ export default function Home() {
       </section>
 
       {/* The Hybrid Approach */}
-      <section className="py-32 px-8 bg-surface-container-low">
+      <section className="py-32 px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
             <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
@@ -529,7 +529,7 @@ export default function Home() {
       </section>
 
       {/* Symptoms Section: Reconociendo tus batallas */}
-      <section className="py-32 px-8 bg-background">
+      <section className="py-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>

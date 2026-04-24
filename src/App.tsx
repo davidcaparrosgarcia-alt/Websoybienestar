@@ -20,6 +20,8 @@ import Privacy from "./pages/Privacy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 
+import Resources from "./pages/Resources";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -58,7 +60,7 @@ export default function App() {
               <Report />
             </ProtectedRoute>
           } />
-          <Route path="resources" element={<div className="min-h-[80vh] flex items-center justify-center font-headline text-3xl text-primary font-light">Sección de Recursos en desarrollo...</div>} />
+          <Route path="resources" element={<Resources />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -228,9 +228,9 @@ export default function Session() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-surface-container-lowest max-h-[calc(100vh-5.5rem)]">
+    <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)]">
       {/* Header Info */}
-      <div className="bg-surface-container-low border-b border-outline-variant/10 py-4 px-8 flex justify-between items-center">
+      <div className="border-b border-outline-variant/10 py-4 px-8 flex justify-between items-center bg-transparent">
         <div className="flex items-center gap-3">
           <span className="material-symbols-outlined text-secondary">psychology</span>
           <div>
@@ -240,25 +240,36 @@ export default function Session() {
         </div>
         <button
           onClick={finishSession}
-          className="font-label text-sm uppercase tracking-widest text-primary hover:text-secondary transition-colors flex items-center gap-2 border border-outline-variant/30 px-4 py-2 rounded-full hover:bg-surface-container"
+          className="font-label text-sm uppercase tracking-widest bg-primary text-on-primary transition-opacity hover:opacity-90 flex items-center gap-2 px-6 py-2 rounded-full shadow-sm"
         >
           Finalizar Sesión <span className="material-symbols-outlined text-sm">arrow_forward</span>
         </button>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-        <div className="max-w-3xl mx-auto space-y-8">
+      <div className="flex-1 overflow-y-auto relative p-4 md:p-8 bg-[#64748b]/90 dark:bg-[#1e293b]/90 backdrop-blur-sm border-y border-outline-variant/10">
+        {/* Fractal Noise Texture Overlay */}
+        <div className="pointer-events-none absolute inset-0 z-0 opacity-20 mix-blend-multiply dark:mix-blend-overlay">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <filter id="chat-texture">
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" />
+              <feColorMatrix type="matrix" values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 1 0 0 0 0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#chat-texture)" />
+          </svg>
+        </div>
+        
+        <div className="max-w-3xl mx-auto space-y-8 relative z-10">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] md:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-sm ${
+                className={`max-w-[85%] md:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-md hover:-translate-y-1 transition-transform duration-300 ${
                   msg.role === "user"
-                    ? "bg-primary text-on-primary rounded-br-sm"
-                    : "bg-surface-container-low text-on-surface rounded-bl-sm border border-outline-variant/10"
+                    ? "bg-primary text-on-primary rounded-br-sm shadow-primary/20"
+                    : "bg-surface-container-low text-on-surface rounded-bl-sm border border-outline-variant/10 shadow-black/5 dark:shadow-black/20"
                 }`}
               >
                 {msg.role === "assistant" ? (
@@ -284,7 +295,7 @@ export default function Session() {
       </div>
 
       {/* Input Area */}
-      <div className="bg-surface-container-lowest border-t border-outline-variant/10 p-4 md:p-6">
+      <div className="border-t border-outline-variant/10 p-4 md:p-6 bg-transparent">
         <div className="max-w-3xl mx-auto">
           
           {/* Error and Help Messages */}

@@ -42,7 +42,7 @@
   --color-error-container: #ffdad6;
   --color-tertiary-fixed-dim: #c5c9b2;
   --color-secondary-fixed: #d1e7e4;
-  --color-background: #f9f9f8;
+  --color-background: #d4d4d8;
   --color-surface-tint: #4e6073;
   --color-surface-bright: #f9f9f8;
   --color-on-primary-container: #96a9be;
@@ -71,29 +71,46 @@
   }
   body {
     @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary transition-colors duration-500;
+    background-image: url("https://www.transparenttextures.com/patterns/leather.png");
+    background-attachment: fixed;
+  }
+  
+  html.dark body {
+    @apply bg-background;
+    background-image: none;
+  }
+
+  html.dark body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image: url("https://www.transparenttextures.com/patterns/leather.png");
+    filter: invert(1) opacity(0.15);
   }
   
   html.dark {
-    --color-background: #11181f;
-    --color-surface: #161f28; 
-    --color-surface-dim: #0d1318;
-    --color-surface-bright: #1c2732;
-    --color-surface-container-lowest: #0c1117;
-    --color-surface-container-low: #131c24;
-    --color-surface-container: #161f28;
-    --color-surface-container-high: #1c2732;
-    --color-surface-container-highest: #23303e;
+    --color-background: #1c2836;
+    --color-surface: #22303f; 
+    --color-surface-dim: #18232f;
+    --color-surface-bright: #2b3b4a;
+    --color-surface-container-lowest: #141c26;
+    --color-surface-container-low: #192430;
+    --color-surface-container: #22303f;
+    --color-surface-container-high: #2b3b4a;
+    --color-surface-container-highest: #34485a;
     
-    --color-on-background: #ebf0f5;
-    --color-on-surface: #ebf0f5;
-    --color-on-surface-variant: #b0becd;
+    --color-on-background: #f1f5f9;
+    --color-on-surface: #f1f5f9;
+    --color-on-surface-variant: #cbd5e1;
     
-    --color-primary: #ebf0f5;
-    --color-on-primary: #11181f;
-    --color-secondary: #a3b8cc;
+    --color-primary: #f1f5f9;
+    --color-on-primary: #1c2836;
+    --color-secondary: #94a3b8;
     
-    --color-primary-container: #23303e;
-    --color-on-primary-container: #c4d7ec;
+    --color-primary-container: #34485a;
+    --color-on-primary-container: #e2e8f0;
     
     --color-outline: #475a6c;
     --color-outline-variant: #304152;
