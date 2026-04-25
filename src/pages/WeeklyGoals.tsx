@@ -261,7 +261,7 @@ export default function WeeklyGoals() {
   };
 
   return (
-    <div className="flex-1 bg-surface text-on-surface font-body w-full min-h-screen">
+    <div className="flex-1 bg-transparent text-on-surface font-body w-full min-h-screen">
       <main className="pt-16 pb-20 max-w-7xl mx-auto px-8 min-h-screen">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">

@@ -288,7 +288,7 @@ export default function EmotionDiary() {
   };
 
   return (
-    <div className="flex-1 bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-32 pb-20 px-8 max-w-7xl mx-auto w-full">
+    <div className="flex-1 bg-transparent dark:bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-32 pb-20 px-8 max-w-7xl mx-auto w-full">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Image & Title Section */}
         <div className="lg:col-span-5 relative">

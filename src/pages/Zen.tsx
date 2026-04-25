@@ -148,7 +148,7 @@ export default function Zen() {
   };
 
   return (
-    <div className="flex-1 bg-background text-on-surface w-full font-body relative">
+    <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
 
       {/* Hero Section: "The Breathing Hero" */}
       <header className="relative min-h-screen flex items-center pt-24 overflow-hidden">
@@ -179,7 +179,7 @@ export default function Zen() {
       </header>
 
       {/* Herramientas Section: Bento Grid */}
-      <section className="py-32 bg-surface">
+      <section className="py-32 bg-transparent">
         <div className="max-w-screen-2xl mx-auto px-12">
           <div className="mb-20">
             <h2 className="text-4xl lg:text-5xl font-headline text-primary mb-4">Herramientas diseñadas para habitar el presente</h2>
@@ -268,7 +268,7 @@ export default function Zen() {
       </section>
 
       {/* Guías Section: Editorial Layout */}
-      <section className="py-32 bg-stone-100">
+      <section className="py-32 bg-transparent">
         <div className="max-w-screen-2xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           <div className="order-2 lg:order-1">
             <div className="relative group cursor-pointer" 
@@ -319,7 +319,7 @@ export default function Zen() {
       </section>
 
       {/* Final CTA Area */}
-      <section className="py-24 bg-surface flex justify-center border-t border-outline-variant/10">
+      <section className="py-24 bg-transparent flex justify-center border-t border-outline-variant/10">
         <button onClick={() => navigate('/session')} className="px-16 py-8 bg-primary-container text-on-primary font-headline text-2xl rounded-full shadow-2xl hover:bg-primary transition-colors duration-500 !text-white dark:!text-white">
           Iniciar Consulta Gratuita
         </button>

@@ -1,10 +1,23 @@
 // Capa de abstracción de API para endpoints de IA.
 // Mantiene las asunciones simples pero con mejor gestión de errores.
 
+import { auth } from "../firebase";
+
 async function fetchAPI(endpoint: string, body: any) {
+  const currentUser = auth.currentUser;
+  
+  if (!currentUser) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  const token = await currentUser.getIdToken();
+
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
     body: JSON.stringify(body)
   });
   
