@@ -111,6 +111,13 @@ export default function WeeklyGoals() {
 
   const handleAddEmptyGoal = async () => {
     if (!user) return;
+    
+    // Check if user has added 7 goals this week
+    if (totalActive >= 7) {
+      alert("Has alcanzado el límite máximo de 7 propósitos activos para esta semana.");
+      return;
+    }
+
     const newId = Date.now().toString();
     const newGoal = {
       title: "Nueva Meta",
@@ -203,8 +210,9 @@ export default function WeeklyGoals() {
       setEditTitle(data.title || "Meta Sorpresa");
       setEditDescription(data.description || "Tómate un momento para descubrir qué necesitas esta semana.");
 
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert(e.message || "Error al conectar con la IA.");
     } finally {
       setIsGenerating(null);
     }
@@ -233,8 +241,9 @@ export default function WeeklyGoals() {
 
       setGoals(prev => prev.map(g => g.id === goalId ? { ...g, ...updates } : g));
 
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert(e.message || "Error al conectar con la IA.");
     } finally {
       setIsGenerating(null);
       setEditingGoalId(null);
@@ -243,6 +252,10 @@ export default function WeeklyGoals() {
 
   const repeatGoal = async (goal: Goal) => {
     if (!user) return;
+    if (totalActive >= 7) {
+      alert("Has alcanzado el límite máximo de 7 propósitos activos para esta semana.");
+      return;
+    }
     const newId = Date.now().toString();
     const nowISO = new Date().toISOString();
     const newGoal = {

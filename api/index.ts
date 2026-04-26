@@ -42,6 +42,7 @@ if (!admin.apps.length) {
 // Initialize Gemini
 let ai: GoogleGenAI | null = null;
 const API_KEY = process.env.GEMINI_API_KEY;
+const AI_MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
 
 if (!API_KEY) {
   console.warn("CRITICAL: GEMINI_API_KEY is not defined in environment variables. AI features will be disabled.");
@@ -100,11 +101,74 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error("Error validando token en el API:", error);
+    console.error("Error validando token en el API", error instanceof Error ? error.message : "Desconocido");
     res.status(401).json({ error: "Token inválido o expirado." });
     return;
   }
 };
+
+async function checkAILimit(uid: string, limitKey: string, period: 'daily' | 'weekly' | 'monthly', maxLimit: number): Promise<boolean> {
+  if (!admin.apps.length) return true;
+  const db = admin.firestore();
+  const now = new Date();
+  let periodStr = "";
+  if (period === 'daily') periodStr = now.toISOString().split("T")[0];
+  if (period === 'monthly') periodStr = now.toISOString().slice(0, 7);
+  if (period === 'weekly') {
+    const firstDay = new Date(now.getFullYear(), 0, 1);
+    const pastDays = (now.getTime() - firstDay.getTime()) / 86400000;
+    const weekNum = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+    periodStr = `${now.getFullYear()}-W${weekNum}`;
+  }
+
+  const docId = `${limitKey}_${periodStr}`;
+  const limitRef = db.collection('users').doc(uid).collection('aiLimits').doc(docId);
+
+  try {
+    return await db.runTransaction(async (t) => {
+      const doc = await t.get(limitRef);
+      let data = doc.data() || { count: 0 };
+      if (data.count >= maxLimit) return false;
+      data.count += 1;
+      t.set(limitRef, data, { merge: true });
+      return true;
+    });
+  } catch (e) {
+    console.error("Limit check transaction failed", e);
+    return true; 
+  }
+}
+
+async function checkGratitudeLimits(uid: string, entry1: string, entry2: string): Promise<boolean> {
+  if (!admin.apps.length) return true;
+  const db = admin.firestore();
+  const dateStr = new Date().toISOString().split("T")[0];
+  const limitRef = db.collection('users').doc(uid).collection('aiLimits').doc(`gratitude_${dateStr}`);
+  
+  try {
+    return await db.runTransaction(async (t) => {
+      const doc = await t.get(limitRef);
+      let data = doc.data() || { count: 0, validatedTexts: [] };
+      
+      let increment1 = !!entry1 && !data.validatedTexts.includes(entry1);
+      let increment2 = !!entry2 && !data.validatedTexts.includes(entry2);
+      let newCount = (increment1 ? 1 : 0) + (increment2 ? 1 : 0);
+      
+      if (newCount === 0 && (entry1 || entry2)) return false; 
+      if (data.count + newCount > 2) return false;
+      
+      if (increment1) data.validatedTexts.push(entry1);
+      if (increment2) data.validatedTexts.push(entry2);
+      data.count += newCount;
+      
+      t.set(limitRef, data, { merge: true });
+      return true;
+    });
+  } catch (e) {
+    console.error("Gratitude limit transaction failed", e);
+    return true; 
+  }
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -112,193 +176,260 @@ app.get("/api/health", (req, res) => {
     time: new Date().toISOString(),
     aiAvailable: !!ai,
     authAvailable: !!admin.apps.length,
+    model: AI_MODEL,
     env: process.env.NODE_ENV || "development"
   });
 });
 
 app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
   try {
-    const { history, message } = req.body;
+    let { history, message } = req.body;
     if (!message || typeof message !== 'string') {
-      res.status(400).json({ error: "Invalid message" });
+      res.status(400).json({ error: "Mensaje inválido." });
       return;
     }
+    if (message.length > 4000) {
+      res.status(400).json({ error: "El mensaje no puede superar los 4000 caracteres." });
+      return;
+    }
+
+    if (history && !Array.isArray(history)) history = [];
+    if (history.length > 50) history = history.slice(-50);
+    
+    // Clean history
+    history = history.filter((h: any) => h && h.message).map((h: any) => ({
+      ...h,
+      message: h.message.substring(0, 4000)
+    }));
 
     if (!ai) return;
 
     const chatWithHistory = ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: AI_MODEL,
       config: {
-        systemInstruction: "Eres un asistente empático, cálido y profesional, actuando como un puente entre el paciente y un terapeuta humano. Tu objetivo es escuchar al paciente, hacerle preguntas suaves y guiadas para entender su situación (ansiedad, estrés, etc.) y ayudarle a plasmar cómo se siente en un máximo de 15 minutos. Mantén respuestas concisas, conversacionales y muy humanas. No diagnostiques, solo recopila información y brinda apoyo emocional.",
+        systemInstruction: "Eres un asistente empático, cálido y profesional, un puente entre el paciente y un terapeuta humano. Escucha al paciente, haz preguntas suaves, concisas y guiadas para entender su situación (ansiedad, estrés, etc.). Mantén respuestas breves, conversacionales y humanas. No diagnostiques, solo brinda apoyo emocional.",
+        maxOutputTokens: 700,
       },
-      history: Array.isArray(history) ? history : []
+      history
     });
 
     const response = await chatWithHistory.sendMessage({ message });
     res.json({ text: response.text });
   } catch (error) {
-    console.error(error);
+    console.error("AI /api/session-reply failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
     res.status(500).json({ error: "Failed to generate session reply" });
   }
 });
 
 app.post("/api/report", requireAuth, requireAI, async (req, res) => {
   try {
-    const { messages, accumulatedSummary } = req.body;
+    let { messages, accumulatedSummary } = req.body;
     if (!Array.isArray(messages)) {
-      res.status(400).json({ error: "Invalid messages array" });
+      res.status(400).json({ error: "Mensajes inválidos." });
       return;
     }
+
+    // Limit check
+    const allowed = await checkAILimit(req.user!.uid, 'reportAttempts', 'monthly', 10);
+    if (!allowed) {
+      res.status(429).json({ error: "Has superado el límite mensual de evaluaciones de consulta." });
+      return;
+    }
+
+    if (messages.length > 50) messages = messages.slice(-50);
+    messages = messages.filter((m: any) => m && m.content);
+    
+    accumulatedSummary = typeof accumulatedSummary === 'string' ? accumulatedSummary.substring(0, 5000) : "";
 
     if (!ai) return;
 
     const conversationText = messages
-      .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content}`)
+      .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content.substring(0, 4000)}`)
       .join("\n\n");
 
     const prompt = `
       A continuación se presenta la transcripción de una sesión preliminar entre un paciente y una IA asistente.
-      Tu tarea es actuar como un Psicólogo / Coach de vida y evaluar esta sesión.
-      Instrucciones:
-      1. Determina si la sesión ha llegado a un punto de conclusión válido o aportado información útil y relevante sobre el estado del paciente. (Mero ruido o conversaciones vacías no son válidas).
-      2. Genera un informe detallado estructurado en Markdown clásico.
-      3. Genera un resumen compacto de la sesión actual sumado a resúmenes pasados (si existen).
+      Como coach de vida empático, evalúa si la sesión aporta información relevante sobre el estado del paciente (vacías o mero ruido no valen).
+      Genera un informe detallado en Markdown clásico.
+      Genera un resumen compacto que integre la nueva información con el historial pasado.
       
-      Historial pasado de sesiones (Resumen Acumulado):
-      ${accumulatedSummary || "No hay historial previo."}
+      Historial pasado:
+      ${accumulatedSummary || "No hay historial."}
 
       Transcripción Actual:
       ${conversationText}
 
-      EL RESULTADO DEBE SER EXCLUSIVAMENTE UN OBJETO JSON con esta estructura exacta (sin bloques \`\`\`json):
+      EL RESULTADO DEBE SER EXCLUSIVAMENTE UN OBJETO JSON con esta estructura exacta (sin bloques markdown JSON):
       {
         "validConclusion": boolean,
-        "markdownReport": "El informe clínico completo (motivo, síntomas, contexto, observaciones)",
-        "newAccumulatedSummary": "El nuevo resumen que integra lo viejo (si existía) con lo nuevo"
+        "markdownReport": "El informe completo",
+        "newAccumulatedSummary": "Resumen integrado"
       }
     `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AI_MODEL,
       contents: prompt,
+      config: { maxOutputTokens: 1200 }
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
+    
+    // If valid conclusion, apply monthly valid limit
+    if (parsed.validConclusion) {
+      const db = admin.firestore();
+      const monthStr = new Date().toISOString().slice(0, 7);
+      const docRef = db.collection('users').doc(req.user!.uid).collection('aiLimits').doc(`validConclusion_${monthStr}`);
+      const doc = await docRef.get();
+      if ((doc.data()?.count || 0) >= 1) {
+         return res.status(429).json({ error: "Solo se permite una conclusión válida por mes." });
+      }
+      await docRef.set({ count: (doc.data()?.count || 0) + 1 }, { merge: true });
+    }
+
     res.json(parsed);
   } catch (error) {
-    console.error(error);
+    console.error("AI /api/report failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
     res.status(500).json({ error: "Failed to generate report" });
   }
 });
 
 app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
   try {
-    const { entry1, entry2, accumulatedSummary } = req.body;
-    if (!entry1 || !entry2) {
-      res.status(400).json({ error: "Entries missing" });
+    let { entry1, entry2, accumulatedSummary } = req.body;
+    
+    entry1 = typeof entry1 === 'string' ? entry1.substring(0, 1200) : "";
+    entry2 = typeof entry2 === 'string' ? entry2.substring(0, 1200) : "";
+    accumulatedSummary = typeof accumulatedSummary === 'string' ? accumulatedSummary.substring(0, 5000) : "";
+
+    if (!entry1 && !entry2) {
+      res.status(400).json({ error: "Faltan entradas." });
+      return;
+    }
+
+    const allowed = await checkGratitudeLimits(req.user!.uid, entry1, entry2);
+    if (!allowed) {
+      res.status(429).json({ error: "Límite de agradecimientos diarios alcanzado o ya validados." });
       return;
     }
 
     if (!ai) return;
 
-    const prompt = `Eres un psicoterapeuta y coach de vida experto. Analiza las siguientes dos razones de gratitud de un paciente (que puede padecer depresión, estrés o ansiedad).
+    const prompt = `Eres un coach de vida amigable y experto. Analiza el/los motivos de gratitud de un paciente.
 Instrucciones:
-1. Puntúa cada motivo con 0, 1 o 2 ('destellos'). 0 = vacío/esquivo/sin esfuerzo real, 1 = superficial, 2 = profundo o significativo. (Max 2 para cada uno).
-2. Escribe una pequeña reflexión terapéutica (1 o 2 párrafos). Relaciónate con los hechos relatados por el usuario. Sé profesional, amigable y didáctico. Evita la positividad tóxica; ofrece una valoración realista con un leve decantamiento hacia la motivación para que no se desanime.
-3. Fusiona la nueva conclusión con el resumen global previo del usuario. No repitas hallazgos ya presentes salvo para reforzarlos o matizarlos. Devuelve un único resumen acumulado, compacto, útil para personalizar futuras propuestas y sin redundancias.
+1. Puntúa CADA motivo proporcionado con 0, 1 o 2. 0=vacío/esquivo, 1=superficial, 2=profundo. (Max 2 para cada uno). Si solo hay uno, ignora el otro.
+2. Escribe una pequeña y cálida reflexión (1 o 2 párrafos). Sé breve y cercano.
+3. Fusiona hallazgos con el resumen previo.
+Resumen previo: "${accumulatedSummary || 'Ninguno'}"
+${entry1 ? `Motivo 1: "${entry1}"` : ""}
+${entry2 ? `Motivo 2: "${entry2}"` : ""}
 
-Resumen global previo del usuario: "${accumulatedSummary || 'Ninguno'}"
-Motivo 1: "${entry1}"
-Motivo 2: "${entry2}"
-
-Responde EXCLUSIVAMENTE con un objeto JSON (sin comillas invertidas extra):
+Responde EXCLUSIVAMENTE con un JSON:
 {
-  "score1": número,
-  "score2": número,
-  "reflection": "tu reflexión",
-  "newAccumulatedSummary": "resumen global fusionado"
+  ${entry1 ? `"score1": numero,` : ""}
+  ${entry2 ? `"score2": numero,` : ""}
+  "reflection": "tu reflexión reconfortante",
+  "newAccumulatedSummary": "resumen global"
 }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AI_MODEL,
       contents: prompt,
+      config: { maxOutputTokens: 700 }
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error(error);
+    console.error("AI /api/diary-validate failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
     res.status(500).json({ error: "Failed to validate diary" });
   }
 });
 
 app.post("/api/diary-deepen", requireAuth, requireAI, async (req, res) => {
   try {
-    const { entry1, entry2, reflection, accumulatedSummary } = req.body;
+    let { entry1, entry2, reflection, accumulatedSummary } = req.body;
+    
+    entry1 = typeof entry1 === 'string' ? entry1.substring(0, 1200) : "";
+    entry2 = typeof entry2 === 'string' ? entry2.substring(0, 1200) : "";
+    reflection = typeof reflection === 'string' ? reflection.substring(0, 3000) : "";
+    accumulatedSummary = typeof accumulatedSummary === 'string' ? accumulatedSummary.substring(0, 5000) : "";
+
     if (!entry1 || !entry2 || !reflection) {
-      res.status(400).json({ error: "Data missing" });
+      res.status(400).json({ error: "Faltan datos." });
       return;
     }
 
     if (!ai) return;
 
-    const prompt = `Eres el mismo psicoterapeuta y coach de vida. Basándote en los motivos de gratitud del paciente y tu reflexión anterior, profundiza aún más en el análisis.
+    const prompt = `Eres un coach de vida amigable y empático. Basándote en los motivos de gratitud y tu reflexión, profundiza brevemente.
 Motivos: 1. "${entry1}", 2. "${entry2}"
 Reflexión anterior: "${reflection}"
 
-Genera un análisis más profundo (2 o 3 párrafos) y proporciona una pequeña herramienta o anclaje relacionado. Mantén tu tono amigable y profesional.
-Considera el Resumen global previo del usuario: "${accumulatedSummary || 'Ninguno'}". 
-Fusiona la nueva conclusión con el resumen global previo del usuario. No repitas hallazgos ya presentes salvo para reforzarlos o matizarlos. Devuelve un único resumen acumulado, compacto, útil para personalizar futuras propuestas y sin redundancias.
+Profundiza (1 o 2 párrafos) y da un pequeño anclaje. Mantén el tono humano.
+Resumen global previo: "${accumulatedSummary || 'Ninguno'}". 
+Fusiona hallazgos sin repeticiones.
 
-Responde EXCLUSIVAMENTE con un objeto JSON:
+Responde EXCLUSIVAMENTE con un JSON:
 {
   "deepReflection": "tu texto aquí",
   "newAccumulatedSummary": "resumen global fusionado"
 }`;
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AI_MODEL,
       contents: prompt,
+      config: { maxOutputTokens: 700 }
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error(error);
+    console.error("AI /api/diary-deepen failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
     res.status(500).json({ error: "Failed to deepen emotion diary" });
   }
 });
 
 app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
   try {
-    const { category, accumulatedSummary } = req.body;
+    let { category, accumulatedSummary } = req.body;
+    
+    category = typeof category === 'string' ? category.substring(0, 100) : "";
+    accumulatedSummary = typeof accumulatedSummary === 'string' ? accumulatedSummary.substring(0, 5000) : "";
+
     if (!category) {
-      res.status(400).json({ error: "Category missing" });
+      res.status(400).json({ error: "Categoría faltante." });
+      return;
+    }
+
+    const allowed = await checkAILimit(req.user!.uid, 'weeklyGoalGeneration', 'weekly', 25);
+    if (!allowed) {
+      res.status(429).json({ error: "Has alcanzado el límite semanal de generaciones IA de propósitos." });
       return;
     }
 
     if (!ai) return;
 
     const prompt = `
-    Eres un psicoterapeuta y coach de vida. Necesitas generar una meta semanal estimulante para el usuario basándote en la siguiente categoría: "${category}".
-    Aquí tienes un resumen de contexto del usuario y sesiones previas (puede estar vacío): "${accumulatedSummary || ""}".
+    Eres un empático coach de vida. Genera una breve meta semanal estimulante para esta categoría: "${category}".
+    Resumen de contexto del usuario: "${accumulatedSummary || ""}".
     
     Instrucciones:
-    Si el resumen menciona problemas específicos (ej., dormir, estrés, ansiedad, sedentarismo), la meta debe sugerir algo para contrarrestarlos de forma empática y sutil. 
-    Si la categoría es "Azar", elige libremente una de las otras categorías y sé creativo.
-    Mantén el título muy breve, y la descripción como un consejo accionable de no más de 1-2 líneas largas.
+    Si hay problemas específicos (ej., dormir, estrés), la meta debe contrarrestarlos sutilmente.
+    Mantén el título breve, y la descripción como un consejo accionable de 1-2 líneas. Sé cercano.
     
-    DEBES responder ÚNICAMENTE con un JSON con los campos: "title" y "description".
+    DEBES responder ÚNICAMENTE con JSON: {"title": "breve", "description": "1 consejo"}
     `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AI_MODEL,
       contents: prompt,
+      config: { maxOutputTokens: 300 }
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error(error);
+    console.error("AI /api/weekly-goal failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
     res.status(500).json({ error: "Failed to generate weekly goal" });
   }
 });

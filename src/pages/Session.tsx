@@ -33,6 +33,7 @@ export default function Session() {
   // Custom refs for robust state handling independently of closure states
   const isRecordingRef = useRef(false);
   const restartAttemptsRef = useRef(0);
+  const sessionStartTimeRef = useRef(Date.now());
 
   const navigate = useNavigate();
   const [hasDoneConsultation, setHasDoneConsultation] = useState<boolean | null>(null);
@@ -155,6 +156,16 @@ export default function Session() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    if (Date.now() - sessionStartTimeRef.current > 15 * 60 * 1000) {
+      alert("La sesión ha superado el máximo de 15 minutos permitidos.");
+      return;
+    }
+
+    if (input.trim().length > 4000) {
+      alert("Por favor, acorta tu mensaje. El máximo permitido es de 4000 caracteres.");
+      return;
+    }
+
     if (isRecordingRef.current) {
       isRecordingRef.current = false;
       setIsRecording(false);
@@ -186,12 +197,12 @@ export default function Session() {
         };
         setMessages(prev => [...prev, aiMessage]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error calling AI:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Lo siento, ha ocurrido un error de conexión. ¿Podrías repetir lo último que dijiste?"
+        content: error.message || "Lo siento, ha ocurrido un error de conexión. ¿Podrías repetir lo último que dijiste?"
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -312,9 +323,9 @@ export default function Session() {
       } else {
         setFinishingError("La IA ha determinado que la sesión no tiene suficiente información o no ha llegado a una conclusión válida. Por favor, expande más tus respuestas.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setFinishingError("Ocurrió un error al evaluar la sesión. Por favor, intenta de nuevo.");
+      setFinishingError(err.message || "Ocurrió un error al evaluar la sesión. Por favor, intenta de nuevo.");
     } finally {
       setIsFinishing(false);
     }

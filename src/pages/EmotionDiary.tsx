@@ -179,8 +179,8 @@ export default function EmotionDiary() {
       alert("Por favor, regístrate o inicia sesión para usar el diario.");
       return;
     }
-    if (!entry1.trim() || !entry2.trim()) {
-      alert("Por favor, detalla ambos motivos de gratitud antes de validar.");
+    if (!entry1.trim() && !entry2.trim()) {
+      alert("Por favor, detalla al menos un motivo de gratitud antes de validar.");
       return;
     }
     setIsLoading(true);
@@ -193,24 +193,22 @@ export default function EmotionDiary() {
       const pRef = profileRef || doc(db, 'userProfiles', user.uid);
 
       const todayStr = getDailyStr(new Date());
-      const s1 = typeof data.score1 === 'number' ? data.score1 : 1;
-      const s2 = typeof data.score2 === 'number' ? data.score2 : 1;
+      const s1 = typeof data.score1 === 'number' ? data.score1 : (entry1.trim() ? 1 : 0);
+      const s2 = typeof data.score2 === 'number' ? data.score2 : (entry2.trim() ? 1 : 0);
       const totalDayScore = s1 + s2;
 
-      const newData = {
-        entry1, // Tempsaved for UI resilience initially, data retention script scrubs it securely
-        entry2,
+      const newData: any = {
         score1: s1,
         score2: s2,
         dayScore: totalDayScore,
         reflection: data.reflection || "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.",
-        hasDeepened: false,
-        deepReflection: "",
         createdAt: new Date().toISOString()
       };
+      if (entry1.trim()) newData.entry1 = entry1;
+      if (entry2.trim()) newData.entry2 = entry2;
       
       const docRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
-      await setDoc(docRef, newData).catch(err => {
+      await setDoc(docRef, newData, { merge: true }).catch(err => {
         handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/diaryEntries/${todayStr}`);
       });
       
@@ -219,7 +217,7 @@ export default function EmotionDiary() {
       updatedScores = updatedScores.filter(s => s.date !== todayStr); // remove if exists
       updatedScores.push({ date: todayStr, score: totalDayScore });
       
-      // Sort and truncate to last 365 elements to keep document small
+      // Sort and truncate to last 365 elements
       updatedScores.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       if (updatedScores.length > 365) {
          updatedScores = updatedScores.slice(updatedScores.length - 365);
@@ -238,9 +236,9 @@ export default function EmotionDiary() {
       setReflection(newData.reflection);
       setIsValidated(true);
       
-    } catch (e) {
+    } catch (e: any) {
       console.error("AI or Firestore Error:", e);
-      alert("Ocurrió un error al contactar al guía o guardar los datos. Verifica tu conexión e inténtalo de nuevo.");
+      alert(e.message || "Ocurrió un error al contactar al guía o guardar los datos. Verifica tu conexión e inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -270,9 +268,9 @@ export default function EmotionDiary() {
 
       setDeepReflection(data.deepReflection);
       setHasDeepened(true);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Error profundizando en la sesión.");
+      alert(e.message || "Error profundizando en la sesión.");
     } finally {
       setIsLoadingDeep(false);
     }
