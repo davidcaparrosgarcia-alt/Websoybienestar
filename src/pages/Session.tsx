@@ -156,13 +156,16 @@ export default function Session() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    if (Date.now() - sessionStartTimeRef.current > 15 * 60 * 1000) {
+    const isTest = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
+
+    if (!isTest && Date.now() - sessionStartTimeRef.current > 15 * 60 * 1000) {
       alert("La sesión ha superado el máximo de 15 minutos permitidos.");
       return;
     }
 
-    if (input.trim().length > 4000) {
-      alert("Por favor, acorta tu mensaje. El máximo permitido es de 4000 caracteres.");
+    const maxChars = isTest ? 8000 : 4000;
+    if (input.trim().length > maxChars) {
+      alert(`Por favor, acorta tu mensaje. El máximo permitido es de ${maxChars} caracteres.`);
       return;
     }
 

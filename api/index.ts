@@ -107,7 +107,14 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-async function checkAILimit(uid: string, limitKey: string, period: 'daily' | 'weekly' | 'monthly', maxLimit: number): Promise<boolean> {
+const TEST_USER_EMAIL = "davidcaparrosgarcia@gmail.com";
+
+function isTestUser(req: any) {
+  return req.user?.email === TEST_USER_EMAIL;
+}
+
+async function checkAILimit(req: any, uid: string, limitKey: string, period: 'daily' | 'weekly' | 'monthly', maxLimit: number): Promise<boolean> {
+  if (isTestUser(req)) return true;
   if (!admin.apps.length) return true;
   const db = admin.firestore();
   const now = new Date();
@@ -139,7 +146,8 @@ async function checkAILimit(uid: string, limitKey: string, period: 'daily' | 'we
   }
 }
 
-async function checkGratitudeLimits(uid: string, entry1: string, entry2: string): Promise<boolean> {
+async function checkGratitudeLimits(req: any, uid: string, entry1: string, entry2: string): Promise<boolean> {
+  if (isTestUser(req)) return true;
   if (!admin.apps.length) return true;
   const db = admin.firestore();
   const dateStr = new Date().toISOString().split("T")[0];
@@ -188,18 +196,22 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
       res.status(400).json({ error: "Mensaje inválido." });
       return;
     }
-    if (message.length > 4000) {
-      res.status(400).json({ error: "El mensaje no puede superar los 4000 caracteres." });
+    const isTest = isTestUser(req);
+    const maxChars = isTest ? 8000 : 4000;
+    const maxHistory = isTest ? 200 : 50;
+
+    if (message.length > maxChars) {
+      res.status(400).json({ error: `El mensaje no puede superar los ${maxChars} caracteres.` });
       return;
     }
 
     if (history && !Array.isArray(history)) history = [];
-    if (history.length > 50) history = history.slice(-50);
+    if (history.length > maxHistory) history = history.slice(-maxHistory);
     
     // Clean history
-    history = history.filter((h: any) => h && h.message).map((h: any) => ({
-      ...h,
-      message: h.message.substring(0, 4000)
+    history = history.filter((h: any) => h && h.role && Array.isArray(h.parts) && h.parts.length > 0 && h.parts[0].text).map((h: any) => ({
+      role: h.role,
+      parts: [{ text: h.parts[0].text.substring(0, maxChars) }]
     }));
 
     if (!ai) return;
@@ -230,7 +242,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     }
 
     // Limit check
-    const allowed = await checkAILimit(req.user!.uid, 'reportAttempts', 'monthly', 10);
+    const allowed = await checkAILimit(req, req.user!.uid, 'reportAttempts', 'monthly', 10);
     if (!allowed) {
       res.status(429).json({ error: "Has superado el límite mensual de evaluaciones de consulta." });
       return;
@@ -276,7 +288,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     const parsed = parseGeminiJSON(response.text || "{}");
     
     // If valid conclusion, apply monthly valid limit
-    if (parsed.validConclusion) {
+    if (parsed.validConclusion && !isTestUser(req)) {
       const db = admin.firestore();
       const monthStr = new Date().toISOString().slice(0, 7);
       const docRef = db.collection('users').doc(req.user!.uid).collection('aiLimits').doc(`validConclusion_${monthStr}`);
@@ -307,7 +319,7 @@ app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
       return;
     }
 
-    const allowed = await checkGratitudeLimits(req.user!.uid, entry1, entry2);
+    const allowed = await checkGratitudeLimits(req, req.user!.uid, entry1, entry2);
     if (!allowed) {
       res.status(429).json({ error: "Límite de agradecimientos diarios alcanzado o ya validados." });
       return;
@@ -401,7 +413,7 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
       return;
     }
 
-    const allowed = await checkAILimit(req.user!.uid, 'weeklyGoalGeneration', 'weekly', 25);
+    const allowed = await checkAILimit(req, req.user!.uid, 'weeklyGoalGeneration', 'weekly', 25);
     if (!allowed) {
       res.status(429).json({ error: "Has alcanzado el límite semanal de generaciones IA de propósitos." });
       return;

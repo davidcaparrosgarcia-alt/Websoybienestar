@@ -73,6 +73,8 @@ export default function EmotionDiary() {
   const [deepReflection, setDeepReflection] = useState("");
   
   const [isValidated, setIsValidated] = useState(false);
+  const [entry1Saved, setEntry1Saved] = useState(false);
+  const [entry2Saved, setEntry2Saved] = useState(false);
   const [hasDeepened, setHasDeepened] = useState(false);
   const [isSilenced, setIsSilenced] = useState(false);
   
@@ -117,6 +119,8 @@ export default function EmotionDiary() {
       setEntry2("");
       setScore1(0);
       setScore2(0);
+      setEntry1Saved(false);
+      setEntry2Saved(false);
       setReflection("");
       setDeepReflection("");
       setHasDeepened(false);
@@ -149,12 +153,14 @@ export default function EmotionDiary() {
 
         if (todayDoc.exists()) {
           const data = todayDoc.data();
-          if (data.score1 !== undefined) {
+          if (data.score1 !== undefined || data.score2 !== undefined) {
              setIsValidated(true);
              setEntry1(data.entry1 || "");
              setEntry2(data.entry2 || "");
-             setScore1(data.score1 || 0);
-             setScore2(data.score2 || 0);
+             setScore1(data.score1 !== undefined ? data.score1 : 0);
+             setScore2(data.score2 !== undefined ? data.score2 : 0);
+             setEntry1Saved(data.score1 !== undefined);
+             setEntry2Saved(data.score2 !== undefined);
              setReflection(data.reflection || "");
              if (data.hasDeepened) {
                 setHasDeepened(true);
@@ -179,8 +185,12 @@ export default function EmotionDiary() {
       alert("Por favor, regístrate o inicia sesión para usar el diario.");
       return;
     }
-    if (!entry1.trim() && !entry2.trim()) {
-      alert("Por favor, detalla al menos un motivo de gratitud antes de validar.");
+    
+    const send1 = entry1Saved ? "" : entry1;
+    const send2 = entry2Saved ? "" : entry2;
+
+    if (!send1.trim() && !send2.trim()) {
+      alert("Por favor, detalla al menos un nuevo motivo de gratitud antes de validar.");
       return;
     }
     setIsLoading(true);
@@ -188,20 +198,24 @@ export default function EmotionDiary() {
       const accumulatedSummary = userSummary;
 
       // Re-route with fused summary capability
-      const data = await api.diaryValidate(entry1, entry2, accumulatedSummary);
+      const data = await api.diaryValidate(send1, send2, accumulatedSummary);
       
       const pRef = profileRef || doc(db, 'userProfiles', user.uid);
 
       const todayStr = getDailyStr(new Date());
-      const s1 = typeof data.score1 === 'number' ? data.score1 : (entry1.trim() ? 1 : 0);
-      const s2 = typeof data.score2 === 'number' ? data.score2 : (entry2.trim() ? 1 : 0);
+      const s1 = typeof data.score1 === 'number' ? data.score1 : (send1.trim() ? 1 : (entry1Saved ? score1 : 0));
+      const s2 = typeof data.score2 === 'number' ? data.score2 : (send2.trim() ? 1 : (entry2Saved ? score2 : 0));
       const totalDayScore = s1 + s2;
+
+      // merge old reflection if exists and new is generated
+      const previousReflection = reflection ? reflection + "\n\n" : "";
+      const newReflection = data.reflection ? previousReflection + data.reflection : (reflection || "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.");
 
       const newData: any = {
         score1: s1,
         score2: s2,
         dayScore: totalDayScore,
-        reflection: data.reflection || "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.",
+        reflection: newReflection,
         createdAt: new Date().toISOString()
       };
       if (entry1.trim()) newData.entry1 = entry1;
@@ -234,6 +248,8 @@ export default function EmotionDiary() {
       setScore1(newData.score1);
       setScore2(newData.score2);
       setReflection(newData.reflection);
+      if (newData.entry1) setEntry1Saved(true);
+      if (newData.entry2) setEntry2Saved(true);
       setIsValidated(true);
       
     } catch (e: any) {
@@ -383,14 +399,14 @@ export default function EmotionDiary() {
                 <div className="flex items-center gap-3">
                   <span className="font-label text-xs text-secondary-container font-bold bg-secondary py-1 px-3 rounded-full">01</span>
                   <span className="font-label text-sm text-secondary uppercase tracking-wider font-semibold">Primer motivo</span>
-                  {isValidated && <span className="ml-auto font-label text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-md">+{score1} destellos</span>}
+                  {entry1Saved && <span className="ml-auto font-label text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-md">+{score1} destellos</span>}
                 </div>
                 <textarea 
                   className="w-full bg-transparent border-none focus:ring-0 font-body text-xl text-on-surface placeholder:text-outline-variant/50 resize-none h-32 outline-none disabled:opacity-70 disabled:cursor-not-allowed" 
                   placeholder="Hoy agradezco por..."
                   value={entry1}
                   onChange={e => setEntry1(e.target.value)}
-                  disabled={isValidated || isLoading}
+                  disabled={entry1Saved || isLoading}
                 ></textarea>
               </div>
 
@@ -399,19 +415,19 @@ export default function EmotionDiary() {
                 <div className="flex items-center gap-3">
                   <span className="font-label text-xs text-secondary-container font-bold bg-secondary py-1 px-3 rounded-full">02</span>
                   <span className="font-label text-sm text-secondary uppercase tracking-wider font-semibold">Segundo motivo</span>
-                  {isValidated && <span className="ml-auto font-label text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-md">+{score2} destellos</span>}
+                  {entry2Saved && <span className="ml-auto font-label text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-md">+{score2} destellos</span>}
                 </div>
                 <textarea 
                   className="w-full bg-transparent border-none focus:ring-0 font-body text-xl text-on-surface placeholder:text-outline-variant/50 resize-none h-32 outline-none disabled:opacity-70 disabled:cursor-not-allowed" 
                   placeholder="También he notado un destello en..."
                   value={entry2}
                   onChange={e => setEntry2(e.target.value)}
-                  disabled={isValidated || isLoading}
+                  disabled={entry2Saved || isLoading}
                 ></textarea>
               </div>
             </div>
 
-            {!isValidated && (
+            {!(entry1Saved && entry2Saved) && (
               <div className="flex justify-end border-t border-outline-variant/10 pt-8">
                 <button 
                   onClick={handleValidate}

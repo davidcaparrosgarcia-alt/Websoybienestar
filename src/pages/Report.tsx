@@ -216,50 +216,50 @@ export default function Report() {
             </div>
 
             {/* Next Steps Checklist */}
-            <div className="md:col-span-6 bg-white p-8 rounded-[2rem] shadow-sm border border-outline-variant/10 flex flex-col justify-center">
-              <h4 className="text-3xl font-headline font-bold text-primary mb-8">Próximos Pasos</h4>
+            <div className="md:col-span-6 bg-white dark:bg-[#d1e7e4] p-8 rounded-[2rem] shadow-sm border border-outline-variant/10 flex flex-col justify-center">
+              <h4 className="text-3xl font-headline font-bold text-primary dark:text-[#2c3e50] mb-8">Próximos Pasos</h4>
               <div className="space-y-6">
                 
                 {/* 1. Consulta Gratuita */}
                 <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
-                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
                   </div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Consulta Gratuita</p>
-                    <p className="text-sm text-on-surface-variant font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
+                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>
+                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
                   </div>
                 </div>
 
                 {/* 2. Cuestionario Espejo */}
                 <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneCuestionario ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
-                    {userData?.hasDoneCuestionario && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneCuestionario ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                    {userData?.hasDoneCuestionario && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
                   </div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Cuestionario Espejo</p>
-                    <p className="text-sm text-on-surface-variant font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
+                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
                   </div>
                 </div>
 
                 {/* 3. Descarga de Guía */}
                 <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDownloadedGuide ? 'border-secondary bg-secondary/10' : 'border-outline-variant'}`}>
-                    {userData?.hasDownloadedGuide && <span className="material-symbols-outlined text-secondary text-sm font-bold">check</span>}
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDownloadedGuide ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                    {userData?.hasDownloadedGuide && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
                   </div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Descarga de Guía</p>
-                    <p className="text-sm text-on-surface-variant font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
+                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Descarga de Guía</p>
+                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
                   </div>
                 </div>
 
                 {/* 4. Sesión de Validación */}
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant rounded-md flex items-center justify-center"></div>
+                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant dark:border-[#2c3e50]/30 rounded-md flex items-center justify-center"></div>
                   <div>
-                    <p className="font-headline font-bold text-primary">Sesión de Validación</p>
-                    <p className="text-sm text-on-surface-variant font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
-                    <button className="text-secondary text-sm font-label font-bold underline">Agendar ahora</button>
+                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Sesión de Validación</p>
+                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
+                    <button className="text-secondary dark:text-[#2c3e50] text-sm font-label font-bold underline">Agendar ahora</button>
                   </div>
                 </div>
 
@@ -271,18 +271,18 @@ export default function Report() {
 
       {/* SHARE THE LIGHT FOOTER CTA */}
       <section className="max-w-screen-xl mx-auto px-6 mb-24">
-        <div className="!bg-[#f1f5f9] dark:!bg-[#f1f5f9] p-12 md:p-20 rounded-3xl text-center relative overflow-hidden">
+        <div className="bg-[#f1f5f9] dark:bg-[#d1e7e4] p-12 md:p-20 rounded-3xl text-center relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-headline font-bold !text-[#162839] mb-6">¿Le ha servido este proceso?</h2>
-            <p className="text-lg !text-[#334155] max-w-2xl mx-auto mb-10">Creemos que nadie debería navegar la oscuridad a solas. Comparta la posibilidad de encontrar un faro con alguien que lo necesite.</p>
-            <button onClick={handleShare} className="!bg-[#162839] !text-white px-10 py-4 rounded-full font-label font-semibold flex items-center gap-3 mx-auto hover:scale-105 transition-transform">
+            <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#162839] dark:text-[#2c3e50] mb-6">¿Le ha servido este proceso?</h2>
+            <p className="text-lg text-[#334155] dark:text-[#43474c] max-w-2xl mx-auto mb-10">Creemos que nadie debería navegar la oscuridad a solas. Comparta la posibilidad de encontrar un faro con alguien que lo necesite.</p>
+            <button onClick={handleShare} className="bg-[#162839] dark:bg-[#1a252f] text-white px-10 py-4 rounded-full font-label font-semibold flex items-center gap-3 mx-auto hover:scale-105 transition-transform">
               <span className="material-symbols-outlined">share</span>
               Compartir la Luz
             </button>
           </div>
           {/* Decorative element */}
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/30 rounded-full blur-3xl"></div>
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/30 dark:bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 dark:bg-white/5 rounded-full blur-3xl"></div>
         </div>
       </section>
     </div>

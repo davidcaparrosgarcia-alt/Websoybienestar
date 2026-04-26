@@ -241,7 +241,7 @@ export default function Zen() {
                   setIsCodeModalOpen(true);
                 }
               }}
-              className="bg-[#f1f5f9] p-10 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-200 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-1 border border-primary/10"
+              className="bg-surface dark:bg-[#d1e7e4] p-10 rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-300 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-1 border border-primary/10"
             >
               <div>
                 <div className="flex justify-between items-start">

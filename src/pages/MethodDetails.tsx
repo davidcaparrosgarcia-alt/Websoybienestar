@@ -122,13 +122,13 @@ export default function MethodDetails() {
             </div>
           </div>
           {/* Phase 2 */}
-          <div className="bg-primary p-12 rounded-[2.5rem] shadow-2xl flex flex-col justify-between group hover:-translate-y-2 transition-all duration-500 text-white">
+          <div className="bg-primary dark:bg-[#d1e7e4] p-12 rounded-[2.5rem] shadow-2xl flex flex-col justify-between group hover:-translate-y-2 transition-all duration-500 text-white dark:text-[#2c3e50]">
             <div>
-              <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-8">
-                <span className="material-symbols-outlined text-on-primary-container text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>auto_awesome</span>
+              <div className="w-16 h-16 rounded-2xl bg-white/10 dark:bg-[#2c3e50]/10 flex items-center justify-center mb-8">
+                <span className="material-symbols-outlined text-white dark:text-[#2c3e50] text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>auto_awesome</span>
               </div>
-              <h3 className="font-headline text-3xl mb-6 text-white">Fase 2: Conexión Humana</h3>
-              <p className="text-lg text-on-primary-container leading-relaxed font-light text-white/90">
+              <h3 className="font-headline text-3xl mb-6 text-white dark:text-[#2c3e50]">Fase 2: Conexión Humana</h3>
+              <p className="text-lg text-white/90 dark:text-[#43474c] leading-relaxed font-light">
                 Donde la IA termina, comienza el terapeuta. Un guía experto recibe su "mapa" para profundizar en la empatía, la intuición y el acompañamiento real que solo otra alma puede ofrecer.
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function MethodDetails() {
                 progressStep > 1 
                   ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
                   : progressStep === 1 
-                    ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer' 
+                    ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer' 
                     : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
               }`}
             >
@@ -160,7 +160,7 @@ export default function MethodDetails() {
                 progressStep > 2 
                   ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
                   : progressStep === 2
-                    ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer'
+                    ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
                     : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
               }`}
             >
@@ -171,7 +171,7 @@ export default function MethodDetails() {
               onClick={progressStep === 3 ? () => navigate('/report') : undefined}
               className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
                 progressStep === 3
-                  ? 'bg-primary text-white shadow-md hover:bg-secondary cursor-pointer'
+                  ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
                   : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
               }`}
             >
@@ -233,20 +233,20 @@ export default function MethodDetails() {
             </a>
           </div>
         </div>
-        <div className="bg-primary p-16 rounded-[3rem] text-center space-y-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
+        <div className="bg-primary dark:bg-[#d1e7e4] p-16 rounded-[3rem] text-center space-y-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
           <div className="absolute inset-0 opacity-10">
             <img alt="texture" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
           </div>
           <div className="relative z-10 space-y-8 w-full max-w-md">
-            <img alt="SoyBienestar.es Logo White" className="h-32 w-auto mx-auto brightness-0 invert opacity-40 mb-4" src="/images/logo-soybienestar.svg"/>
-            <h2 className="font-headline text-3xl text-white italic font-light">¿Listo para comenzar su propio viaje?</h2>
+            <img alt="SoyBienestar.es Logo White" className="h-32 w-auto mx-auto brightness-0 invert opacity-40 mb-4 dark:brightness-0 dark:invert-0 dark:opacity-60" src="/images/logo-soybienestar.svg"/>
+            <h2 className="font-headline text-3xl text-white dark:text-[#2c3e50] italic font-light">¿Listo para comenzar su propio viaje?</h2>
             <button 
               onClick={handleShare}
-              className="w-full py-6 bg-white text-primary rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98]"
+              className="w-full py-6 bg-white dark:bg-[#1a252f] text-primary dark:text-white rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98]"
             >
               Compartir este Santuario
             </button>
-            <p className="text-[11px] text-white/60 uppercase tracking-[0.4em] font-medium">Compasión • Tecnología • Silencio</p>
+            <p className="text-[11px] text-white/60 dark:text-[#2c3e50]/70 uppercase tracking-[0.4em] font-medium">Compasión • Tecnología • Silencio</p>
           </div>
         </div>
       </section>

@@ -51,7 +51,7 @@ export default function Layout() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-[90] md:hidden" 
+              className="fixed inset-0 bg-black/60 z-[90] lg:hidden" 
               onClick={() => setIsMobileMenuOpen(false)} 
             />
             <motion.div 
@@ -59,7 +59,7 @@ export default function Layout() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-72 bg-[#2c3e50] z-[100] shadow-2xl p-8 flex flex-col md:hidden"
+              className="fixed top-0 left-0 h-full w-72 bg-[#2c3e50] z-[100] shadow-2xl p-8 flex flex-col lg:hidden"
             >
               <button 
                 onClick={() => setIsMobileMenuOpen(false)} 
@@ -111,7 +111,7 @@ export default function Layout() {
           <div 
             className="flex items-center gap-3 cursor-pointer"
             onClick={(e) => {
-              if (window.innerWidth < 768) {
+              if (window.innerWidth < 1024) {
                 e.preventDefault();
                 setIsMobileMenuOpen(true);
               } else {
@@ -119,11 +119,15 @@ export default function Layout() {
               }
             }}
           >
-            <div className="text-lg md:text-xl font-headline font-bold text-white">
-              ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span>
+            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col xl:flex-row xl:items-center xl:gap-2 leading-tight">
+              <div className="flex items-center gap-1">
+                <span>ReprogrÁmate</span>
+                <span className="material-symbols-outlined text-white/50 lg:hidden text-sm ml-1" style={{ fontVariationSettings: "'wght' 300" }}>expand_more</span>
+              </div>
+              <span className="italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          <div className="hidden lg:flex items-center gap-6 lg:gap-8">
             <Link className={getLinkClass("/")} to="/">Inicio</Link>
             <Link className={getLinkClass("/method")} to="/method">El Método</Link>
             <Link className={getLinkClass("/session")} to="/session">Consulta Gratuita</Link>
@@ -132,6 +136,13 @@ export default function Layout() {
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="hidden md:flex lg:hidden text-white/80 hover:text-white items-center justify-center transition-colors mr-1"
+              title="Volver atrás"
+            >
+              <span className="material-symbols-outlined font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>arrow_back</span>
+            </button>
             <ThemeToggle />
             <button onClick={handleAuthAction} className="bg-white text-[#11181f] px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap">
               {user ? "Cerrar Sesión" : "Iniciar Sesión"}

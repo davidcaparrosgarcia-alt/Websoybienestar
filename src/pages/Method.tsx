@@ -18,7 +18,7 @@ export default function Method() {
               Entendemos la ansiedad no como un muro, sino como una niebla. Nuestro método utiliza la metáfora del puente: una estructura firme que te permite caminar desde la confusión hacia un horizonte despejado.
             </p>
             <div className="flex items-center gap-6">
-              <button onClick={() => navigate('/method-details')} className="bg-primary text-on-primary px-8 py-4 rounded-xl font-label font-medium flex items-center gap-3 hover:shadow-2xl transition-all shadow-lg shadow-primary/10">
+              <button onClick={() => navigate('/method-details')} className="bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] px-8 py-4 rounded-xl font-label font-medium flex items-center gap-3 hover:shadow-2xl dark:hover:opacity-90 transition-all shadow-lg shadow-primary/10 dark:shadow-none">
                 Explorar Metodología
                 <span className="material-symbols-outlined">arrow_forward</span>
               </button>

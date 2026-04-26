@@ -109,12 +109,46 @@ export default function WeeklyGoals() {
     return "Domingo, 23:59";
   };
 
+  const checkWeeklyCreationLimit = async () => {
+    if (!user) return false;
+    if (user.email === "davidcaparrosgarcia@gmail.com") return true;
+
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), 0, 1);
+    const pastDays = (now.getTime() - firstDay.getTime()) / 86400000;
+    const weekNum = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+    const periodStr = `${now.getFullYear()}-W${weekNum}`;
+    
+    const docId = `weeklyGoalCreation_${periodStr}`;
+    const limitRef = doc(db, 'users', user.uid, 'aiLimits', docId);
+
+    try {
+      // @ts-ignore importing runTransaction may be needed or imported already
+      const { runTransaction } = await import("firebase/firestore");
+      return await runTransaction(db, async (t) => {
+        const docSnap = await t.get(limitRef);
+        let data = docSnap.exists() ? docSnap.data() : { count: 0 };
+        if (data.count >= 7) return false;
+        t.set(limitRef, { count: (data.count || 0) + 1 }, { merge: true });
+        return true;
+      });
+    } catch (e) {
+      console.error("Error in transaction", e);
+      return totalActive < 7;
+    }
+  };
+
   const handleAddEmptyGoal = async () => {
     if (!user) return;
     
-    // Check if user has added 7 goals this week
     if (totalActive >= 7) {
-      alert("Has alcanzado el límite máximo de 7 propósitos activos para esta semana.");
+      alert("Has alcanzado el límite máximo de 7 propósitos activos en pantalla.");
+      return;
+    }
+
+    const allowed = await checkWeeklyCreationLimit();
+    if (!allowed) {
+      alert("Has alcanzado el límite máximo de 7 propósitos creados para esta semana.");
       return;
     }
 
@@ -253,7 +287,12 @@ export default function WeeklyGoals() {
   const repeatGoal = async (goal: Goal) => {
     if (!user) return;
     if (totalActive >= 7) {
-      alert("Has alcanzado el límite máximo de 7 propósitos activos para esta semana.");
+      alert("Has alcanzado el límite máximo de 7 propósitos activos en pantalla.");
+      return;
+    }
+    const allowed = await checkWeeklyCreationLimit();
+    if (!allowed) {
+      alert("Has alcanzado el límite máximo de 7 propósitos creados para esta semana.");
       return;
     }
     const newId = Date.now().toString();
