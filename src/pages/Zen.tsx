@@ -297,7 +297,7 @@ export default function Zen() {
               </li>
               <li className="flex items-center gap-4 group">
                 <span className="material-symbols-outlined group-hover:scale-110 transition-transform !text-[#162839]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                <span className="font-medium uppercase tracking-widest text-xs !text-[#162839]">Acceso sólo a pacientes ya tratados</span>
+                <span className="font-medium uppercase tracking-widest text-xs !text-[#162839]">Acceso sólo a miembros del ciclo completo</span>
               </li>
             </ul>
             <button 

@@ -52,23 +52,16 @@ export default function Privacy() {
               </div>
             </div>
 
-            {/* IA Bridge & Consent Card */}
+            {/* IA Bridge Card */}
             <div className="md:col-span-4 !bg-[#162839] p-10 rounded-xl !text-white flex flex-col justify-between">
               <div>
-                <span className="material-symbols-outlined text-4xl mb-6 !text-[#cca969]">neurology</span>
+                <span className="material-symbols-outlined text-4xl mb-6 !text-[#cca969]" style={{ fontVariationSettings: "'wght' 300" }}>self_improvement</span>
                 <h3 className="font-headline text-2xl mb-4 !text-white italic">El Puente de la IA</h3>
-                <p className="!text-white/80 font-light leading-relaxed mb-6">
-                  Utilizamos inteligencia artificial como un puente hacia la claridad emocional, nunca como un sustituto del alma humana. Sus datos son anonimizados y procesados bajo cifrado de grado militar.
+                <p className="!text-white/80 font-light leading-relaxed mb-6 text-sm">
+                  SoyBienestar puede utilizar herramientas de inteligencia artificial como apoyo inicial para ordenar la información que la propia persona decide compartir durante la consulta guiada.
+                  <br /><br />
+                  Esta escucha asistida permite estructurar mejor la situación expresada y facilitar el posterior acompañamiento de nuestro equipo humano dentro de su proceso de bienestar emocional. El uso de la consulta guiada implica que la persona comprende esta intervención inicial asistida, descrita durante el propio recorrido, y decide participar voluntariamente en ella.
                 </p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 !bg-white/10 p-4 rounded-lg">
-                  <span className="material-symbols-outlined text-xl !text-[#cca969]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <span className="text-sm !text-white">Consentimiento de Procesamiento</span>
-                </div>
-                <button className="w-full !bg-[#cca969] !text-[#162839] py-4 rounded-xl font-semibold hover:opacity-90 transition-opacity">
-                  Validar Consentimiento
-                </button>
               </div>
             </div>
           </div>
@@ -86,6 +79,9 @@ export default function Privacy() {
                 <p className="leading-relaxed">
                   Solo recopilamos la información estrictamente necesaria para su proceso de acompañamiento. Esto incluye datos identificativos básicos y el historial de sesiones necesario para mantener la continuidad de su "camino de claridad". No vendemos, ni cederemos jamás su información a terceros con fines comerciales.
                 </p>
+                <div className="mt-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/10 text-sm">
+                  La web puede utilizar tecnologías necesarias para mantener la sesión iniciada, proteger el acceso del usuario y permitir el funcionamiento de las áreas privadas. Puedes consultar más información en la <Link to="/cookies" className="text-secondary font-medium hover:underline">Política de cookies</Link>.
+                </div>
               </div>
               <div className="group">
                 <h3 className="font-headline text-2xl text-primary mb-4">2. Seguridad de Grado Hospitalario</h3>
@@ -105,13 +101,21 @@ export default function Privacy() {
           {/* Call to Action Surface */}
           <div className="bg-surface-container-highest p-12 rounded-xl flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-md">
-              <h4 className="font-headline text-2xl text-primary mb-2">¿Desea una copia detallada?</h4>
-              <p className="text-on-surface-variant text-sm">Descargue nuestro código de ética completo en PDF para una lectura pausada y profunda.</p>
+              <h4 className="font-headline text-2xl text-primary mb-2">¿Tienes dudas sobre tus datos?</h4>
+              <p className="text-on-surface-variant text-sm">Queremos que tengas claridad sobre cómo se cuida la información que compartes. Si deseas consultar, corregir o solicitar la eliminación de tus datos, puedes escribirnos y revisaremos tu caso con atención.</p>
             </div>
-            <button className="flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 transition-opacity">
-              <span className="material-symbols-outlined">download</span>
-              Descargar Protocolo
-            </button>
+            <a 
+              href="mailto:info@soybienestar.es" 
+              onClick={(e) => {
+                try {
+                  navigator.clipboard.writeText("info@soybienestar.es");
+                } catch (err) {}
+              }}
+              className="flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined">mail</span>
+              Contactar sobre privacidad
+            </a>
           </div>
         </div>
       </section>

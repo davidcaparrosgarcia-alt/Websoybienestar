@@ -215,7 +215,7 @@ export default function Resources() {
                 </p>
                 <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3">
                   <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
-                  <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para pacientes en sus zonas personalizadas</span></li>
+                  <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
                 </ul>
                 <button className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all">
                     Explorar Metodología

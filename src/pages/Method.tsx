@@ -114,7 +114,7 @@ export default function Method() {
             <div className="text-3xl md:text-4xl font-headline font-light tracking-widest text-primary-fixed-dim/70 mb-12 uppercase">ReprogrÁmate</div>
             <h2 className="text-4xl md:text-5xl font-headline text-white mb-8 italic">¿Conoces a alguien perdido en la niebla?</h2>
             <p className="text-xl text-[#c4d7ec] mb-12 max-w-3xl mx-auto leading-relaxed font-body">
-              Aunque no seas nuestro paciente hoy, tu recomendación puede ser el faro que alguien más necesita encontrar. Ayúdanos a llevar claridad y calma a quienes más lo necesitan. Comparte esta arquitectura del bienestar.
+              Aunque no seas miembro de nuestro espacio hoy, tu recomendación puede ser el faro que alguien más necesita encontrar. Ayúdanos a llevar claridad y calma a quienes más lo necesitan. Comparte esta arquitectura del bienestar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
               <button 
@@ -122,7 +122,7 @@ export default function Method() {
                   if (navigator.share) {
                     navigator.share({
                       title: 'ReprogrÁmate',
-                      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad.',
+                      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad.',
                       url: window.location.origin
                     }).catch(console.error);
                   } else {
@@ -137,7 +137,7 @@ export default function Method() {
               <div className="flex items-center gap-6">
                 <a 
                   className="flex items-center gap-2 text-[#b5c8df] hover:text-white transition-colors font-label text-sm uppercase tracking-widest" 
-                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -146,7 +146,7 @@ export default function Method() {
                 </a>
                 <a 
                   className="flex items-center gap-2 text-[#b5c8df] hover:text-white transition-colors font-label text-sm uppercase tracking-widest" 
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita con un terapeuta de IA y máxima privacidad.")}&url=${encodeURIComponent(window.location.origin)}`}
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita con un asistente inicial y máxima privacidad.")}&url=${encodeURIComponent(window.location.origin)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -189,7 +189,7 @@ export default function Method() {
               {/* Discrete WhatsApp Button */}
               <div className="pt-6">
                 <a 
-                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#25D366] text-white px-8 py-3 rounded-full font-label font-semibold inline-flex items-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100"

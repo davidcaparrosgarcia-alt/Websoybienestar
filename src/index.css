@@ -65,12 +65,15 @@
 }
 
 @layer base {
+  html, body {
+    overflow-x: hidden;
+  }
   html {
     font-size: 92%;
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary transition-colors duration-500;
+    @apply bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-primary transition-colors duration-500 w-full;
     background-image: url("https://www.transparenttextures.com/patterns/leather.png");
     background-attachment: fixed;
   }

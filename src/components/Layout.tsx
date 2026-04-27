@@ -107,9 +107,9 @@ export default function Layout() {
           </svg>
         </div>
 
-        <nav className="flex justify-relative items-center justify-between px-6 md:px-12 py-4 max-w-screen-2xl mx-auto relative z-10">
+        <nav className="flex items-center justify-between w-full px-8 py-4 max-w-7xl mx-auto relative z-10">
           <div 
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center cursor-pointer"
             onClick={(e) => {
               if (window.innerWidth < 1024) {
                 e.preventDefault();
@@ -119,18 +119,17 @@ export default function Layout() {
               }
             }}
           >
-            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col xl:flex-row xl:items-center xl:gap-2 leading-tight">
-              <div className="flex items-center gap-1">
-                <span>ReprogrÁmate</span>
-                <span className="material-symbols-outlined text-white/50 lg:hidden text-sm ml-1" style={{ fontVariationSettings: "'wght' 300" }}>expand_more</span>
-              </div>
+            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col items-start xl:flex-row xl:items-baseline xl:gap-2 leading-tight text-left">
+              <span>ReprogrÁmate</span>
               <span className="italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
             </div>
           </div>
-          <div className="hidden lg:flex items-center gap-6 lg:gap-8">
+          <div className="hidden lg:flex items-center lg:gap-6 xl:gap-8">
             <Link className={getLinkClass("/")} to="/">Inicio</Link>
             <Link className={getLinkClass("/method")} to="/method">El Método</Link>
-            <Link className={getLinkClass("/session")} to="/session">Consulta Gratuita</Link>
+            <Link className={`${getLinkClass("/session")} text-center leading-[1.1]`} to="/session">
+              Consulta<br className="hidden lg:block xl:hidden" /> Gratuita
+            </Link>
             <Link className={getLinkClass("/report")} to="/report">Informe</Link>
             <Link className={getLinkClass("/resources")} to="/resources">Recursos</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
@@ -151,7 +150,7 @@ export default function Layout() {
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col w-full overflow-x-hidden">
         <Outlet />
       </main>
 
@@ -167,10 +166,11 @@ export default function Layout() {
           </svg>
         </div>
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-12 max-w-7xl mx-auto">
+        <div className="relative z-10 w-full flex flex-col md:flex-row justify-between items-start gap-12 max-w-7xl mx-auto">
           <div className="space-y-6">
-            <div className="font-headline text-2xl text-[#f9f9f8]">
-              ReprogrÁmate <span className="italic font-light text-secondary">SoyBienestar.es</span>
+            <div className="font-headline text-2xl text-[#f9f9f8] flex flex-col items-start xl:flex-row xl:items-baseline xl:gap-2 leading-tight text-left">
+              <span>ReprogrÁmate</span>
+              <span className="italic font-light text-secondary text-lg">SoyBienestar.es</span>
             </div>
             <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-white/80 max-w-xs leading-loose">
               ReprogrÁmate SoyBienestar.es <br/>
@@ -196,8 +196,8 @@ export default function Layout() {
             <div className="space-y-4 flex flex-col">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 mb-2">Legal</span>
               <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/privacy">Privacidad</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Términos</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Cookies</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/terms">Términos</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/cookies">Cookies</Link>
             </div>
           </div>
           <div className="flex flex-col items-end gap-8">

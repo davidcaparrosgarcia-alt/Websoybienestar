@@ -90,7 +90,7 @@ export default function SessionEnded() {
   const handleShare = async () => {
     const shareData = {
       title: 'ReprogrÁmate - Mi progreso',
-      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad.',
+      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad.',
       url: window.location.origin,
     };
     try {
@@ -176,8 +176,8 @@ export default function SessionEnded() {
                 <span className="material-symbols-outlined text-primary">psychology</span>
               </div>
               <div>
-                <h4 className="font-semibold text-primary mb-1">Diagnóstico Colaborativo</h4>
-                <p className="text-sm text-on-surface-variant">Tus respuestas construirán un diagnóstico detallado con nuestros especialistas.</p>
+                <h4 className="font-semibold text-primary mb-1">Alineación Colaborativa</h4>
+                <p className="text-sm text-on-surface-variant">Tus respuestas construirán una orientación detallada con nuestros especialistas.</p>
               </div>
             </div>
           </div>

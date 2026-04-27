@@ -48,7 +48,7 @@ export default function MethodDetails() {
   const handleShare = async () => {
     const shareData = {
       title: 'ReprogrÁmate - Nuestro Método',
-      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad.',
+      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía de IA, con una orientación gratuita y máxima privacidad.',
       url: window.location.origin,
     };
 
@@ -129,7 +129,7 @@ export default function MethodDetails() {
               </div>
               <h3 className="font-headline text-3xl mb-6 text-white dark:text-[#2c3e50]">Fase 2: Conexión Humana</h3>
               <p className="text-lg text-white/90 dark:text-[#43474c] leading-relaxed font-light">
-                Donde la IA termina, comienza el terapeuta. Un guía experto recibe su "mapa" para profundizar en la empatía, la intuición y el acompañamiento real que solo otra alma puede ofrecer.
+                Donde la IA termina, comienza el equipo humano. Un guía experto recibe su "mapa" para profundizar en la empatía, la intuición y el acompañamiento real que solo otra alma puede ofrecer.
               </p>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function MethodDetails() {
           <div className="space-y-4">
             <a 
               className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" 
-              href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+              href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía, con una orientación y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
               target="_blank"
               rel="noopener noreferrer"
             >

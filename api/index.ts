@@ -219,7 +219,7 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
     const chatWithHistory = ai.chats.create({
       model: AI_MODEL,
       config: {
-        systemInstruction: "Eres un asistente empático, cálido y profesional, un puente entre el paciente y un terapeuta humano. Escucha al paciente, haz preguntas suaves, concisas y guiadas para entender su situación (ansiedad, estrés, etc.). Mantén respuestas breves, conversacionales y humanas. No diagnostiques, solo brinda apoyo emocional.",
+        systemInstruction: "Eres un guía virtual empático, cálido y profesional, un puente preliminar entre la persona y un equipo humano. Escucha a la persona, haz preguntas suaves, concisas y guiadas para entender su situación expresada (ansiedad, abrumamiento, etc.). Mantén respuestas breves, conversacionales y humanas. No diagnostiques, solo ayuda a organizar sus ideas y brindar apoyo emocional.",
         maxOutputTokens: 700,
       },
       history
@@ -256,13 +256,13 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     if (!ai) return;
 
     const conversationText = messages
-      .map((msg: any) => `${msg.role === "user" ? "Paciente" : "IA"}: ${msg.content.substring(0, 4000)}`)
+      .map((msg: any) => `${msg.role === "user" ? "Persona" : "IA"}: ${msg.content.substring(0, 4000)}`)
       .join("\n\n");
 
     const prompt = `
-      A continuación se presenta la transcripción de una sesión preliminar entre un paciente y una IA asistente.
-      Como coach de vida empático, evalúa si la sesión aporta información relevante sobre el estado del paciente (vacías o mero ruido no valen).
-      Genera un informe detallado en Markdown clásico.
+      A continuación se presenta la transcripción de una consulta guiada preliminar entre una persona y un asistente inicial.
+      Como coach de bienestar empático, evalúa si la sesión aporta información relevante sobre la situación expresada (vacías o mero ruido no valen).
+      Genera un resumen de orientación detallado en Markdown clásico.
       Genera un resumen compacto que integre la nueva información con el historial pasado.
       
       Historial pasado:
@@ -275,7 +275,9 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
       {
         "validConclusion": boolean,
         "markdownReport": "El informe completo",
-        "newAccumulatedSummary": "Resumen integrado"
+        "newAccumulatedSummary": "Resumen integrado",
+        "needsUrgentSupport": boolean,
+        "urgentSupportMessage": "mensaje muy delicado, empático y orientado a buscar ayuda inmediata si needsUrgentSupport es true, si es false dejar vacío"
       }
     `;
 
@@ -327,7 +329,7 @@ app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
 
     if (!ai) return;
 
-    const prompt = `Eres un coach de vida amigable y experto. Analiza el/los motivos de gratitud de un paciente.
+    const prompt = `Eres un coach de vida amigable y experto. Analiza el/los motivos de gratitud de una persona.
 Instrucciones:
 1. Puntúa CADA motivo proporcionado con 0, 1 o 2. 0=vacío/esquivo, 1=superficial, 2=profundo. (Max 2 para cada uno). Si solo hay uno, ignora el otro.
 2. Escribe una pequeña y cálida reflexión (1 o 2 párrafos). Sé breve y cercano.

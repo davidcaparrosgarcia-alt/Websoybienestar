@@ -17,7 +17,7 @@ export default function Session() {
     {
       id: "1",
       role: "assistant",
-      content: "Hola. Soy un asistente virtual diseñado para escucharte. Estoy aquí para entender cómo te sientes y ayudarte a plasmar tu situación para que un terapeuta humano pueda valorarla de la mejor manera. Tenemos unos 15 minutos. ¿Cómo te gustaría empezar a contarme lo que te trae por aquí hoy?"
+      content: "Hola. Soy un guía virtual diseñado para escucharte. Estoy aquí para entender cómo te sientes y ayudarte a ordenar tu situación para que nuestro equipo humano pueda acompañarte de la mejor manera. Tenemos unos 15 minutos. ¿Cómo te gustaría empezar a contarme lo que te trae por aquí hoy?"
     }
   ]);
   const [input, setInput] = useState("");
@@ -25,6 +25,8 @@ export default function Session() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [showHelpText, setShowHelpText] = useState(false);
+  const [hasStartedGuidedSession, setHasStartedGuidedSession] = useState(false);
+  const [urgentMessage, setUrgentMessage] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -269,16 +271,18 @@ export default function Session() {
 
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishingError, setFinishingError] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<any>(null);
 
   const finishSession = async () => {
     if (messages.length <= 1) {
-      setFinishingError("No hay suficiente información. Por favor comunícate más con el asistente antes de finalizar.");
+      setFinishingError("No hay suficiente información. Por favor comunícate más con el guía antes de finalizar.");
       setTimeout(() => setFinishingError(null), 8000);
       return;
     }
 
     setIsFinishing(true);
     setFinishingError(null);
+    setUrgentMessage(null);
 
     const user = auth.currentUser;
     let accumulatedSummary = "";
@@ -322,9 +326,18 @@ export default function Session() {
           });
         }
         
-        navigate("/session-ended", { state: { messages, reportData: parsedData.markdownReport } });
+        if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
+          setUrgentMessage(parsedData.urgentSupportMessage);
+          setPendingNavigation({ path: "/session-ended", state: { messages, reportData: parsedData.markdownReport } });
+        } else {
+          navigate("/session-ended", { state: { messages, reportData: parsedData.markdownReport } });
+        }
       } else {
-        setFinishingError("La IA ha determinado que la sesión no tiene suficiente información o no ha llegado a una conclusión válida. Por favor, expande más tus respuestas.");
+        if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
+           setUrgentMessage(parsedData.urgentSupportMessage);
+        } else {
+           setFinishingError("La IA ha determinado que la sesión no tiene suficiente información o no ha llegado a una evaluación completa. Por favor, expande más tus respuestas.");
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -372,8 +385,53 @@ export default function Session() {
     );
   }
 
+  if (!hasDoneConsultation && !hasStartedGuidedSession) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
+        <div className="max-w-xl w-full bg-surface-container-low p-10 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
+          <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2">
+            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>self_improvement</span>
+          </div>
+          <h2 className="font-headline text-3xl md:text-3xl text-primary leading-tight">Consulta Guiada</h2>
+          <p className="text-on-surface-variant font-body font-light text-lg leading-relaxed text-center">
+            Quiero comenzar esta primera consulta guiada, sabiendo que me ayudará a ordenar lo que siento y expresar mi situación con más claridad antes del acompañamiento de un equipo humano.
+          </p>
+          <div className="w-full flex justify-center mt-8">
+            <button 
+              onClick={() => setHasStartedGuidedSession(true)}
+              className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline text-lg tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95"
+            >
+              Comenzar consulta guiada
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)]">
+    <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)] relative">
+      {urgentMessage && (
+        <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-surface p-8 max-w-lg rounded-[2rem] shadow-2xl flex flex-col gap-6 items-center text-center animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>support_agent</span>
+            </div>
+            <p className="text-on-surface font-body font-light text-lg leading-relaxed">{urgentMessage}</p>
+            <button 
+              onClick={() => {
+                setUrgentMessage(null);
+                if (pendingNavigation) {
+                  navigate(pendingNavigation.path, { state: pendingNavigation.state });
+                }
+              }}
+              className="bg-primary text-on-primary px-10 py-4 rounded-full font-headline text-lg tracking-wide hover:opacity-90 transition-all active:scale-95 mt-2"
+            >
+              Continuar
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header Info */}
       <div className="border-b border-outline-variant/10 py-4 px-8 flex justify-between items-center bg-transparent">
         <div className="flex items-center gap-3">

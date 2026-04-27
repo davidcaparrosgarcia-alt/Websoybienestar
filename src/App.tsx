@@ -17,6 +17,8 @@ import EmotionDiary from "./pages/EmotionDiary";
 import WeeklyGoals from "./pages/WeeklyGoals";
 import Login from "./pages/Login";
 import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
+import Terms from "./pages/Terms";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -45,6 +47,8 @@ export default function App() {
           } />
           <Route path="login" element={<Login />} />
           <Route path="privacy" element={<Privacy />} />
+          <Route path="cookies" element={<Cookies />} />
+          <Route path="terms" element={<Terms />} />
           <Route path="session" element={
             <ProtectedRoute>
               <Session />

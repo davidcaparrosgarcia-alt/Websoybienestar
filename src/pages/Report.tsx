@@ -108,7 +108,7 @@ export default function Report() {
   const handleShare = async () => {
     const shareData = {
       title: 'ReprogrÁmate - Sesión Gratuita',
-      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un terapeuta de IA, con una conclusión gratuita y máxima privacidad.',
+      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad.',
       url: window.location.origin,
     };
 
