@@ -10,6 +10,7 @@ export default function Resources() {
   
   // Modals state
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+  const [isBreathingModalOpen, setIsBreathingModalOpen] = useState(false);
   const [selectedBreathingInfographic, setSelectedBreathingInfographic] = useState<{ id: string, src: string } | null>(null);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
@@ -179,13 +180,13 @@ export default function Resources() {
           </div>
 
           {/* Técnicas de Respiración */}
-          <div className="md:col-span-7 group">
+          <div className="md:col-span-7 group cursor-pointer" onClick={() => setIsBreathingModalOpen(true)}>
             <div className="relative overflow-hidden aspect-[16/10] rounded-2xl border border-outline-variant/10">
               <img alt="Respiración" className="dynamic-color-img w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo-respira.jpg" />
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
               <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-12 text-center pointer-events-none">
                 <div className="w-full">
-                  <p className="text-white/90 font-light text-xl">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
+                  <p className="text-white bg-black/40 backdrop-blur-md px-6 py-4 border border-white/10 rounded-2xl shadow-xl font-light text-xl md:text-2xl inline-block max-w-lg">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
                 </div>
                 <div className="w-full">
                   <h3 className="font-headline text-4xl text-white">Técnicas de Respiración</h3>
@@ -198,33 +199,33 @@ export default function Resources() {
           <div 
             className="md:col-span-12 mt-12 group cursor-pointer"
             onClick={() => {
-              setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/terapia_cognitiva.jpg' });
+              setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/info-terapia-cognitiva.jpg' });
             }}
           >
-            <div className="grid md:grid-cols-2 gap-0 overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
-              <div className="p-12 md:p-16 flex flex-col justify-center bg-surface-container-lowest z-10">
-                <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6">Nivel Avanzado</p>
-                <h3 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between">
-                  <span>Gestión <br/><span className="italic">Emocional</span></span>
-                  <span className="material-symbols-outlined opacity-50 group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
-                    open_in_new
-                  </span>
-                </h3>
-                <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm">
-                    Aprenda a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para la resiliencia y el equilibrio.
-                </p>
-                <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3">
-                  <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
-                  <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
-                </ul>
-                <button className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all">
-                    Explorar Metodología
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                </button>
-              </div>
-              <div className="relative min-h-[300px] md:min-h-[400px]">
-                <div className="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/50 to-transparent z-10 md:block hidden"></div>
-                <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100" src="/images/fondo-gestion-emocional.jpg" />
+            <div className="relative w-full aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
+              <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
+              <div className="relative z-10 flex w-full h-full min-h-[400px]">
+                <div className="hidden md:block w-1/2"></div>
+                <div className="w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl ml-auto h-full">
+                  <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
+                  <h3 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
+                    <span>Gestión <br/><span className="italic">Emocional</span></span>
+                    <span className="material-symbols-outlined opacity-50 group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
+                      open_in_new
+                    </span>
+                  </h3>
+                  <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
+                      Aprenda a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para la resiliencia y el equilibrio.
+                  </p>
+                  <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3 relative z-20">
+                    <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
+                    <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
+                  </ul>
+                  <button className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
+                      Explorar Metodología
+                      <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -234,7 +235,7 @@ export default function Resources() {
         <section className="mt-32 py-24 border-t border-outline-variant/10">
           <div className="flex flex-col md:flex-row gap-16 items-center">
             <div className="w-full md:w-1/2">
-              <div className="relative overflow-hidden aspect-[4/3] rounded-2xl group border border-outline-variant/10">
+              <div className="relative overflow-hidden aspect-[1/1] rounded-2xl group border border-outline-variant/10">
                 <img alt="Recursos Personalizados" className="dynamic-color-img w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-105 grayscale contrast-110 transition-all group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/logo-recursos.jpg" />
                 <div className="absolute inset-0 bg-primary/20 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
               </div>
@@ -365,6 +366,56 @@ export default function Resources() {
               >
                 Desbloquear
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Breathing Exercises Modal */}
+      {isBreathingModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative border border-outline-variant/10">
+            <button 
+              onClick={() => setIsBreathingModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors z-10"
+            >
+              <span className="material-symbols-outlined text-on-surface-variant">close</span>
+            </button>
+            <div className="p-8 pb-6 border-b border-outline-variant/10 bg-surface">
+              <h3 className="font-headline text-3xl text-primary mb-2">Ejercicios de Respiración</h3>
+              <p className="text-on-surface-variant text-sm">Selecciona una técnica para ver las instrucciones guiadas paso a paso.</p>
+            </div>
+            <div className="p-6 space-y-4">
+              {[
+                { id: '1', title: 'Respiración Cuadrada', type: 'ENFOQUE' },
+                { id: '2', title: 'Respiración 4-7-8', type: 'CALMA' },
+                { id: '3', title: 'Respiración Abdominal', type: 'PROFUNDA' },
+              ].map((technique) => (
+                <div 
+                  key={technique.id} 
+                  onClick={() => {
+                    setIsBreathingModalOpen(false);
+                    const imageMap: Record<string, string> = {
+                      '1': '/images/info-resp-cuadrada.jpg',
+                      '2': '/images/info-resp-478.jpg',
+                      '3': '/images/info-resp-abdominal.jpg'
+                    };
+                    setSelectedBreathingInfographic({ id: technique.id, src: imageMap[technique.id] });
+                  }}
+                  className="cursor-pointer bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 hover:bg-surface-container transition-colors group"
+                >
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all shadow-sm">
+                    <span className="material-symbols-outlined text-2xl">air</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-headline text-lg text-primary truncate border-b border-outline-variant/10 pb-1 mb-1">{technique.title}</p>
+                    <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+                      <span className="font-semibold uppercase tracking-wider">{technique.type}</span>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

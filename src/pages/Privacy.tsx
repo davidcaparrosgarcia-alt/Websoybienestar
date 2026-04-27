@@ -1,6 +1,21 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Privacy() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = async () => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText("info@soybienestar.es");
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (error) {
+      setCopied(false);
+    }
+  };
+
   return (
     <div className="flex-1 bg-transparent w-full">
       {/* Hero Section: The Breathing Hero */}
@@ -36,18 +51,18 @@ export default function Privacy() {
                 <div>
                   <h2 className="font-headline text-3xl text-primary mb-4">Validación Profesional y Ética</h2>
                   <p className="text-on-surface-variant leading-relaxed text-lg mb-6">
-                    Nuestra práctica se rige por los más estrictos estándares del Consejo General de la Psicología de España. Cada interacción, dato y silencio está protegido por el secreto profesional, garantizando un espacio donde la palabra es libre y el registro es privado.
+                    Nuestra práctica se rige por criterios de confidencialidad, respeto y protección de datos. Cada interacción e información compartida se trata con confidencialidad, garantizando un espacio donde la palabra es libre y el registro es privado.
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-12 border-t border-outline-variant/10 pt-12">
                 <div>
-                  <h4 className="font-headline text-xl text-primary mb-2">Secreto Profesional</h4>
-                  <p className="text-on-surface-variant text-sm leading-relaxed">Protección absoluta de la confidencialidad de acuerdo con la Ley Orgánica de Protección de Datos.</p>
+                  <h4 className="font-headline text-xl text-primary mb-2">Confidencialidad</h4>
+                  <p className="text-on-surface-variant text-sm leading-relaxed">Alto grado de protección de la confidencialidad de acuerdo con la normativa aplicable de protección de datos.</p>
                 </div>
                 <div>
-                  <h4 className="font-headline text-xl text-primary mb-2">Supervisión Clínica</h4>
-                  <p className="text-on-surface-variant text-sm leading-relaxed">Protocolos de revisión ética constantes para asegurar la excelencia en el trato humano.</p>
+                  <h4 className="font-headline text-xl text-primary mb-2">Revisión humana</h4>
+                  <p className="text-on-surface-variant text-sm leading-relaxed">Protocolos de revisión ética orientados a asegurar la excelencia en el trato humano.</p>
                 </div>
               </div>
             </div>
@@ -84,9 +99,9 @@ export default function Privacy() {
                 </div>
               </div>
               <div className="group">
-                <h3 className="font-headline text-2xl text-primary mb-4">2. Seguridad de Grado Hospitalario</h3>
+                <h3 className="font-headline text-2xl text-primary mb-4">2. Medidas estrictas de seguridad</h3>
                 <p className="leading-relaxed">
-                  Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos personales contra el acceso no autorizado, la pérdida accidental o la destrucción. Nuestros servidores están ubicados en la Unión Europea, cumpliendo íntegramente con el RGPD.
+                  Implementamos medidas técnicas y organizativas para proteger sus datos personales contra el acceso no autorizado, la pérdida accidental o la destrucción, trabajando conforme al RGPD y la normativa aplicable de protección de datos.
                 </p>
               </div>
               <div className="group">
@@ -102,20 +117,18 @@ export default function Privacy() {
           <div className="bg-surface-container-highest p-12 rounded-xl flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-md">
               <h4 className="font-headline text-2xl text-primary mb-2">¿Tienes dudas sobre tus datos?</h4>
-              <p className="text-on-surface-variant text-sm">Queremos que tengas claridad sobre cómo se cuida la información que compartes. Si deseas consultar, corregir o solicitar la eliminación de tus datos, puedes escribirnos y revisaremos tu caso con atención.</p>
+              <p className="text-on-surface-variant text-sm md:mb-0">Queremos que tengas claridad sobre cómo se cuida la información que compartes. Si deseas consultar, corregir o solicitar la eliminación de tus datos, puedes escribirnos y revisaremos tu caso con atención.</p>
             </div>
-            <a 
-              href="mailto:info@soybienestar.es" 
-              onClick={(e) => {
-                try {
-                  navigator.clipboard.writeText("info@soybienestar.es");
-                } catch (err) {}
-              }}
-              className="flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
-            >
-              <span className="material-symbols-outlined">mail</span>
-              Contactar sobre privacidad
-            </a>
+            <div className="flex flex-col items-center md:items-end gap-4 shrink-0">
+              <div className="font-headline text-2xl text-primary text-center md:text-right w-full">info@soybienestar.es</div>
+              <button 
+                onClick={handleCopyEmail}
+                className="flex items-center justify-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 transition-opacity min-w-[200px]"
+              >
+                <span className="material-symbols-outlined">{copied ? "check" : "content_copy"}</span>
+                {copied ? "Email copiado" : "Copiar email"}
+              </button>
+            </div>
           </div>
         </div>
       </section>
