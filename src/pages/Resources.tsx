@@ -16,6 +16,27 @@ export default function Resources() {
   const [hasAccess, setHasAccess] = useState(false);
   const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
 
+  // Mobile interactions state
+  const [showBreathingText, setShowBreathingText] = useState(false);
+  const breathingTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const [showGestionsTextBg, setShowGestionsTextBg] = useState(false);
+  const gestionTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handlePointerDown = (type: 'breathing' | 'gestion') => {
+    const timer = setTimeout(() => {
+      if (type === 'breathing') setShowBreathingText(true);
+      if (type === 'gestion') setShowGestionsTextBg(true);
+    }, 400); // 400ms para pulsación prolongada
+    if (type === 'breathing') breathingTimer.current = timer;
+    if (type === 'gestion') gestionTimer.current = timer;
+  };
+
+  const handlePointerUp = (type: 'breathing' | 'gestion') => {
+    if (type === 'breathing' && breathingTimer.current) clearTimeout(breathingTimer.current);
+    if (type === 'gestion' && gestionTimer.current) clearTimeout(gestionTimer.current);
+  };
+
   useEffect(() => {
     // Scroll to color effect
     const observer = new IntersectionObserver((entries) => {
@@ -180,12 +201,27 @@ export default function Resources() {
           </div>
 
           {/* Técnicas de Respiración */}
-          <div className="md:col-span-7 group cursor-pointer" onClick={() => setIsBreathingModalOpen(true)}>
+          <div 
+            className="md:col-span-7 group cursor-pointer" 
+            onClick={() => {
+              if (window.matchMedia('(hover: hover)').matches) setIsBreathingModalOpen(true);
+            }}
+            onDoubleClick={() => setIsBreathingModalOpen(true)}
+            onPointerDown={() => handlePointerDown('breathing')}
+            onPointerUp={() => handlePointerUp('breathing')}
+            onPointerLeave={() => {
+              handlePointerUp('breathing');
+              setShowBreathingText(false);
+            }}
+            onContextMenu={(e) => {
+               if (window.matchMedia('(hover: none)').matches) e.preventDefault();
+            }}
+          >
             <div className="relative overflow-hidden aspect-[16/10] rounded-2xl border border-outline-variant/10">
-              <img alt="Respiración" className="dynamic-color-img w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo-respira.jpg" />
-              <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
-              <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-12 text-center pointer-events-none">
-                <div className="w-full">
+              <img alt="Respiración" className="dynamic-color-img w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 md:group-hover:grayscale-0 md:group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo-respira.jpg" />
+              <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 text-center pointer-events-none">
+                <div className={`w-full mb-6 transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showBreathingText ? 'opacity-100' : 'opacity-0'}`}>
                   <p className="text-white bg-black/40 backdrop-blur-md px-6 py-4 border border-white/10 rounded-2xl shadow-xl font-light text-xl md:text-2xl inline-block max-w-lg">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
                 </div>
                 <div className="w-full">
@@ -199,18 +235,32 @@ export default function Resources() {
           <div 
             className="md:col-span-12 mt-12 group cursor-pointer"
             onClick={() => {
+              if (window.matchMedia('(hover: hover)').matches) {
+                setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/info-terapia-cognitiva.jpg' });
+              }
+            }}
+            onDoubleClick={() => {
               setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/info-terapia-cognitiva.jpg' });
+            }}
+            onPointerDown={() => handlePointerDown('gestion')}
+            onPointerUp={() => handlePointerUp('gestion')}
+            onPointerLeave={() => {
+              handlePointerUp('gestion');
+              setShowGestionsTextBg(false);
+            }}
+            onContextMenu={(e) => {
+               if (window.matchMedia('(hover: none)').matches) e.preventDefault();
             }}
           >
             <div className="relative w-full aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
-              <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
+              <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
               <div className="relative z-10 flex w-full h-full min-h-[400px]">
                 <div className="hidden md:block w-1/2"></div>
-                <div className="w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl ml-auto h-full">
+                <div className={`w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
                   <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
                   <h3 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
                     <span>Gestión <br/><span className="italic">Emocional</span></span>
-                    <span className="material-symbols-outlined opacity-50 group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
+                    <span className="material-symbols-outlined opacity-50 md:group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
                       open_in_new
                     </span>
                   </h3>

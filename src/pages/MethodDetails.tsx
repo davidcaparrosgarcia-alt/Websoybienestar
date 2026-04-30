@@ -8,6 +8,7 @@ export default function MethodDetails() {
   const navigate = useNavigate();
   const [progressStep, setProgressStep] = useState(1);
   const [user] = useAuthState(auth);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -78,7 +79,10 @@ export default function MethodDetails() {
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-8 text-center">
-          <div className="mt-12 w-20 h-20 rounded-full border border-white/40 backdrop-blur-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white/5">
+          <div 
+            onClick={() => setIsVideoModalOpen(true)}
+            className="mt-12 w-20 h-20 rounded-full border border-white/40 backdrop-blur-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white/5"
+          >
             <span className="material-symbols-outlined text-white text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
           </div>
         </div>
@@ -88,11 +92,9 @@ export default function MethodDetails() {
       <section className="px-8 md:px-24 py-24 flex flex-col lg:flex-row items-center gap-20 max-w-screen-2xl mx-auto">
         <div className="lg:w-1/2 flex justify-center lg:justify-start">
           <div className="relative group w-96 h-96 flex items-center justify-center overflow-hidden p-8">
-            <div className="absolute bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all -inset-8"></div>
             <img 
               alt="Logo Integrado" 
-              className="relative w-full h-full object-cover scale-110" 
-              style={{ maskImage: 'radial-gradient(circle at center, black 40%, rgba(0,0,0,0) 65%)', WebkitMaskImage: 'radial-gradient(circle at center, black 40%, rgba(0,0,0,0) 65%)' }}
+              className="relative w-full h-full object-cover" 
               src="/images/logo-integrado.jpg"
             />
           </div>
@@ -250,6 +252,28 @@ export default function MethodDetails() {
           </div>
         </div>
       </section>
+
+      {/* Video Modal */}
+      {isVideoModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl">
+            <button 
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors backdrop-blur-md"
+            >
+              <span className="material-symbols-outlined text-2xl">close</span>
+            </button>
+            <video 
+              controls 
+              autoPlay 
+              className="w-full h-full"
+              src="/images/metodo-intro.mp4"
+            >
+              Tu navegador no soporta el video.
+            </video>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
