@@ -205,7 +205,9 @@ app.get("/api/health", (req, res) => {
     aiAvailable: !!ai,
     authAvailable: !!admin.apps.length,
     model: AI_MODEL,
-    env: process.env.NODE_ENV || "development"
+    env: process.env.NODE_ENV || "development",
+    questionnaireApiConfigured: !!process.env.QUESTIONNAIRE_API_URL,
+    questionnaireBridgeConfigured: !!process.env.QUESTIONNAIRE_BRIDGE_SECRET
   });
 });
 
@@ -585,15 +587,23 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const apiUrl = process.env.QUESTIONNAIRE_API_URL;
     const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET;
 
+    if (!apiUrl) {
+      console.error("QUESTIONNAIRE_API_URL missing");
+    }
+    if (!bridgeSecret) {
+      console.error("QUESTIONNAIRE_BRIDGE_SECRET missing");
+    }
+
     if (!apiUrl || !bridgeSecret) {
-      console.error("Missing QUESTIONNAIRE_API_URL or QUESTIONNAIRE_BRIDGE_SECRET");
       return res.status(502).json({
         success: false,
         message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros."
       });
     }
 
-    const response = await fetch(`${apiUrl}/api/patient-requests`, {
+    const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+
+    const response = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -609,7 +619,11 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     } catch(e) {}
 
     if (!response.ok) {
-      console.error("Error from Cuestionario API", response.status, responseText);
+      console.error("Error from Cuestionario API", {
+        status: response.status,
+        statusText: response.statusText,
+        responseText: responseText.substring(0, 500)
+      });
       return res.status(502).json({
         success: false,
         message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros."
@@ -657,7 +671,15 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     }
 
   } catch (error) {
-    console.error("API /api/request-questionnaire error:", error);
+    if (error instanceof Error) {
+      console.error("API /api/request-questionnaire error:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+    } else {
+      console.error("API /api/request-questionnaire error:", error);
+    }
     res.status(500).json({ success: false, message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros." });
   }
 });
