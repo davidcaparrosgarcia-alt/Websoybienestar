@@ -470,6 +470,131 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
   }
 });
 
+// TEMP DEBUG ENDPOINT: remove after bridge validation
+app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
+  try {
+    if (req.user?.email !== "davidcaparrosgarcia@gmail.com") {
+      return res.status(403).json({ success: false, error: "No autorizado" });
+    }
+
+    const apiUrl = process.env.QUESTIONNAIRE_API_URL;
+    const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET;
+
+    const questionnaireApiConfigured = !!apiUrl;
+    const questionnaireBridgeConfigured = !!bridgeSecret;
+
+    if (!apiUrl || !bridgeSecret) {
+      return res.json({
+        success: false,
+        step: "config",
+        questionnaireApiConfigured,
+        questionnaireBridgeConfigured
+      });
+    }
+
+    const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+    let normalizedApiUrlHost = "unknown";
+    try {
+      normalizedApiUrlHost = new URL(normalizedApiUrl).host;
+    } catch (e) {}
+
+    let healthStatus = 0;
+    let healthOk = false;
+    let healthText = "";
+    try {
+      const healthResponse = await fetch(`${normalizedApiUrl}/api/health`);
+      healthStatus = healthResponse.status;
+      healthOk = healthResponse.ok;
+      healthText = (await healthResponse.text()).substring(0, 500);
+    } catch (e) {
+      return res.json({
+        success: false,
+        step: "health",
+        questionnaireApiConfigured,
+        questionnaireBridgeConfigured,
+        normalizedApiUrlHost,
+        error: e instanceof Error ? e.message : "Unknown health fetch error"
+      });
+    }
+
+    let postStatus = 0;
+    let postOk = false;
+    let postText = "";
+    try {
+      const payload = {
+        id: "debug_" + Date.now(),
+        source: "soybienestar_debug",
+        sourcePath: "/api/debug-questionnaire-bridge",
+        soybienestarUid: req.user!.uid,
+        displayName: "Debug SoyBienestar",
+        nombre: "Debug SoyBienestar",
+        email: req.user!.email || "debug@soybienestar.es",
+        telefono: null,
+        preferredChannels: {
+          email: true,
+          whatsapp: false,
+          sms: false
+        },
+        hasDoneConsultation: true,
+        status: "pending",
+        createdAt: Date.now(),
+        createdAtIso: new Date().toISOString(),
+        processedAt: null,
+        linkedPatientId: null,
+        notes: "Solicitud temporal de diagnóstico del puente SoyBienestar-Cuestionario",
+        soybienestarContext: {
+          contextSchemaVersion: 1,
+          debug: true,
+          generatedAt: new Date().toISOString()
+        }
+      };
+
+      const postResponse = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-bridge-secret": bridgeSecret
+        },
+        body: JSON.stringify(payload)
+      });
+
+      postStatus = postResponse.status;
+      postOk = postResponse.ok;
+      postText = (await postResponse.text()).substring(0, 500);
+    } catch (e) {
+      return res.json({
+        success: false,
+        step: "post",
+        questionnaireApiConfigured,
+        questionnaireBridgeConfigured,
+        normalizedApiUrlHost,
+        health: { status: healthStatus, ok: healthOk, bodyPreview: healthText },
+        error: e instanceof Error ? e.message : "Unknown post fetch error"
+      });
+    }
+
+    return res.json({
+      success: true,
+      step: "done",
+      questionnaireApiConfigured,
+      questionnaireBridgeConfigured,
+      normalizedApiUrlHost,
+      health: {
+        status: healthStatus,
+        ok: healthOk,
+        bodyPreview: healthText
+      },
+      post: {
+        status: postStatus,
+        ok: postOk,
+        bodyPreview: postText
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Internal server error during debug block" });
+  }
+});
+
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   try {
     const { email, telefono, preferredChannels } = req.body;
