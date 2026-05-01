@@ -23,9 +23,8 @@ export default function Zen() {
   const [emailChecked, setEmailChecked] = useState(true);
   const [emailValue, setEmailValue] = useState("");
   const [whatsappChecked, setWhatsappChecked] = useState(false);
-  const [whatsappValue, setWhatsappValue] = useState("+34");
   const [smsChecked, setSmsChecked] = useState(false);
-  const [smsValue, setSmsValue] = useState("+34");
+  const [phoneValue, setPhoneValue] = useState("+34");
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   
   const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
@@ -74,8 +73,7 @@ export default function Zen() {
         if (contactPhone) {
           const prefix = data?.contactPhoneCountryCode || "+34";
           const fullPhone = contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
-          setWhatsappValue(fullPhone);
-          setSmsValue(fullPhone);
+          setPhoneValue(fullPhone);
         }
       } else {
         setHasDoneConsultation(false);
@@ -168,8 +166,7 @@ export default function Zen() {
     
     let telefono = "";
     if (whatsappChecked || smsChecked) {
-      // Use whatsapp value if checked, else sms value
-      telefono = whatsappChecked ? whatsappValue : smsValue;
+      telefono = phoneValue;
       if (!telefono || telefono === "+34" || telefono.trim().length < 5) {
         setQuestionnaireRequestMessage({ text: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono.", type: "error" });
         return;
@@ -489,13 +486,6 @@ export default function Zen() {
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.29-4.143c1.589.943 3.197 1.441 4.934 1.442 5.333 0 9.673-4.34 9.676-9.674.002-5.332-4.338-9.674-9.671-9.675-2.585-.001-5.015 1.007-6.843 2.837-1.828 1.83-2.834 4.26-2.835 6.844-.001 1.705.469 3.376 1.36 4.827l-1.055 3.854 3.954-1.035zm12.188-4.63c-.334-.167-1.974-.974-2.279-1.084-.303-.11-.524-.167-.745.167-.221.334-.856 1.084-1.05 1.308-.194.223-.389.25-.723.084-.333-.167-1.408-.52-2.681-1.656-.991-.884-1.659-1.976-1.853-2.31-.194-.334-.021-.514.146-.68.15-.15.334-.389.501-.584.166-.194.222-.333.333-.556.111-.223.056-.417-.028-.584-.084-.167-.745-1.794-1.021-2.459-.269-.646-.543-.558-.745-.568-.192-.01-.413-.012-.634-.012-.221 0-.579.083-.883.417-.304.334-1.162 1.14-1.162 2.783 0 1.643 1.198 3.226 1.365 3.449.167.222 2.358 3.599 5.712 5.048.798.344 1.42.55 1.905.706.802.255 1.533.219 2.11.134.643-.095 1.974-.807 2.251-1.587.277-.779.277-1.447.194-1.586-.083-.14-.304-.223-.637-.39z"></path></svg>
                       <span className="text-sm">WhatsApp</span>
                     </div>
-                    <input 
-                      type="tel" 
-                      value={whatsappValue} 
-                      onChange={(e) => setWhatsappValue(e.target.value)}
-                      className="text-sm px-3 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-[#25D366] outline-none flex-1 min-w-0"
-                      placeholder="+34"
-                    />
                   </label>
 
                   <label className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors cursor-pointer">
@@ -509,14 +499,23 @@ export default function Zen() {
                       <span className="material-symbols-outlined text-base">sms</span>
                       <span className="text-sm">SMS</span>
                     </div>
-                    <input 
-                      type="tel" 
-                      value={smsValue} 
-                      onChange={(e) => setSmsValue(e.target.value)}
-                      className="text-sm px-3 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none flex-1 min-w-0"
-                      placeholder="+34"
-                    />
                   </label>
+
+                  {(whatsappChecked || smsChecked) && (
+                    <label className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
+                      <div className="flex items-center gap-2 text-on-surface-variant shrink-0">
+                        <span className="material-symbols-outlined text-base">phone_iphone</span>
+                        <span className="text-sm">Número para WhatsApp y/o SMS</span>
+                      </div>
+                      <input 
+                        type="tel" 
+                        value={phoneValue} 
+                        onChange={(e) => setPhoneValue(e.target.value)}
+                        className="text-sm px-3 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none flex-1 min-w-0"
+                        placeholder="+34"
+                      />
+                    </label>
+                  )}
                 </form>
 
                 {questionnaireRequestMessage && (

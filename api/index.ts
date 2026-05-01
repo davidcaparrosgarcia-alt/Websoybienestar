@@ -538,8 +538,9 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const requestsRef = db.collection('users').doc(uid).collection('questionnaireRequests');
     const requestId = requestsRef.doc().id;
     
-    // Convert to regular Date ISO for the payload (since serverTimestamp doesn't serialize over JSON easily)
-    const createdAtIso = new Date().toISOString(); 
+    // Create numeric timestamp and ISO string
+    const createdAt = Date.now();
+    const createdAtIso = new Date(createdAt).toISOString(); 
 
     const payload = {
       id: requestId,
@@ -553,7 +554,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       preferredChannels,
       hasDoneConsultation: userData.hasDoneConsultation || false,
       status: "pending",
-      createdAt: createdAtIso,
+      createdAt,
+      createdAtIso,
       processedAt: null,
       linkedPatientId: null,
       notes: "Solicitud del Cuestionario Espejo desde SoyBienestar",

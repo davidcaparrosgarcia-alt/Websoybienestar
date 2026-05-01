@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 export default function Method() {
   const navigate = useNavigate();
   const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   return (
     <div className="flex-1 w-full">
@@ -26,7 +27,10 @@ export default function Method() {
           </div>
           <div className="lg:col-span-6 relative">
             {/* Video Presentation Placeholder */}
-            <div className="relative group aspect-video rounded-2xl overflow-hidden bg-surface-container-highest shadow-2xl">
+            <div 
+              onClick={() => setIsVideoModalOpen(true)}
+              className="relative group aspect-video rounded-2xl overflow-hidden bg-surface-container-highest shadow-2xl cursor-pointer"
+            >
               <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" alt="cinematic shot of a modern architectural wooden bridge disappearing into a soft morning mist at dawn with golden sunlight flares" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUFJR7osyxltbHn-vme3ZQ_zZ04pLZcrC7EzB6qZzBrLG0pIGgOrMmBWeVmixUbAq-5Ow65REc1i-TtiXPPTPjCickPpT7SF2BUkWCmazttPfMjU_CkCsrmk2B9Kn8yQizkIM8vLZo6czJR_OpsQdxYTkJy2hFRNSXbiRyeZLFMLtb2DBk4ySloPCYFaDARaA87RaVSLCvrstFYERL-tBiYJBqZ0Lc_q2p6BhJ2OcMnSfpVW52BkcOhnibSLT-f3PxkUmm192V5A76"/>
               <div className="absolute inset-0 flex items-center justify-center">
                 <button className="w-24 h-24 rounded-full bg-surface/70 backdrop-blur-md border border-white/30 flex items-center justify-center text-primary transition-all group-hover:scale-110">
@@ -286,6 +290,53 @@ export default function Method() {
                     className="w-full h-auto rounded-xl shadow-sm"
                   />
                 </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {isVideoModalOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+              onClick={() => setIsVideoModalOpen(false)}
+            />
+            
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="relative w-full max-w-5xl aspect-video bg-black rounded-[2rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
+              >
+                {/* Close Button */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsVideoModalOpen(false);
+                  }}
+                  className="absolute top-4 right-4 md:top-6 md:right-6 w-12 h-12 z-[100] rounded-full bg-black/50 backdrop-blur border border-white/20 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-2xl font-light">close</span>
+                </button>
+                
+                {/* Video Player */}
+                <video 
+                  className="w-full h-full object-contain bg-black"
+                  controls
+                  autoPlay
+                  controlsList="nodownload"
+                >
+                  <source src="/videos/video-metodo.mp4" type="video/mp4" />
+                  Tu navegador no soporta la etiqueta de vídeo.
+                </video>
               </motion.div>
             </div>
           </>
