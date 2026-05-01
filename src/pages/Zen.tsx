@@ -30,6 +30,36 @@ export default function Zen() {
   const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
   const [questionnaireRequestMessage, setQuestionnaireRequestMessage] = useState<{ text: string, type: 'success' | 'error' | 'warning' } | null>(null);
 
+  // TEMP DEBUG UI: remove after bridge validation
+  const [isDebuggingQuestionnaireBridge, setIsDebuggingQuestionnaireBridge] = useState(false);
+  const [questionnaireDebugResult, setQuestionnaireDebugResult] = useState<string | null>(null);
+
+  const handleDebugQuestionnaireBridge = async () => {
+    if (!auth.currentUser) return;
+    setIsDebuggingQuestionnaireBridge(true);
+    setQuestionnaireDebugResult(null);
+    try {
+      const token = await auth.currentUser.getIdToken(true);
+      const res = await fetch("/api/debug-questionnaire-bridge", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        setQuestionnaireDebugResult(JSON.stringify(json, null, 2));
+      } catch (e) {
+        setQuestionnaireDebugResult(text);
+      }
+    } catch (e) {
+      setQuestionnaireDebugResult(String(e));
+    } finally {
+      setIsDebuggingQuestionnaireBridge(false);
+    }
+  };
+
   // Audio Player State
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -540,6 +570,24 @@ export default function Zen() {
                     )}
                   </button>
                 </div>
+
+                {/* TEMP DEBUG UI: remove after bridge validation */}
+                {auth.currentUser?.email === "davidcaparrosgarcia@gmail.com" && (
+                  <div className="mt-4 p-3 border border-dashed border-red-400 bg-red-50 dark:bg-red-900/20 rounded-xl flex flex-col items-start gap-2">
+                    <button 
+                      onClick={handleDebugQuestionnaireBridge}
+                      disabled={isDebuggingQuestionnaireBridge}
+                      className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors"
+                    >
+                      {isDebuggingQuestionnaireBridge ? "Diagnosticando..." : "Diagnóstico puente cuestionario"}
+                    </button>
+                    {questionnaireDebugResult && (
+                      <pre className="text-[10px] w-full mt-2 overflow-x-auto bg-gray-900 text-green-400 p-2 text-left rounded-md whitespace-pre-wrap word-break">
+                        {questionnaireDebugResult}
+                      </pre>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
