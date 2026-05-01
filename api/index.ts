@@ -448,4 +448,196 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
   }
 });
 
+app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
+  try {
+    const { email, telefono, preferredChannels } = req.body;
+    const uid = req.user!.uid;
+    const authEmail = req.user!.email;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "El email es obligatorio." });
+    }
+    if (!preferredChannels || (!preferredChannels.email && !preferredChannels.whatsapp && !preferredChannels.sms)) {
+      return res.status(400).json({ success: false, message: "Debes seleccionar al menos un canal de contacto." });
+    }
+    if ((preferredChannels.whatsapp || preferredChannels.sms) && (!telefono || telefono === "+34" || telefono.trim().length < 5)) {
+      return res.status(400).json({ success: false, message: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono." });
+    }
+
+    if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado." });
+    const db = admin.firestore();
+
+    const docRef = db.collection('users').doc(uid);
+    const profileRef = db.collection('userProfiles').doc(uid);
+
+    const [userDoc, profileDoc] = await Promise.all([docRef.get(), profileRef.get()]);
+
+    const userData = userDoc.data() || {};
+    const profileData = profileDoc.data() || {};
+
+    const contactSnapshot = {
+      email,
+      telefono: telefono || null,
+      preferredChannels
+    };
+
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    let isResendingDueToContactChange = false;
+
+    if (!isTestUser(req)) {
+      if (userData.lastQuestionnaireRequestAt && (now - userData.lastQuestionnaireRequestAt) < thirtyDaysMs) {
+        const lastContact = userData.lastQuestionnaireContactSnapshot || {};
+        const contactChanged = 
+          lastContact.email !== contactSnapshot.email ||
+          lastContact.telefono !== contactSnapshot.telefono ||
+          JSON.stringify(lastContact.preferredChannels) !== JSON.stringify(contactSnapshot.preferredChannels);
+        
+        if (!contactChanged) {
+          const nextAvailableAt = new Date(userData.lastQuestionnaireRequestAt + thirtyDaysMs).toISOString();
+          return res.status(429).json({
+            success: false,
+            status: "already_requested_recently",
+            message: "Tu petición ya se ha procesado correctamente. Si no has recibido el enlace, revisa tus datos de contacto. Podrás volver a solicitarlo cuando pasen 30 días desde tu última petición. Si necesitas ayuda, puedes contactarnos desde la sección de contacto.",
+            nextAvailableAt
+          });
+        } else {
+          isResendingDueToContactChange = true;
+        }
+      }
+    }
+
+    const soybienestarContext: any = {
+      contextSchemaVersion: 1,
+      generatedAt: new Date().toISOString()
+    };
+
+    const copyIfPresent = (source: any, key: string) => {
+      if (source && source[key] !== undefined && source[key] !== null) {
+        if (typeof source[key] === 'string' && source[key].length > 3000) {
+          soybienestarContext[key] = source[key].substring(0, 3000) + '...';
+        } else {
+          soybienestarContext[key] = source[key];
+        }
+      }
+    };
+
+    copyIfPresent(userData, 'hasDoneConsultation');
+    copyIfPresent(userData, 'processStage');
+    copyIfPresent(profileData, 'globalUserSummary');
+    copyIfPresent(profileData, 'accumulatedSummary');
+    copyIfPresent(profileData, 'latestClinicalConclusion');
+    copyIfPresent(profileData, 'consultationSummary');
+    copyIfPresent(profileData, 'consultationConclusion');
+    copyIfPresent(profileData, 'diaryProfile');
+    copyIfPresent(profileData, 'weeklyGoalsSummary');
+    copyIfPresent(profileData, 'gratitudeDiarySummary');
+    copyIfPresent(profileData, 'mainThemes');
+    copyIfPresent(profileData, 'emotionalSignals');
+
+    const requestsRef = db.collection('users').doc(uid).collection('questionnaireRequests');
+    const requestId = requestsRef.doc().id;
+    
+    // Convert to regular Date ISO for the payload (since serverTimestamp doesn't serialize over JSON easily)
+    const createdAtIso = new Date().toISOString(); 
+
+    const payload = {
+      id: requestId,
+      source: "soybienestar",
+      sourcePath: "/zen",
+      soybienestarUid: uid,
+      nombre: userData.displayName || authEmail?.split('@')[0] || "Usuario",
+      displayName: userData.displayName || authEmail?.split('@')[0] || "Usuario",
+      email,
+      telefono,
+      preferredChannels,
+      hasDoneConsultation: userData.hasDoneConsultation || false,
+      status: "pending",
+      createdAt: createdAtIso,
+      processedAt: null,
+      linkedPatientId: null,
+      notes: "Solicitud del Cuestionario Espejo desde SoyBienestar",
+      soybienestarContext
+    };
+
+    const apiUrl = process.env.QUESTIONNAIRE_API_URL;
+    const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET;
+
+    if (!apiUrl || !bridgeSecret) {
+      console.error("Missing QUESTIONNAIRE_API_URL or QUESTIONNAIRE_BRIDGE_SECRET");
+      return res.status(502).json({
+        success: false,
+        message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros."
+      });
+    }
+
+    const response = await fetch(`${apiUrl}/api/patient-requests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-bridge-secret": bridgeSecret
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let apiResponseData = {};
+    const responseText = await response.text();
+    try {
+      apiResponseData = JSON.parse(responseText);
+    } catch(e) {}
+
+    if (!response.ok) {
+      console.error("Error from Cuestionario API", response.status, responseText);
+      return res.status(502).json({
+        success: false,
+        message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros."
+      });
+    }
+
+    const timestamp = Date.now();
+    await requestsRef.doc(requestId).set({
+      id: requestId,
+      status: "pending",
+      createdAt: timestamp,
+      resentBecauseContactChanged: isResendingDueToContactChange,
+      email,
+      telefono,
+      preferredChannels,
+      questionnaireApiStatus: response.status,
+      questionnaireApiResponse: apiResponseData,
+      source: "soybienestar",
+      sourcePath: "/zen",
+      soybienestarContext,
+      contactSnapshot
+    });
+
+    await docRef.update({
+      questionnaireRequestStatus: "pending",
+      lastQuestionnaireRequestAt: timestamp,
+      lastQuestionnaireRequestId: requestId,
+      lastQuestionnaireContactSnapshot: contactSnapshot
+    });
+
+    if (isResendingDueToContactChange) {
+      return res.json({
+        success: true,
+        status: "resent_contact_changed",
+        message: "Detectamos que has actualizado tus datos de contacto, así que hemos registrado de nuevo tu solicitud.",
+        requestId
+      });
+    } else {
+      return res.json({
+        success: true,
+        status: "sent",
+        message: "Solicitud recibida. Nuestro equipo revisará tus datos y te enviará el enlace del Cuestionario Espejo por la vía seleccionada.",
+        requestId
+      });
+    }
+
+  } catch (error) {
+    console.error("API /api/request-questionnaire error:", error);
+    res.status(500).json({ success: false, message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros." });
+  }
+});
+
 export default app;

@@ -27,6 +27,9 @@ export default function Zen() {
   const [smsChecked, setSmsChecked] = useState(false);
   const [smsValue, setSmsValue] = useState("+34");
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  
+  const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
+  const [questionnaireRequestMessage, setQuestionnaireRequestMessage] = useState<{ text: string, type: 'success' | 'error' | 'warning' } | null>(null);
 
   // Audio Player State
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
@@ -65,7 +68,15 @@ export default function Zen() {
     const userRef = doc(db, "users", user.uid);
     getDoc(userRef).then((docSnap) => {
       if (docSnap.exists()) {
-        setHasDoneConsultation(docSnap.data()?.hasDoneConsultation === true);
+        const data = docSnap.data();
+        setHasDoneConsultation(data?.hasDoneConsultation === true);
+        const contactPhone = data?.contactPhone || data?.phone || data?.whatsappPhone || data?.smsPhone || data?.telefono;
+        if (contactPhone) {
+          const prefix = data?.contactPhoneCountryCode || "+34";
+          const fullPhone = contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
+          setWhatsappValue(fullPhone);
+          setSmsValue(fullPhone);
+        }
       } else {
         setHasDoneConsultation(false);
       }
@@ -142,9 +153,73 @@ export default function Zen() {
     }
   };
 
-  const handleFormSubmit = () => {
-    setIsRegModalOpen(false);
-    alert("Solicitud enviada correctamente. Recibirá el enlace a la brevedad.");
+  const handleFormSubmit = async () => {
+    setQuestionnaireRequestMessage(null);
+
+    // Validations
+    if (!emailValue.trim() || !/\S+@\S+\.\S+/.test(emailValue)) {
+      setQuestionnaireRequestMessage({ text: "Por favor, introduce un email válido.", type: "error" });
+      return;
+    }
+    if (!emailChecked && !whatsappChecked && !smsChecked) {
+      setQuestionnaireRequestMessage({ text: "Debes seleccionar al menos un canal de contacto.", type: "error" });
+      return;
+    }
+    
+    let telefono = "";
+    if (whatsappChecked || smsChecked) {
+      // Use whatsapp value if checked, else sms value
+      telefono = whatsappChecked ? whatsappValue : smsValue;
+      if (!telefono || telefono === "+34" || telefono.trim().length < 5) {
+        setQuestionnaireRequestMessage({ text: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono.", type: "error" });
+        return;
+      }
+    }
+
+    if (!user) {
+      setQuestionnaireRequestMessage({ text: "Debes iniciar sesión para realizar la solicitud.", type: "error" });
+      return;
+    }
+
+    setIsQuestionnaireSubmitting(true);
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/request-questionnaire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: emailValue,
+          telefono,
+          preferredChannels: {
+            email: emailChecked,
+            whatsapp: whatsappChecked,
+            sms: smsChecked
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
+        // Optional: clear state or keep it for the user to see success
+        // We'll not close the modal immediately so the user can read the success message
+      } else {
+        if (response.status === 429) {
+          setQuestionnaireRequestMessage({ text: data.message || "Límite alcanzado. Inténtalo más tarde.", type: "warning" });
+        } else {
+          setQuestionnaireRequestMessage({ text: data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.", type: "error" });
+        }
+      }
+    } catch (e) {
+      console.error("Error submitting questionnaire request", e);
+      setQuestionnaireRequestMessage({ text: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.", type: "error" });
+    } finally {
+      setIsQuestionnaireSubmitting(false);
+    }
   };
 
   return (
@@ -154,23 +229,23 @@ export default function Zen() {
       <header className="relative min-h-screen flex items-center pt-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="w-full h-full object-cover" data-alt="Serene watercolor painting of a traditional oriental sanctuary nestled among misty turquoise mountains and calm waters with pink lotus flowers" src="/images/fondo-zen.jpg"/>
-          <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-[#f1f5f9]/20 dark:bg-[#2c3e50]/40 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
-          <div className="md:w-3/5 bg-white/5 backdrop-blur-md p-12 rounded-2xl shadow-xl">
-            <h1 className="text-6xl lg:text-7xl font-headline mb-8 leading-tight !text-[#0a0a0a]">Tu refugio de calma te espera.</h1>
-            <p className="text-xl font-body leading-relaxed mb-8 max-w-2xl font-medium !text-[#111111]">
-              El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-bold">Consulta con IA</span> y el <span className="italic font-bold">Cuestionario Espejo</span>.
+          <div className="md:w-3/5 bg-white/40 dark:bg-[#162839]/60 backdrop-blur-md p-12 rounded-2xl shadow-xl">
+            <h1 className="text-6xl lg:text-7xl font-headline mb-8 leading-tight text-[#0a0a0a] dark:text-white">Tu refugio de calma te espera.</h1>
+            <p className="text-xl font-body leading-relaxed mb-8 max-w-2xl font-medium text-[#111111] dark:text-[#e2e8f0]">
+              El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-bold text-black dark:text-white">Consulta con IA</span> y el <span className="italic font-bold text-black dark:text-white">Cuestionario Espejo</span>.
             </p>
             <div className="flex flex-wrap gap-6">
               <button 
                 onClick={handleRegisterClick} 
                 disabled={loading}
-                className="px-10 py-5 bg-primary text-on-primary font-body font-semibold rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-primary/10 disabled:opacity-50"
+                className="px-10 py-5 bg-[#f1f5f9] text-[#1c2836] dark:bg-[#2c3e50] dark:text-white font-body font-semibold rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-black/10 disabled:opacity-50"
               >
                 {loading ? "CARGANDO..." : "REGISTRARSE AHORA"}
               </button>
-              <button onClick={() => navigate('/method')} className="px-10 py-5 bg-secondary-container text-on-secondary-container font-body font-semibold rounded-2xl hover:bg-surface-container-highest transition-all">
+              <button onClick={() => navigate('/method')} className="px-10 py-5 bg-[#1c2836] text-white dark:bg-[#d1e7e4] dark:text-[#1c2836] font-body font-semibold rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-black/10">
                 SABER MÁS
               </button>
             </div>
@@ -443,13 +518,27 @@ export default function Zen() {
                     />
                   </label>
                 </form>
+
+                {questionnaireRequestMessage && (
+                  <div className={`mt-4 p-4 rounded-xl text-sm font-medium ${questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}>
+                    {questionnaireRequestMessage.text}
+                  </div>
+                )}
                 
                 <div className="mt-6 flex justify-end">
                   <button 
                     onClick={handleFormSubmit}
-                    className="bg-primary text-on-primary px-8 py-3 rounded-full font-label font-bold text-sm shadow-md hover:bg-primary-container hover:shadow-lg transition-all"
+                    disabled={isQuestionnaireSubmitting}
+                    className="bg-primary text-on-primary px-8 py-3 rounded-full font-label font-bold text-sm shadow-md hover:bg-primary-container hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    Enviar Solicitud
+                    {isQuestionnaireSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div>
+                        Enviando...
+                      </>
+                    ) : (
+                      "Enviar Solicitud"
+                    )}
                   </button>
                 </div>
               </div>
