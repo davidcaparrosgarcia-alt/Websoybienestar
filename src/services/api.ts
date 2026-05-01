@@ -10,7 +10,7 @@ async function fetchAPI(endpoint: string, body: any) {
     throw new Error("Usuario no autenticado");
   }
 
-  const token = await currentUser.getIdToken();
+  const token = await currentUser.getIdToken(true);
 
   const res = await fetch(endpoint, {
     method: "POST",

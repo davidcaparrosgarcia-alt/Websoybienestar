@@ -139,7 +139,7 @@ export default function Zen() {
         setAccessCode(["", "", "", ""]);
         
         if (pendingAction === "emocional") {
-          setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestión-emocional.pdf' });
+          setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
         } else if (pendingAction === "reservado") {
           alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
         }
@@ -307,7 +307,7 @@ export default function Zen() {
             <div 
               onClick={() => {
                 if (hasAccess) {
-                  setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestión-emocional.pdf' });
+                  setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
                 } else {
                   setPendingAction("emocional");
                   setIsCodeModalOpen(true);

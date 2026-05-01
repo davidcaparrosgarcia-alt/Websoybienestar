@@ -2,6 +2,8 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import { GoogleGenAI } from "@google/genai";
 import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
@@ -30,14 +32,32 @@ if (!admin.apps.length) {
           privateKey
         })
       });
-      console.log("SUCCESS: Firebase Admin initialized.");
+      console.log("SUCCESS: Firebase Admin initialized via env variables.");
     } else {
-      console.warn("WARNING: Firebase Admin credentials not set. Auth middleware will fail.");
+      let fallbackProjectId = projectId;
+      try {
+        const configPath = path.join(process.cwd(), "firebase-applet-config.json");
+        if (fs.existsSync(configPath)) {
+           const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+           fallbackProjectId = config.projectId;
+        }
+      } catch (e) {
+        // ignore
+      }
+      
+      if (fallbackProjectId) {
+         admin.initializeApp({ projectId: fallbackProjectId });
+         console.log("SUCCESS: Firebase Admin initialized via App Default Config with projectId:", fallbackProjectId);
+      } else {
+         admin.initializeApp();
+         console.log("SUCCESS: Firebase Admin initialized via App Default Config (no explicit projectId).");
+      }
     }
   } catch (error) {
     console.error("ERROR: Failed to initialize Firebase Admin:", error);
   }
 }
+
 
 // Initialize Gemini
 let ai: GoogleGenAI | null = null;
@@ -92,7 +112,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     }
     
     if (!admin.apps.length) {
-      res.status(500).json({ error: "Error interno del servidor. Firebase no inicializado." });
+      res.status(500).json({ error: "Error interno del servidor. Firebase no inicializado. Por favor añade FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL y FIREBASE_PRIVATE_KEY en 'Secrets / Environment Variables' de tu panel." });
       return;
     }
 
@@ -228,8 +248,8 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
     const response = await chatWithHistory.sendMessage({ message });
     res.json({ text: response.text });
   } catch (error) {
-    console.error("AI /api/session-reply failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
-    res.status(500).json({ error: "Failed to generate session reply" });
+    console.error("AI /api/session-reply failed: " + (error instanceof Error ? error.message + " " + error.stack : JSON.stringify(error)));
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to generate session reply" });
   }
 });
 
@@ -464,7 +484,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono." });
     }
 
-    if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado." });
+    if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado. Por favor configura las claves en Secrets de la app." });
     const db = admin.firestore();
 
     const docRef = db.collection('users').doc(uid);
