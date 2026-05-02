@@ -76,10 +76,11 @@ export default function Report() {
         } else if (user) {
           // Try loading from Firebase
           const { profileData } = await getOrMigrateUserProfile(user.uid);
-          if (profileData.latestUserEmpatheticMessage) {
-            setReport(profileData.latestUserEmpatheticMessage);
-          } else if (profileData.latestClinicalConclusion) {
-            setReport(profileData.latestClinicalConclusion);
+          const profile = profileData as any;
+          if (profile.latestUserEmpatheticMessage) {
+            setReport(profile.latestUserEmpatheticMessage);
+          } else if (profile.latestClinicalConclusion) {
+            setReport(profile.latestClinicalConclusion);
           } else {
              if (isDeveloper) {
                setReport("No hay informe guardado, pero eres desarrollador. Intenta hacer una sesión primero.");
@@ -251,8 +252,8 @@ export default function Report() {
                 
                 {/* 1. Consulta Gratuita */}
                 <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
-                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10`}>
+                    <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>
                   </div>
                   <div>
                     <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>
@@ -261,15 +262,28 @@ export default function Report() {
                 </div>
 
                 {/* 2. Cuestionario Espejo */}
-                <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneCuestionario ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
-                    {userData?.hasDoneCuestionario && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                {userData?.hasDoneCuestionario ? (
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10">
+                      <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>
+                    </div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
-                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                ) : (
+                  <div 
+                    onClick={() => navigate('/method-details')}
+                    className="flex gap-4 p-4 -my-2 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Cuestionario Espejo</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado. <span className="font-medium text-primary dark:text-[#2c3e50]">Solicitar ahora</span></p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* 3. Descarga de Guía */}
                 <div className="flex gap-4">

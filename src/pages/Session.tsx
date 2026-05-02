@@ -80,10 +80,16 @@ export default function Session() {
   }, [messages]);
 
   const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+  const isTypingPauseRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isTypingPause, setIsTypingPause] = useState(false);
 
   useEffect(() => {
     if (!hasStartedGuidedSession) return;
     const interval = setInterval(() => {
+      if (isTypingPauseRef.current) {
+        sessionStartTimeRef.current += 1000;
+      }
       const elapsed = Math.floor((Date.now() - sessionStartTimeRef.current) / 1000);
       const remaining = Math.max(0, 15 * 60 - elapsed);
       setTimeLeft(remaining);
@@ -178,9 +184,27 @@ export default function Session() {
     return recognition;
   }, []);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    
+    if (!isRecordingRef.current) {
+      isTypingPauseRef.current = true;
+      setIsTypingPause(true);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        isTypingPauseRef.current = false;
+        setIsTypingPause(false);
+      }, 5000);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+
+    isTypingPauseRef.current = false;
+    setIsTypingPause(false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
     const isTest = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
 
@@ -602,11 +626,11 @@ export default function Session() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex items-end gap-4">
+          <form onSubmit={handleSubmit} className="flex items-end gap-3 md:gap-4">
             <button
               type="button"
               onClick={toggleRecording}
-              className={`p-4 rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 ${
+              className={`p-4 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
                 isRecording 
                   ? "bg-error/10 text-error hover:bg-error/20" 
                   : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -619,7 +643,7 @@ export default function Session() {
             <div className="flex-1 relative">
               <textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -627,14 +651,14 @@ export default function Session() {
                   }
                 }}
                 placeholder="Escribe tu mensaje aquí..."
-                className="w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-8 py-4 resize-none min-h-[60px] max-h-[200px] transition-all font-body font-light text-on-surface"
+                className="w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-4 resize-none min-h-[56px] max-h-[200px] transition-all font-body font-light text-on-surface"
                 rows={1}
               />
             </div>
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="bg-primary text-on-primary p-4 rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200"
+              className="p-4 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
             >
               <span className="material-symbols-outlined">send</span>
             </button>
@@ -643,7 +667,7 @@ export default function Session() {
               onClick={finishSession}
               disabled={isFinishing}
               title="Finalizar consulta ahora"
-              className="bg-transparent text-primary hover:bg-primary/5 p-4 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 flex items-center justify-center disabled:opacity-50"
+              className="p-4 flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
             >
               <span className={`material-symbols-outlined ${isFinishing ? 'animate-spin' : ''}`}>
                 {isFinishing ? 'progress_activity' : 'logout'}
@@ -654,6 +678,9 @@ export default function Session() {
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant shadow-sm border border-outline-variant/10">
               <span className="material-symbols-outlined text-[14px]">timer</span>
               <span>Tiempo restante: {formatTime(timeLeft)}</span>
+              {isTypingPause && (
+                <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full animate-pulse ml-1 opacity-80">(pausado)</span>
+              )}
             </div>
             <p className="text-on-surface-variant/70 italic hidden sm:block">
               {timeLeft <= 180 ? 'La sesión terminará pronto. Ve cerrando tus ideas.' : 'Tómate tu tiempo para expresar lo que sientes.'}

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
@@ -248,14 +248,14 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
               name: "send_questionnaire",
               description: "Envía la solicitud del Cuestionario Espejo al usuario. Llama a esta función SOLO CUANDO el usuario haya expresado explícitamente su método de contacto preferido (email, sms o whatsapp) y haya proporcionado su número de teléfono si el método elegido es sms o whatsapp.",
               parameters: {
-                type: "OBJECT",
+                type: Type.OBJECT,
                 properties: {
                   contactMethod: {
-                    type: "STRING",
+                    type: Type.STRING,
                     description: "Método de contacto preferido: 'email', 'sms', o 'whatsapp'"
                   },
                   phoneNumber: {
-                    type: "STRING",
+                    type: Type.STRING,
                     description: "Número de teléfono, requerido si el método de contacto es 'sms' o 'whatsapp'."
                   }
                 },
@@ -268,7 +268,7 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
       history
     });
 
-    const response = await chatWithHistory.sendMessage(message);
+    const response = await chatWithHistory.sendMessage({ message });
     
     // Check if the AI decided to call the function
     let functionCallParams = null;
@@ -277,9 +277,9 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
       if (call.name === "send_questionnaire") {
         functionCallParams = call.args;
         // Optionally, send a follow-up to the AI so it can generate a text response
-        const followUp = await chatWithHistory.sendMessage([{
-          functionResponse: { name: "send_questionnaire", response: { success: true } }
-        }]);
+        const followUp = await chatWithHistory.sendMessage({
+          message: [{ functionResponse: { name: "send_questionnaire", response: { success: true } } }]
+        });
         return res.json({ text: followUp.text, action: "send_questionnaire", actionParams: functionCallParams });
       }
     }
