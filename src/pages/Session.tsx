@@ -10,6 +10,8 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  isError?: boolean;
+  errorMessage?: string;
 }
 
 export default function Session() {
@@ -52,7 +54,8 @@ export default function Session() {
           const { getDoc } = await import("firebase/firestore");
           const userDoc = await getDoc(userRef);
           if (isMounted) {
-            setHasDoneConsultation(!!userDoc.data()?.hasDoneConsultation);
+            const isTestUser = user.email === "davidcaparrosgarcia@gmail.com";
+            setHasDoneConsultation(isTestUser ? false : !!userDoc.data()?.hasDoneConsultation);
           }
         } catch (e) {
           console.error("Auth check failed", e);
@@ -75,6 +78,27 @@ export default function Session() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+
+  useEffect(() => {
+    if (!hasStartedGuidedSession) return;
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - sessionStartTimeRef.current) / 1000);
+      const remaining = Math.max(0, 15 * 60 - elapsed);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [hasStartedGuidedSession]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const initSpeechRecognition = useCallback(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -186,13 +210,20 @@ export default function Session() {
     baseInputRef.current = "";
     setIsLoading(true);
 
+    await processMessage(newMessages, input, userMessage.id);
+  };
+
+  const processMessage = async (currentMessages: Message[], inputContent: string, messageId: string) => {
+    setIsLoading(true);
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isError: false, errorMessage: undefined } : m));
+    
     try {
-      const chatHistory = newMessages.map(msg => ({
+      const chatHistory = currentMessages.map(msg => ({
         role: msg.role === "assistant" ? "model" : "user",
         parts: [{ text: msg.content }]
       }));
 
-      const response = await api.sessionReply(chatHistory.slice(0, -1), input);
+      const response = await api.sessionReply(chatHistory.slice(0, -1), inputContent);
       
       if (response.text) {
         const aiMessage: Message = {
@@ -202,14 +233,37 @@ export default function Session() {
         };
         setMessages(prev => [...prev, aiMessage]);
       }
+
+      if (response.action === "send_questionnaire" && response.actionParams) {
+        const { contactMethod, phoneNumber } = response.actionParams;
+        try {
+          const user = auth.currentUser;
+          if (user) {
+            const token = await user.getIdToken();
+            const preferredChannels = contactMethod === 'sms' || contactMethod === 'whatsapp' 
+              ? { method: contactMethod, phone: phoneNumber || "" } 
+              : { method: 'email', email: user.email || "" };
+
+            await fetch('/api/request-questionnaire', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ preferredChannels })
+            });
+          }
+        } catch (e) {
+          console.error("Failed to trigger questionnaire action", e);
+        }
+      }
     } catch (error: any) {
       console.error("Error calling AI:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: error.message || "Lo siento, ha ocurrido un error de conexión. ¿Podrías repetir lo último que dijiste?"
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, isError: true, errorMessage: error.message || "Lo siento, ha ocurrido un error de conexión." }
+          : m
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -314,7 +368,8 @@ export default function Session() {
           
           const updateDataProfile = {
             globalUserSummary: parsedData.newAccumulatedSummary || accumulatedSummary,
-            latestClinicalConclusion: parsedData.markdownReport || "Reporte generado (bypass de desarrollo)",
+            consultationConclusion: parsedData.clinicalSummary || "Resumen clínico generado (bypass de desarrollo)",
+            latestUserEmpatheticMessage: parsedData.userEmpatheticMessage || "Mensaje para el usuario",
           };
 
           await updateDoc(userReference, updateDataUser).catch(async () => {
@@ -328,9 +383,9 @@ export default function Session() {
         
         if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
           setUrgentMessage(parsedData.urgentSupportMessage);
-          setPendingNavigation({ path: "/session-ended", state: { messages, reportData: parsedData.markdownReport } });
+          setPendingNavigation({ path: "/session-ended", state: { messages, reportData: parsedData.userEmpatheticMessage } });
         } else {
-          navigate("/session-ended", { state: { messages, reportData: parsedData.markdownReport } });
+          navigate("/session-ended", { state: { messages, reportData: parsedData.userEmpatheticMessage } });
         }
       } else {
         if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
@@ -398,7 +453,10 @@ export default function Session() {
           </p>
           <div className="w-full flex justify-center mt-8">
             <button 
-              onClick={() => setHasStartedGuidedSession(true)}
+              onClick={() => {
+                sessionStartTimeRef.current = Date.now();
+                setHasStartedGuidedSession(true);
+              }}
               className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline text-lg tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95"
             >
               Comenzar consulta guiada
@@ -475,17 +533,17 @@ export default function Session() {
         </div>
         
         <div className="max-w-3xl mx-auto space-y-8 relative z-10">
-          {messages.map((msg) => (
+          {messages.map((msg, idx) => (
             <div
               key={msg.id}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex ${msg.role === "user" ? "flex-col items-end" : "justify-start"} w-full`}
             >
               <div
                 className={`max-w-[85%] md:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-md border border-gray-800 dark:border-gray-200 ${
                   msg.role === "user"
                     ? "bg-primary text-on-primary rounded-br-sm shadow-black/30 dark:shadow-black/50"
                     : "bg-surface-container-low text-on-surface rounded-bl-sm shadow-black/30 dark:shadow-black/50"
-                }`}
+                } ${msg.isError ? "opacity-75" : ""}`}
               >
                 {msg.role === "assistant" ? (
                   <div className="prose prose-stone max-w-none font-body font-light leading-relaxed">
@@ -495,6 +553,19 @@ export default function Session() {
                   <p className="whitespace-pre-wrap font-body font-light leading-relaxed">{msg.content}</p>
                 )}
               </div>
+              {msg.isError && (
+                <div className="mt-2 text-error text-xs flex flex-col items-end mr-4">
+                  <span className="mb-1">{msg.errorMessage}</span>
+                  <button 
+                    onClick={() => processMessage(messages.slice(0, idx + 1), msg.content, msg.id)}
+                    disabled={isLoading}
+                    className="flex items-center gap-1 bg-error/10 text-error px-3 py-1.5 rounded-full hover:bg-error/20 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">refresh</span>
+                    Reintentar
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {isLoading && (
@@ -567,7 +638,27 @@ export default function Session() {
             >
               <span className="material-symbols-outlined">send</span>
             </button>
+            <button
+              type="button"
+              onClick={finishSession}
+              disabled={isFinishing}
+              title="Finalizar consulta ahora"
+              className="bg-transparent text-primary hover:bg-primary/5 p-4 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 flex items-center justify-center disabled:opacity-50"
+            >
+              <span className={`material-symbols-outlined ${isFinishing ? 'animate-spin' : ''}`}>
+                {isFinishing ? 'progress_activity' : 'logout'}
+              </span>
+            </button>
           </form>
+          <div className="mt-4 flex justify-between items-center text-xs font-label">
+            <div className="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant shadow-sm border border-outline-variant/10">
+              <span className="material-symbols-outlined text-[14px]">timer</span>
+              <span>Tiempo restante: {formatTime(timeLeft)}</span>
+            </div>
+            <p className="text-on-surface-variant/70 italic hidden sm:block">
+              {timeLeft <= 180 ? 'La sesión terminará pronto. Ve cerrando tus ideas.' : 'Tómate tu tiempo para expresar lo que sientes.'}
+            </p>
+          </div>
         </div>
       </div>
     </div>

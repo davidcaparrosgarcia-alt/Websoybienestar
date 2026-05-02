@@ -76,7 +76,9 @@ export default function Report() {
         } else if (user) {
           // Try loading from Firebase
           const { profileData } = await getOrMigrateUserProfile(user.uid);
-          if (profileData.latestClinicalConclusion) {
+          if (profileData.latestUserEmpatheticMessage) {
+            setReport(profileData.latestUserEmpatheticMessage);
+          } else if (profileData.latestClinicalConclusion) {
             setReport(profileData.latestClinicalConclusion);
           } else {
              if (isDeveloper) {
@@ -86,7 +88,7 @@ export default function Report() {
              }
           }
         } else {
-           setReport("No hay informe dispoible.");
+           setReport("No hay informe disponible.");
         }
       } catch (err) {
         console.error("Error loading report:", err);
@@ -123,6 +125,13 @@ export default function Report() {
     } catch (err) {
       console.error('Error sharing:', err);
     }
+  };
+
+  const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
+
+  const handleFeedback = (agrees: boolean) => {
+    setFeedbackGiven(true);
+    // You could also save this feedback to Firebase here if needed
   };
 
   if (isAuthorized === null || isLoading) {
@@ -176,6 +185,26 @@ export default function Report() {
             <div className="md:col-span-12 bg-surface-container p-10 rounded-xl relative overflow-hidden flex flex-col justify-between">
               <div className="relative z-10 prose prose-slate max-w-none text-on-surface">
                 <Markdown>{report || ""}</Markdown>
+              </div>
+              <div className="mt-8 pt-6 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+                <p className="font-body text-on-surface-variant text-sm text-center sm:text-left">
+                  Recuerda: Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo. ¿Sientes que refleja cómo te encuentras?
+                </p>
+                {!feedbackGiven ? (
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button onClick={() => handleFeedback(true)} className="px-5 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm">thumb_up</span> Totalmente
+                    </button>
+                    <button onClick={() => handleFeedback(false)} className="px-5 py-2 rounded-full border border-on-surface-variant text-on-surface-variant hover:bg-on-surface-variant hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm">thumb_down</span> No del todo
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-secondary font-bold text-sm bg-secondary/10 px-4 py-2 rounded-full flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">check_circle</span>
+                    Gracias por tu retroalimentación
+                  </div>
+                )}
               </div>
             </div>
 

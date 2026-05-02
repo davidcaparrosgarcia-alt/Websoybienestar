@@ -96,8 +96,7 @@ function parseGeminiJSON(text: string) {
 const requireAI = (req: Request, res: Response, next: NextFunction) => {
   if (!ai) {
     return res.status(503).json({ 
-      error: "Servicio de IA temporalmente no disponible",
-      message: "El servidor no tiene configurada una clave de API válida para Gemini." 
+      error: "En este momento estamos recibiendo muchas consultas y nuestros guías virtuales están algo saturados. Te agradecemos mucho la paciencia. Por favor, toma un respiro e inténtalo de nuevo en unos minutos."
     });
   }
   next();
@@ -241,17 +240,54 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
     const chatWithHistory = ai.chats.create({
       model: AI_MODEL,
       config: {
-        systemInstruction: "Eres un guía virtual empático, cálido y profesional, un puente preliminar entre la persona y un equipo humano. Escucha a la persona, haz preguntas suaves, concisas y guiadas para entender su situación expresada (ansiedad, abrumamiento, etc.). Mantén respuestas breves, conversacionales y humanas. No diagnostiques, solo ayuda a organizar sus ideas y brindar apoyo emocional.",
+        systemInstruction: "Eres un guía virtual empático, cálido y profesional enfocado en el bienestar. Reglas: 1) Actúas como un radar que escucha sin juzgar, filtrando casos iniciales. 2) Mantén respuestas breves y humanas, sin diagnosticar; solo ayuda a ordenar sus ideas. 3) La consulta dura como mucho 15 minutos en total; debes ser consciente de ir cerrando de manera orgánica si el usuario ya expresó su situación, NO intentes forzar la conversación agregando preguntas extrañas al final. 4) Cuando la sesión esté por terminar, explícale que el siguiente paso es rellenar el 'Cuestionario Espejo' (un cuestionario sobre experiencias vividas cotidianas para que los terapeutas entiendan mejor su posición). Ofrécete a solicitarle ese enlace directamente en esta charla (pregúntale si lo prefiere por email, SMS o WhatsApp; si es SMS/WhatsApp pídele el teléfono). Aclara que tras hacerlo, recibirá un dossier personal gratuito, y se liberarán recursos útiles en la plataforma (meditaciones, respiraciones). 5) Despídete de manera cálida y natural sin dejar preguntas abiertas si se ha cerrado el tema.",
         maxOutputTokens: 700,
+        tools: [{
+          functionDeclarations: [
+            {
+              name: "send_questionnaire",
+              description: "Envía la solicitud del Cuestionario Espejo al usuario. Llama a esta función SOLO CUANDO el usuario haya expresado explícitamente su método de contacto preferido (email, sms o whatsapp) y haya proporcionado su número de teléfono si el método elegido es sms o whatsapp.",
+              parameters: {
+                type: "OBJECT",
+                properties: {
+                  contactMethod: {
+                    type: "STRING",
+                    description: "Método de contacto preferido: 'email', 'sms', o 'whatsapp'"
+                  },
+                  phoneNumber: {
+                    type: "STRING",
+                    description: "Número de teléfono, requerido si el método de contacto es 'sms' o 'whatsapp'."
+                  }
+                },
+                required: ["contactMethod"]
+              }
+            }
+          ]
+        }]
       },
       history
     });
 
-    const response = await chatWithHistory.sendMessage({ message });
+    const response = await chatWithHistory.sendMessage(message);
+    
+    // Check if the AI decided to call the function
+    let functionCallParams = null;
+    if (response.functionCalls && response.functionCalls.length > 0) {
+      const call = response.functionCalls[0];
+      if (call.name === "send_questionnaire") {
+        functionCallParams = call.args;
+        // Optionally, send a follow-up to the AI so it can generate a text response
+        const followUp = await chatWithHistory.sendMessage([{
+          functionResponse: { name: "send_questionnaire", response: { success: true } }
+        }]);
+        return res.json({ text: followUp.text, action: "send_questionnaire", actionParams: functionCallParams });
+      }
+    }
+
     res.json({ text: response.text });
   } catch (error) {
     console.error("AI /api/session-reply failed: " + (error instanceof Error ? error.message + " " + error.stack : JSON.stringify(error)));
-    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to generate session reply" });
+    res.status(503).json({ error: "En este momento estamos recibiendo muchas consultas y nuestro sistema está algo saturado. Te agradecemos mucho la paciencia. Por favor, toma un respiro e intenta enviar tu mensaje nuevamente." });
   }
 });
 
@@ -266,7 +302,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     // Limit check
     const allowed = await checkAILimit(req, req.user!.uid, 'reportAttempts', 'monthly', 10);
     if (!allowed) {
-      res.status(429).json({ error: "Has superado el límite mensual de evaluaciones de consulta." });
+      res.status(429).json({ error: "Parece que has llegado al límite de evaluaciones por este mes. Por favor, realiza el cuestionario espejo para seguir avanzando, o contacta con nuestro equipo." });
       return;
     }
 
@@ -284,7 +320,15 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     const prompt = `
       A continuación se presenta la transcripción de una consulta guiada preliminar entre una persona y un asistente inicial.
       Como coach de bienestar empático, evalúa si la sesión aporta información relevante sobre la situación expresada (vacías o mero ruido no valen).
-      Genera un resumen de orientación detallado en Markdown clásico.
+      
+      Necesito que generes:
+      1. Un resumen clínico ("clinicalSummary") que se guardará internamente para el terapeuta (análisis objetivo, 3ª persona).
+      2. Un mensaje empático dirigido al usuario ("userEmpatheticMessage" escrito en 2ª persona, como un amigo) que:
+        - Resuma la conversación validando lo que el usuario ha expresado.
+        - Le comunique que NO es ningún diagnóstico ni el dossier definitivo, sino un resumen de esta primera etapa (la consulta).
+        - Le informe que esto se trasladará al terapeuta.
+        - Le recuerde que el segundo paso es realizar el "Cuestionario Espejo". Tras hacerlo, recibirá su Dossier Personal con la conclusión del terapeuta de forma gratuita y sin presiones, y tendrá acceso liberado a recursos como meditaciones o el diario de gratitud.
+      
       Genera un resumen compacto que integre la nueva información con el historial pasado.
       
       Historial pasado:
@@ -296,7 +340,8 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
       EL RESULTADO DEBE SER EXCLUSIVAMENTE UN OBJETO JSON con esta estructura exacta (sin bloques markdown JSON):
       {
         "validConclusion": boolean,
-        "markdownReport": "El informe completo",
+        "clinicalSummary": "Resumen interno para el terapeuta",
+        "userEmpatheticMessage": "Mensaje empático y directo al usuario descrito arriba",
         "newAccumulatedSummary": "Resumen integrado",
         "needsUrgentSupport": boolean,
         "urgentSupportMessage": "mensaje muy delicado, empático y orientado a buscar ayuda inmediata si needsUrgentSupport es true, si es false dejar vacío"
@@ -326,7 +371,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     res.json(parsed);
   } catch (error) {
     console.error("AI /api/report failed", { uid: req.user?.uid, message: error instanceof Error ? error.message : "Desconocido" });
-    res.status(500).json({ error: "Failed to generate report" });
+    res.status(503).json({ error: "En este momento estamos procesando muchas consultas y nuestro sistema está algo saturado. Te agradecemos la paciencia. Por favor, intenta de nuevo en unos momentos." });
   }
 });
 
@@ -502,7 +547,7 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
     let healthOk = false;
     let healthText = "";
     try {
-      const healthResponse = await fetch(`${normalizedApiUrl}/api/health`);
+      const healthResponse = await fetch(`${normalizedApiUrl}/api/health?checkFirestore=1`);
       healthStatus = healthResponse.status;
       healthOk = healthResponse.ok;
       healthText = (await healthResponse.text()).substring(0, 500);
@@ -553,7 +598,8 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-bridge-secret": bridgeSecret
+          "x-bridge-secret": bridgeSecret,
+          "x-debug-bridge": "true"
         },
         body: JSON.stringify(payload)
       });
@@ -574,7 +620,7 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
     }
 
     return res.json({
-      success: true,
+      success: healthOk && postOk,
       step: "done",
       questionnaireApiConfigured,
       questionnaireBridgeConfigured,
