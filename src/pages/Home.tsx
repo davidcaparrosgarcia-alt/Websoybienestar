@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import RippleWindow from "../components/RippleWindow";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 import SymptomCard from "../components/SymptomCard";
+import NextStepsModal from "../components/NextStepsModal";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -28,6 +29,9 @@ export default function Home() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+
+  const phoneValue = phone ? (phone.startsWith('+') ? phone : `+34${phone}`) : "+34";
 
   // Load user data from Firestore
   useEffect(() => {
@@ -492,7 +496,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   if (hasDoneConsultation) {
-                    navigate('/method-details');
+                    setIsNextStepsModalOpen(true);
                   } else {
                     navigate('/session');
                   }
@@ -640,7 +644,15 @@ export default function Home() {
               <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
                 <h3 className="font-headline text-4xl md:text-5xl mb-6">Sesiones de Claridad</h3>
                 <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer encuentro hacia la luz. Un espacio dedicado exclusivamente a ti.</p>
-                <div onClick={() => navigate('/session')} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-surface-container-high transition-all cursor-pointer shadow-lg active:scale-95">Reservar ahora</div>
+                <div onClick={() => {
+                  if (hasDoneConsultation) {
+                    setIsNextStepsModalOpen(true);
+                  } else {
+                    navigate('/session');
+                  }
+                }} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-surface-container-high transition-all cursor-pointer shadow-lg active:scale-95">
+                  {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Consulta Gratuita"}
+                </div>
               </div>
             </div>
           </div>
@@ -760,6 +772,14 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      <NextStepsModal 
+        isOpen={isNextStepsModalOpen}
+        onClose={() => setIsNextStepsModalOpen(false)}
+        user={user}
+        hasDoneConsultation={hasDoneConsultation}
+        emailValue={contactEmail || user?.email || ""}
+        phoneValue={phoneValue}
+      />
     </div>
   );
 }

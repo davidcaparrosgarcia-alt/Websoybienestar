@@ -208,7 +208,7 @@ export default function Layout() {
             </div>
             <div className="flex flex-col items-end gap-3">
               <p className="text-[10px] uppercase tracking-[0.2em] text-white/80 italic">Sanando desde el centro.</p>
-              <Link to="/report" className="font-headline text-2xl text-[#f9f9f8] hover:text-white transition-colors">¿Dónde estoy?</Link>
+              <Link to="/report#next-steps" className="font-headline text-2xl text-[#f9f9f8] hover:text-white transition-colors">¿Dónde estoy?</Link>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import Markdown from "react-markdown";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
+import NextStepsModal from "../components/NextStepsModal";
 
 export default function Report() {
   const location = useLocation();
@@ -35,6 +36,18 @@ export default function Report() {
 
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [userData, setUserData] = useState<any>(null);
+
+  // States for NextStepsModal
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+  const emailValue = user?.email || "";
+  let phoneValue = "+34";
+  if (userData) {
+    const contactPhone = userData.contactPhone || userData.phone || userData.whatsappPhone || userData.smsPhone || userData.telefono;
+    if (contactPhone) {
+      const prefix = userData.contactPhoneCountryCode || "+34";
+      phoneValue = contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -107,6 +120,17 @@ export default function Report() {
       isMounted = false;
     }
   }, [user, reportData]);
+
+  useEffect(() => {
+    if (location.hash === '#next-steps') {
+      setTimeout(() => {
+        const el = document.getElementById('next-steps');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500); // Wait for loading to finish and rendering
+    }
+  }, [location.hash, isLoading, isAuthorized]);
 
   const handleShare = async () => {
     const shareData = {
@@ -246,7 +270,7 @@ export default function Report() {
             </div>
 
             {/* Next Steps Checklist */}
-            <div className="md:col-span-6 bg-white dark:bg-[#d1e7e4] p-8 rounded-[2rem] shadow-sm border border-outline-variant/10 flex flex-col justify-center">
+            <div id="next-steps" className="md:col-span-6 bg-white dark:bg-[#d1e7e4] p-8 rounded-[2rem] shadow-sm border border-outline-variant/10 flex flex-col justify-center scroll-mt-24">
               <h4 className="text-3xl font-headline font-bold text-primary dark:text-[#2c3e50] mb-8">Próximos Pasos</h4>
               <div className="space-y-6">
                 
@@ -274,8 +298,8 @@ export default function Report() {
                   </div>
                 ) : (
                   <div 
-                    onClick={() => navigate('/method-details')}
-                    className="flex gap-4 p-4 -my-2 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md"
+                    onClick={() => setIsNextStepsModalOpen(true)}
+                    className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
                   >
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
@@ -328,6 +352,14 @@ export default function Report() {
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 dark:bg-white/5 rounded-full blur-3xl"></div>
         </div>
       </section>
+      <NextStepsModal 
+        isOpen={isNextStepsModalOpen}
+        onClose={() => setIsNextStepsModalOpen(false)}
+        user={user}
+        hasDoneConsultation={userData?.hasDoneConsultation || false}
+        emailValue={emailValue}
+        phoneValue={phoneValue}
+      />
     </div>
   );
 }
