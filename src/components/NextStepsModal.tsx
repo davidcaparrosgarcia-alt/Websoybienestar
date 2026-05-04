@@ -66,12 +66,18 @@ export default function NextStepsModal({
     setIsQuestionnaireSubmitting(true);
     try {
       const token = await user.getIdToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      if (user.email === "davidcaparrosgarcia@gmail.com") {
+        headers["x-debug-request-questionnaire"] = "true";
+      }
+
       const response = await fetch('/api/request-questionnaire', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify({
           email: emailValue,
           telefono,
@@ -88,10 +94,16 @@ export default function NextStepsModal({
       if (response.ok) {
         setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
       } else {
+        let msg = data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
+        
+        if (user.email === "davidcaparrosgarcia@gmail.com" && data.debug) {
+          msg += `\n\n--- TEMP DEBUG UI ---\nPaso de error: ${data.debug.step}\nName: ${data.debug.name}\nMensaje: ${data.debug.message}\nCode: ${data.debug.code || 'N/A'}`;
+        }
+
         if (response.status === 429) {
-          setQuestionnaireRequestMessage({ text: data.message || "Límite alcanzado. Inténtalo más tarde.", type: "warning" });
+          setQuestionnaireRequestMessage({ text: msg, type: "warning" });
         } else {
-          setQuestionnaireRequestMessage({ text: data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.", type: "error" });
+          setQuestionnaireRequestMessage({ text: msg, type: "error" });
         }
       }
     } catch (e) {
@@ -245,7 +257,7 @@ export default function NextStepsModal({
             </form>
 
             {questionnaireRequestMessage && (
-              <div className={`mt-4 p-4 rounded-xl text-sm font-medium ${questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}>
+              <div className={`mt-4 p-4 whitespace-pre-wrap rounded-xl text-sm font-medium ${questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}>
                 {questionnaireRequestMessage.text}
               </div>
             )}

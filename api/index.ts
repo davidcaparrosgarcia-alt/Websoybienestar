@@ -642,11 +642,13 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
 });
 
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
+  let requestStep = "start";
   try {
     const { email, telefono, preferredChannels } = req.body;
     const uid = req.user!.uid;
     const authEmail = req.user!.email;
 
+    requestStep = "validate_input";
     if (!email) {
       return res.status(400).json({ success: false, message: "El email es obligatorio." });
     }
@@ -657,9 +659,11 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono." });
     }
 
+    requestStep = "init_firestore";
     if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado. Por favor configura las claves en Secrets de la app." });
     const db = admin.firestore();
 
+    requestStep = "read_user_docs";
     const docRef = db.collection('users').doc(uid);
     const profileRef = db.collection('userProfiles').doc(uid);
 
@@ -678,6 +682,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const now = Date.now();
     let isResendingDueToContactChange = false;
 
+    requestStep = "rate_limit_check";
     if (!isTestUser(req)) {
       if (userData.lastQuestionnaireRequestAt && (now - userData.lastQuestionnaireRequestAt) < thirtyDaysMs) {
         const lastContact = userData.lastQuestionnaireContactSnapshot || {};
@@ -700,6 +705,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       }
     }
 
+    requestStep = "build_context";
     const soybienestarContext: any = {
       contextSchemaVersion: 1,
       generatedAt: new Date().toISOString()
@@ -735,6 +741,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const createdAt = Date.now();
     const createdAtIso = new Date(createdAt).toISOString(); 
 
+    requestStep = "build_payload";
     const payload = {
       id: requestId,
       source: "soybienestar",
@@ -755,6 +762,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       soybienestarContext
     };
 
+    requestStep = "check_bridge_config";
     const apiUrl = process.env.QUESTIONNAIRE_API_URL;
     const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET;
 
@@ -774,6 +782,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     const normalizedApiUrl = apiUrl.replace(/\/$/, "");
 
+    requestStep = "send_to_questionnaire";
     const response = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
       method: "POST",
       headers: {
@@ -783,6 +792,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       body: JSON.stringify(payload)
     });
 
+    requestStep = "parse_questionnaire_response";
     let apiResponseData = {};
     const responseText = await response.text();
     try {
@@ -791,6 +801,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     if (!response.ok) {
       console.error("Error from Cuestionario API", {
+        step: requestStep,
         status: response.status,
         statusText: response.statusText,
         responseText: responseText.substring(0, 500)
@@ -801,6 +812,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       });
     }
 
+    requestStep = "save_local_request";
     const timestamp = Date.now();
     await requestsRef.doc(requestId).set({
       id: requestId,
@@ -818,6 +830,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       contactSnapshot
     });
 
+    requestStep = "update_user_request_metadata";
     await docRef.update({
       questionnaireRequestStatus: "pending",
       lastQuestionnaireRequestAt: timestamp,
@@ -825,6 +838,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       lastQuestionnaireContactSnapshot: contactSnapshot
     });
 
+    requestStep = "done";
     if (isResendingDueToContactChange) {
       return res.json({
         success: true,
@@ -842,16 +856,29 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     }
 
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("API /api/request-questionnaire error:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-    } else {
-      console.error("API /api/request-questionnaire error:", error);
-    }
-    res.status(500).json({ success: false, message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros." });
+    console.error("API /api/request-questionnaire error:", {
+      step: requestStep,
+      uid: req.user?.uid,
+      code: (error as any)?.code,
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
+    const xDebug = req.headers['x-debug-request-questionnaire'] === 'true';
+
+    return res.status(500).json({
+      success: false,
+      message: "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.",
+      ...(xDebug ? {
+        debug: {
+          step: requestStep,
+          name: error instanceof Error ? error.name : "Unknown",
+          message: error instanceof Error ? error.message : String(error),
+          code: (error as any)?.code
+        }
+      } : {})
+    });
   }
 });
 

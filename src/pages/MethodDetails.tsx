@@ -223,7 +223,7 @@ export default function MethodDetails() {
               </div>
               <span className="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_right</span>
             </a>
-            <a className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" href="#">
+            <a className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" href="https://www.youtube.com/channel/UCz2TVzApLNgng3i9KDhnUdg" target="_blank" rel="noopener noreferrer">
               <div className="flex items-center gap-6">
                 <span className="material-symbols-outlined text-secondary text-3xl">smart_display</span>
                 <div>
