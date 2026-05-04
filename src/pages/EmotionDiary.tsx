@@ -311,7 +311,7 @@ export default function EmotionDiary() {
               <img 
                 alt="Serene morning interior" 
                 className="w-full h-[500px] object-cover hover:scale-105 transition-transform duration-700 ease-in-out" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7U8wTXHnTYYh4s7FlJ02q7gkqeEID_zgaCxq93KqRMo9s_wBDiB-cfnDDpTN2GINRfBrQvB2iJ8xW4u6zsd0STt79Go8snS_F6eEJSHMgMHK-Ss3c1_v-hxBB4RyRNxvkyaM4seWqYvJA95v0UVlBcQrrbFYRJ9o27RIO4VHzdznOR12-x6-HQnVNiBr_C9X0fRqabmD1ijiGIUZv7Ch_cF86LGrAPwDtWVWzsDdNfFOytjDcWsdu8qXR2H-McHeNCTWeq_ta0CrQ"
+                src="/images/habitación_diario_gratitud.jpg"
                 referrerPolicy="no-referrer"
               />
             </div>

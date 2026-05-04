@@ -133,17 +133,12 @@ export default function AnxietyManagement() {
       {/* Hero Section */}
       <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent">
         <div className="absolute inset-0 z-0">
-          <img alt="Dense atmospheric fog in a quiet forest at dawn" className="w-full h-full object-cover opacity-60 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnnB7Ri9_5dSaSdsK_BkgG4rziV6DZIoGpkJ3zMhRngUFRR_7T7tCPOiTzIGMzRSFUltxwbdc8kEcpgU4ypflTyI5keY0OVeOow8oLCAzpzkDn5QBy4xAh2I3yf5aLWOeOj2vnWEwaQjkAED7T02OhL9OJz9QDy9hMVDx_bLCL7uGZaxwRwvw1Ix3azBczHI9jblyTPtzArdwkhSWxnTMUbtetuxh7_5aTCEgKSdGuOg1PtUF2BZbApoAFT98ID2wIzdkUP0sI7UaO"/>
+          <img alt="Dense atmospheric fog in a quiet forest at dawn" className="hidden lg:block w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar.jpg"/>
+          <img alt="Dense atmospheric fog in a quiet forest at dawn" className="block lg:hidden w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar_vertical.jpg"/>
           <div className="absolute inset-0 bg-gradient-to-r from-[#2c3e50]/80 to-transparent"></div>
         </div>
         <div className="relative z-10 max-w-screen-2xl mx-auto px-12 w-full">
           <div className="max-w-3xl">
-            <h1 className="font-headline text-5xl md:text-7xl text-white leading-relaxed tracking-tight italic mb-8 drop-shadow-lg">
-              ¿Sientes que la niebla te impide avanzar?
-            </h1>
-            <p className="text-[#c4d7ec] text-xl md:text-2xl font-light tracking-wide max-w-xl drop-shadow-md">
-              Entendiendo la arquitectura de tu paz interior.
-            </p>
           </div>
         </div>
       </section>
@@ -300,7 +295,7 @@ export default function AnxietyManagement() {
       {/* Section 1: Restructured 'La naturaleza del ruido' */}
       <section className="relative py-48 overflow-hidden bg-transparent">
         <div className="absolute inset-0 z-0">
-          <img alt="A path lost in thick fog with ethereal light" className="w-full h-full object-cover opacity-30 blur-sm scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtL5pbugnZtI7y7kA6u94AMwx1UOLEtjgIvSEHB_SDrv1TUSkFnx_lm34dIAPqsY6B9BLKf3RLkwpO3xMlbMptJQV3DK974c25wgawr2BinFvuXiluqVRLFxRVAqHEFhdFCio528VckhE64vvoGkLswWK8UDURAHwhYu-aVPJyQHwJ8aRGz5XyX9dqIDfLRcUNwohqgjMobaHKfSalPT0LRYK8ZjcG-ZkhCYfb38CwVKqLJa7g4o97ZgI-W1Wp86VCE3IAQhl2o9ZF"/>
+          <img alt="A path lost in thick fog with ethereal light" className="w-full h-full object-cover opacity-30 blur-sm scale-105" src="/images/naturaleza_del_ruido.jpg"/>
           <div className="absolute inset-0 bg-[#2c3e50]/40"></div>
         </div>
         <div className="relative z-10 max-w-screen-xl mx-auto px-12 text-center">

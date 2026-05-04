@@ -528,7 +528,7 @@ export default function WeeklyGoals() {
               <img 
                 alt="Sanctuary" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-1UQLn6POnnUDGT5YuvxyJSRNfpPqEZOHFOdbRof4Sw_uduReZRl4LZD75owj1EEJ7YsXj67sBj0uY89m2Si7fQliPst1bOCpDvw3QGg0UMipGUS0bVD3OEOcoP-TPu7FBGATQWrZMXqmpZ9ls7n9MTlQsb8Ekb54pLK5HahTvwaSg7R1EGvQlhNG-VwRjL3UdfwHXTHzcAA4dow20RGOjb6Vb9PudZuF6GiGwO3rRdvgZldaHmekMjwkUBBLGYUnKPBTdU4OLEzT"
+                src="/images/puerta_propuestas_semanales.jpg"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-xl"></div>

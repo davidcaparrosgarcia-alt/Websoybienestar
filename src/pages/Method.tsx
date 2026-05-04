@@ -59,7 +59,7 @@ export default function Method() {
               onClick={() => setIsVideoModalOpen(true)}
               className="relative group aspect-video rounded-2xl overflow-hidden bg-surface-container-highest shadow-2xl cursor-pointer"
             >
-              <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" alt="cinematic shot of a modern architectural wooden bridge disappearing into a soft morning mist at dawn with golden sunlight flares" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUFJR7osyxltbHn-vme3ZQ_zZ04pLZcrC7EzB6qZzBrLG0pIGgOrMmBWeVmixUbAq-5Ow65REc1i-TtiXPPTPjCickPpT7SF2BUkWCmazttPfMjU_CkCsrmk2B9Kn8yQizkIM8vLZo6czJR_OpsQdxYTkJy2hFRNSXbiRyeZLFMLtb2DBk4ySloPCYFaDARaA87RaVSLCvrstFYERL-tBiYJBqZ0Lc_q2p6BhJ2OcMnSfpVW52BkcOhnibSLT-f3PxkUmm192V5A76"/>
+              <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" alt="cinematic shot of a modern architectural wooden bridge disappearing into a soft morning mist at dawn with golden sunlight flares" src="/images/cruzando_el_puente.jpg"/>
               <div className="absolute inset-0 flex items-center justify-center">
                 <button className="w-24 h-24 rounded-full bg-surface/70 backdrop-blur-md border border-white/30 flex items-center justify-center text-primary transition-all group-hover:scale-110">
                   <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>

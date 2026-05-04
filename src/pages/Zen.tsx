@@ -150,16 +150,16 @@ export default function Zen() {
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
 
       {/* Hero Section: "The Breathing Hero" */}
-      <header className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+      <header className="relative min-h-screen flex items-end pb-10 md:pb-14 pt-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="w-full h-full object-cover" data-alt="Serene watercolor painting of a traditional oriental sanctuary nestled among misty turquoise mountains and calm waters with pink lotus flowers" src="/images/fondo-zen.jpg"/>
+          <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="hidden lg:block w-full h-full object-cover" src="/images/refugio_de_calma.jpg"/>
+          <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="block lg:hidden w-full h-full object-cover" src="/images/refugio_de_calma_vertical.jpg"/>
           <div className="absolute inset-0 bg-[#f1f5f9]/20 dark:bg-[#2c3e50]/40 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
-          <div className="md:w-3/5 bg-white/40 dark:bg-[#162839]/60 backdrop-blur-md p-12 rounded-2xl shadow-xl">
-            <h1 className="text-6xl lg:text-7xl font-headline mb-8 leading-tight text-[#0a0a0a] dark:text-white">Tu refugio de calma te espera.</h1>
-            <p className="text-xl font-body leading-relaxed mb-8 max-w-2xl font-medium text-[#111111] dark:text-[#e2e8f0]">
-              El acceso a nuestra plataforma de bienestar es exclusivo y gratuito. Comienza tu camino de introspección registrándote y completando nuestra <span className="italic font-bold text-black dark:text-white">Consulta con IA</span> y el <span className="italic font-bold text-black dark:text-white">Cuestionario Espejo</span>.
+          <div className="md:w-3/5 bg-white/40 dark:bg-[#162839]/60 backdrop-blur-md px-5 py-4 md:px-7 md:py-5 rounded-2xl shadow-xl">
+            <p className="text-xl md:text-2xl lg:text-2xl font-headline mb-4 leading-tight text-[#0a0a0a] dark:text-white">
+              ReprogrÁmate registrándote y completando nuestra Consulta gratuita y el Cuestionario Espejo.
             </p>
             <div className="flex flex-wrap gap-6">
               <button 
@@ -274,7 +274,7 @@ export default function Zen() {
                  onClick={() => setIsGrayscaleForceOff(!isGrayscaleForceOff)}
                  onTouchStart={() => setIsGrayscaleForceOff(true)}
             >
-              <img alt="Person meditating in calm space" className={`w-full h-[600px] object-cover rounded-2xl transition-all duration-700 shadow-xl ${isGrayscaleForceOff ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`} data-alt="A person sitting in a peaceful meditative pose in a bright, minimalist room with natural wood and linen textures, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDezZvAvohhg90z-FTDQW9ufFmgWrxZPty-2arqGExkoV24NqfkSISG7KE5JVsEo0ORJ2wF5JMmiOx-UyeYtMXfYQ8Qh6oUZaFp9yH0gVDPFMiVwlyRnpgbOBOJenwANXkJSf9QVLWs0AB3hmwoP_Z82QRlb1klqJ1Q8TLLLznwaOGLgsvYzxkitC15QbWUMqgI_ECGqlLzGzUtlyvTDTVjnhcptoa-6fITF7H_6ixQFsOy5FfunomGUPQ6pE2qdHNkrmfotoCFFKu9"/>
+              <img alt="Person meditating in calm space" className={`w-full h-[600px] object-cover rounded-2xl transition-all duration-700 shadow-xl ${isGrayscaleForceOff ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`} src="/images/chica_meditando.jpg"/>
               <div className="absolute -bottom-8 -right-8 bg-primary-container text-on-primary p-8 rounded-full hidden xl:block max-w-xs shadow-2xl">
                 <p className="font-headline italic text-lg text-on-primary-container">"La paz no es la ausencia de ruido, sino la armonía dentro de él."</p>
               </div>

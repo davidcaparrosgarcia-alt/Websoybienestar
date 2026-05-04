@@ -466,8 +466,9 @@ export default function Session() {
 
   if (!hasDoneConsultation && !hasStartedGuidedSession) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
-        <div className="max-w-xl w-full bg-surface-container-low p-10 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-cover bg-center bg-no-repeat relative" style={{ backgroundImage: 'url("/images/consulta_gratuita.jpg")' }}>
+        <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+        <div className="relative z-10 max-w-xl w-full bg-surface-container-low p-10 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
           <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2">
             <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>self_improvement</span>
           </div>
