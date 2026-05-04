@@ -2,11 +2,31 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import { GoogleGenAI, Type } from "@google/genai";
 import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
+
+let SERVER_FIRESTORE_DATABASE_ID = "(default)";
+try {
+  SERVER_FIRESTORE_DATABASE_ID = 
+    process.env.FIRESTORE_DATABASE_ID || 
+    process.env.firestoreDatabaseId || 
+    "(default)";
+  
+  if (SERVER_FIRESTORE_DATABASE_ID === "(default)") {
+    const configPath = path.join(process.cwd(), "firebase-applet-config.json");
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      if (config.firestoreDatabaseId) {
+        SERVER_FIRESTORE_DATABASE_ID = config.firestoreDatabaseId;
+      }
+    }
+  }
+} catch(e) {}
+
 
 // Extensión del Request para Typescript
 declare global {
@@ -135,7 +155,7 @@ function isTestUser(req: any) {
 async function checkAILimit(req: any, uid: string, limitKey: string, period: 'daily' | 'weekly' | 'monthly', maxLimit: number): Promise<boolean> {
   if (isTestUser(req)) return true;
   if (!admin.apps.length) return true;
-  const db = admin.firestore();
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
   const now = new Date();
   let periodStr = "";
   if (period === 'daily') periodStr = now.toISOString().split("T")[0];
@@ -168,7 +188,7 @@ async function checkAILimit(req: any, uid: string, limitKey: string, period: 'da
 async function checkGratitudeLimits(req: any, uid: string, entry1: string, entry2: string): Promise<boolean> {
   if (isTestUser(req)) return true;
   if (!admin.apps.length) return true;
-  const db = admin.firestore();
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
   const dateStr = new Date().toISOString().split("T")[0];
   const limitRef = db.collection('users').doc(uid).collection('aiLimits').doc(`gratitude_${dateStr}`);
   
@@ -206,7 +226,8 @@ app.get("/api/health", (req, res) => {
     model: AI_MODEL,
     env: process.env.NODE_ENV || "development",
     questionnaireApiConfigured: !!process.env.QUESTIONNAIRE_API_URL,
-    questionnaireBridgeConfigured: !!process.env.QUESTIONNAIRE_BRIDGE_SECRET
+    questionnaireBridgeConfigured: !!process.env.QUESTIONNAIRE_BRIDGE_SECRET,
+    serverFirestoreDatabaseId: SERVER_FIRESTORE_DATABASE_ID
   });
 });
 
@@ -358,7 +379,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     
     // If valid conclusion, apply monthly valid limit
     if (parsed.validConclusion && !isTestUser(req)) {
-      const db = admin.firestore();
+      const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
       const monthStr = new Date().toISOString().slice(0, 7);
       const docRef = db.collection('users').doc(req.user!.uid).collection('aiLimits').doc(`validConclusion_${monthStr}`);
       const doc = await docRef.get();
@@ -661,7 +682,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     requestStep = "init_firestore";
     if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado. Por favor configura las claves en Secrets de la app." });
-    const db = admin.firestore();
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
 
     requestStep = "read_user_docs";
     const docRef = db.collection('users').doc(uid);

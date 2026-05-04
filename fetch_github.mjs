@@ -2,11 +2,6 @@ import fs from 'fs';
 import path from 'path';
 
 async function download(url, dest) {
-  const dir = path.dirname(dest);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
   const res = await fetch(url, { headers: { 'User-Agent': 'AI-Studio-Agent' }});
   if (!res.ok) throw new Error(`HTTP ${res.status} - ${url}`);
   const arrayBuffer = await res.arrayBuffer();
@@ -37,18 +32,27 @@ async function run() {
     return;
   }
 
-  // Find all files in public/images, public/videos, and public/audios
-  const filesPaths = tree.filter(t => 
-    t.type === 'blob' && 
-    (t.path.startsWith('public/images/') || 
-     t.path.startsWith('public/videos/') || 
-     t.path.startsWith('public/audios/'))
-  ).map(t => t.path);
+  const filesPaths = tree.filter(t => [
+    'fondo-zen.jpg',
+    'fondo-faro.jpg',
+    'info-ansiedad.jpg',
+    'info-estres.jpg',
+    'info-insomnio.jpg',
+    'info-procrastinacion.jpg',
+    'info-rumiacion.jpg',
+    'info-emociones.jpg',
+    'info-alimentacion.jpg',
+    'logo-soybienestar.svg'
+  ].some(name => t.path.includes(name))).map(t => t.path);
   
+  if (!fs.existsSync('public/images')) {
+    fs.mkdirSync('public/images', { recursive: true });
+  }
+
   for (const filePath of filesPaths) {
      const rawUrl = `https://raw.githubusercontent.com/davidcaparrosgarcia-alt/Websoybienestar/${branch}/${filePath}`;
-     // Download maintaining file structure
-     await download(rawUrl, filePath);
+     const fileName = path.basename(filePath);
+     await download(rawUrl, `public/images/${fileName}`);
   }
 }
 
