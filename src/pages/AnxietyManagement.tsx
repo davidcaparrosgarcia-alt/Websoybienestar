@@ -193,67 +193,97 @@ export default function AnxietyManagement() {
         onMouseMove={handleAnxietyFogMove}
       >
         <div className="absolute inset-0 z-0">
-          <img alt="Dense atmospheric fog in a quiet forest at dawn" className="hidden lg:block w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar.jpg"/>
-          <img alt="Dense atmospheric fog in a quiet forest at dawn" className="block lg:hidden w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar_vertical.jpg"/>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2c3e50]/80 to-transparent"></div>
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <filter id="anxiety-fog-soften" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="1.65" />
-              </filter>
-              <filter id="anxiety-fog-texture" x="-20%" y="-20%" width="140%" height="140%">
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.018 0.045"
-                  numOctaves="2"
-                  seed="11"
-                  result="fogNoise"
-                />
-                <feDisplacementMap in="SourceGraphic" in2="fogNoise" scale="1.8" />
-              </filter>
-              <mask id="anxiety-fog-clear-mask">
-                <rect width="100" height="100" fill="white" />
-                {fogTrail.map((point) => {
-                  const progress = Math.min(1, Math.max(0, (fogTick - point.createdAt) / FOG_LIFE_MS));
-                  const delayedProgress = Math.max(0, (progress - 0.18) / 0.82);
-                  const opacity = Math.max(0, 0.92 * (1 - delayedProgress));
+        {/* Imagen base nítida */}
+        <img
+          alt="Dense atmospheric fog in a quiet forest at dawn"
+          className="hidden lg:block w-full h-full object-cover"
+          src="/images/ansiedad_impide_avanzar.jpg"
+        />
+        <img
+          alt="Dense atmospheric fog in a quiet forest at dawn"
+          className="block lg:hidden w-full h-full object-cover"
+          src="/images/ansiedad_impide_avanzar_vertical.jpg"
+        />
 
-                  return (
-                    <ellipse
-                      key={point.id}
-                      cx={point.x}
-                      cy={point.y}
-                      rx={point.rx}
-                      ry={point.ry}
-                      fill="black"
-                      opacity={opacity}
-                      filter="url(#anxiety-fog-soften)"
-                      transform={`rotate(${point.rotation} ${point.x} ${point.y})`}
-                    />
-                  );
-                })}
-              </mask>
-            </defs>
+        {/* Overlay de niebla + atmósfera. El ratón despeja ESTA capa para revelar la imagen limpia */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="anxiety-fog-soften" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.65" />
+            </filter>
 
-            <rect
-              width="100"
-              height="100"
-              fill="rgba(241,245,249,0.26)"
-              mask="url(#anxiety-fog-clear-mask)"
-              filter="url(#anxiety-fog-texture)"
-            />
-            <rect
-              width="100"
-              height="100"
-              fill="rgba(255,255,255,0.10)"
-              mask="url(#anxiety-fog-clear-mask)"
-            />
-          </svg>
+            <filter id="anxiety-fog-texture" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.018 0.045"
+                numOctaves="2"
+                seed="11"
+                result="fogNoise"
+              />
+              <feDisplacementMap in="SourceGraphic" in2="fogNoise" scale="1.8" />
+            </filter>
+
+            <linearGradient id="anxiety-hero-atmosphere" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(44,62,80,0.70)" />
+              <stop offset="55%" stopColor="rgba(44,62,80,0.30)" />
+              <stop offset="100%" stopColor="rgba(44,62,80,0.06)" />
+            </linearGradient>
+
+            {/* Máscara: blanco = se mantiene el overlay / negro = se despeja y se ve la imagen limpia */}
+            <mask id="anxiety-fog-cover-mask">
+              <rect width="100" height="100" fill="white" />
+              {fogTrail.map((point) => {
+                const progress = Math.min(1, Math.max(0, (fogTick - point.createdAt) / FOG_LIFE_MS));
+                const delayedProgress = Math.max(0, (progress - 0.18) / 0.82);
+                const opacity = Math.max(0, 0.92 * (1 - delayedProgress));
+
+                return (
+                  <ellipse
+                    key={point.id}
+                    cx={point.x}
+                    cy={point.y}
+                    rx={point.rx}
+                    ry={point.ry}
+                    fill="black"
+                    opacity={opacity}
+                    filter="url(#anxiety-fog-soften)"
+                    transform={`rotate(${point.rotation} ${point.x} ${point.y})`}
+                  />
+                );
+              })}
+            </mask>
+          </defs>
+
+          {/* Atmósfera azul oscura */}
+          <rect
+            width="100"
+            height="100"
+            fill="url(#anxiety-hero-atmosphere)"
+            mask="url(#anxiety-fog-cover-mask)"
+          />
+
+          {/* Niebla principal blanca con textura */}
+          <rect
+            width="100"
+            height="100"
+            fill="rgba(255,255,255,0.22)"
+            filter="url(#anxiety-fog-texture)"
+            mask="url(#anxiety-fog-cover-mask)"
+          />
+
+          {/* Segunda capa de niebla suave para dar volumen */}
+          <rect
+            width="100"
+            height="100"
+            fill="rgba(255,255,255,0.10)"
+            mask="url(#anxiety-fog-cover-mask)"
+          />
+        </svg>
         </div>
         <div className="relative z-10 max-w-screen-2xl mx-auto px-12 w-full">
           <div className="max-w-3xl">
