@@ -523,7 +523,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
             <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
-              <img alt="serene lake water" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByyJgogocVjCPOxXQxHKNXYzp-G1FGJ_nU9Hce-Po8bcUcktmIrkSn5fwur3EnfxCYpIPyHXbYQMvRBAUzDTtT0h2nMm-tgTsgcjAWsr-Eau2mGYQGX60D5nnXeP-ICYZ31LRmhWL_AiorwNazJrDD0Nl2RuVZinFwHjGWa9v7tbI5uSCbXfXFKRzKCVshA98Or_KHuCaIoMdzHWnn3HTpmVuUIsHVU_09hna3wfAY1n93-W2tUyqCVXdnV7MIFn7iDiSe4xMlimqQ"/>
+              <img alt="serene lake water" className="w-full h-full object-cover" src="/images/ondas.jpg"/>
             </RippleWindow>
           </div>
           <div className="lg:col-span-7 order-1 lg:order-2">
@@ -640,7 +640,7 @@ export default function Home() {
 
             <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[380px] shadow-xl">
               <img alt="soft morning sunlight" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="/images/fondo-zen.jpg"/>
-              <div className="absolute inset-0 bg-primary/70 backdrop-blur-[2px]"></div>
+              <div className="absolute inset-0 bg-primary/35 backdrop-blur-[2px]"></div>
               <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
                 <h3 className="font-headline text-4xl md:text-5xl mb-6">Sesiones de Claridad</h3>
                 <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer encuentro hacia la luz. Un espacio dedicado exclusivamente a ti.</p>

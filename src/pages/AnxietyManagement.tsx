@@ -295,7 +295,7 @@ export default function AnxietyManagement() {
       {/* Section 1: Restructured 'La naturaleza del ruido' */}
       <section className="relative py-48 overflow-hidden bg-transparent">
         <div className="absolute inset-0 z-0">
-          <img alt="A path lost in thick fog with ethereal light" className="w-full h-full object-cover opacity-30 blur-sm scale-105" src="/images/naturaleza_del_ruido.jpg"/>
+          <img alt="A path lost in thick fog with ethereal light" className="w-full h-full object-cover opacity-80 scale-105" src="/images/naturaleza_del_ruido.jpg"/>
           <div className="absolute inset-0 bg-[#2c3e50]/40"></div>
         </div>
         <div className="relative z-10 max-w-screen-xl mx-auto px-12 text-center">

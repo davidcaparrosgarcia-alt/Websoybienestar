@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db, signInWithGoogle } from "../firebase";
@@ -19,6 +19,19 @@ export default function Zen() {
   const [hasAccess, setHasAccess] = useState(false);
   const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
   const [isGrayscaleForceOff, setIsGrayscaleForceOff] = useState(false);
+  const [fogPosition, setFogPosition] = useState({ x: 50, y: 50 });
+  const [isFogActive, setIsFogActive] = useState(false);
+
+  const handleHeroFogMove = (event: MouseEvent<HTMLElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    setFogPosition({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    });
+  };
 
   // Form states for Registration Modal
   const [emailValue, setEmailValue] = useState("");
@@ -150,13 +163,28 @@ export default function Zen() {
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
 
       {/* Hero Section: "The Breathing Hero" */}
-      <header className="relative min-h-screen flex items-end pb-10 md:pb-14 pt-24 overflow-hidden">
+      <header 
+        className="relative min-h-screen flex items-center pt-24 overflow-hidden"
+        onMouseEnter={() => setIsFogActive(true)}
+        onMouseMove={handleHeroFogMove}
+        onMouseLeave={() => setIsFogActive(false)}
+      >
         <div className="absolute inset-0 z-0">
           <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="hidden lg:block w-full h-full object-cover" src="/images/refugio_de_calma.jpg"/>
           <img alt="Watercolor illustration of a serene sanctuary in misty mountains" className="block lg:hidden w-full h-full object-cover" src="/images/refugio_de_calma_vertical.jpg"/>
-          <div className="absolute inset-0 bg-[#f1f5f9]/20 dark:bg-[#2c3e50]/40 backdrop-blur-[2px]"></div>
+          <div
+            className="absolute inset-0 pointer-events-none bg-[#f1f5f9]/20 dark:bg-[#2c3e50]/40 backdrop-blur-[2px] transition-all duration-700 ease-out"
+            style={{
+              WebkitMaskImage: isFogActive
+                ? `radial-gradient(ellipse 150px 115px at ${fogPosition.x}% ${fogPosition.y}%, transparent 0px, transparent 58px, rgba(0,0,0,0.18) 105px, rgba(0,0,0,0.72) 165px, black 245px)`
+                : `linear-gradient(black, black)`,
+              maskImage: isFogActive
+                ? `radial-gradient(ellipse 150px 115px at ${fogPosition.x}% ${fogPosition.y}%, transparent 0px, transparent 58px, rgba(0,0,0,0.18) 105px, rgba(0,0,0,0.72) 165px, black 245px)`
+                : `linear-gradient(black, black)`,
+            }}
+          ></div>
         </div>
-        <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-end gap-12">
+        <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-center gap-12">
           <div className="md:w-3/5 bg-white/40 dark:bg-[#162839]/60 backdrop-blur-md px-5 py-4 md:px-7 md:py-5 rounded-2xl shadow-xl">
             <p className="text-xl md:text-2xl lg:text-2xl font-headline mb-4 leading-tight text-[#0a0a0a] dark:text-white">
               ReprogrÁmate registrándote y completando nuestra Consulta gratuita y el Cuestionario Espejo.

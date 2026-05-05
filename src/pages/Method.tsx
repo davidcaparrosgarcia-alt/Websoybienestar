@@ -60,13 +60,8 @@ export default function Method() {
               className="relative group aspect-video rounded-2xl overflow-hidden bg-surface-container-highest shadow-2xl cursor-pointer"
             >
               <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" alt="cinematic shot of a modern architectural wooden bridge disappearing into a soft morning mist at dawn with golden sunlight flares" src="/images/cruzando_el_puente.jpg"/>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button className="w-24 h-24 rounded-full bg-surface/70 backdrop-blur-md border border-white/30 flex items-center justify-center text-primary transition-all group-hover:scale-110">
-                  <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-                </button>
-              </div>
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-surface/70 backdrop-blur-md rounded-xl border border-white/20">
-                <p className="font-label text-xs text-on-surface-variant uppercase tracking-tighter">Video Presentación: Nuestro Proceso</p>
+              <div className="absolute bottom-8 left-8 right-8">
+                <p className="font-headline text-3xl text-white uppercase tracking-tighter drop-shadow-xl">Video Presentación: Nuestro Proceso</p>
               </div>
             </div>
             {/* Decorative Light Beam */}

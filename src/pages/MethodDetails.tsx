@@ -72,10 +72,9 @@ export default function MethodDetails() {
       <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
         <div className="absolute inset-0 z-0">
           <picture>
-            <source media="(min-width: 768px)" srcSet="/images/viaje-transformacion.jpg" />
-            <img alt="Viaje Transformación" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="/images/viaje-transformacion.jpg"/>
+            <source media="(min-width: 768px)" srcSet="/images/metodo-intro.jpg" />
+            <img alt="Viaje Transformación" className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" src="/images/metodo-intro.jpg"/>
           </picture>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-8 text-center">
