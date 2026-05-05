@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 
@@ -34,9 +34,66 @@ function calcularPresion(sintomasIds: number[]) {
   return grados;
 }
 
+type FogTrailPoint = {
+  id: number;
+  x: number;
+  y: number;
+  createdAt: number;
+  rx: number;
+  ry: number;
+  rotation: number;
+};
+
 export default function AnxietyManagement() {
   const navigate = useNavigate();
   const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([]);
+  const [fogTrail, setFogTrail] = useState<FogTrailPoint[]>([]);
+  const [fogTick, setFogTick] = useState(() => Date.now());
+  const lastFogPointAt = useRef(0);
+  const fogPointId = useRef(0);
+
+  const FOG_LIFE_MS = 1900;
+  const FOG_ADD_INTERVAL_MS = 70;
+  const MAX_FOG_TRAIL_POINTS = 22;
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const now = Date.now();
+      setFogTick(now);
+      setFogTrail((prev) => prev.filter((point) => now - point.createdAt < FOG_LIFE_MS));
+    }, 80);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const handleAnxietyFogMove = (event: MouseEvent<HTMLElement>) => {
+    const now = Date.now();
+
+    if (now - lastFogPointAt.current < FOG_ADD_INTERVAL_MS) {
+      return;
+    }
+
+    lastFogPointAt.current = now;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    const safeX = Math.max(0, Math.min(100, x));
+    const safeY = Math.max(0, Math.min(100, y));
+
+    const point: FogTrailPoint = {
+      id: fogPointId.current++,
+      x: safeX,
+      y: safeY,
+      createdAt: now,
+      rx: 8 + Math.random() * 4,
+      ry: 5.5 + Math.random() * 3,
+      rotation: Math.random() * 180,
+    };
+
+    setFogTrail((prev) => [...prev.slice(-MAX_FOG_TRAIL_POINTS + 1), point]);
+  };
 
   const toggleSymptom = (id: number) => {
     setSelectedSymptoms(prev => 
@@ -131,11 +188,72 @@ export default function AnxietyManagement() {
   return (
     <div className="flex-1 bg-transparent w-full font-body text-on-surface">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent">
+      <section 
+        className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent"
+        onMouseMove={handleAnxietyFogMove}
+      >
         <div className="absolute inset-0 z-0">
           <img alt="Dense atmospheric fog in a quiet forest at dawn" className="hidden lg:block w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar.jpg"/>
           <img alt="Dense atmospheric fog in a quiet forest at dawn" className="block lg:hidden w-full h-full object-cover opacity-60 mix-blend-overlay" src="/images/ansiedad_impide_avanzar_vertical.jpg"/>
           <div className="absolute inset-0 bg-gradient-to-r from-[#2c3e50]/80 to-transparent"></div>
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <filter id="anxiety-fog-soften" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.65" />
+              </filter>
+              <filter id="anxiety-fog-texture" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.018 0.045"
+                  numOctaves="2"
+                  seed="11"
+                  result="fogNoise"
+                />
+                <feDisplacementMap in="SourceGraphic" in2="fogNoise" scale="1.8" />
+              </filter>
+              <mask id="anxiety-fog-clear-mask">
+                <rect width="100" height="100" fill="white" />
+                {fogTrail.map((point) => {
+                  const progress = Math.min(1, Math.max(0, (fogTick - point.createdAt) / FOG_LIFE_MS));
+                  const delayedProgress = Math.max(0, (progress - 0.18) / 0.82);
+                  const opacity = Math.max(0, 0.92 * (1 - delayedProgress));
+
+                  return (
+                    <ellipse
+                      key={point.id}
+                      cx={point.x}
+                      cy={point.y}
+                      rx={point.rx}
+                      ry={point.ry}
+                      fill="black"
+                      opacity={opacity}
+                      filter="url(#anxiety-fog-soften)"
+                      transform={`rotate(${point.rotation} ${point.x} ${point.y})`}
+                    />
+                  );
+                })}
+              </mask>
+            </defs>
+
+            <rect
+              width="100"
+              height="100"
+              fill="rgba(241,245,249,0.26)"
+              mask="url(#anxiety-fog-clear-mask)"
+              filter="url(#anxiety-fog-texture)"
+            />
+            <rect
+              width="100"
+              height="100"
+              fill="rgba(255,255,255,0.10)"
+              mask="url(#anxiety-fog-clear-mask)"
+            />
+          </svg>
         </div>
         <div className="relative z-10 max-w-screen-2xl mx-auto px-12 w-full">
           <div className="max-w-3xl">
