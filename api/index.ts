@@ -665,7 +665,7 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   let requestStep = "start";
   try {
-    const { email, telefono, preferredChannels } = req.body;
+    const { email, telefono, preferredChannels, edad, sexo } = req.body;
     const uid = req.user!.uid;
     const authEmail = req.user!.email;
 
@@ -679,6 +679,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     if ((preferredChannels.whatsapp || preferredChannels.sms) && (!telefono || telefono === "+34" || telefono.trim().length < 5)) {
       return res.status(400).json({ success: false, message: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono." });
     }
+    // Added validation for edad and sexo, though they might not be fully required if backend allows, but let's encourage them
+    // Wait, the client already validates. But backend can be safe. Let's just pass them through.
 
     requestStep = "init_firestore";
     if (!admin.apps.length) return res.status(500).json({ success: false, message: "Error interno del servidor. Firebase no inicializado. Por favor configura las claves en Secrets de la app." });
@@ -696,6 +698,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const contactSnapshot = {
       email,
       telefono: telefono || null,
+      edad: edad || null,
+      sexo: sexo || null,
       preferredChannels
     };
 
@@ -744,6 +748,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     copyIfPresent(userData, 'hasDoneConsultation');
     copyIfPresent(userData, 'processStage');
+    copyIfPresent(userData, 'reportFeedback');
+    copyIfPresent(userData, 'latestReportFeedbackAgrees');
+    copyIfPresent(userData, 'latestReportFeedbackLabel');
+    copyIfPresent(userData, 'latestReportFeedbackAt');
     copyIfPresent(profileData, 'globalUserSummary');
     copyIfPresent(profileData, 'accumulatedSummary');
     copyIfPresent(profileData, 'latestClinicalConclusion');
@@ -754,6 +762,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     copyIfPresent(profileData, 'gratitudeDiarySummary');
     copyIfPresent(profileData, 'mainThemes');
     copyIfPresent(profileData, 'emotionalSignals');
+    copyIfPresent(profileData, 'reportFeedback');
+    copyIfPresent(profileData, 'latestReportFeedbackAgrees');
+    copyIfPresent(profileData, 'latestReportFeedbackLabel');
+    copyIfPresent(profileData, 'latestReportFeedbackAt');
 
     const requestsRef = db.collection('users').doc(uid).collection('questionnaireRequests');
     const requestId = requestsRef.doc().id;
@@ -772,6 +784,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       displayName: userData.displayName || authEmail?.split('@')[0] || "Usuario",
       email,
       telefono,
+      edad: edad || null,
+      sexo: sexo || null,
       preferredChannels,
       hasDoneConsultation: userData.hasDoneConsultation || false,
       status: "pending",
@@ -842,6 +856,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       resentBecauseContactChanged: isResendingDueToContactChange,
       email,
       telefono,
+      edad: edad || null,
+      sexo: sexo || null,
       preferredChannels,
       questionnaireApiStatus: response.status,
       questionnaireApiResponse: apiResponseData,

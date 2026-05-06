@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function NextStepsModal({
   isOpen,
@@ -24,6 +26,8 @@ export default function NextStepsModal({
   const [whatsappChecked, setWhatsappChecked] = useState(false);
   const [smsChecked, setSmsChecked] = useState(false);
   const [phoneValue, setPhoneValue] = useState(initialPhoneValue);
+  const [ageValue, setAgeValue] = useState("");
+  const [sexValue, setSexValue] = useState("");
   const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
   const [questionnaireRequestMessage, setQuestionnaireRequestMessage] = useState<{text: string, type: "success"|"error"|"warning"} | null>(null);
   
@@ -35,6 +39,36 @@ export default function NextStepsModal({
     setPhoneValue(initialPhoneValue);
   }, [initialEmailValue, initialPhoneValue]);
 
+  useEffect(() => {
+    if (user?.uid) {
+      const userRef = doc(db, "users", user.uid);
+      getDoc(userRef).then(docSnap => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const age = data?.age || data?.edad || data?.profileAge || data?.birthDate || "";
+          if (age) setAgeValue(String(age));
+
+          const sex = data?.sex || data?.sexo || data?.gender || data?.genero || "";
+          if (sex === "hombre" || sex === "mujer" || sex === "prefiero_no_definirme") {
+            setSexValue(sex);
+          } else if (sex) {
+            const ls = String(sex).toLowerCase();
+            if (ls.startsWith("hom") || ls.startsWith("man") || ls.startsWith("masc")) setSexValue("hombre");
+            else if (ls.startsWith("muj") || ls.startsWith("wom") || ls.startsWith("fem")) setSexValue("mujer");
+            else setSexValue("prefiero_no_definirme");
+          }
+
+          const contactPhone = data?.contactPhone || data?.phone || data?.whatsappPhone || data?.smsPhone || data?.telefono || "";
+          if (contactPhone && !initialPhoneValue) {
+            const prefix = data?.contactPhoneCountryCode || "+34";
+            const fullPhone = contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
+            setPhoneValue(fullPhone);
+          }
+        }
+      }).catch(console.error);
+    }
+  }, [user, initialPhoneValue]);
+
   if (!isOpen) return null;
 
   const handleFormSubmit = async () => {
@@ -44,6 +78,17 @@ export default function NextStepsModal({
       setQuestionnaireRequestMessage({ text: "Por favor, introduce un email válido.", type: "error" });
       return;
     }
+    
+    if (!ageValue.trim()) {
+      setQuestionnaireRequestMessage({ text: "Por favor, indica tu edad.", type: "error" });
+      return;
+    }
+
+    if (!sexValue) {
+      setQuestionnaireRequestMessage({ text: "Por favor, selecciona tu sexo.", type: "error" });
+      return;
+    }
+
     if (!emailChecked && !whatsappChecked && !smsChecked) {
       setQuestionnaireRequestMessage({ text: "Debes seleccionar al menos un canal de contacto.", type: "error" });
       return;
@@ -81,6 +126,8 @@ export default function NextStepsModal({
         body: JSON.stringify({
           email: emailValue,
           telefono,
+          edad: ageValue,
+          sexo: sexValue,
           preferredChannels: {
             email: emailChecked,
             whatsapp: whatsappChecked,
@@ -191,7 +238,42 @@ export default function NextStepsModal({
               </p>
             </div>
             
-            <h5 className="font-bold text-sm text-primary mt-6 mb-3">¿Por dónde prefieres recibir el enlace?</h5>
+            <h5 className="font-bold text-sm text-primary mt-6 mb-3">Tus datos personales</h5>
+            <form className="space-y-3 font-body mb-6">
+              <div className="flex flex-row gap-3">
+                <label className="w-24 flex flex-col gap-1 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
+                  <span className="text-sm text-on-surface-variant font-medium">Edad</span>
+                  <input 
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={ageValue} 
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 2);
+                      setAgeValue(value);
+                    }}
+                    className="text-sm px-2 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none min-w-0 bg-transparent text-on-surface text-center placeholder:text-on-surface-variant/40 focus:placeholder:text-transparent"
+                    placeholder="35"
+                    maxLength={2}
+                  />
+                </label>
+                <label className="flex-1 min-w-0 flex flex-col gap-1 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
+                  <span className="text-sm text-on-surface-variant font-medium">Sexo</span>
+                  <select 
+                    value={sexValue} 
+                    onChange={(e) => setSexValue(e.target.value)}
+                    className="text-sm px-2 py-1.5 bg-surface-container dark:bg-[#162839] rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none min-w-0 bg-transparent text-on-surface dark:text-white w-full overflow-hidden text-ellipsis"
+                  >
+                    <option className="bg-white text-[#162839] dark:bg-[#162839] dark:text-white" value="" disabled>Selecciona...</option>
+                    <option className="bg-white text-[#162839] dark:bg-[#162839] dark:text-white" value="hombre">Hombre</option>
+                    <option className="bg-white text-[#162839] dark:bg-[#162839] dark:text-white" value="mujer">Mujer</option>
+                    <option className="bg-white text-[#162839] dark:bg-[#162839] dark:text-white" value="prefiero_no_definirme">Prefiero no definirme</option>
+                  </select>
+                </label>
+              </div>
+            </form>
+
+            <h5 className="font-bold text-sm text-primary mb-3">¿Por dónde prefieres recibir el enlace?</h5>
             <form className="space-y-3 font-body">
               <label className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors cursor-pointer">
                 <input 

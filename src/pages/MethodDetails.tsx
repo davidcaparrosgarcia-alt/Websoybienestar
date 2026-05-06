@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import NextStepsModal from "../components/NextStepsModal";
 
 export default function MethodDetails() {
   const navigate = useNavigate();
   const [progressStep, setProgressStep] = useState(1);
   const [user] = useAuthState(auth);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -43,7 +45,7 @@ export default function MethodDetails() {
   };
 
   const handleCuestionarioClick = () => {
-    // navigate('/cuestionario');
+    setIsNextStepsModalOpen(true);
   };
 
   const handleShare = async () => {
@@ -75,7 +77,6 @@ export default function MethodDetails() {
             <source media="(min-width: 768px)" srcSet="/images/metodo-intro.jpg" />
             <img alt="Viaje Transformación" className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" src="/images/metodo-intro.jpg"/>
           </picture>
-          <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-8 text-center">
           <div 
@@ -176,11 +177,21 @@ export default function MethodDetails() {
                   : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
               }`}
             >
-              Dossier Personalizado
+              Dosier Personalizado
             </button>
           </div>
         </div>
       </section>
+
+      {/* Next Steps Modal */}
+      <NextStepsModal 
+        isOpen={isNextStepsModalOpen}
+        onClose={() => setIsNextStepsModalOpen(false)}
+        user={user}
+        hasDoneConsultation={progressStep >= 2}
+        emailValue={user?.email || ""}
+        phoneValue=""
+      />
 
       {/* Infografía: Puente Digital */}
       <section className="mx-8 xl:mx-auto mb-32 max-w-screen-2xl">

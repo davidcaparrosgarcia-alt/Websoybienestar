@@ -73,12 +73,14 @@ export default function Method() {
       {/* Treatments Bento Grid */}
       <section className="py-24 px-12">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="mb-16 flex flex-col md:flex-row justify-between items-end gap-6">
-            <div className="max-w-2xl">
+          <div className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <div className="md:col-span-2 flex flex-col justify-center">
               <h2 className="text-4xl font-headline text-primary mb-4 italic">Áreas de Especialización</h2>
-              <p className="text-lg text-on-surface-variant">Un enfoque integral para navegar los diferentes estados de la niebla emocional.</p>
+              <p className="text-lg text-on-surface-variant max-w-2xl">Un enfoque integral para navegar los diferentes estados de la niebla emocional.</p>
             </div>
-            <a className="font-label text-secondary font-bold flex items-center gap-2 border-b-2 border-secondary/20 pb-1 hover:border-secondary transition-all" href="#">Ver todos los tratamientos</a>
+            <a href="#" className="group bg-primary-container p-6 rounded-2xl flex items-center justify-center text-center relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 min-h-[120px]">
+              <span className="font-headline text-2xl text-white relative z-10 group-hover:scale-105 transition-transform duration-500">Ver todos los tratamientos</span>
+            </a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
@@ -238,7 +240,8 @@ export default function Method() {
                     navigate('/session');
                   }
                 }}
-                className="bg-primary text-on-primary px-8 py-3 rounded-full font-label font-semibold inline-flex items-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100"
+                className="text-white w-full h-24 rounded-full font-label font-semibold flex justify-center items-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: 'url("/images/fondo_boton.jpg")' }}
               >
                 <span className="material-symbols-outlined text-xl">psychology</span>
                 {hasDoneConsultation ? "¿Qué debo hacer ahora?" : "Iniciar Consulta Gratuita"}
