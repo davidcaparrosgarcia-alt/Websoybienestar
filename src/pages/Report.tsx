@@ -210,12 +210,18 @@ export default function Report() {
       latestReportFeedbackLabel: deleteField(),
       latestReportFeedbackAt: deleteField(),
       reportFeedback: deleteField(),
-      hasDoneConsultation: deleteField()
+      hasDoneConsultation: false,
+      lastQuestionnaireRequestAt: deleteField(),
+      lastQuestionnaireContactSnapshot: deleteField(),
+      questionnaireRequestCount: deleteField(),
+      latestQuestionnaireRequest: deleteField(),
+      questionnairePersonalDataUpdatedAt: deleteField()
     };
 
     await updateDoc(doc(db, "users", user.uid), cleanupPayload).catch(() => {});
     await updateDoc(doc(db, "userProfiles", user.uid), cleanupPayload).catch(() => {});
 
+    setUserData((prev: any) => ({ ...prev, hasDoneConsultation: false }));
     navigate("/session");
   };
 
@@ -341,8 +347,8 @@ export default function Report() {
                 
                 {/* 1. Consulta Gratuita */}
                 <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10`}>
-                    <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>
+                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
                   </div>
                   <div>
                     <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>

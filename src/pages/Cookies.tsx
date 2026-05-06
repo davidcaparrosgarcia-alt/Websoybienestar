@@ -6,11 +6,11 @@ export default function Cookies() {
   }, []);
 
   return (
-    <div className="flex-1 bg-surface min-h-screen text-on-surface pb-24">
+    <div className="flex-1 bg-transparent min-h-screen text-on-surface pb-24">
       {/* Header */}
       <section className="bg-primary pt-32 pb-24 text-center px-6 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <img alt="texture" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
+          <img alt="texture" className="w-full h-full object-cover" src="/images/fondo_cookies.jpg"/>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-headline font-bold text-on-primary mb-6 italic">Política de Cookies</h1>

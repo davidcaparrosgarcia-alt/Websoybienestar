@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
 export default function NextStepsModal({
@@ -59,11 +59,14 @@ export default function NextStepsModal({
           }
 
           const contactPhone = data?.contactPhone || data?.phone || data?.whatsappPhone || data?.smsPhone || data?.telefono || "";
-          if (contactPhone && !initialPhoneValue) {
-            const prefix = data?.contactPhoneCountryCode || "+34";
-            const fullPhone = contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
-            setPhoneValue(fullPhone);
-          }
+          setPhoneValue(prev => {
+            const shouldUseStoredPhone = !initialPhoneValue || initialPhoneValue === "+34" || prev === "+34" || !prev;
+            if (contactPhone && shouldUseStoredPhone) {
+              const prefix = data?.contactPhoneCountryCode || "+34";
+              return contactPhone.startsWith('+') ? contactPhone : `${prefix}${contactPhone}`;
+            }
+            return prev;
+          });
         }
       }).catch(console.error);
     }
@@ -140,6 +143,19 @@ export default function NextStepsModal({
 
       if (response.ok) {
         setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
+        try {
+          await setDoc(doc(db, "users", user.uid), {
+            edad: ageValue,
+            sexo: sexValue,
+            profileAge: ageValue,
+            gender: sexValue,
+            lastQuestionnaireAge: ageValue,
+            lastQuestionnaireSex: sexValue,
+            questionnairePersonalDataUpdatedAt: serverTimestamp()
+          }, { merge: true });
+        } catch (e) {
+          console.error("Error saving age/sex after successful request", e);
+        }
       } else {
         let msg = data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
         
@@ -181,7 +197,7 @@ export default function NextStepsModal({
   };
 
   const isDeveloper = user?.email === "davidcaparrosgarcia@gmail.com";
-  const effectivelyHasDoneConsultation = isDeveloper ? false : hasDoneConsultation;
+  const effectivelyHasDoneConsultation = hasDoneConsultation;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-md animate-in fade-in text-left">
@@ -238,7 +254,18 @@ export default function NextStepsModal({
               </p>
             </div>
             
-            <h5 className="font-bold text-sm text-primary mt-6 mb-3">Tus datos personales</h5>
+            {!effectivelyHasDoneConsultation ? (
+              <div className="mt-4 p-5 bg-primary-container/30 border border-primary/20 rounded-2xl flex flex-col gap-4">
+                 <p className="text-sm text-on-surface-variant leading-relaxed">
+                   Antes de solicitar el Cuestionario Espejo, necesitamos que completes la Consulta gratuita. Así podremos preparar una solicitud más útil y personalizada para ti.
+                 </p>
+                 <button onClick={() => navigate('/session')} className="bg-primary hover:bg-primary-container text-white hover:text-on-primary-container transition-colors py-2 px-6 rounded-full text-sm font-bold shadow self-start">
+                   Ir a la Consulta Gratuita
+                 </button>
+              </div>
+            ) : (
+              <>
+                <h5 className="font-bold text-sm text-primary mt-6 mb-3">Tus datos personales</h5>
             <form className="space-y-3 font-body mb-6">
               <div className="flex flex-row gap-3">
                 <label className="w-24 flex flex-col gap-1 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
@@ -377,6 +404,9 @@ export default function NextStepsModal({
                   </pre>
                 )}
               </div>
+            )}
+            
+            </>
             )}
 
           </div>

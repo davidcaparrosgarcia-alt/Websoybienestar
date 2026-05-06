@@ -755,6 +755,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     copyIfPresent(profileData, 'globalUserSummary');
     copyIfPresent(profileData, 'accumulatedSummary');
     copyIfPresent(profileData, 'latestClinicalConclusion');
+    copyIfPresent(profileData, 'latestUserEmpatheticMessage');
     copyIfPresent(profileData, 'consultationSummary');
     copyIfPresent(profileData, 'consultationConclusion');
     copyIfPresent(profileData, 'diaryProfile');

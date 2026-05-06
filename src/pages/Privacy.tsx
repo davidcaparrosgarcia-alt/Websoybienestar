@@ -24,7 +24,7 @@ export default function Privacy() {
           <img 
             className="w-full h-full object-cover" 
             alt="Interior of a quiet, warm library with floor-to-ceiling wooden bookshelves and soft ambient lighting illuminating leather-bound books and comfortable seating." 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5hi-pim59R9cW-YqUQUwB5IHssaqNzIcyC4vWvGU2BuewHVvGi7xENSJPdXL8yVD7ZyPxEKgI8-LoRPci77EyQTEFj8xnnfJTmgF_rQPr_eEhYpoxIUiArRN0Q2Yu1lSn3h7afwamrLPUwr468JgsTyj3WfVX0Tuh_9ExGJeRyeBt8MXqF6SAS1h5uFpXmpxxGFhhMJs-wEWtg5xDVqm4RjN4mictDtS6-_BcQPMiuD_1ZxITaJc6W9sMrqNSrlmPeyLzzKztcW2p"
+            src="/images/fondo_privacidad.jpg"
           />
           <div className="absolute inset-0 bg-primary/40 mix-blend-multiply"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/60 to-transparent"></div>
