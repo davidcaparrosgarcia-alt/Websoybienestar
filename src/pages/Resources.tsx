@@ -313,24 +313,34 @@ export default function Resources() {
               <div className="relative z-10 flex w-full h-full min-h-[400px]">
                 <div className="hidden md:block w-1/2"></div>
                 <div className={`w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
-                  <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
-                  <h3 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
-                    <span>Gestión <br/><span className="italic">Emocional</span></span>
-                    <span className="material-symbols-outlined opacity-50 md:group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
-                      open_in_new
-                    </span>
-                  </h3>
-                  <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
-                      Aprenda a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para la resiliencia y el equilibrio.
-                  </p>
-                  <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3 relative z-20">
-                    <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
-                    <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
-                  </ul>
-                  <button className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
-                      Explorar Metodología
-                      <span className="material-symbols-outlined text-sm">open_in_new</span>
-                  </button>
+                  <div className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGestionsTextBg ? 'opacity-100' : 'opacity-0'}`}>
+                    <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
+                    <h3 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
+                      <span>Gestión <br/><span className="italic">Emocional</span></span>
+                      <span className="material-symbols-outlined opacity-50 md:group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
+                        open_in_new
+                      </span>
+                    </h3>
+                    <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
+                        Aprende a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para la resiliencia y el equilibrio.
+                    </p>
+                    <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3 relative z-20">
+                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
+                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
+                    </ul>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      if (hasAccess) {
+                        setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
+                      } else {
+                        setPendingAction("emocional");
+                        setIsCodeModalOpen(true);
+                      }
+                    }} className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
+                        Explorar Metodología
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -350,7 +360,7 @@ export default function Resources() {
               <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Su Camino Único</p>
               <h2 className="font-headline text-4xl text-primary mb-6">Recursos Personalizados</h2>
               <p className="text-on-surface-variant text-lg font-light mb-10 leading-relaxed">
-                Acceda a una selección de herramientas curadas específicamente para sus necesidades, basándose en sus prácticas recientes y su evolución personal hacia el bienestar integral.
+                Accede a herramientas preparadas para acompañar tu proceso, según los pasos que hayas completado y los recursos que vayas desbloqueando en la plataforma.
               </p>
               <button 
                 onClick={() => {
@@ -434,9 +444,12 @@ export default function Resources() {
           <div className="bg-gradient-to-b from-[#1c2834] to-[#121a22] w-full max-w-sm rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#cca969]/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
             <button 
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsCodeModalOpen(false);
+                setAccessCode(["", "", "", ""]);
+                setPendingAction(null);
               }}
               className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[100] border border-white/20 cursor-pointer"
             >

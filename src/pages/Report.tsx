@@ -37,6 +37,7 @@ export default function Report() {
 
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [userData, setUserData] = useState<any>(null);
+  const [profileDataState, setProfileDataState] = useState<any>(null);
 
   // States for NextStepsModal
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
@@ -97,6 +98,7 @@ export default function Report() {
           // Try loading from Firebase
           const { profileData } = await getOrMigrateUserProfile(user.uid);
           const profile = profileData as any;
+          setProfileDataState(profileData || null);
           
           if (profile.reportFeedback) {
              setReportFeedback({
@@ -240,11 +242,16 @@ export default function Report() {
   };
 
 
-  const hasConsultation = !!userData?.hasDoneConsultation;
-  const questionnaireRequested = !!userData?.lastQuestionnaireRequestAt || !!userData?.latestQuestionnaireRequest;
-  const questionnaireCompleted = !!userData?.hasDoneCuestionario || userData?.questionnaireStatus === "completed" || userData?.questionnaireStatus === "concluded" || userData?.questionnaireStatus === "finalized";
-  const dossierAvailable = !!userData?.dossierAvailableAt || !!userData?.latestDossier;
-  const dossierViewed = !!userData?.dossierViewedAt;
+  const mergedUserState = {
+    ...(profileDataState || {}),
+    ...(userData || {})
+  };
+
+  const hasConsultation = !!mergedUserState?.hasDoneConsultation;
+  const questionnaireRequested = !!mergedUserState?.lastQuestionnaireRequestAt || !!mergedUserState?.latestQuestionnaireRequest;
+  const questionnaireCompleted = !!mergedUserState?.hasDoneCuestionario || mergedUserState?.questionnaireStatus === "completed" || mergedUserState?.questionnaireStatus === "concluded" || mergedUserState?.questionnaireStatus === "finalized";
+  const dossierAvailable = !!mergedUserState?.dossierAvailableAt || !!mergedUserState?.latestDossier;
+  const dossierViewed = !!mergedUserState?.dossierViewedAt;
 
   let activeNextStep = "consulta";
   if (!hasConsultation) activeNextStep = "consulta";
@@ -348,12 +355,13 @@ export default function Report() {
                 )}
               </div>
               <div className="mt-8 pt-6 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
-                <p className="font-body text-on-surface-variant text-sm text-center sm:text-left">
-                  {(report as any)?.pregunta_validacion || 'Recuerda: Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo. ¿Sientes que refleja cómo te encuentras?'}
-                </p>
+                <div className="font-body text-on-surface-variant text-sm text-center sm:text-left flex-1">
+                  <p>{(report as any)?.pregunta_validacion?.replace(' ¿Sientes que refleja cómo te encuentras?', '') || 'Recuerda: Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo.'}</p>
+                  <p className="font-medium text-primary mt-1">¿Sientes que refleja cómo te encuentras?</p>
+                </div>
                 {!feedbackGiven ? (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0 whitespace-nowrap">
                       <button onClick={() => handleFeedback(true)} className="px-5 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">thumb_up</span> Totalmente
                       </button>
@@ -457,7 +465,7 @@ export default function Report() {
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Consulta Gratuita</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado. <span className="font-medium text-primary dark:text-[#2c3e50]">Realizar ahora</span></p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Empieza por la Consulta Gratuita para contarnos qué te ocurre y preparar tu primera lectura orientativa. <span className="font-medium text-primary dark:text-[#2c3e50]">Realizar ahora</span></p>
                     </div>
                   </div>
                 ) : (
@@ -467,7 +475,7 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Has completado tu primera consulta y ya contamos con una base inicial para orientarte mejor.</p>
                     </div>
                   </div>
                 )}
@@ -481,7 +489,7 @@ export default function Report() {
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Cuestionario Espejo</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado. <span className="font-medium text-primary dark:text-[#2c3e50]">Solicitar ahora</span></p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">El siguiente paso es solicitar el Cuestionario Espejo para completar tu primera lectura con experiencias concretas de tu día a día. <span className="font-medium text-primary dark:text-[#2c3e50]">Solicitar ahora</span></p>
                     </div>
                   </div>
                 ) : (
@@ -491,7 +499,7 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">El Cuestionario Espejo ayuda a completar tu primera lectura con situaciones cotidianas para que el equipo humano tenga más contexto.</p>
                     </div>
                   </div>
                 )}
@@ -509,7 +517,7 @@ export default function Report() {
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Dossier Espejo personalizado</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones. <span className="font-medium text-primary dark:text-[#2c3e50]">{dossierAvailable ? 'Acceder ahora' : 'En preparación'}</span></p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Tu Dossier Espejo reunirá la información de tu consulta y del cuestionario para ofrecerte una lectura más completa y personalizada. <span className="font-medium text-primary dark:text-[#2c3e50]">{dossierAvailable ? 'Acceder ahora' : 'En preparación'}</span></p>
                     </div>
                   </div>
                 ) : (
@@ -519,7 +527,7 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Dossier Espejo personalizado</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Cuando esté disponible, tu Dossier Espejo reunirá la información de tu consulta y del cuestionario en una lectura más completa y personalizada.</p>
                     </div>
                   </div>
                 )}
@@ -533,7 +541,7 @@ export default function Report() {
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Sesión de Validación</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos. <span className="font-medium text-primary dark:text-[#2c3e50]">Agendar ahora</span></p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Cuando hayas revisado tu dossier, podrás valorar una sesión humana para resolver dudas y decidir si quieres continuar con acompañamiento personalizado. <span className="font-medium text-primary dark:text-[#2c3e50]">Agendar ahora</span></p>
                     </div>
                   </div>
                 ) : (
@@ -543,7 +551,7 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Sesión de Validación</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Después del dossier, podrás valorar una sesión humana para resolver dudas y decidir si quieres continuar con acompañamiento personalizado.</p>
                     </div>
                   </div>
                 )}

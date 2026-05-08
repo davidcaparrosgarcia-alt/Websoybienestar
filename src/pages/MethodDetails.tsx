@@ -100,9 +100,9 @@ export default function MethodDetails() {
           </div>
         </div>
         <div className="lg:w-1/2 space-y-8">
-          <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">La arquitectura del bienestar moderno.</h2>
+          <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">Un espacio para ordenar lo que sientes y recuperar claridad.</h2>
           <p className="text-on-surface-variant leading-relaxed text-xl font-light">
-            <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> no es solo una plataforma; es un refugio diseñado para equilibrar la precisión de la inteligencia artificial con la profundidad irreemplazable de la escucha humana.
+            <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada por inteligencia artificial, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.
           </p>
           <div className="h-px w-24 bg-secondary/30"></div>
         </div>
@@ -251,7 +251,7 @@ export default function MethodDetails() {
           </div>
           <div className="relative z-10 space-y-8 w-full max-w-md">
             <img alt="SoyBienestar.es Logo White" className="h-32 w-auto mx-auto brightness-0 invert opacity-40 mb-4 dark:brightness-0 dark:invert-0 dark:opacity-60" src="/images/logo-soybienestar.svg"/>
-            <h2 className="font-headline text-3xl text-white dark:text-[#2c3e50] italic font-light">¿Listo para comenzar su propio viaje?</h2>
+            <h2 className="font-headline text-3xl text-white dark:text-[#2c3e50] italic font-light">¿Listo para comenzar tu propio viaje?</h2>
             <button 
               onClick={handleShare}
               className="w-full py-6 bg-white dark:bg-[#1a252f] text-primary dark:text-white rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98]"

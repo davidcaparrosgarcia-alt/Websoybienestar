@@ -252,7 +252,7 @@ export default function Zen() {
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row items-center gap-12">
           <div className="md:w-3/5 bg-white/40 dark:bg-[#162839]/60 backdrop-blur-md px-5 py-4 md:px-7 md:py-5 rounded-2xl shadow-xl transform translate-y-[80%] md:translate-y-full">
             <p className="text-xl md:text-2xl lg:text-2xl font-headline mb-4 leading-tight text-[#0a0a0a] dark:text-white">
-              ReprogrÁmate registrándote y completando nuestra Consulta gratuita y el Cuestionario Espejo.
+              ReprogrÁmate completando nuestra Consulta gratuita y realizando el Cuestionario Espejo.
             </p>
             <div className="flex flex-wrap gap-6">
               <button 
@@ -490,10 +490,17 @@ export default function Zen() {
           <div className="bg-gradient-to-b from-[#1c2834] to-[#121a22] w-full max-w-sm rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#cca969]/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
             <button 
-              onClick={() => setIsCodeModalOpen(false)}
-              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors z-10 border border-white/10"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCodeModalOpen(false);
+                setAccessCode(["", "", "", ""]);
+                setPendingAction(null);
+              }}
+              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[100] border border-white/20 cursor-pointer"
+              aria-label="Cerrar ventana de clave"
             >
-              <span className="material-symbols-outlined text-white/70 text-sm">close</span>
+              <span className="material-symbols-outlined text-white text-lg">close</span>
             </button>
             
             <div className="p-10 text-center relative z-10">

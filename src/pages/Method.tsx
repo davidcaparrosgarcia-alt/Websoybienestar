@@ -90,7 +90,7 @@ export default function Method() {
                 <div>
                   <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">waves</span>
                   <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">Gestión de Ansiedad</h3>
-                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Técnicas de anclaje para calmar las tormentas internas y recuperar el control del presente.</p>
+                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Reconoce tu estado actual para calmar las tormentas internas y recuperar el control del presente.</p>
                 </div>
                 <div className="w-fit">
                   <button onClick={() => navigate('/anxiety')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">
@@ -106,8 +106,8 @@ export default function Method() {
               </div>
               <div className="z-10">
                 <span className="material-symbols-outlined text-secondary-container text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">psychology</span>
-                <h3 className="text-2xl font-headline text-white mb-4">Terapia Cognitiva</h3>
-                <p className="text-on-primary-container leading-relaxed">Reestructurando los patrones de pensamiento que alimentan la incertidumbre.</p>
+                <h3 className="text-2xl font-headline text-white mb-4">Gestión de Emociones</h3>
+                <p className="text-on-primary-container leading-relaxed">Herramientas para comprender lo que sientes, ordenar tus pensamientos y responder con más calma.</p>
               </div>
               <div className="w-fit z-10">
                 <button onClick={() => setSelectedInfographic({ id: 'terapia_cognitiva', src: '/images/info-terapia-cognitiva.jpg' })} className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed hover:opacity-80 transition-all duration-500 group-hover:scale-[1.8] origin-left">
@@ -121,8 +121,8 @@ export default function Method() {
               <div className="relative z-10 w-full h-full flex flex-col justify-between">
                 <div>
                   <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">self_improvement</span>
-                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">Acompañamiento Zen</h3>
-                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Espacios de silencio y reflexión guiada para conectar con tu centro interior.</p>
+                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">ReprogrÁmate</h3>
+                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Espacios de silencio y reflexión guiada para conectar con tu centro interior, con herramientas diseñadas para ayudarte a recuperar calma, claridad y presencia.</p>
                 </div>
                 <div className="w-fit">
                   <button onClick={() => navigate('/zen')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">

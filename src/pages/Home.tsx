@@ -478,10 +478,8 @@ export default function Home() {
                     <div className="flex gap-3 items-start">
                       <span className="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">info</span>
                       <p className="text-sm text-on-surface-variant font-light">
-                        <strong className="font-semibold text-primary">El camino a tu bienestar:</strong>
-                        <br/>
-                        Al finalizar esta sesión gratuita desbloquearás tus primeras herramientas.
-                        Completando el cuestionario espejo accederás a tu <strong>dosier personalizado</strong> y otros recursos exclusivos.
+                        Tras finalizar la consulta gratuita desbloquearás tus primeras herramientas.
+                        Completando el Cuestionario Espejo accederás a tu dosier personalizado y otros recursos exclusivos.
                         Todo el material que desbloquees será tuyo de por vida.
                       </p>
                     </div>
@@ -674,7 +672,7 @@ export default function Home() {
             <span className="material-symbols-outlined text-5xl text-secondary mb-6">shield_with_heart</span>
             <h3 className="font-headline text-3xl text-primary mb-6">Un Compromiso de Confidencialidad</h3>
             <p className="max-w-3xl mx-auto text-on-surface-variant leading-relaxed font-light text-lg">
-              Entendemos que compartir tu información es un acto de vulnerabilidad. En Arquitectura del Bienestar, tratamos cada dato bajo los más estrictos estándares éticos y de privacidad europeos. Tu seguridad es la base de nuestra terapia.
+              Entendemos que compartir tus sentimientos es un acto de vulnerabilidad. En Arquitectura del Bienestar, tratamos cada dato bajo los más estrictos estándares éticos y de privacidad europeos. Tu seguridad es la base de nuestra terapia.
             </p>
           </div>
         </div>
