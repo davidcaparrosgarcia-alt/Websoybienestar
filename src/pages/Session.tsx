@@ -28,7 +28,16 @@ export default function Session() {
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [showHelpText, setShowHelpText] = useState(false);
   const [hasStartedGuidedSession, setHasStartedGuidedSession] = useState(false);
+  const [hasUserStartedResponding, setHasUserStartedResponding] = useState(false);
   const [urgentMessage, setUrgentMessage] = useState<string | null>(null);
+  const [sessionUserContext, setSessionUserContext] = useState<any>(null);
+
+  const startSessionTimerIfNeeded = () => {
+    if (!hasUserStartedResponding) {
+      sessionStartTimeRef.current = Date.now();
+      setHasUserStartedResponding(true);
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -50,12 +59,81 @@ export default function Session() {
       const user = auth.currentUser;
       if (user) {
         try {
-          const { userRef } = await getOrMigrateUserProfile(user.uid);
+          const { userRef, profileRef } = await getOrMigrateUserProfile(user.uid);
           const { getDoc } = await import("firebase/firestore");
-          const userDoc = await getDoc(userRef);
+          const [userDoc, profileDoc] = await Promise.all([
+            getDoc(userRef),
+            getDoc(profileRef)
+          ]);
           if (isMounted) {
             const isTestUser = user.email === "davidcaparrosgarcia@gmail.com";
-            setHasDoneConsultation(isTestUser ? false : !!userDoc.data()?.hasDoneConsultation);
+            const userData = userDoc.data() || {};
+            const profileData = profileDoc.data() || {};
+            
+            setHasDoneConsultation(isTestUser ? false : !!userData.hasDoneConsultation);
+            
+            const estadoCuestionarioEspejo = (() => {
+              if (userData.questionnaireCompleted || profileData.questionnaireCompleted) return "cuestionario_completado";
+              if (userData.questionnaireSent || profileData.questionnaireSent) return "cuestionario_enviado";
+              if (userData.lastQuestionnaireRequestAt || profileData.lastQuestionnaireRequestAt) return "cuestionario_solicitado_confirmado";
+              if (userData.lastQuestionnaireRequestAttemptAt || profileData.lastQuestionnaireRequestAttemptAt) return "cuestionario_solicitud_intentada_no_confirmada";
+              return "cuestionario_no_solicitado";
+            })();
+
+            setSessionUserContext({
+              uid: user.uid,
+              email: user.email || "",
+              displayName: user.displayName || userData.displayName || profileData.displayName || "",
+              hasDoneConsultation: !!userData.hasDoneConsultation,
+              personalData: {
+                nombre: userData.nombre || profileData.nombre || userData.name || profileData.name || "",
+                edad: userData.edad || profileData.edad || userData.profileAge || profileData.profileAge || "",
+                sexo: userData.sexo || profileData.sexo || userData.gender || profileData.gender || "",
+                telefono: userData.contactPhone || profileData.contactPhone || userData.phone || profileData.phone || ""
+              },
+              questionnaire: {
+                estadoCuestionarioEspejo,
+                lastQuestionnaireRequestAt: userData.lastQuestionnaireRequestAt || profileData.lastQuestionnaireRequestAt || null,
+                questionnaireRequestCount: userData.questionnaireRequestCount || profileData.questionnaireRequestCount || 0,
+                preferredChannels: userData.preferredChannels || profileData.preferredChannels || null,
+                lastQuestionnaireContactSnapshot: userData.lastQuestionnaireContactSnapshot || profileData.lastQuestionnaireContactSnapshot || null
+              },
+              resources: {
+                gratitudeEntriesCount: userData.gratitudeEntriesCount || profileData.gratitudeEntriesCount || 0,
+                lastGratitudeDate: userData.lastGratitudeDate || profileData.lastGratitudeDate || null,
+                meditationsCompletedCount: userData.meditationsCompletedCount || profileData.meditationsCompletedCount || 0,
+                lastMeditationId: userData.lastMeditationId || profileData.lastMeditationId || null,
+                breathingExercisesCount: userData.breathingExercisesCount || profileData.breathingExercisesCount || 0,
+                weeklyGoalsCount: userData.weeklyGoalsCount || profileData.weeklyGoalsCount || 0,
+                hasWeeklyGoalsBoard: !!userData.hasWeeklyGoalsBoard || !!profileData.hasWeeklyGoalsBoard
+              }
+            });
+            
+            // Saludo dinamico
+            const nombreSaludo = userData.nombre || profileData.nombre || userData.name || profileData.name;
+            if (nombreSaludo) {
+              setMessages(prev => {
+                if (prev.length === 1 && prev[0].id === "1") {
+                  return [{
+                    id: "1",
+                    role: "assistant",
+                    content: `Hola, ${nombreSaludo}. Me alegra que hayas llegado hasta aquí. Este es un espacio de primera escucha: puedes contarme con calma qué te preocupa o qué te gustaría ordenar, sin necesidad de explicarlo perfecto.\n\nNo voy a juzgarte ni a ponerte etiquetas. Mi papel es ayudarte a dar forma a lo que estás viviendo para que después el equipo humano pueda acompañarte mejor.\n\nPara empezar, cuéntame solo lo más importante: ¿qué te ha traído hoy hasta aquí?`
+                  }];
+                }
+                return prev;
+              });
+            } else {
+              setMessages(prev => {
+                if (prev.length === 1 && prev[0].id === "1") {
+                  return [{
+                    id: "1",
+                    role: "assistant",
+                    content: "Hola. Me alegra que hayas llegado hasta aquí. Este es un espacio de primera escucha: puedes contarme con calma qué te preocupa o qué te gustaría ordenar, sin necesidad de explicarlo perfecto.\n\nNo voy a juzgarte ni a ponerte etiquetas. Mi papel es ayudarte a dar forma a lo que estás viviendo para que después el equipo humano pueda acompañarte mejor.\n\nPara empezar, cuéntame solo lo más importante: ¿qué te ha traído hoy hasta aquí?"
+                  }];
+                }
+                return prev;
+              });
+            }
           }
         } catch (e) {
           console.error("Auth check failed", e);
@@ -85,7 +163,7 @@ export default function Session() {
   const [isTypingPause, setIsTypingPause] = useState(false);
 
   useEffect(() => {
-    if (!hasStartedGuidedSession) return;
+    if (!hasStartedGuidedSession || !hasUserStartedResponding) return;
     const interval = setInterval(() => {
       if (isTypingPauseRef.current) {
         sessionStartTimeRef.current += 1000;
@@ -98,7 +176,7 @@ export default function Session() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [hasStartedGuidedSession]);
+  }, [hasStartedGuidedSession, hasUserStartedResponding]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -185,6 +263,7 @@ export default function Session() {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    startSessionTimerIfNeeded();
     setInput(e.target.value);
     
     if (!isRecordingRef.current) {
@@ -247,7 +326,27 @@ export default function Session() {
         parts: [{ text: msg.content }]
       }));
 
-      const response = await api.sessionReply(chatHistory.slice(0, -1), inputContent);
+      const getSessionPhase = () => {
+        if (timeLeft > 10 * 60) return "inicio";
+        if (timeLeft > 4 * 60) return "desarrollo";
+        return "cierre";
+      };
+
+      const buildSessionContextForAI = () => ({
+        time: {
+          timeLeftSeconds: timeLeft,
+          elapsedSeconds: 15 * 60 - timeLeft,
+          sessionPhase: getSessionPhase(),
+          hasTimerStarted: hasStartedGuidedSession
+        },
+        user: sessionUserContext || null
+      });
+
+      const response = await api.sessionReply(
+        chatHistory.slice(0, -1),
+        inputContent,
+        buildSessionContextForAI()
+      );
       
       if (response.text) {
         const aiMessage: Message = {
@@ -322,16 +421,18 @@ export default function Session() {
         return;
       }
 
-      // Initialize if missing
-      if (!recognitionRef.current) {
-         recognitionRef.current = initSpeechRecognition();
+      // Always initialize fresh to avoid accumulating past dictations
+      if (recognitionRef.current) {
+         try { recognitionRef.current.abort(); } catch(e) {}
       }
+      recognitionRef.current = initSpeechRecognition();
       
       // Attempt start
       if (recognitionRef.current) {
-        baseInputRef.current = input;
+        baseInputRef.current = input.trim() ? input : "";
         restartAttemptsRef.current = 0; // Reset restart attempts
         try {
+          startSessionTimerIfNeeded();
           recognitionRef.current.start();
           isRecordingRef.current = true;
           setIsRecording(true);
@@ -387,13 +488,18 @@ export default function Session() {
         if (user && profileReference && userReference) {
           const updateDataUser = {
             hasDoneConsultation: true,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
+            latestVisibleOrientationReport: parsedData.visibleOrientationReport || null,
+            latestInternalTherapistReport: parsedData.internalTherapistReport || null
           };
           
           const updateDataProfile = {
             globalUserSummary: parsedData.newAccumulatedSummary || accumulatedSummary,
             consultationConclusion: parsedData.clinicalSummary || "Resumen clínico generado (bypass de desarrollo)",
             latestUserEmpatheticMessage: parsedData.userEmpatheticMessage || "Mensaje para el usuario",
+            latestClinicalConclusion: parsedData.clinicalSummary || "",
+            latestVisibleOrientationReport: parsedData.visibleOrientationReport || null,
+            latestInternalTherapistReport: parsedData.internalTherapistReport || null
           };
 
           await updateDoc(userReference, updateDataUser).catch(async () => {
@@ -407,9 +513,9 @@ export default function Session() {
         
         if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
           setUrgentMessage(parsedData.urgentSupportMessage);
-          setPendingNavigation({ path: "/session-ended", state: { messages, reportData: parsedData.userEmpatheticMessage } });
+          setPendingNavigation({ path: "/session-ended", state: { messages, reportData: parsedData } });
         } else {
-          navigate("/session-ended", { state: { messages, reportData: parsedData.userEmpatheticMessage } });
+          navigate("/session-ended", { state: { messages, reportData: parsedData } });
         }
       } else {
         if (parsedData.needsUrgentSupport && parsedData.urgentSupportMessage) {
@@ -645,6 +751,7 @@ export default function Session() {
               <textarea
                 value={input}
                 onChange={handleInputChange}
+                onFocus={startSessionTimerIfNeeded}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();

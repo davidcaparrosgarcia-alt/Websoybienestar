@@ -38,8 +38,8 @@ async function fetchAPI(endpoint: string, body: any) {
 }
 
 export const api = {
-  async sessionReply(history: any[], message: string) {
-    return fetchAPI("/api/session-reply", { history, message });
+  async sessionReply(history: any[], message: string, sessionContext?: any) {
+    return fetchAPI("/api/session-reply", { history, message, sessionContext });
   },
 
   async report(messages: any[], accumulatedSummary: string) {

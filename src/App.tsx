@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Session from "./pages/Session";
 import SessionEnded from "./pages/SessionEnded";
 import Report from "./pages/Report";
+import DossierEspejo from "./pages/DossierEspejo";
 import Method from "./pages/Method";
 import MethodDetails from "./pages/MethodDetails";
 import AnxietyManagement from "./pages/AnxietyManagement";
@@ -62,6 +63,11 @@ export default function App() {
           <Route path="report" element={
             <ProtectedRoute>
               <Report />
+            </ProtectedRoute>
+          } />
+          <Route path="dossier-espejo" element={
+            <ProtectedRoute>
+              <DossierEspejo />
             </ProtectedRoute>
           } />
           <Route path="resources" element={<Resources />} />

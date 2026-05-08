@@ -14,11 +14,12 @@ export default function Report() {
   const [user] = useAuthState(auth);
   
   const messages = location.state?.messages || [];
-  const [report, setReport] = useState<string | null>(null);
+  const [report, setReport] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showDossierText, setShowDossierText] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const togglePlay = () => {
@@ -85,7 +86,13 @@ export default function Report() {
       try {
         if (reportData) {
           // Passed from SessionEnded -> Session
-          setReport(reportData);
+          if (reportData.visibleOrientationReport) {
+            setReport(reportData.visibleOrientationReport);
+          } else if (reportData.userEmpatheticMessage) {
+            setReport(reportData.userEmpatheticMessage);
+          } else {
+            setReport(reportData);
+          }
         } else if (user) {
           // Try loading from Firebase
           const { profileData } = await getOrMigrateUserProfile(user.uid);
@@ -105,7 +112,9 @@ export default function Report() {
              setFeedbackGiven(true);
           }
 
-          if (profile.latestUserEmpatheticMessage) {
+          if (profile.latestVisibleOrientationReport) {
+            setReport(profile.latestVisibleOrientationReport);
+          } else if (profile.latestUserEmpatheticMessage) {
             setReport(profile.latestUserEmpatheticMessage);
           } else if (profile.latestClinicalConclusion) {
             setReport(profile.latestClinicalConclusion);
@@ -170,9 +179,9 @@ export default function Report() {
   const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
   const [reportFeedback, setReportFeedback] = useState<{ agrees: boolean; label: "totalmente" | "no_del_todo" } | null>(null);
 
-  const handleFeedback = async (agrees: boolean) => {
+  const handleFeedback = async (agrees: boolean, comment?: string) => {
     const label = agrees ? "totalmente" : "no_del_todo";
-    setReportFeedback({ agrees, label });
+    setReportFeedback({ agrees, label } as any);
     setFeedbackGiven(true);
 
     if (!user) return;
@@ -182,11 +191,13 @@ export default function Report() {
         reportFeedback: {
           agrees,
           label,
-          reportExcerpt: (report || "").slice(0, 1200),
+          comment: comment || "",
+          reportExcerpt: (typeof report === 'string' ? report : JSON.stringify(report)).slice(0, 1200),
           reportFeedbackAt: serverTimestamp()
         },
         latestReportFeedbackAgrees: agrees,
         latestReportFeedbackLabel: label,
+        latestReportFeedbackComment: comment || "",
         latestReportFeedbackAt: serverTimestamp()
       };
 
@@ -203,8 +214,11 @@ export default function Report() {
     if (!confirmed) return;
 
     const cleanupPayload = {
+      latestVisibleOrientationReport: deleteField(),
+      latestInternalTherapistReport: deleteField(),
       latestUserEmpatheticMessage: deleteField(),
       latestClinicalConclusion: deleteField(),
+      latestReportFeedbackComment: deleteField(),
       globalUserSummary: deleteField(),
       latestReportFeedbackAgrees: deleteField(),
       latestReportFeedbackLabel: deleteField(),
@@ -224,6 +238,20 @@ export default function Report() {
     setUserData((prev: any) => ({ ...prev, hasDoneConsultation: false }));
     navigate("/session");
   };
+
+
+  const hasConsultation = !!userData?.hasDoneConsultation;
+  const questionnaireRequested = !!userData?.lastQuestionnaireRequestAt || !!userData?.latestQuestionnaireRequest;
+  const questionnaireCompleted = !!userData?.hasDoneCuestionario || userData?.questionnaireStatus === "completed" || userData?.questionnaireStatus === "concluded" || userData?.questionnaireStatus === "finalized";
+  const dossierAvailable = !!userData?.dossierAvailableAt || !!userData?.latestDossier;
+  const dossierViewed = !!userData?.dossierViewedAt;
+
+  let activeNextStep = "consulta";
+  if (!hasConsultation) activeNextStep = "consulta";
+  else if (hasConsultation && !questionnaireCompleted) activeNextStep = "cuestionario";
+  else if (questionnaireCompleted && !dossierAvailable) activeNextStep = "dossier";
+  else if (dossierAvailable && !dossierViewed) activeNextStep = "dossier";
+  else if (dossierViewed) activeNextStep = "validacion";
 
   if (isAuthorized === null || isLoading) {
     return (
@@ -275,25 +303,81 @@ export default function Report() {
             {/* Main AI Report Markdown Rendering */}
             <div className="md:col-span-12 bg-surface-container p-10 rounded-xl relative overflow-hidden flex flex-col justify-between">
               <div className="relative z-10 prose prose-slate max-w-none text-on-surface">
-                <Markdown>{report || ""}</Markdown>
+                {typeof report === "string" ? (
+                  <Markdown>{report}</Markdown>
+                ) : (
+                  <div className="space-y-6">
+                    {(report as any)?.titulo && <h3 className="font-headline text-3xl font-bold text-primary mb-2">{(report as any).titulo}</h3>}
+                    {(report as any)?.subtitulo && <p className="text-on-surface-variant italic mb-6">{(report as any).subtitulo}</p>}
+                    
+                    {(report as any)?.lo_que_parece_pesar_mas && (
+                       <div className="mb-4 text-on-surface">
+                         <h4 className="font-headline font-bold text-xl text-secondary mb-2">Lo que parece estar pesando más</h4>
+                         <p className="leading-relaxed">{(report as any).lo_que_parece_pesar_mas}</p>
+                       </div>
+                    )}
+                    
+                    {(report as any)?.impacto_en_tu_dia_a_dia && (
+                       <div className="mb-4 text-on-surface">
+                         <h4 className="font-headline font-bold text-xl text-secondary mb-2">Cómo está tocando tu día a día</h4>
+                         <p className="leading-relaxed">{(report as any).impacto_en_tu_dia_a_dia}</p>
+                       </div>
+                    )}
+                    
+                    {(report as any)?.lo_que_podria_necesitar_tu_momento_actual && (
+                       <div className="mb-4 text-on-surface">
+                         <h4 className="font-headline font-bold text-xl text-secondary mb-2">Lo que tu momento actual parece necesitar</h4>
+                         <p className="leading-relaxed">{(report as any).lo_que_podria_necesitar_tu_momento_actual}</p>
+                       </div>
+                    )}
+                    
+                    {(report as any)?.lo_que_esta_conversacion_ha_permitido_ver && (
+                       <div className="mb-4 text-on-surface">
+                         <h4 className="font-headline font-bold text-xl text-secondary mb-2">Lo que ya hemos podido ordenar juntos</h4>
+                         <p className="leading-relaxed">{(report as any).lo_que_esta_conversacion_ha_permitido_ver}</p>
+                       </div>
+                    )}
+                    
+                    {(report as any)?.siguiente_paso && (
+                       <div className="mb-4 text-on-surface">
+                         <h4 className="font-headline font-bold text-xl text-secondary mb-2">El siguiente paso, sin empezar desde cero</h4>
+                         <p className="leading-relaxed">{(report as any).siguiente_paso}</p>
+                       </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="mt-8 pt-6 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
                 <p className="font-body text-on-surface-variant text-sm text-center sm:text-left">
-                  Recuerda: Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo. ¿Sientes que refleja cómo te encuentras?
+                  {(report as any)?.pregunta_validacion || 'Recuerda: Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo. ¿Sientes que refleja cómo te encuentras?'}
                 </p>
                 {!feedbackGiven ? (
-                  <div className="flex items-center gap-3 shrink-0">
-                    <button onClick={() => handleFeedback(true)} className="px-5 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">thumb_up</span> Totalmente
-                    </button>
-                    <button onClick={() => handleFeedback(false)} className="px-5 py-2 rounded-full border border-on-surface-variant text-on-surface-variant hover:bg-on-surface-variant hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">thumb_down</span> No del todo
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button onClick={() => handleFeedback(true)} className="px-5 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">thumb_up</span> Totalmente
+                      </button>
+                      <button onClick={() => setReportFeedback(prev => ({ agrees: false, label: "no_del_todo", showCommentBox: true }) as any)} className="px-5 py-2 rounded-full border border-on-surface-variant text-on-surface-variant hover:bg-on-surface-variant hover:text-white transition-colors text-sm font-label font-bold flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">thumb_down</span> No del todo
+                      </button>
+                    </div>
+                    {(reportFeedback as any)?.showCommentBox && (
+                      <div className="mt-2 text-sm flex flex-col gap-2">
+                         <p className="text-on-surface-variant font-medium">¿Qué parte no encaja o qué crees que falta?</p>
+                         <textarea id="feedbackCommentBox" rows={2} className="w-full text-on-surface border border-outline-variant rounded-md p-2 bg-transparent focus:outline-none focus:border-primary"></textarea>
+                         <button onClick={() => {
+                           const comment = (document.getElementById("feedbackCommentBox") as HTMLTextAreaElement).value;
+                           handleFeedback(false, comment);
+                         }} className="self-end px-4 py-1 bg-primary text-on-primary rounded-full font-label font-bold text-xs hover:bg-primary-container hover:text-primary transition-colors">Guardar</button>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="text-secondary font-bold text-sm bg-secondary/10 px-4 py-2 rounded-full flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">check_circle</span>
-                    Gracias por tu retroalimentación. {reportFeedback?.label === 'totalmente' ? 'Has indicado que el informe te representa.' : (reportFeedback?.label === 'no_del_todo' ? 'Has indicado que el informe no te representa del todo.' : '')}
+                  <div className="text-secondary font-bold text-sm bg-secondary/10 px-4 py-2 rounded-[24px] flex flex-col gap-1 items-start">
+                    <div className="flex gap-2 items-center">
+                       <span className="material-symbols-outlined text-sm">check_circle</span>
+                       {reportFeedback?.label === 'totalmente' ? 'Gracias. Esa validación nos ayuda a saber que esta primera lectura está bien orientada. El siguiente paso permitirá profundizar con más precisión.' : 'Gracias por indicarlo. Es importante que esta primera lectura se acerque lo máximo posible a tu vivencia.'}
+                    </div>
                   </div>
                 )}
               </div>
@@ -304,40 +388,59 @@ export default function Report() {
               )}
             </div>
 
-            {/* Meditation Placeholder */}
-            <div className="md:col-span-6 bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/10 group">
-              <div className="flex items-start justify-between mb-12">
-                <div>
-                  <h4 className="text-2xl font-headline font-bold text-primary mb-2">Meditación: "La Niebla Mental"</h4>
-                  <p className="text-on-surface-variant font-label">Ejercicio guiado • 5 minutos</p>
-                </div>
-                <button onClick={togglePlay} className="w-12 h-12 rounded-full bg-primary hover:bg-primary-container hover:scale-105 transition-all flex items-center justify-center text-white dark:!text-[#162839] cursor-pointer shadow-md">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{isPlaying ? 'pause' : 'play_arrow'}</span>
-                </button>
-              </div>
-              <div className="relative h-48 rounded-lg overflow-hidden cursor-pointer" onClick={togglePlay}>
-                <img className={`w-full h-full object-cover transition-transform duration-700 ${isPlaying ? 'scale-105 opacity-80' : 'group-hover:scale-105'}`} alt="Minimalist mountain landscape with soft clouds and ethereal morning light, zen meditation aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFUALo3f7B6x6NjOC9HNYr2mjq7WSHLlC4tyP2TEl2c6cZo1BoPjNHGWbz4NpOMu26F0IliuGEjJ4d1YtYqEQov3BoiQwsadBxCx1e1JkwZU4oQnT3IWFzcq2f-Sg44FA8f-1CTMJOvGpqWXtns16uOOr-qn3Z3-LjZAMds5UpORSdLBYKnPeibhnnMY3iy3AVfib0fMzCf8jwY4fMrYbyjaLWta-pTxJZ-PLm2qAmJFe_ngOlzX5vi9_1uwIw10MpNegmpvpTp0hs"/>
-                <div className={`absolute inset-0 bg-primary/20 flex items-center justify-center transition-opacity ${isPlaying ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
-                  <span className="text-white font-label font-bold uppercase tracking-widest">Reproducir ahora</span>
-                </div>
-                {isPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex gap-1 items-center justify-center h-12">
-                      <div className="w-1.5 h-1/3 bg-white rounded-full animate-pulse object-center" style={{ animationDelay: '0ms', animationDuration: '800ms' }}></div>
-                      <div className="w-1.5 h-2/3 bg-white rounded-full animate-pulse object-center" style={{ animationDelay: '200ms', animationDuration: '800ms' }}></div>
-                      <div className="w-1.5 h-full bg-white rounded-full animate-pulse object-center" style={{ animationDelay: '400ms', animationDuration: '800ms' }}></div>
-                      <div className="w-1.5 h-1/2 bg-white rounded-full animate-pulse object-center" style={{ animationDelay: '600ms', animationDuration: '800ms' }}></div>
-                      <div className="w-1.5 h-1/4 bg-white rounded-full animate-pulse object-center" style={{ animationDelay: '800ms', animationDuration: '800ms' }}></div>
-                    </div>
+            {/* Dossier Card */}
+            <div 
+              className="md:col-span-6 p-8 rounded-[2rem] border border-outline-variant/10 group flex flex-col relative overflow-hidden bg-cover bg-center"
+              style={{ backgroundImage: "url('/images/fondo_dosier.jpg')" }}
+              onClick={() => {
+                if (window.matchMedia('(hover: none)').matches) {
+                  setShowDossierText(prev => !prev);
+                }
+              }}
+              onMouseLeave={() => setShowDossierText(false)}
+            >
+              <div className="absolute inset-0 bg-white/40 dark:bg-[#162839]/50 transition-opacity"></div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showDossierText ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="bg-black/40 backdrop-blur-md px-6 py-5 border border-white/10 rounded-2xl shadow-xl">
+                    <h4 className="text-3xl font-headline font-bold text-white mb-4">Dossier Espejo personalizado</h4>
+                    <p className="text-white/90 font-label text-lg md:text-xl">
+                      {!questionnaireCompleted && "Completa primero los pasos previos para desbloquear tu dossier personalizado."}
+                      {questionnaireCompleted && !dossierAvailable && "Tu dossier se está preparando. En cuanto esté disponible, podrás acceder desde aquí."}
+                      {dossierAvailable && !dossierViewed && "Tu dossier ya está disponible. Accede con tu clave personal para consultarlo."}
+                      {dossierViewed && "Tu dossier ya ha sido desbloqueado. Puedes volver a consultarlo cuando lo necesites."}
+                    </p>
                   </div>
-                )}
+                </div>
+                
+                <div className="mt-8">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!hasConsultation) {
+                        navigate("/session");
+                      } else if (hasConsultation && !questionnaireCompleted) {
+                        setIsNextStepsModalOpen(true);
+                      } else if (questionnaireCompleted && !dossierAvailable) {
+                        // Deshabilitado visualmente, sin navegación
+                      } else if (dossierAvailable) {
+                        navigate("/dossier-espejo");
+                      }
+                    }}
+                    disabled={questionnaireCompleted && !dossierAvailable}
+                    className={`px-8 py-3 rounded-full font-label font-bold text-sm transition-all focus:outline-none flex w-fit ${
+                      (questionnaireCompleted && !dossierAvailable) 
+                        ? 'bg-outline-variant/20 dark:bg-outline-variant/40 text-on-surface-variant dark:text-[#43474c] cursor-not-allowed opacity-70' 
+                        : 'bg-primary text-on-primary hover:bg-primary-container hover:text-primary shadow-md hover:scale-105 cursor-pointer'
+                    }`}
+                  >
+                    {!hasConsultation && "Realizar consulta gratuita"}
+                    {hasConsultation && !questionnaireCompleted && "Solicitar Cuestionario Espejo"}
+                    {questionnaireCompleted && !dossierAvailable && "Dossier en preparación"}
+                    {dossierAvailable && "Acceder al dossier"}
+                  </button>
+                </div>
               </div>
-              <audio 
-                ref={audioRef} 
-                src="/audios/meditacion_guiada_breve/meditacion_guiada_breve.m4a" 
-                onEnded={() => setIsPlaying(false)}
-                className="hidden" 
-              />
             </div>
 
             {/* Next Steps Checklist */}
@@ -346,28 +449,31 @@ export default function Report() {
               <div className="space-y-6">
                 
                 {/* 1. Consulta Gratuita */}
-                <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDoneConsultation ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
-                    {userData?.hasDoneConsultation && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
-                  </div>
-                  <div>
-                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>
-                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
-                  </div>
-                </div>
-
-                {/* 2. Cuestionario Espejo */}
-                {userData?.hasDoneCuestionario ? (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10">
-                      <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>
-                    </div>
+                {activeNextStep === 'consulta' ? (
+                  <div 
+                    onClick={() => navigate("/session")}
+                    className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
-                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Consulta Gratuita</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado. <span className="font-medium text-primary dark:text-[#2c3e50]">Realizar ahora</span></p>
                     </div>
                   </div>
                 ) : (
+                  <div className="flex gap-4">
+                    <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${hasConsultation ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                      {hasConsultation && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                    </div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Consulta Gratuita</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Su primer acercamiento con la herramienta ha sido completado.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Cuestionario Espejo */}
+                {activeNextStep === 'cuestionario' ? (
                   <div 
                     onClick={() => setIsNextStepsModalOpen(true)}
                     className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
@@ -378,28 +484,69 @@ export default function Report() {
                       <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado. <span className="font-medium text-primary dark:text-[#2c3e50]">Solicitar ahora</span></p>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${(questionnaireRequested || questionnaireCompleted) ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                      {(questionnaireRequested || questionnaireCompleted) && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                    </div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Cuestionario Espejo</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Profundice en las raíces de la niebla detectada con nuestro test avanzado.</p>
+                    </div>
+                  </div>
                 )}
 
-                {/* 3. Descarga de Guía */}
-                <div className="flex gap-4">
-                  <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${userData?.hasDownloadedGuide ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
-                    {userData?.hasDownloadedGuide && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                {/* 3. Dossier Espejo personalizado */}
+                {activeNextStep === 'dossier' ? (
+                  <div 
+                    onClick={() => {
+                        if (dossierAvailable) {
+                            navigate("/dossier-espejo");
+                        }
+                    }}
+                    className={`flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 transition-all group shadow-sm hover:shadow-md mb-2 ${dossierAvailable ? 'cursor-pointer' : 'cursor-default opacity-80'}`}
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Dossier Espejo personalizado</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones. <span className="font-medium text-primary dark:text-[#2c3e50]">{dossierAvailable ? 'Acceder ahora' : 'En preparación'}</span></p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Descarga de Guía</p>
-                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${dossierAvailable ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                      {dossierAvailable && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                    </div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Dossier Espejo personalizado</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light">Obtendrás tu dosier completo y personalizado con nuestro análisis y recomendaciones.</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* 4. Sesión de Validación */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 border-2 border-outline-variant dark:border-[#2c3e50]/30 rounded-md flex items-center justify-center"></div>
-                  <div>
-                    <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Sesión de Validación</p>
-                    <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
-                    <button className="text-secondary dark:text-[#2c3e50] text-sm font-label font-bold underline">Agendar ahora</button>
+                {activeNextStep === 'validacion' ? (
+                  <div 
+                    onClick={() => { alert("Esta funcionalidad estará disponible pronto."); }}
+                    className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">Sesión de Validación</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos. <span className="font-medium text-primary dark:text-[#2c3e50]">Agendar ahora</span></p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${(dossierViewed /* assuming validacion comes after dossierViewed */) ? 'border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10' : 'border-outline-variant dark:border-[#2c3e50]/30'}`}>
+                      {dossierViewed && <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">check</span>}
+                    </div>
+                    <div>
+                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">Sesión de Validación</p>
+                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">Resérvese un encuentro individual con un especialista para validar estos hallazgos.</p>
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>

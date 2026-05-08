@@ -223,6 +223,7 @@ app.get("/api/health", (req, res) => {
     time: new Date().toISOString(),
     aiAvailable: !!ai,
     authAvailable: !!admin.apps.length,
+    riskAlertEmailsConfigured: !!process.env.RISK_ALERT_EMAILS || !!process.env.NOTIFICATION_EMAILS,
     model: AI_MODEL,
     env: process.env.NODE_ENV || "development",
     questionnaireApiConfigured: !!process.env.QUESTIONNAIRE_API_URL,
@@ -233,7 +234,25 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
   try {
-    let { history, message } = req.body;
+    let { history, message, sessionContext } = req.body;
+
+    const safeSessionContext = {
+      time: sessionContext?.time || null,
+      user: {
+        email: sessionContext?.user?.email || req.user?.email || "",
+        displayName: sessionContext?.user?.displayName || "",
+        hasDoneConsultation: !!sessionContext?.user?.hasDoneConsultation,
+        personalData: {
+          nombre: sessionContext?.user?.personalData?.nombre || "",
+          edad: sessionContext?.user?.personalData?.edad || "",
+          sexo: sessionContext?.user?.personalData?.sexo || "",
+          telefonoAvailable: !!sessionContext?.user?.personalData?.telefono
+        },
+        questionnaire: sessionContext?.user?.questionnaire || {},
+        resources: sessionContext?.user?.resources || {}
+      }
+    };
+
     if (!message || typeof message !== 'string') {
       res.status(400).json({ error: "Mensaje inválido." });
       return;
@@ -261,26 +280,56 @@ app.post("/api/session-reply", requireAuth, requireAI, async (req, res) => {
     const chatWithHistory = ai.chats.create({
       model: AI_MODEL,
       config: {
-        systemInstruction: "Eres un guía virtual empático, cálido y profesional enfocado en el bienestar. Reglas: 1) Actúas como un radar que escucha sin juzgar, filtrando casos iniciales. 2) Mantén respuestas breves y humanas, sin diagnosticar; solo ayuda a ordenar sus ideas. 3) La consulta dura como mucho 15 minutos en total; debes ser consciente de ir cerrando de manera orgánica si el usuario ya expresó su situación, NO intentes forzar la conversación agregando preguntas extrañas al final. 4) Cuando la sesión esté por terminar, explícale que el siguiente paso es rellenar el 'Cuestionario Espejo' (un cuestionario sobre experiencias vividas cotidianas para que los terapeutas entiendan mejor su posición). Ofrécete a solicitarle ese enlace directamente en esta charla (pregúntale si lo prefiere por email, SMS o WhatsApp; si es SMS/WhatsApp pídele el teléfono). Aclara que tras hacerlo, recibirá un dossier personal gratuito, y se liberarán recursos útiles en la plataforma (meditaciones, respiraciones). 5) Despídete de manera cálida y natural sin dejar preguntas abiertas si se ha cerrado el tema.",
+        systemInstruction: "Eres un guía virtual empático, cálido y profesional enfocado en el bienestar. Actúas como un primer acompañante de escucha, no como terapeuta definitivo. Tu misión es ayudar a la persona a ordenar lo que siente para que después un equipo humano pueda entender mejor su situación.\\n\\nReglas de comportamiento:\\n1) Escucha sin juzgar. Responde con calidez, sencillez y humanidad.\\n2) No diagnostiques, no etiquetes clínicamente y no afirmes certezas médicas. Puedes reflejar patrones emocionales de forma prudente.\\n3) Mantén respuestas breves, pero no cortes la conversación antes de tiempo.\\n4) Durante los primeros intercambios, prioriza comprender: qué le ocurre, desde cuándo, qué impacto tiene en su día a día y qué necesita.\\n5) No des por terminada la sesión tras una sola respuesta del usuario salvo que el usuario diga explícitamente que quiere finalizar.\\n6) Solo empieza a cerrar de manera orgánica cuando haya suficiente contexto o cuando el usuario indique que ya ha terminado de explicar su situación.\\n7) Si el usuario escribe algo muy corto o inicial, haz una pregunta amable de profundización, no cierres.\\n8) Cuando la conversación esté realmente madura para cerrar, resume con cuidado lo que has entendido y explica que el siguiente paso es rellenar el Cuestionario Espejo.\\n9) El Cuestionario Espejo es un cuestionario sobre experiencias vividas cotidianas para que los terapeutas entiendan mejor la posición de la persona.\\n10) Solo ofrece solicitar el enlace del Cuestionario Espejo cuando la sesión esté cerca del cierre o el usuario lo pida.\\n11) Si el usuario quiere solicitar el enlace, pregúntale si lo prefiere por email, SMS o WhatsApp; si es SMS o WhatsApp, pídele el teléfono.\\n12) Aclara que tras hacerlo recibirá un dossier personal gratuito y se liberarán recursos útiles en la plataforma, como meditaciones, respiraciones o diario de gratitud.\\n13) Despídete de manera cálida solo cuando el tema esté realmente cerrado o el usuario haya pedido finalizar.",
         maxOutputTokens: 700,
         tools: [{
           functionDeclarations: [
             {
-              name: "send_questionnaire",
-              description: "Envía la solicitud del Cuestionario Espejo al usuario. Llama a esta función SOLO CUANDO el usuario haya expresado explícitamente su método de contacto preferido (email, sms o whatsapp) y haya proporcionado su número de teléfono si el método elegido es sms o whatsapp.",
+              name: "update_user_profile_data",
+              description: "Guarda o actualiza datos básicos del usuario cuando los aporte o confirme.",
               parameters: {
                 type: Type.OBJECT,
                 properties: {
-                  contactMethod: {
-                    type: Type.STRING,
-                    description: "Método de contacto preferido: 'email', 'sms', o 'whatsapp'"
-                  },
-                  phoneNumber: {
-                    type: Type.STRING,
-                    description: "Número de teléfono, requerido si el método de contacto es 'sms' o 'whatsapp'."
-                  }
+                  nombre: { type: Type.STRING, description: "Nombre real del usuario." },
+                  edad: { type: Type.STRING, description: "Edad del usuario." },
+                  sexo: { type: Type.STRING, description: "Sexo del usuario ('hombre', 'mujer', o 'prefiero_no_definirme')." },
+                  telefono: { type: Type.STRING, description: "Teléfono de contacto." },
+                  consentConfirmed: { type: Type.BOOLEAN, description: "True si el usuario ha consentido explícitamente dar esta información." }
                 },
-                required: ["contactMethod"]
+                required: ["consentConfirmed"]
+              }
+            },
+            {
+              name: "send_questionnaire",
+              description: "Envía la solicitud del Cuestionario Espejo al usuario. Llama a esta función SOLO cuando acepte recibirlo.",
+              parameters: {
+                type: Type.OBJECT,
+                properties: {
+                  email: { type: Type.BOOLEAN, description: "Solicitado por email" },
+                  whatsapp: { type: Type.BOOLEAN, description: "Solicitado por WhatsApp" },
+                  sms: { type: Type.BOOLEAN, description: "Solicitado por SMS" },
+                  telefono: { type: Type.STRING, description: "Teléfono, requerido si se usa SMS/WhatsApp." },
+                  edad: { type: Type.STRING, description: "Edad del usuario, opcional." },
+                  sexo: { type: Type.STRING, description: "Sexo del usuario, opcional." },
+                  nombre: { type: Type.STRING, description: "Nombre real del usuario, opcional." },
+                  consentConfirmed: { type: Type.BOOLEAN, description: "True si el usuario confirmó el envío y proporcionó datos requeridos." }
+                },
+                required: ["consentConfirmed"]
+              }
+            },
+            {
+              name: "send_internal_risk_alert",
+              description: "Envía una alerta interna a los terapeutas sobre una situación de riesgo suicida, autolesivo o de peligro inmediato.",
+              parameters: {
+                type: Type.OBJECT,
+                properties: {
+                  riskLevel: { type: Type.STRING, description: "Nivel de riesgo ('medio', 'alto', 'inminente')." },
+                  reason: { type: Type.STRING, description: "Motivo resumido de la alerta (ej. 'Ideación suicida activa')." },
+                  nombre: { type: Type.STRING, description: "Nombre del usuario si se conoce." },
+                  email: { type: Type.STRING, description: "Email del usuario si se conoce." },
+                  telefono: { type: Type.STRING, description: "Teléfono si se conoce." }
+                },
+                required: ["riskLevel", "reason"]
               }
             }
           ]
@@ -340,18 +389,18 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
 
     const prompt = `
       A continuación se presenta la transcripción de una consulta guiada preliminar entre una persona y un asistente inicial.
-      Como coach de bienestar empático, evalúa si la sesión aporta información relevante sobre la situación expresada (vacías o mero ruido no valen).
+      Como profesional experto, evalúa si la sesión aporta información relevante.
       
       Necesito que generes:
-      1. Un resumen clínico ("clinicalSummary") que se guardará internamente para el terapeuta (análisis objetivo, 3ª persona).
-      2. Un mensaje empático dirigido al usuario ("userEmpatheticMessage" escrito en 2ª persona, como un amigo) que:
-        - Resuma la conversación validando lo que el usuario ha expresado.
-        - Le comunique que NO es ningún diagnóstico ni el dossier definitivo, sino un resumen de esta primera etapa (la consulta).
-        - Le informe que esto se trasladará al terapeuta.
-        - Le recuerde que el segundo paso es realizar el "Cuestionario Espejo". Tras hacerlo, recibirá su Dossier Personal con la conclusión del terapeuta de forma gratuita y sin presiones, y tendrá acceso liberado a recursos como meditaciones o el diario de gratitud.
+      1. Un informe visible para el usuario ("visibleOrientationReport"). Emplea un tono empático, elegante, humano y comprensivo. NO debe parecer clínico, ni diagnóstico, ni comercial.
+      2. Un informe interno para los terapeutas ("internalTherapistReport"). Objetivo, resumido, sin inventar datos.
       
-      Genera un resumen compacto que integre la nueva información con el historial pasado.
-      
+      Además de estos dos, mantén un mensaje corto compasivo en "userEmpatheticMessage", y los demás valores legacy.
+
+      REGLA CRÍTICA PARA EL INFORME VISIBLE:
+      NUNCA uses palabras como "prediagnóstico", "diagnóstico", "evaluación clínica", "trastorno", o "necesitas terapia".
+      Si el usuario no ha expresado elementos de riesgo o clínicos graves, mantenlo suave.
+
       Historial pasado:
       ${accumulatedSummary || "No hay historial."}
 
@@ -361,18 +410,48 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
       EL RESULTADO DEBE SER EXCLUSIVAMENTE UN OBJETO JSON con esta estructura exacta (sin bloques markdown JSON):
       {
         "validConclusion": boolean,
-        "clinicalSummary": "Resumen interno para el terapeuta",
-        "userEmpatheticMessage": "Mensaje empático y directo al usuario descrito arriba",
-        "newAccumulatedSummary": "Resumen integrado",
+        "userEmpatheticMessage": "Mensaje corto amable de fallback",
+        "clinicalSummary": "Resumen básico fallback",
+        "newAccumulatedSummary": "Resumen analítico integrado",
         "needsUrgentSupport": boolean,
-        "urgentSupportMessage": "mensaje muy delicado, empático y orientado a buscar ayuda inmediata si needsUrgentSupport es true, si es false dejar vacío"
+        "urgentSupportMessage": "mensaje delicado para buscar ayuda inmediata si needsUrgentSupport es true",
+        "visibleOrientationReport": {
+          "titulo": "Tu primera lectura de claridad",
+          "subtitulo": "Esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo.",
+          "lo_que_parece_pesar_mas": "Párrafo empático",
+          "impacto_en_tu_dia_a_dia": "Párrafo sobre cómo afecta a su día a día",
+          "lo_que_podria_necesitar_tu_momento_actual": "Sugerencias suaves",
+          "lo_que_esta_conversacion_ha_permitido_ver": "Lo que habéis ordenado juntos",
+          "siguiente_paso": "El Cuestionario Espejo",
+          "pregunta_validacion": "¿Sientes que refleja cómo te encuentras?",
+          "opciones_validacion": ["Totalmente", "No del todo"],
+          "nota_seguridad": "Este resumen no sustituye una valoración profesional ni constituye un diagnóstico."
+        },
+        "internalTherapistReport": {
+          "datos_basicos": { "nombre": "", "edad": "", "email": "", "telefono": "", "canal_preferido_cuestionario": "", "estado_cuestionario_espejo": "" },
+          "motivo_principal": "",
+          "estado_emocional_predominante": { "expresado_por_usuario": [], "inferido_por_conversacion": [] },
+          "duracion_y_evolucion": "",
+          "impacto_funcional": { "sueno": "", "energia": "", "trabajo_estudios": "", "relaciones": "", "cuerpo": "", "alimentacion": "", "concentracion": "", "rutinas": "", "capacidad_disfrute": "", "evitacion": "" },
+          "contexto_y_posibles_desencadenantes": "",
+          "recursos_y_afrontamiento": "",
+          "expectativas_usuario": "",
+          "senales_de_riesgo": { "riesgo_detectado": false, "descripcion": "", "accion_recomendada": "" },
+          "nivel_orientativo_intensidad": "bajo | medio | alto | riesgo",
+          "hipotesis_de_trabajo_no_diagnostica": "",
+          "informacion_faltante_relevante": [],
+          "recomendacion_prudente_siguiente_paso": "",
+          "validacion_usuario_informe_visible": { "respuesta": "", "comentario_adicional": "" },
+          "observaciones_estilo_comunicacion": [],
+          "resumen_para_derivacion": ""
+        }
       }
     `;
 
     const response = await ai.models.generateContent({
       model: AI_MODEL,
       contents: prompt,
-      config: { maxOutputTokens: 1200 }
+      config: { maxOutputTokens: 3500 }
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
@@ -662,6 +741,64 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
   }
 });
 
+
+const ACCESS_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generatePersonalAccessCode(length = 6) {
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += ACCESS_CODE_CHARS[Math.floor(Math.random() * ACCESS_CODE_CHARS.length)];
+  }
+  return code;
+}
+
+async function getOrCreatePersonalAccessCode(db: FirebaseFirestore.Firestore, uid: string, email: string, userData: any, profileData: any) {
+  if (userData?.personalAccessCode || profileData?.personalAccessCode) {
+    return userData?.personalAccessCode || profileData?.personalAccessCode;
+  }
+
+  const accessCodesRef = db.collection('accessCodes');
+  
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = generatePersonalAccessCode(6);
+    const codeDocRef = accessCodesRef.doc(code);
+    
+    try {
+      await db.runTransaction(async (t) => {
+        const doc = await t.get(codeDocRef);
+        if (doc.exists) {
+          throw new Error("CodeExists");
+        }
+        
+        const timestamp = admin.firestore.FieldValue.serverTimestamp();
+        
+        t.set(codeDocRef, {
+          uid,
+          email,
+          createdAt: timestamp
+        });
+        
+        t.set(db.collection('users').doc(uid), {
+          personalAccessCode: code,
+          personalAccessCodeCreatedAt: timestamp
+        }, { merge: true });
+        
+        t.set(db.collection('userProfiles').doc(uid), {
+          personalAccessCode: code,
+          personalAccessCodeCreatedAt: timestamp
+        }, { merge: true });
+      });
+      return code;
+    } catch (e: any) {
+      if (e.message !== "CodeExists") {
+        console.error("Error creating personal access code", e);
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   let requestStep = "start";
   try {
@@ -751,7 +888,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     copyIfPresent(userData, 'reportFeedback');
     copyIfPresent(userData, 'latestReportFeedbackAgrees');
     copyIfPresent(userData, 'latestReportFeedbackLabel');
+    copyIfPresent(userData, 'latestReportFeedbackComment');
     copyIfPresent(userData, 'latestReportFeedbackAt');
+    copyIfPresent(userData, 'latestVisibleOrientationReport');
+    copyIfPresent(userData, 'latestInternalTherapistReport');
     copyIfPresent(profileData, 'globalUserSummary');
     copyIfPresent(profileData, 'accumulatedSummary');
     copyIfPresent(profileData, 'latestClinicalConclusion');
@@ -766,7 +906,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     copyIfPresent(profileData, 'reportFeedback');
     copyIfPresent(profileData, 'latestReportFeedbackAgrees');
     copyIfPresent(profileData, 'latestReportFeedbackLabel');
+    copyIfPresent(profileData, 'latestReportFeedbackComment');
     copyIfPresent(profileData, 'latestReportFeedbackAt');
+    copyIfPresent(profileData, 'latestVisibleOrientationReport');
+    copyIfPresent(profileData, 'latestInternalTherapistReport');
 
     const requestsRef = db.collection('users').doc(uid).collection('questionnaireRequests');
     const requestId = requestsRef.doc().id;
@@ -775,8 +918,15 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const createdAt = Date.now();
     const createdAtIso = new Date(createdAt).toISOString(); 
 
+    requestStep = "get_access_code";
+    const personalAccessCode = await getOrCreatePersonalAccessCode(db, uid, email, userData, profileData);
+    if (personalAccessCode) {
+      soybienestarContext.personalAccessCodeProvided = true;
+      soybienestarContext.personalAccessCodeLength = personalAccessCode.length;
+    }
+
     requestStep = "build_payload";
-    const payload = {
+    const payload: any = {
       id: requestId,
       source: "soybienestar",
       sourcePath: "/zen",
@@ -797,6 +947,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       notes: "Solicitud del Cuestionario Espejo desde SoyBienestar",
       soybienestarContext
     };
+    
+    if (personalAccessCode) {
+      payload.proposedAccessCode = personalAccessCode;
+    }
 
     requestStep = "check_bridge_config";
     const apiUrl = process.env.QUESTIONNAIRE_API_URL;
@@ -869,11 +1023,35 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     });
 
     requestStep = "update_user_request_metadata";
-    await docRef.update({
+    const updateData: any = {
       questionnaireRequestStatus: "pending",
+      questionnaireStatus: "requested",
+      questionnaireRequestedAt: timestamp,
       lastQuestionnaireRequestAt: timestamp,
       lastQuestionnaireRequestId: requestId,
       lastQuestionnaireContactSnapshot: contactSnapshot
+    };
+    
+    if (personalAccessCode) {
+      updateData.questionnaireAccessCodeSharedAt = timestamp;
+      updateData.lastQuestionnaireProposedAccessCode = personalAccessCode;
+    }
+    
+    if (userData.dossierAvailableAt !== undefined) updateData.dossierAvailableAt = userData.dossierAvailableAt;
+    if (userData.dossierViewedAt !== undefined) updateData.dossierViewedAt = userData.dossierViewedAt;
+    
+    if (!userData.linkedQuestionnairePatientId) {
+      updateData.linkedQuestionnairePatientId = null;
+    }
+
+    await docRef.update(updateData);
+    
+    await profileRef.update({
+      questionnaireStatus: "requested",
+      ...(personalAccessCode ? { 
+        questionnaireAccessCodeSharedAt: timestamp,
+        lastQuestionnaireProposedAccessCode: personalAccessCode
+      } : {})
     });
 
     requestStep = "done";
