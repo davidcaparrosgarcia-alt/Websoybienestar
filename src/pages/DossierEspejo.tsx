@@ -67,8 +67,9 @@ export default function DossierEspejo() {
   const dossierAvailable = !!userData?.dossierAvailableAt || !!profileData?.dossierAvailableAt || !!latestDossier;
   const auth = getAuth();
   const isTester = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
+  const effectiveCode = code || (isTester ? "DEMO25" : "");
 
-  if (!code) {
+  if (!effectiveCode) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
@@ -107,34 +108,36 @@ export default function DossierEspejo() {
     );
   }
 
+  const isDemoMode = !latestDossier && isTester;
+
   const handleUnlock = async () => {
     setErrorMsg("");
     const normalizedInput = accessCodeInput.trim().toUpperCase();
-    const normalizedCode = code.trim().toUpperCase();
+    const normalizedCode = effectiveCode.trim().toUpperCase();
 
     if (normalizedInput === normalizedCode) {
       setUnlocked(true);
-      // Ensure dossierViewedAt is saved
-      const userDocRef = doc(getFirestore(), 'users', auth.currentUser!.uid);
-      const userProfRef = doc(getFirestore(), 'userProfiles', auth.currentUser!.uid);
-      
-      const ts = Date.now();
-      try {
-        if (!userData.dossierViewedAt) {
-           await updateDoc(userDocRef, { dossierViewedAt: ts });
+      if (!isDemoMode) {
+        // Ensure dossierViewedAt is saved
+        const userDocRef = doc(getFirestore(), 'users', auth.currentUser!.uid);
+        const userProfRef = doc(getFirestore(), 'userProfiles', auth.currentUser!.uid);
+        
+        const ts = Date.now();
+        try {
+          if (!userData.dossierViewedAt) {
+             await updateDoc(userDocRef, { dossierViewedAt: ts });
+          }
+          if (!profileData.dossierViewedAt) {
+             await updateDoc(userProfRef, { dossierViewedAt: ts });
+          }
+        } catch (e) {
+          console.error("Error setting dossierViewedAt", e);
         }
-        if (!profileData.dossierViewedAt) {
-           await updateDoc(userProfRef, { dossierViewedAt: ts });
-        }
-      } catch (e) {
-        console.error("Error setting dossierViewedAt", e);
       }
     } else {
       setErrorMsg("La clave no coincide. Revisa el código personal que recibiste con tu enlace.");
     }
   };
-
-  const isDemoMode = !latestDossier && isTester;
 
   if (!unlocked) {
     return (
@@ -167,7 +170,7 @@ export default function DossierEspejo() {
 
            <button 
              onClick={handleUnlock}
-             disabled={accessCodeInput.length < 5}
+             disabled={accessCodeInput.length < 6}
              className="w-full bg-primary text-on-primary py-3 rounded-full font-label font-bold hover:bg-primary-container hover:text-primary transition-colors disabled:bg-outline-variant/30 disabled:text-on-surface-variant/50"
            >
              Desbloquear

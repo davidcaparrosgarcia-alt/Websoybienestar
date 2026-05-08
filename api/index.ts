@@ -752,51 +752,61 @@ function generatePersonalAccessCode(length = 6) {
   return code;
 }
 
-async function getOrCreatePersonalAccessCode(db: FirebaseFirestore.Firestore, uid: string, email: string, userData: any, profileData: any) {
-  if (userData?.personalAccessCode || profileData?.personalAccessCode) {
-    return userData?.personalAccessCode || profileData?.personalAccessCode;
+async function getOrCreatePersonalAccessCode(db: FirebaseFirestore.Firestore, uid: string, email?: string | null) {
+  const userRef = db.collection("users").doc(uid);
+  const profileRef = db.collection("userProfiles").doc(uid);
+
+  const [userSnap, profileSnap] = await Promise.all([
+    userRef.get(),
+    profileRef.get()
+  ]);
+
+  const userData = userSnap.data() || {};
+  const profileData = profileSnap.data() || {};
+
+  const existingCode = userData.personalAccessCode || profileData.personalAccessCode;
+  if (existingCode) {
+    return String(existingCode).trim().toUpperCase();
   }
 
-  const accessCodesRef = db.collection('accessCodes');
-  
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = generatePersonalAccessCode(6);
-    const codeDocRef = accessCodesRef.doc(code);
-    
+    const codeRef = db.collection("accessCodes").doc(code);
+
     try {
-      await db.runTransaction(async (t) => {
-        const doc = await t.get(codeDocRef);
-        if (doc.exists) {
-          throw new Error("CodeExists");
+      await db.runTransaction(async (tx) => {
+        const codeSnap = await tx.get(codeRef);
+        if (codeSnap.exists) {
+          throw new Error("CODE_ALREADY_EXISTS");
         }
-        
-        const timestamp = admin.firestore.FieldValue.serverTimestamp();
-        
-        t.set(codeDocRef, {
+
+        const payload = {
           uid,
-          email,
-          createdAt: timestamp
-        });
-        
-        t.set(db.collection('users').doc(uid), {
+          email: email || userData.email || profileData.email || null,
+          createdAt: Date.now()
+        };
+
+        tx.set(codeRef, payload);
+        tx.set(userRef, {
           personalAccessCode: code,
-          personalAccessCodeCreatedAt: timestamp
+          personalAccessCodeCreatedAt: Date.now()
         }, { merge: true });
-        
-        t.set(db.collection('userProfiles').doc(uid), {
+        tx.set(profileRef, {
           personalAccessCode: code,
-          personalAccessCodeCreatedAt: timestamp
+          personalAccessCodeCreatedAt: Date.now()
         }, { merge: true });
       });
+
       return code;
-    } catch (e: any) {
-      if (e.message !== "CodeExists") {
-        console.error("Error creating personal access code", e);
-        return null;
+    } catch (error) {
+      if (error instanceof Error && error.message === "CODE_ALREADY_EXISTS") {
+        continue;
       }
+      throw error;
     }
   }
-  return null;
+
+  throw new Error("No se pudo generar un código único tras varios intentos.");
 }
 
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
@@ -919,7 +929,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const createdAtIso = new Date(createdAt).toISOString(); 
 
     requestStep = "get_access_code";
-    const personalAccessCode = await getOrCreatePersonalAccessCode(db, uid, email, userData, profileData);
+    const personalAccessCode = await getOrCreatePersonalAccessCode(db, uid, authEmail || email);
     if (personalAccessCode) {
       soybienestarContext.personalAccessCodeProvided = true;
       soybienestarContext.personalAccessCodeLength = personalAccessCode.length;
