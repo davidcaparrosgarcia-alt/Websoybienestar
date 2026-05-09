@@ -161,7 +161,6 @@ export default function Home() {
             referrerPolicy="no-referrer"
           />
           {/* Gradiente sutil inferior para asegurar la legibilidad de la frase */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"></div>
           
           {/* Floating Quote Overlay Style */}
           <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-lg z-10 w-[calc(100%-2.5rem)]">
@@ -172,35 +171,111 @@ export default function Home() {
         </div>
       </section>
 
-      {/* The Hybrid Approach */}
+      {/* Symptoms Section: Reconociendo tus batallas */}
       <section className="py-32 px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-5 order-2 lg:order-1">
-            <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
-              <img alt="serene lake water" className="w-full h-full object-cover" src="/images/ondas.jpg"/>
-            </RippleWindow>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-24">
+            <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>
+            <p className="font-body text-on-surface-variant text-xl max-w-3xl mx-auto font-light leading-relaxed">Ponemos nombre a lo que sientes para empezar a sanar. No son solo síntomas, es tu historia pidiendo atención desde un lugar de compasión.</p>
           </div>
-          <div className="lg:col-span-7 order-1 lg:order-2">
-            <div className="space-y-12">
-              <div>
-                <h2 className="font-headline text-4xl md:text-5xl text-primary mb-6">Un enfoque híbrido para el alma moderna</h2>
-                <p className="font-body text-xl text-on-surface-variant leading-relaxed font-light">
-                  Fusionamos la precisión de la tecnología con la profundidad de la empatía humana.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-4">
-                  <span className="material-symbols-outlined text-4xl text-primary">neurology</span>
-                  <h3 className="font-headline text-2xl text-primary">IA que escucha</h3>
-                  <p className="font-body text-on-surface-variant font-light text-lg">Un espacio disponible 24/7 para desahogarte sin juicios, donde nuestra tecnología ofrece herramientas inmediatas.</p>
-                </div>
-                <div className="space-y-4">
-                  <span className="material-symbols-outlined text-4xl text-primary">volunteer_activism</span>
-                  <h3 className="font-headline text-2xl text-primary">Humano que valida</h3>
-                  <p className="font-body text-on-surface-variant font-light text-lg">Expertos en salud mental supervisan y validan cada paso de tu proceso terapéutico.</p>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <SymptomCard
+              id="ansiedad"
+              title="Ansiedad"
+              description="Ese estado de alerta que no te deja descansar. Te ayudamos a encontrar la calma en medio de la tormenta."
+              actionText="Recuperar la calma"
+              icon="air"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-light-gray"
+              isDarkText={true}
+              onClick={() => setSelectedInfographic({ id: 'ansiedad', src: '/images/info-ansiedad.jpg'})}
+            />
+            
+            <SymptomCard
+              id="estres"
+              title="Estrés"
+              description="Cuando tu mundo va muy rápido y sientes no tener tiempo ni para respirar. Estrategias prácticas para recuperar tu ritmo vital."
+              actionText="Soltar carga"
+              icon="speed"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-taupe"
+              onClick={() => setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg'})}
+            />
+
+            <SymptomCard
+              id="insomnio"
+              title="Insomnio"
+              description="Recupera tu descanso. Reparación del sueño y regulación somática para noches de paz real."
+              actionText="Dulce descanso"
+              icon="bedtime"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-sand"
+              onClick={() => setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg'})}
+            />
+
+            <SymptomCard
+              id="procrastinacion"
+              title="Procrastinación"
+              description="Deja de posponer las cosas. Te ayudamos a saber ponerte en marcha para que cumplas tus tareas diarias sin que se te haga una montaña."
+              actionText="Activar el cambio"
+              icon="schedule"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-mist"
+              onClick={() => setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg'})}
+            />
+
+            <SymptomCard
+              id="rumiacion"
+              title="Rumiación / Bucle Mental"
+              description="Rompe el ciclo de pensamientos circulares. Técnicas cognitivas avanzadas para salir de la trampa mental y recuperar la presencia."
+              actionText="Liberar la mente"
+              icon="all_inclusive"
+              colSpanClass="md:col-span-8"
+              bgColorClass="zen-azure-fog"
+              onClick={() => setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg'})}
+            />
+
+            <SymptomCard
+              id="emociones"
+              title="Gestión Emocional"
+              description="Aprende a navegar tus emociones sin que ellas te gobiernen. Inteligencia emocional aplicada a tu día a día."
+              actionText="Equilibrio interno"
+              icon="psychology_alt"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-stone"
+              onClick={() => setSelectedInfographic({ id: 'emociones', src: '/images/info-emociones.jpg'})}
+            />
+
+            <SymptomCard
+              id="alimentacion"
+              title="Alimentación"
+              description="Sana tu relación con el cuerpo y la comida desde un enfoque consciente y sin culpas."
+              actionText="Nutrir el cuerpo"
+              icon="restaurant"
+              colSpanClass="md:col-span-4"
+              bgColorClass="zen-light-gray"
+              isDarkText={true}
+              onClick={() => setSelectedInfographic({ id: 'alimentacion', src: '/images/info-alimentacion.jpg'})}
+            />
+
+            <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[380px] shadow-xl">
+              <img alt="soft morning sunlight" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="/images/fondo-zen.jpg"/>
+              <div className="absolute inset-0 bg-primary/35 backdrop-blur-[2px]"></div>
+              <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
+                <h3 className="font-headline text-4xl md:text-5xl mb-6">ReprogrÁmate Ahora</h3>
+                <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer paso hacia la liberación física, mental y emocional.</p>
+                <div onClick={() => {
+                  if (hasDoneConsultation) {
+                    setIsNextStepsModalOpen(true);
+                  } else {
+                    navigate('/session');
+                  }
+                }} className="bg-[#2c3e50] text-white px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:opacity-90 transition-all cursor-pointer shadow-lg active:scale-95 inline-block">
+                  {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Consulta Gratuita"}
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -242,12 +317,12 @@ export default function Home() {
                     navigate('/session');
                   }
                 }} 
-                className="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden text-group"
+                className="bg-[#2c3e50] text-white px-12 py-5 rounded-full font-headline text-xl tracking-wide shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 relative z-20 overflow-hidden group"
               >
                 <span className="relative z-10">
                   {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Comenzar Consulta Gratuita"}
                 </span>
-                <div className="absolute inset-0 bg-white/10 translate-y-full hover:translate-y-0 transition-transform duration-300"></div>
+                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
               </button>
             </div>
           </LighthouseBeamFrame>
@@ -259,115 +334,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Symptoms Section: Reconociendo tus batallas */}
+      {/* The Hybrid Approach */}
       <section className="py-32 px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>
-            <p className="font-body text-on-surface-variant text-xl max-w-3xl mx-auto font-light leading-relaxed">Ponemos nombre a lo que sientes para empezar a sanar. No son solo síntomas, es tu historia pidiendo atención desde un lugar de compasión.</p>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          <div className="lg:col-span-5 order-2 lg:order-1">
+            <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
+              <img alt="serene lake water" className="w-full h-full object-cover" src="/images/ondas.jpg"/>
+            </RippleWindow>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <SymptomCard
-              id="ansiedad"
-              title="Ansiedad"
-              description="Ese ruido constante que no te deja descansar. Te ayudamos a encontrar el silencio en medio de la tormenta con herramientas de calma profunda."
-              actionText="Recuperar la calma"
-              icon="air"
-              colSpanClass="md:col-span-8"
-              bgColorClass="zen-light-gray"
-              isDarkText={true}
-              onClick={() => setSelectedInfographic({ id: 'ansiedad', src: '/images/info-ansiedad.jpg'})}
-            />
-            
-            <SymptomCard
-              id="estres"
-              title="Estrés"
-              description="Cuando el mundo pesa demasiado. Estrategias prácticas para soltar lastre y reenfocar tu energía vital."
-              actionText="Soltar carga"
-              icon="speed"
-              colSpanClass="md:col-span-4"
-              bgColorClass="zen-taupe"
-              onClick={() => setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg'})}
-            />
-
-            <SymptomCard
-              id="insomnio"
-              title="Insomnio"
-              description="Recupera el descanso sagrado. Higiene del sueño y regulación somática para noches de paz real."
-              actionText="Dulce descanso"
-              icon="bedtime"
-              colSpanClass="md:col-span-4"
-              bgColorClass="zen-sand"
-              onClick={() => setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg'})}
-            />
-
-            <SymptomCard
-              id="procrastinacion"
-              title="Procrastinación"
-              description="Supera la parálisis del análisis. Construimos puentes entre tus intenciones y tus acciones diarias con suavidad."
-              actionText="Activar el cambio"
-              icon="schedule"
-              colSpanClass="md:col-span-8"
-              bgColorClass="zen-mist"
-              onClick={() => setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg'})}
-            />
-
-            <SymptomCard
-              id="rumiacion"
-              title="Rumiación"
-              description="Rompe el ciclo de pensamientos circulares. Técnicas cognitivas avanzadas para salir de la trampa mental y recuperar la presencia."
-              actionText="Liberar la mente"
-              icon="all_inclusive"
-              colSpanClass="md:col-span-8"
-              bgColorClass="zen-azure-fog"
-              onClick={() => setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg'})}
-            />
-
-            <SymptomCard
-              id="emociones"
-              title="Gestión Emocional"
-              description="Aprende a navegar tus emociones sin que ellas te gobiernen. Inteligencia emocional aplicada a tu día a día."
-              actionText="Equilibrio interno"
-              icon="psychology_alt"
-              colSpanClass="md:col-span-4"
-              bgColorClass="zen-stone"
-              onClick={() => setSelectedInfographic({ id: 'emociones', src: '/images/info-emociones.jpg'})}
-            />
-
-            <SymptomCard
-              id="alimentacion"
-              title="Alimentación"
-              description="Sana tu relación con el cuerpo y la comida desde un enfoque consciente y sin culpas."
-              actionText="Nutrir el alma"
-              icon="restaurant"
-              colSpanClass="md:col-span-4"
-              bgColorClass="zen-light-gray"
-              isDarkText={true}
-              onClick={() => setSelectedInfographic({ id: 'alimentacion', src: '/images/info-alimentacion.jpg'})}
-            />
-
-            <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[380px] shadow-xl">
-              <img alt="soft morning sunlight" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="/images/fondo-zen.jpg"/>
-              <div className="absolute inset-0 bg-primary/35 backdrop-blur-[2px]"></div>
-              <div className="relative h-full p-8 md:p-10 flex flex-col justify-end text-on-primary">
-                <h3 className="font-headline text-4xl md:text-5xl mb-6">Sesiones de Claridad</h3>
-                <p className="font-body opacity-90 font-light text-2xl mb-10 leading-relaxed max-w-xl">Tu primer encuentro hacia la luz. Un espacio dedicado exclusivamente a ti.</p>
-                <div onClick={() => {
-                  if (hasDoneConsultation) {
-                    setIsNextStepsModalOpen(true);
-                  } else {
-                    navigate('/session');
-                  }
-                }} className="bg-surface text-primary px-10 py-5 rounded-full self-start font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-surface-container-high transition-all cursor-pointer shadow-lg active:scale-95 inline-block">
-                  {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Consulta Gratuita"}
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <div className="space-y-12">
+              <div>
+                <h2 className="font-headline text-4xl md:text-5xl text-primary mb-6">Un enfoque híbrido para el alma moderna</h2>
+                <p className="font-body text-xl text-on-surface-variant leading-relaxed font-light">
+                  Fusionamos la precisión de la tecnología con la profundidad de la empatía humana.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <span className="material-symbols-outlined text-4xl text-primary">neurology</span>
+                  <h3 className="font-headline text-2xl text-primary">IA que escucha</h3>
+                  <p className="font-body text-on-surface-variant font-light text-lg">Un espacio disponible 24/7 para expresarte sin juicios, donde nuestra tecnología ofrece herramientas inmediatas.</p>
+                </div>
+                <div className="space-y-4">
+                  <span className="material-symbols-outlined text-4xl text-primary">volunteer_activism</span>
+                  <h3 className="font-headline text-2xl text-primary">Humano que valida</h3>
+                  <p className="font-body text-on-surface-variant font-light text-lg">Expertos en salud emocional supervisan y validan cada paso de tu proceso terapéutico.</p>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
-
 
 
       {/* Main Content Grid */}
