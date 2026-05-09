@@ -228,6 +228,8 @@ app.get("/api/health", (req, res) => {
     env: process.env.NODE_ENV || "development",
     questionnaireApiConfigured: !!process.env.QUESTIONNAIRE_API_URL,
     questionnaireBridgeConfigured: !!process.env.QUESTIONNAIRE_BRIDGE_SECRET,
+    questionnaireWebhookReceiverEnabled: true,
+    questionnaireWebhookSecretConfigured: !!process.env.QUESTIONNAIRE_BRIDGE_SECRET || !!process.env.SOYBIENESTAR_BRIDGE_SECRET,
     serverFirestoreDatabaseId: SERVER_FIRESTORE_DATABASE_ID
   });
 });
@@ -1105,6 +1107,157 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
         }
       } : {})
     });
+  }
+});
+
+app.post("/api/questionnaire-status-webhook", async (req, res) => {
+  try {
+    const incomingSecret = req.headers["x-bridge-secret"];
+    const expectedSecrets = [
+      process.env.QUESTIONNAIRE_BRIDGE_SECRET,
+      process.env.SOYBIENESTAR_BRIDGE_SECRET
+    ].filter(Boolean);
+
+    if (!incomingSecret || !expectedSecrets.includes(String(incomingSecret))) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    const payload = req.body;
+    if (!payload || payload.event !== "dossier_available") {
+      return res.status(400).json({ error: "Evento inválido o no soportado" });
+    }
+
+    const {
+      soybienestarUid,
+      sourceRequestId,
+      linkedQuestionnairePatientId,
+      email,
+      telefono,
+      accessPinProvidedBySoyBienestar,
+      status,
+      occurredAt,
+      dossier
+    } = payload;
+
+    if (!soybienestarUid && !sourceRequestId && !email) {
+      return res.status(400).json({ error: "Debe proveer soybienestarUid, sourceRequestId o email" });
+    }
+
+    if (!dossier || (!dossier.finalConclusion && !dossier.conversationSummary)) {
+      return res.status(400).json({ error: "Debe existir dossier con finalConclusion o conversationSummary" });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    let matchedUid: string | null = null;
+    let targetUserRef: FirebaseFirestore.DocumentReference | null = null;
+    let targetProfileRef: FirebaseFirestore.DocumentReference | null = null;
+
+    if (soybienestarUid) {
+      const userRef = db.collection("users").doc(soybienestarUid);
+      const userSnap = await userRef.get();
+      if (userSnap.exists) {
+        matchedUid = soybienestarUid;
+        targetUserRef = userRef;
+        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+      }
+    }
+
+    if (!matchedUid && sourceRequestId) {
+      const qs1 = await db.collection("users").where("lastQuestionnaireRequestId", "==", sourceRequestId).limit(1).get();
+      if (!qs1.empty) {
+        matchedUid = qs1.docs[0].id;
+        targetUserRef = qs1.docs[0].ref;
+        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+      } else {
+        const qs2 = await db.collection("users").where("sourceRequestId", "==", sourceRequestId).limit(1).get();
+        if (!qs2.empty) {
+          matchedUid = qs2.docs[0].id;
+          targetUserRef = qs2.docs[0].ref;
+          targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+        }
+      }
+    }
+
+    if (!matchedUid && email) {
+      const qsEmail = await db.collection("users").where("email", "==", email).limit(1).get();
+      if (!qsEmail.empty) {
+        matchedUid = qsEmail.docs[0].id;
+        targetUserRef = qsEmail.docs[0].ref;
+        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+      } else {
+        const qsContactEmail = await db.collection("users").where("contactEmail", "==", email).limit(1).get();
+        if (!qsContactEmail.empty) {
+          matchedUid = qsContactEmail.docs[0].id;
+          targetUserRef = qsContactEmail.docs[0].ref;
+          targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+        }
+      }
+    }
+
+    const now = Date.now();
+
+    if (!matchedUid || !targetUserRef || !targetProfileRef) {
+      await db.collection("questionnaireWebhookInbox").add({
+        status: "unmatched",
+        receivedAt: now,
+        payload: {
+          soybienestarUid: soybienestarUid || null,
+          sourceRequestId: sourceRequestId || null,
+          linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
+          email: email || null,
+          telefono: telefono || null,
+          status: status || null,
+          occurredAt: occurredAt || null,
+          dossierProvided: !!dossier
+        }
+      });
+      return res.status(202).json({ ok: true, matched: false, stored: true });
+    }
+
+    const latestDossier = dossier.finalConclusion || "";
+    const latestDossierInternalContext = dossier.conversationSummary || "";
+
+    const updatePayload = {
+      questionnaireStatus: "concluded",
+      dossierAvailableAt: now,
+      latestDossier,
+      latestDossierInternalContext,
+      latestQuestionnaireStatusEvent: payload.event,
+      linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
+      linkedQuestionnaireSourceRequestId: sourceRequestId || null,
+      latestQuestionnaireCompletedStatus: status || null,
+      latestQuestionnaireDossierReceivedAt: now,
+      latestQuestionnaireDossierDateConclusionSent: dossier.dateConclusionSent || null,
+      latestQuestionnaireAudioConclusion: dossier.audioConclusion || null,
+      accessPinProvidedBySoyBienestar: !!accessPinProvidedBySoyBienestar,
+      telefonoFromQuestionnaire: telefono || null,
+      questionnaireWebhookLastPayloadAt: now
+    };
+
+    await targetUserRef.set(updatePayload, { merge: true });
+    await targetProfileRef.set(updatePayload, { merge: true });
+
+    await db.collection("users").doc(matchedUid).collection("questionnaireEvents").add({
+      event: payload.event,
+      sourceRequestId: sourceRequestId || null,
+      linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
+      status: status || null,
+      occurredAt: occurredAt || null,
+      receivedAt: now,
+      hasFinalConclusion: !!dossier.finalConclusion,
+      hasConversationSummary: !!dossier.conversationSummary,
+      hasAudioConclusion: !!dossier.audioConclusion
+    });
+
+    return res.json({
+      ok: true,
+      matched: true,
+      uid: matchedUid,
+      dossierAvailable: true
+    });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return res.status(500).json({ error: "Error interno" });
   }
 });
 

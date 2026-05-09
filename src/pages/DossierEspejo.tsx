@@ -145,7 +145,7 @@ export default function DossierEspejo() {
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
         <p className="text-on-surface-variant font-label text-center mb-8 max-w-xl">
            Introduce tu clave personal para acceder a tu dossier estructurado. 
-           {isDemoMode && <span className="block mt-2 font-bold text-secondary">MODO DEMO TESTER: Ingresa el código "{code}" para ver el placeholder.</span>}
+           {isDemoMode && <span className="block mt-2 font-bold text-secondary">MODO DEMO TESTER: Ingresa el código "{effectiveCode}" para ver el placeholder.</span>}
         </p>
 
         <div className="bg-surface-container-high rounded-2xl p-8 max-w-sm w-full flex flex-col gap-4 shadow-sm border border-outline-variant/30">
