@@ -450,9 +450,9 @@ export default function Report() {
               </div>
               <div className="mt-8 pt-6 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
                 <div className="font-body text-on-surface-variant text-sm text-center sm:text-left flex-1">
-                  <p className="font-medium text-primary mt-1">
-                    {(report as any)?.pregunta_validacion ||
-                      "¿Sientes que refleja cómo te encuentras?"}
+                  <p>
+                    Recuerda: esto no es el dossier final, sino un resumen comprensivo previo al Cuestionario Espejo.{" "}
+                    <span className="font-medium text-primary">¿Sientes que refleja cómo te encuentras?</span>
                   </p>
                 </div>
                 {!feedbackGiven ? (

@@ -49,6 +49,7 @@ export default function Session() {
   const isRecordingRef = useRef(false);
   const restartAttemptsRef = useRef(0);
   const sessionStartTimeRef = useRef(Date.now());
+  const ignoreSpeechResultsRef = useRef(false);
 
   const navigate = useNavigate();
   const [hasDoneConsultation, setHasDoneConsultation] = useState<
@@ -249,6 +250,7 @@ export default function Session() {
   }, [messages]);
 
   const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+  const isSessionExpired = timeLeft <= 0;
   const isTypingPauseRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isTypingPause, setIsTypingPause] = useState(false);
@@ -289,6 +291,8 @@ export default function Session() {
     recognition.lang = "es-ES";
 
     recognition.onresult = (event: any) => {
+      if (ignoreSpeechResultsRef.current) return;
+      
       let interimTranscript = "";
       let finalTranscript = "";
 
@@ -397,6 +401,8 @@ export default function Session() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSessionExpired) return;
+    
     const submittedText = input.trim();
     if (!submittedText || isLoading) return;
 
@@ -422,6 +428,9 @@ export default function Session() {
     if (isRecordingRef.current) {
       isRecordingRef.current = false;
       setIsRecording(false);
+      ignoreSpeechResultsRef.current = true;
+      baseInputRef.current = "";
+      setInput("");
       try {
         if (
           recognitionRef.current &&
@@ -432,6 +441,10 @@ export default function Session() {
           recognitionRef.current.stop();
         }
       } catch (err) {}
+      
+      setTimeout(() => {
+        ignoreSpeechResultsRef.current = false;
+      }, 300);
     }
 
     const userMessage: Message = {
@@ -441,8 +454,10 @@ export default function Session() {
     };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
-    setInput("");
-    baseInputRef.current = "";
+    if (!isRecordingRef.current) {
+        setInput("");
+        baseInputRef.current = "";
+    }
     setIsLoading(true);
 
     await processMessage(newMessages, submittedText, userMessage.id);
@@ -588,6 +603,8 @@ export default function Session() {
   };
 
   const toggleRecording = async () => {
+    if (isSessionExpired) return;
+
     if (isRecordingRef.current) {
       // Manual stop
       isRecordingRef.current = false;
@@ -632,7 +649,8 @@ export default function Session() {
 
       // Attempt start
       if (recognitionRef.current) {
-        baseInputRef.current = input.trim() ? input : "";
+        ignoreSpeechResultsRef.current = false;
+        baseInputRef.current = input.trim() ? input.trim() : "";
         restartAttemptsRef.current = 0; // Reset restart attempts
         try {
           startSessionTimerIfNeeded();
@@ -1039,6 +1057,12 @@ export default function Session() {
                   </span>
                 </div>
               )}
+            </div>
+          )}
+          
+          {isSessionExpired && (
+            <div className="mb-4 animate-in fade-in slide-in-from-bottom-2 p-3 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-body text-center shadow-sm border border-outline-variant/20">
+              La sesión ha llegado al límite de 15 minutos. Puedes finalizarla para ver tu primera lectura.
             </div>
           )}
 
