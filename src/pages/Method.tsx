@@ -207,7 +207,12 @@ export default function Method() {
                     <p className="text-xs text-on-surface-variant">Guías de meditación y charlas.</p>
                   </div>
                 </a>
-                <a className="flex items-center gap-4 group" href="#">
+                <a 
+                  className="flex items-center gap-4 group" 
+                  href="https://www.instagram.com/soybienestar.es?igsh=cGdycmIwNWZ3d3Zr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-on-primary transition-all">
                     <span className="material-symbols-outlined">photo_camera</span>
                   </div>

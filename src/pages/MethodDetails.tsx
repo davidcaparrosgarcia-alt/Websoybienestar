@@ -102,41 +102,15 @@ export default function MethodDetails() {
         <div className="lg:w-1/2 space-y-8">
           <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">Un espacio para ordenar lo que sientes y recuperar claridad.</h2>
           <p className="text-on-surface-variant leading-relaxed text-xl font-light">
-            <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada por inteligencia artificial, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.
+            <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.
           </p>
           <div className="h-px w-24 bg-secondary/30"></div>
         </div>
       </section>
 
-      {/* The Method: IA + Humano Grid */}
-      <section className="px-8 md:px-24 py-24 bg-surface-container-low rounded-[3rem] mx-8 mb-24 max-w-screen-2xl xl:mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-stretch">
-          {/* Phase 1 */}
-          <div className="bg-surface-container-lowest p-12 rounded-[2.5rem] border border-outline-variant/10 shadow-sm flex flex-col justify-between group hover:shadow-xl transition-all duration-500">
-            <div>
-              <div className="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-8">
-                <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>analytics</span>
-              </div>
-              <h3 className="font-headline text-3xl text-primary mb-6">Fase 1: Claridad Algorítmica</h3>
-              <p className="text-lg text-on-surface-variant leading-relaxed font-light">
-                Nuestra IA analiza patrones de lenguaje y estados emocionales para proporcionar un mapa inicial de su paisaje interior, eliminando el ruido y detectando lo esencial.
-              </p>
-            </div>
-          </div>
-          {/* Phase 2 */}
-          <div className="bg-primary dark:bg-[#d1e7e4] p-12 rounded-[2.5rem] shadow-2xl flex flex-col justify-between group hover:-translate-y-2 transition-all duration-500 text-white dark:text-[#2c3e50]">
-            <div>
-              <div className="w-16 h-16 rounded-2xl bg-white/10 dark:bg-[#2c3e50]/10 flex items-center justify-center mb-8">
-                <span className="material-symbols-outlined text-white dark:text-[#2c3e50] text-4xl" style={{ fontVariationSettings: "'wght' 300" }}>auto_awesome</span>
-              </div>
-              <h3 className="font-headline text-3xl mb-6 text-white dark:text-[#2c3e50]">Fase 2: Conexión Humana</h3>
-              <p className="text-lg text-white/90 dark:text-[#43474c] leading-relaxed font-light">
-                Donde la IA termina, comienza el equipo humano. Un guía experto recibe su "mapa" para profundizar en la empatía, la intuición y el acompañamiento real que solo otra alma puede ofrecer.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="relative py-12 flex flex-col items-center justify-center space-y-12">
+      {/* The Method: Puente Section */}
+      <section className="px-8 md:px-24 py-12 bg-surface-container-low rounded-[3rem] mx-8 mb-24 max-w-screen-2xl xl:mx-auto">
+        <div className="relative py-8 flex flex-col items-center justify-center space-y-10 w-full">
           <div className="relative w-full flex items-center justify-center">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
             <div className="relative bg-surface-container-low px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
@@ -217,13 +191,18 @@ export default function MethodDetails() {
               <div className="flex items-center gap-6">
                 <span className="material-symbols-outlined text-secondary text-3xl">chat</span>
                 <div>
-                  <p className="font-headline text-xl text-primary">Consultas Discretas</p>
+                  <p className="font-headline text-xl text-primary">Consultas</p>
                   <p className="text-sm text-on-surface-variant font-light uppercase tracking-widest mt-1">Vía WhatsApp</p>
                 </div>
               </div>
               <span className="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_right</span>
             </a>
-            <a className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" href="#">
+            <a 
+              className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" 
+              href="https://www.instagram.com/soybienestar.es?igsh=cGdycmIwNWZ3d3Zr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <div className="flex items-center gap-6">
                 <span className="material-symbols-outlined text-secondary text-3xl">photo_camera</span>
                 <div>
@@ -250,8 +229,13 @@ export default function MethodDetails() {
             <img alt="texture" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
           </div>
           <div className="relative z-10 space-y-8 w-full max-w-md">
-            <img alt="SoyBienestar.es Logo White" className="h-32 w-auto mx-auto brightness-0 invert opacity-40 mb-4 dark:brightness-0 dark:invert-0 dark:opacity-60" src="/images/logo-soybienestar.svg"/>
             <h2 className="font-headline text-3xl text-white dark:text-[#2c3e50] italic font-light">¿Listo para comenzar tu propio viaje?</h2>
+            <Link 
+              to="/report#next-steps"
+              className="w-full py-6 bg-white dark:bg-[#1a252f] text-primary dark:text-white rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98] block"
+            >
+              ¿Dónde estoy?
+            </Link>
             <button 
               onClick={handleShare}
               className="w-full py-6 bg-white dark:bg-[#1a252f] text-primary dark:text-white rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98]"

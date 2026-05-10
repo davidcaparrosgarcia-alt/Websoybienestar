@@ -281,7 +281,7 @@ export default function Home() {
       </section>
 
       {/* Featured Section: Un faro en la niebla */}
-      <section className="relative w-full mb-40 overflow-visible">
+      <section className="relative w-full mb-12 md:mb-20 overflow-visible">
         <div className="cenefa-decorative mb-16">
           <div className="cenefa-line left"></div>
           <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>flare</span>
@@ -354,7 +354,7 @@ export default function Home() {
                 <div className="space-y-4">
                   <span className="material-symbols-outlined text-4xl text-primary">neurology</span>
                   <h3 className="font-headline text-2xl text-primary">IA que escucha</h3>
-                  <p className="font-body text-on-surface-variant font-light text-lg">Un espacio disponible 24/7 para expresarte sin juicios, donde nuestra tecnología ofrece herramientas inmediatas.</p>
+                  <p className="font-body text-on-surface-variant font-light text-lg">Un espacio disponible 24/7 para expresarse sin juicios, donde nuestra tecnología ofrece herramientas inmediatas.</p>
                 </div>
                 <div className="space-y-4">
                   <span className="material-symbols-outlined text-4xl text-primary">volunteer_activism</span>
