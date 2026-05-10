@@ -109,50 +109,56 @@ export default function MethodDetails() {
       </section>
 
       {/* The Method: Puente Section */}
-      <section className="px-8 md:px-24 py-12 bg-surface-container-low rounded-[3rem] mx-8 mb-24 max-w-screen-2xl xl:mx-auto">
-        <div className="relative py-8 flex flex-col items-center justify-center space-y-10 w-full">
-          <div className="relative w-full flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-            <div className="relative bg-surface-container-low px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
-          </div>
-          
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-            <button
-              onClick={progressStep === 1 ? handleConsultaClick : undefined}
-              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                progressStep > 1 
-                  ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
-                  : progressStep === 1 
-                    ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer' 
-                    : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
-              }`}
-            >
-              Consulta Gratuita
-            </button>
-            <button
-              disabled={progressStep !== 2}
-              onClick={progressStep === 2 ? handleCuestionarioClick : undefined}
-              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                progressStep > 2 
-                  ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
-                  : progressStep === 2
+      <section className="w-full px-8 mb-24">
+        <div 
+          className="w-full max-w-screen-2xl mx-auto px-8 md:px-24 py-12 bg-surface-container-low rounded-[3rem] relative overflow-hidden bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
+        >
+          <div className="absolute inset-0 bg-white/65 dark:bg-[#11181f]/45 pointer-events-none"></div>
+          <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
+            <div className="relative w-full flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
+              <div className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
+            </div>
+            
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+              <button
+                onClick={progressStep === 1 ? handleConsultaClick : undefined}
+                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                  progressStep > 1 
+                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
+                    : progressStep === 1 
+                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer' 
+                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
+                }`}
+              >
+                Consulta Gratuita
+              </button>
+              <button
+                disabled={progressStep !== 2}
+                onClick={progressStep === 2 ? handleCuestionarioClick : undefined}
+                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                  progressStep > 2 
+                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
+                    : progressStep === 2
+                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
+                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
+                }`}
+              >
+                Cuestionario Espejo
+              </button>
+              <button
+                disabled={progressStep !== 3}
+                onClick={progressStep === 3 ? () => navigate('/report') : undefined}
+                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
+                  progressStep === 3
                     ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
                     : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-              }`}
-            >
-              Cuestionario Espejo
-            </button>
-            <button
-              disabled={progressStep !== 3}
-              onClick={progressStep === 3 ? () => navigate('/report') : undefined}
-              className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                progressStep === 3
-                  ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
-                  : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-              }`}
-            >
-              Dosier Personalizado
-            </button>
+                }`}
+              >
+                Dosier Personalizado
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -224,11 +230,12 @@ export default function MethodDetails() {
             </a>
           </div>
         </div>
-        <div className="bg-primary dark:bg-[#d1e7e4] p-16 rounded-[3rem] text-center space-y-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
-          <div className="absolute inset-0 opacity-10">
-            <img alt="texture" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNm2HLjqWbCmeIQ8CL4M7kRUrRaLJ3rJned_WLrEtgJWunyIhBaQYl2KQGy26WkLNaUyXUNifaFltAmoRY4PPxIOUnEithCUKe611JWkfeU-ums-vc0mf2Z6hyPFW_nW8CnGt_nTBzXY3jIefolNjxMNsTGoNq1MsTrbsh6AyPizoejtDbL0byUjeQbfkMT4woWyD5XWh7W89K19IZ-2G_XLTi0SbuP2pbT45MUlGC3UfYm9Vo9qXeNnN95IOabEVVAjhv9NvuFLEm"/>
-          </div>
-          <div className="relative z-10 space-y-8 w-full max-w-md">
+        <div 
+          className="p-16 rounded-[3rem] text-center space-y-8 shadow-2xl relative overflow-hidden flex flex-col items-center bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/fondo_compartir.jpg')" }}
+        >
+          <div className="absolute inset-0 bg-[#2c3e50]/55 dark:bg-[#11181f]/45 pointer-events-none"></div>
+          <div className="relative z-10 space-y-8 w-full max-w-md flex flex-col items-center">
             <h2 className="font-headline text-3xl text-white dark:text-[#2c3e50] italic font-light">¿Listo para comenzar tu propio viaje?</h2>
             <Link 
               to="/report#next-steps"
