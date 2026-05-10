@@ -600,6 +600,17 @@ export default function Report() {
                       "Dossier en preparación"}
                     {dossierAvailable && "Acceder al dossier"}
                   </button>
+                  {user?.email === "davidcaparrosgarcia@gmail.com" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/dossier-espejo?testerPreview=1");
+                      }}
+                      className="mt-3 px-6 py-2 rounded-full bg-white/90 text-primary font-label font-bold text-xs shadow-md hover:bg-white transition-all w-fit"
+                    >
+                      Vista tester del dossier
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

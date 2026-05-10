@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import Markdown from "react-markdown";
 
 export default function DossierEspejo() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
@@ -67,9 +68,10 @@ export default function DossierEspejo() {
   const dossierAvailable = !!userData?.dossierAvailableAt || !!profileData?.dossierAvailableAt || !!latestDossier;
   const auth = getAuth();
   const isTester = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
+  const testerPreview = isTester && new URLSearchParams(location.search).get("testerPreview") === "1";
   const effectiveCode = code || (isTester ? "DEMO25" : "");
 
-  if (!effectiveCode) {
+  if (!effectiveCode && !testerPreview) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
@@ -88,7 +90,7 @@ export default function DossierEspejo() {
     );
   }
 
-  if (!dossierAvailable && !isTester) {
+  if (!dossierAvailable && !isTester && !testerPreview) {
     return (
        <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
@@ -108,7 +110,7 @@ export default function DossierEspejo() {
     );
   }
 
-  const isDemoMode = !latestDossier && isTester;
+  const isDemoMode = (!latestDossier && isTester) || testerPreview;
 
   const handleUnlock = async () => {
     setErrorMsg("");
@@ -139,7 +141,7 @@ export default function DossierEspejo() {
     }
   };
 
-  if (!unlocked) {
+  if (!unlocked && !testerPreview) {
     return (
        <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
@@ -213,7 +215,7 @@ export default function DossierEspejo() {
                  Modo Demo
                </h3>
                <p className="text-sm">
-                 Vista de prueba del futuro Dossier Espejo personalizado. Este contenido es demostrativo y será sustituido por el dossier real cuando Cuestionario Espejo envíe la conclusión final.
+                 Vista tester provisional. Este acceso permite revisar el diseño del Dossier Espejo antes de recibir un dossier real desde Cuestionario Espejo.
                </p>
             </div>
          ) : null}
