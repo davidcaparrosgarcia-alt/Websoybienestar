@@ -7,7 +7,14 @@ import fs from "fs";
 import path from "path";
 
 const app = express();
-app.use(express.json({ limit: "2mb" }));
+
+app.use((req, res, next) => {
+  if (req.path === '/stripe-webhook' || req.originalUrl === '/api/stripe-webhook') {
+    next();
+  } else {
+    express.json({ limit: "2mb" })(req, res, next);
+  }
+});
 
 let SERVER_FIRESTORE_DATABASE_ID = "(default)";
 try {
@@ -1791,6 +1798,168 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
   } catch (error) {
     console.error("Webhook error:", error);
     return res.status(500).json({ error: "Error interno" });
+  }
+});
+
+import Stripe from 'stripe';
+
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-02-24.acacia' as any }) 
+  : null;
+
+const APP_URL = process.env.VITE_APP_URL || process.env.APP_URL || "https://soybienestar.es";
+
+const PLAN_DETAILS: Record<string, { name: string; oneTimeAmount: number; reservationAmount: number; currency: string }> = {
+  "basico": { name: "Plan Básico", oneTimeAmount: 55000, reservationAmount: 9000, currency: "eur" },
+  "intermedio": { name: "Plan Intermedio", oneTimeAmount: 170000, reservationAmount: 29000, currency: "eur" },
+  "completo": { name: "Plan Completo", oneTimeAmount: 220000, reservationAmount: 40000, currency: "eur" }
+};
+
+app.post("/api/create-checkout-session", async (req, res) => {
+  try {
+    const { planId, paymentMode, uid, email } = req.body;
+
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe no está configurado." });
+    }
+
+    if (!PLAN_DETAILS[planId]) {
+      return res.status(400).json({ error: "Plan inválido." });
+    }
+
+    if (paymentMode !== "full" && paymentMode !== "reservation") {
+      return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    const plan = PLAN_DETAILS[planId];
+    const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
+    const productName = `${plan.name} - ${paymentMode === "full" ? "Pago único" : "Reserva"}`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: plan.currency,
+            product_data: { name: productName },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: email || undefined,
+      metadata: {
+        uid: uid || "",
+        email: email || "",
+        planId,
+        planName: plan.name,
+        paymentMode,
+        source: "sesion-validacion"
+      },
+      success_url: `${APP_URL}/sesion-validacion?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_URL}/sesion-validacion?payment=cancelled&plan=${planId}`,
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    res.status(500).json({ error: "Error al crear la sesión de pago." });
+  }
+});
+
+app.post("/api/register-bank-transfer-intent", async (req, res) => {
+  try {
+    const { planId, paymentMode, uid, email, concept } = req.body;
+
+    if (!PLAN_DETAILS[planId]) {
+      return res.status(400).json({ error: "Plan inválido." });
+    }
+
+    if (paymentMode !== "full" && paymentMode !== "reservation") {
+      return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    const plan = PLAN_DETAILS[planId];
+    const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const now = Date.now();
+
+    await db.collection("paymentSessions").add({
+      uid: uid || null,
+      email: email || null,
+      planId,
+      planName: plan.name,
+      paymentMode,
+      paymentMethod: "bank_transfer",
+      amount,
+      currency: plan.currency,
+      concept: concept || "",
+      status: "awaiting_manual_validation",
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    res.json({ ok: true, status: "awaiting_manual_validation" });
+  } catch (error) {
+    console.error("Error registering bank transfer:", error);
+    res.status(500).json({ error: "Error interno al registrar la intención." });
+  }
+});
+
+app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  try {
+    const sig = req.headers["stripe-signature"];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!stripe || !endpointSecret || !sig) {
+      return res.status(400).send("Falta configuración de Stripe");
+    }
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err: any) {
+      console.error(`Webhook Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      if (!admin.apps.length) {
+        console.error("Firebase no disponible en el webhoook");
+        return res.status(500).send("Firebase no config");
+      }
+
+      const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+      const metadata = session.metadata || {};
+
+      await db.collection("paymentSessions").doc(session.id).set({
+        status: "paid",
+        paymentMethod: "card",
+        stripeSessionId: session.id,
+        amountTotal: session.amount_total,
+        currency: session.currency,
+        customerEmail: session.customer_details?.email || metadata.email || null,
+        uid: metadata.uid || null,
+        planId: metadata.planId || null,
+        planName: metadata.planName || null,
+        paymentMode: metadata.paymentMode || null,
+        source: metadata.source || null,
+        paidAt: Date.now()
+      }, { merge: true });
+    }
+
+    res.json({ received: true });
+  } catch (err: any) {
+    console.error("Error global en webhook de Stripe:", err);
+    res.status(500).send("Error interno");
   }
 });
 

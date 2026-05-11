@@ -10,6 +10,7 @@ import Session from "./pages/Session";
 import SessionEnded from "./pages/SessionEnded";
 import Report from "./pages/Report";
 import DossierEspejo from "./pages/DossierEspejo";
+import SesionValidacion from "./pages/SesionValidacion";
 import Method from "./pages/Method";
 import MethodDetails from "./pages/MethodDetails";
 import AnxietyManagement from "./pages/AnxietyManagement";
@@ -68,6 +69,11 @@ export default function App() {
           <Route path="dossier-espejo" element={
             <ProtectedRoute>
               <DossierEspejo />
+            </ProtectedRoute>
+          } />
+          <Route path="sesion-validacion" element={
+            <ProtectedRoute>
+              <SesionValidacion />
             </ProtectedRoute>
           } />
           <Route path="resources" element={<Resources />} />

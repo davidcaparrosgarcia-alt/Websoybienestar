@@ -364,7 +364,7 @@ export default function DossierEspejo() {
               </div>
             </div>
             <button 
-              onClick={() => navigate('/sesion-validacion')}
+              onClick={() => navigate('/sesion-validacion?plan=basico')}
               className="w-full py-4 rounded-xl text-primary border border-primary/20 hover:bg-surface-container-low transition-colors font-label font-bold mt-auto relative z-10"
             >
               Agendar y pagar reserva
@@ -402,7 +402,7 @@ export default function DossierEspejo() {
               </div>
             </div>
             <button 
-              onClick={() => navigate('/sesion-validacion')}
+              onClick={() => navigate('/sesion-validacion?plan=intermedio')}
               className="w-full py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 transition-opacity font-label font-bold mt-auto relative z-10"
             >
               Agendar y pagar reserva
@@ -439,7 +439,7 @@ export default function DossierEspejo() {
               </div>
             </div>
             <button 
-              onClick={() => navigate('/sesion-validacion')}
+              onClick={() => navigate('/sesion-validacion?plan=completo')}
               className="w-full py-4 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-label font-bold mt-auto relative z-10"
               style={{ background: 'linear-gradient(135deg, var(--color-primary, #162839) 0%, var(--color-primary-container, #2c3e50) 100%)', color: 'white' }}
             >
