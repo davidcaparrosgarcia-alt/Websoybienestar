@@ -12,6 +12,7 @@ import Report from "./pages/Report";
 import DossierEspejo from "./pages/DossierEspejo";
 import SesionValidacion from "./pages/SesionValidacion";
 import Method from "./pages/Method";
+import Treatments from "./pages/Treatments";
 import MethodDetails from "./pages/MethodDetails";
 import AnxietyManagement from "./pages/AnxietyManagement";
 import Zen from "./pages/Zen";
@@ -33,6 +34,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="treatments" element={<Treatments />} />
           <Route path="method" element={<Method />} />
           <Route path="method-details" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />

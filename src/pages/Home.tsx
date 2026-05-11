@@ -670,7 +670,7 @@ export default function Home() {
             <span className="material-symbols-outlined text-5xl text-secondary mb-6">shield_with_heart</span>
             <h3 className="font-headline text-3xl text-primary mb-6">Un Compromiso de Confidencialidad</h3>
             <p className="max-w-3xl mx-auto text-on-surface-variant leading-relaxed font-light text-lg">
-              Entendemos que compartir tus sentimientos es un acto de vulnerabilidad. En Arquitectura del Bienestar, tratamos cada dato bajo los más estrictos estándares éticos y de privacidad europeos. Tu seguridad es la base de nuestra terapia.
+              Entendemos que compartir tus sentimientos es un acto de vulnerabilidad. En ReprogrÁmate, tratamos cada dato bajo los más estrictos estándares éticos y de privacidad europeos. Tu seguridad es la base de nuestra terapia.
             </p>
           </div>
         </div>

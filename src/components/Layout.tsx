@@ -69,10 +69,11 @@ export default function Layout() {
               </button>
               <div className="flex flex-col gap-8">
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/")} to="/">Inicio</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/method")} to="/method">El Método</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/treatments")} to="/treatments">Tratamientos</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/session")} to="/session">Consulta Gratuita</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/report")} to="/report">Informe</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/resources")} to="/resources">Recursos</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/resources")} to="/resources">Herramientas</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/method")} to="/method">Método</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
               </div>
             </motion.div>
@@ -119,19 +120,20 @@ export default function Layout() {
               }
             }}
           >
-            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col items-start xl:flex-row xl:items-baseline xl:gap-2 leading-tight text-left">
+            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col items-start leading-tight text-left">
               <span>ReprogrÁmate</span>
               <span className="italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
             </div>
           </div>
           <div className="hidden lg:flex items-center lg:gap-6 xl:gap-8">
             <Link className={getLinkClass("/")} to="/">Inicio</Link>
-            <Link className={getLinkClass("/method")} to="/method">El Método</Link>
+            <Link className={getLinkClass("/treatments")} to="/treatments">Tratamientos</Link>
             <Link className={`${getLinkClass("/session")} text-center leading-[1.1]`} to="/session">
               Consulta<br className="hidden lg:block xl:hidden" /> Gratuita
             </Link>
             <Link className={getLinkClass("/report")} to="/report">Informe</Link>
-            <Link className={getLinkClass("/resources")} to="/resources">Recursos</Link>
+            <Link className={getLinkClass("/resources")} to="/resources">Herramientas</Link>
+            <Link className={getLinkClass("/method")} to="/method">Método</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
           <div className="flex items-center gap-2 md:gap-4">

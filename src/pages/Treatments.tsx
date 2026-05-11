@@ -6,7 +6,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
 
-export default function Method() {
+export default function Treatments() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
