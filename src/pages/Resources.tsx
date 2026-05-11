@@ -15,6 +15,7 @@ export default function Resources() {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
+  const [isGrayscaleForceOff, setIsGrayscaleForceOff] = useState(false);
 
   // Mobile interactions state
   const [showBreathingText, setShowBreathingText] = useState(false);
@@ -322,11 +323,11 @@ export default function Resources() {
                       </span>
                     </h3>
                     <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
-                        Aprende a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para la resiliencia y el equilibrio.
+                        Aprende a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para comprender lo que sientes, ordenar tus pensamientos y no estar controlado por tus emociones.
                     </p>
                     <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3 relative z-20">
                       <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
-                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros en sus zonas personalizadas</span></li>
+                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros que han realizado o están realizando nuestro programa</span></li>
                     </ul>
                     <button onClick={(e) => {
                       e.stopPropagation();
@@ -346,6 +347,57 @@ export default function Resources() {
             </div>
           </div>
         </div>
+
+      {/* Guías Section: Editorial Layout */}
+      <section className="py-32 bg-transparent">
+        <div className="max-w-screen-2xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+          <div className="order-2 lg:order-1">
+            <div className="relative group cursor-pointer" 
+                 onClick={() => setIsGrayscaleForceOff(!isGrayscaleForceOff)}
+                 onTouchStart={() => setIsGrayscaleForceOff(true)}
+            >
+              <img alt="Person meditating in calm space" className={`w-full h-[600px] object-cover rounded-2xl transition-all duration-700 shadow-xl ${isGrayscaleForceOff ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`} src="/images/chica_meditando.jpg"/>
+              <div className="absolute -bottom-8 -right-8 bg-primary-container text-on-primary p-8 rounded-full hidden xl:block max-w-xs shadow-2xl">
+                <p className="font-headline italic text-lg text-on-primary-container">"La paz no es la ausencia de ruido, sino la armonía dentro de él."</p>
+              </div>
+            </div>
+          </div>
+          <div className="order-1 lg:order-2">
+            <h2 className="text-4xl lg:text-5xl font-headline mb-8 text-[#162839] dark:text-white">Guías de relajación progresiva</h2>
+            <p className="font-body text-lg leading-relaxed mb-10 text-[#334155] dark:text-white/90">
+              Nuestra biblioteca exclusiva ofrece un viaje sensorial a través de paisajes visuales y auditivos diseñados para desarticular la tensión acumulada. Cada guía ha sido curada para ofrecer una experiencia inmersiva que trasciende lo digital.
+            </p>
+            <ul className="space-y-6 mb-12">
+              <li className="flex items-center gap-4 group">
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform text-[#162839] dark:text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs text-[#162839] dark:text-white/80">Contenido validado por expertos</span>
+              </li>
+              <li className="flex items-center gap-4 group">
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform text-[#162839] dark:text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs text-[#162839] dark:text-white/80">Disponible 24/7 en cualquier dispositivo</span>
+              </li>
+              <li className="flex items-center gap-4 group">
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform text-[#162839] dark:text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="font-medium uppercase tracking-widest text-xs text-[#162839] dark:text-white/80">Acceso sólo a miembros del ciclo completo</span>
+              </li>
+            </ul>
+            <button 
+              onClick={() => {
+                if (hasAccess) {
+                  alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
+                } else {
+                  setPendingAction("reservado");
+                  setIsCodeModalOpen(true);
+                }
+              }} 
+              className="group flex items-center gap-4 font-bold text-lg hover:opacity-80 transition-opacity text-[#162839] dark:text-white"
+            >
+              <span className="text-[#162839] dark:text-white">Acceder a contenido reservado</span>
+              <span className="material-symbols-outlined transition-transform group-hover:translate-x-2 text-[#162839] dark:text-white">lock_open</span>
+            </button>
+          </div>
+        </div>
+      </section>
 
         {/* Recursos Personalizados Section */}
         <section className="mt-32 py-24 border-t border-outline-variant/10">

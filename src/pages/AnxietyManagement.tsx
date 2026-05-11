@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState, type MouseEvent } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 
 const SYMPTOMS = [
   { id: 1, icon: 'compress', title: 'Presión en el pecho', desc: 'Un peso invisible que parece restringir la entrada de aire y la expansión natural de la calma.', weight: 15 },
@@ -34,66 +33,9 @@ function calcularPresion(sintomasIds: number[]) {
   return grados;
 }
 
-type FogTrailPoint = {
-  id: number;
-  x: number;
-  y: number;
-  createdAt: number;
-  rx: number;
-  ry: number;
-  rotation: number;
-};
-
 export default function AnxietyManagement() {
   const navigate = useNavigate();
   const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([]);
-  const [fogTrail, setFogTrail] = useState<FogTrailPoint[]>([]);
-  const [fogTick, setFogTick] = useState(() => Date.now());
-  const lastFogPointAt = useRef(0);
-  const fogPointId = useRef(0);
-
-  const FOG_LIFE_MS = 1900;
-  const FOG_ADD_INTERVAL_MS = 70;
-  const MAX_FOG_TRAIL_POINTS = 22;
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      const now = Date.now();
-      setFogTick(now);
-      setFogTrail((prev) => prev.filter((point) => now - point.createdAt < FOG_LIFE_MS));
-    }, 80);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  const handleAnxietyFogMove = (event: MouseEvent<HTMLElement>) => {
-    const now = Date.now();
-
-    if (now - lastFogPointAt.current < FOG_ADD_INTERVAL_MS) {
-      return;
-    }
-
-    lastFogPointAt.current = now;
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-
-    const safeX = Math.max(0, Math.min(100, x));
-    const safeY = Math.max(0, Math.min(100, y));
-
-    const point: FogTrailPoint = {
-      id: fogPointId.current++,
-      x: safeX,
-      y: safeY,
-      createdAt: now,
-      rx: 8 + Math.random() * 4,
-      ry: 5.5 + Math.random() * 3,
-      rotation: Math.random() * 180,
-    };
-
-    setFogTrail((prev) => [...prev.slice(-MAX_FOG_TRAIL_POINTS + 1), point]);
-  };
 
   const toggleSymptom = (id: number) => {
     setSelectedSymptoms(prev => 
@@ -153,7 +95,7 @@ export default function AnxietyManagement() {
   }
 
   if (selectedSymptoms.length === 0) {
-    analysisText = "El radar está a la espera. Señala los indicadores para realizar el escáner de carga emocional de tu sistema central.";
+    analysisText = "La válvula está a la espera. Señala los indicadores para realizar el escáner de carga emocional de tu sistema central.";
     zoneText = "Modo Espera";
     zoneColor = "text-[#4f6260]";
     zoneGradient = "from-[#d1e7e4] to-[#b6cbc8]";
@@ -187,143 +129,12 @@ export default function AnxietyManagement() {
 
   return (
     <div className="flex-1 bg-transparent w-full font-body text-on-surface">
-      {/* Hero Section */}
-      <section 
-        className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent"
-        onMouseMove={handleAnxietyFogMove}
-      >
-        <div className="absolute inset-0 z-0">
-        {/* Imagen base nítida */}
-        <img
-          alt="Dense atmospheric fog in a quiet forest at dawn"
-          className="hidden lg:block w-full h-full object-cover"
-          src="/images/ansiedad_impide_avanzar.jpg"
-        />
-        <img
-          alt="Dense atmospheric fog in a quiet forest at dawn"
-          className="block lg:hidden w-full h-full object-cover"
-          src="/images/ansiedad_impide_avanzar_vertical.jpg"
-        />
-
-        {/* Overlay de niebla + atmósfera. El ratón despeja ESTA capa para revelar la imagen limpia */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <filter id="anxiety-fog-soften" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.65" />
-            </filter>
-
-            <filter id="anxiety-fog-texture" x="-20%" y="-20%" width="140%" height="140%">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.018 0.045"
-                numOctaves="2"
-                seed="11"
-                result="fogNoise"
-              />
-              <feDisplacementMap in="SourceGraphic" in2="fogNoise" scale="1.8" />
-            </filter>
-
-            <linearGradient id="anxiety-hero-atmosphere" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(44,62,80,0.70)" />
-              <stop offset="55%" stopColor="rgba(44,62,80,0.30)" />
-              <stop offset="100%" stopColor="rgba(44,62,80,0.06)" />
-            </linearGradient>
-
-            {/* Máscara: blanco = se mantiene el overlay / negro = se despeja y se ve la imagen limpia */}
-            <mask id="anxiety-fog-cover-mask">
-              <rect width="100" height="100" fill="white" />
-              {fogTrail.map((point) => {
-                const progress = Math.min(1, Math.max(0, (fogTick - point.createdAt) / FOG_LIFE_MS));
-                const delayedProgress = Math.max(0, (progress - 0.18) / 0.82);
-                const opacity = Math.max(0, 0.92 * (1 - delayedProgress));
-
-                return (
-                  <ellipse
-                    key={point.id}
-                    cx={point.x}
-                    cy={point.y}
-                    rx={point.rx}
-                    ry={point.ry}
-                    fill="black"
-                    opacity={opacity}
-                    filter="url(#anxiety-fog-soften)"
-                    transform={`rotate(${point.rotation} ${point.x} ${point.y})`}
-                  />
-                );
-              })}
-            </mask>
-          </defs>
-
-          {/* Atmósfera azul oscura */}
-          <rect
-            width="100"
-            height="100"
-            fill="url(#anxiety-hero-atmosphere)"
-            mask="url(#anxiety-fog-cover-mask)"
-          />
-
-          {/* Niebla principal blanca con textura */}
-          <rect
-            width="100"
-            height="100"
-            fill="rgba(255,255,255,0.22)"
-            filter="url(#anxiety-fog-texture)"
-            mask="url(#anxiety-fog-cover-mask)"
-          />
-
-          {/* Segunda capa de niebla suave para dar volumen */}
-          <rect
-            width="100"
-            height="100"
-            fill="rgba(255,255,255,0.10)"
-            mask="url(#anxiety-fog-cover-mask)"
-          />
-        </svg>
-        </div>
-        <div className="relative z-10 max-w-screen-2xl mx-auto px-12 w-full">
-          <div className="max-w-3xl">
-          </div>
-        </div>
-      </section>
-
-      {/* Section 2: Symptoms */}
-      <section className="py-32 bg-transparent">
+      {/* Intro Section */}
+      <section className="pt-24 pb-12 bg-transparent">
         <div className="max-w-screen-2xl mx-auto px-12">
-          <div className="mb-20 text-center md:text-left">
-            <h2 className="font-headline text-4xl text-primary mb-4">Reconociendo la señal:</h2>
+          <div className="text-center md:text-left">
+            <h2 className="font-headline text-4xl text-primary mb-4">Reconociendo las señales.</h2>
             <p className="text-xl text-on-surface-variant italic">Escucha lo que tu cuerpo intenta comunicar.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
-            {SYMPTOMS.map((symptom) => {
-              const isSelected = selectedSymptoms.includes(symptom.id);
-              return (
-                <div 
-                  key={symptom.id}
-                  onClick={() => toggleSymptom(symptom.id)}
-                  className={`relative flex flex-col gap-6 p-8 rounded-xl cursor-pointer transition-all duration-500 border ${
-                    isSelected 
-                      ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 dark:bg-primary/[0.02] dark:border-primary/30 dark:shadow-none' 
-                      : 'bg-surface-container-lowest border-transparent hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <span className={`material-symbols-outlined text-4xl transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-primary-fixed-dim'}`}>
-                      {symptom.icon}
-                    </span>
-                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors duration-300 ${isSelected ? 'bg-primary border-primary dark:bg-primary/80 dark:border-primary' : 'border-outline-variant'}`}>
-                      {isSelected && <span className="material-symbols-outlined text-white dark:text-[#0b1221] text-sm font-bold">check</span>}
-                    </div>
-                  </div>
-                  <h3 className={`font-headline text-2xl transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-primary'}`}>{symptom.title}</h3>
-                  <p className="text-on-surface-variant font-light leading-relaxed">{symptom.desc}</p>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
@@ -334,7 +145,7 @@ export default function AnxietyManagement() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-fixed/20 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-screen-2xl mx-auto px-12 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="font-headline text-4xl text-primary mb-4 tracking-tight">Radar de Presión Interna</h2>
+            <h2 className="font-headline text-4xl text-primary mb-4 tracking-tight">Válvula de Presión Interna.</h2>
             <p className="text-lg text-on-surface-variant font-light max-w-2xl mx-auto">
               Monitoreo en tiempo real de su carga neuroemocional. Los indicadores reflejan la tensión acumulada y la capacidad de procesamiento actual de su sistema.
             </p>
@@ -439,6 +250,39 @@ export default function AnxietyManagement() {
         </div>
       </section>
 
+      {/* Symptoms Grid Section */}
+      <section className="py-24 bg-transparent">
+        <div className="max-w-screen-2xl mx-auto px-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
+            {SYMPTOMS.map((symptom) => {
+              const isSelected = selectedSymptoms.includes(symptom.id);
+              return (
+                <div 
+                  key={symptom.id}
+                  onClick={() => toggleSymptom(symptom.id)}
+                  className={`relative flex flex-col gap-6 p-8 rounded-xl cursor-pointer transition-all duration-500 border ${
+                    isSelected 
+                      ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 dark:bg-primary/[0.02] dark:border-primary/30 dark:shadow-none' 
+                      : 'bg-surface-container-lowest border-transparent hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <span className={`material-symbols-outlined text-4xl transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-primary-fixed-dim'}`}>
+                      {symptom.icon}
+                    </span>
+                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors duration-300 ${isSelected ? 'bg-primary border-primary dark:bg-primary/80 dark:border-primary' : 'border-outline-variant'}`}>
+                      {isSelected && <span className="material-symbols-outlined text-white dark:text-[#0b1221] text-sm font-bold">check</span>}
+                    </div>
+                  </div>
+                  <h3 className={`font-headline text-2xl transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-primary'}`}>{symptom.title}</h3>
+                  <p className="text-on-surface-variant font-light leading-relaxed">{symptom.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
 
       {/* Section 1: Restructured 'La naturaleza del ruido' */}
       <section className="relative py-48 overflow-hidden bg-transparent">
@@ -453,34 +297,14 @@ export default function AnxietyManagement() {
               La ansiedad no es tu enemiga, sino una brújula interior que ha perdido su norte. Es tu instinto primitivo gritando que no estás a salvo, convirtiendo tu entorno en un lugar hostil aunque racionalmente sepas que no hay peligro. El ruido excesivo es el eco de esa brújula rompiéndose, indicando un peligro invisible que tu cuerpo intenta desesperadamente evitar. Nuestro objetivo es que esa aguja deje de dar vueltas sin sentido y recupere su centro, su paz interior.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Section 3: The Solution */}
-      <section className="py-32 bg-transparent">
-        <div className="max-w-screen-2xl mx-auto px-12">
-          <LighthouseBeamFrame
-            className="relative rounded-3xl min-h-[600px] flex items-center shadow-xl group"
-            background={
-              <>
-                <img alt="Distant minimalist lighthouse beacon shining through sea mist" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="/images/fondo-faro.jpg"/>
-                <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px]"></div>
-              </>
-            }
-          >
-            <div className="relative z-10 p-12 md:p-24 max-w-2xl">
-              <h2 className="font-headline text-4xl md:text-5xl text-white mb-8 italic">Un faro en la niebla.</h2>
-              <p className="text-slate-100 text-lg md:text-xl font-light leading-relaxed mb-12">No es posible navegar sin saber dónde se encuentra uno exactamente. Nuestro método actúa como un radar emocional: localizamos su estado actual para poder ofrecerle un rescate preciso. En ReprogrÁmate todo comienza con la ubicación de tu posición exacta.</p>
-              <div className="flex flex-col sm:flex-row gap-6">
-                <button onClick={() => navigate('/session')} className="px-8 py-5 bg-[#2c3e50] text-white font-bold rounded-full text-lg hover:bg-[#42617c] transition-all duration-300">
-                  Iniciar Consulta Gratuita
-                </button>
-                <button onClick={() => navigate('/method')} className="px-8 py-5 border border-white/30 text-white font-medium rounded-full text-lg hover:bg-white/10 transition-all duration-300">
-                  Regresar
-                </button>
-              </div>
-            </div>
-          </LighthouseBeamFrame>
+          <div className="mt-14 flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <button onClick={() => navigate('/session')} className="px-8 py-5 bg-[#2c3e50] text-white font-bold rounded-full text-lg hover:bg-[#42617c] transition-all duration-300">
+              Iniciar Consulta Gratuita
+            </button>
+            <button onClick={() => navigate('/method')} className="px-8 py-5 border border-white/30 text-white font-medium rounded-full text-lg hover:bg-white/10 transition-all duration-300">
+              Regresar
+            </button>
+          </div>
         </div>
       </section>
 

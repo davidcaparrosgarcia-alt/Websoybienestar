@@ -108,9 +108,9 @@ export default function Layout() {
           </svg>
         </div>
 
-        <nav className="flex items-center justify-between w-full px-8 py-4 max-w-7xl mx-auto relative z-10">
+        <nav className="grid grid-cols-[220px_1fr_220px] items-center w-full px-8 py-4 max-w-7xl mx-auto relative z-10 gap-8">
           <div 
-            className="flex items-center cursor-pointer"
+            className="flex items-center justify-start cursor-pointer"
             onClick={(e) => {
               if (window.innerWidth < 1024) {
                 e.preventDefault();
@@ -125,7 +125,7 @@ export default function Layout() {
               <span className="italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
             </div>
           </div>
-          <div className="hidden lg:flex items-center lg:gap-6 xl:gap-8">
+          <div className="hidden lg:flex items-center justify-center lg:gap-5 xl:gap-7">
             <Link className={getLinkClass("/")} to="/">Inicio</Link>
             <Link className={getLinkClass("/treatments")} to="/treatments">Tratamientos</Link>
             <Link className={`${getLinkClass("/session")} text-center leading-[1.1]`} to="/session">
@@ -136,7 +136,7 @@ export default function Layout() {
             <Link className={getLinkClass("/method")} to="/method">Método</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center justify-end gap-2 md:gap-4 pl-8">
             <button
               onClick={() => navigate(-1)}
               className="hidden md:flex lg:hidden text-white/80 hover:text-white items-center justify-center transition-colors mr-1"

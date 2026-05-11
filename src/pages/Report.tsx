@@ -519,8 +519,8 @@ export default function Report() {
                         check_circle
                       </span>
                       {reportFeedback?.label === "totalmente"
-                        ? "Gracias. Esa validación nos ayuda a saber que esta primera lectura está bien orientada. El siguiente paso permitirá profundizar con más precisión."
-                        : "Gracias por indicarlo. Es importante que esta primera lectura se acerque lo máximo posible a tu vivencia."}
+                        ? "Gracias por validarlo."
+                        : "Gracias por indicarlo."}
                     </div>
                   </div>
                 )}
@@ -823,8 +823,7 @@ export default function Report() {
               ¿Le ha servido este proceso?
             </h2>
             <p className="text-lg text-[#334155] dark:text-[#43474c] max-w-2xl mx-auto mb-10">
-              Creemos que nadie debería navegar la oscuridad a solas. Comparta
-              la posibilidad de encontrar un faro con alguien que lo necesite.
+              Creemos que nadie debería navegar la oscuridad a solas. Comparte SoyBienestar.es con alguien que lo necesite.
             </p>
             <button
               onClick={handleShare}
