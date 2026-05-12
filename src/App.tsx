@@ -15,6 +15,7 @@ import Method from "./pages/Method";
 import Treatments from "./pages/Treatments";
 import MethodDetails from "./pages/MethodDetails";
 import AnxietyManagement from "./pages/AnxietyManagement";
+import Ansiedad from "./pages/Ansiedad";
 import EmotionDiary from "./pages/EmotionDiary";
 import WeeklyGoals from "./pages/WeeklyGoals";
 import Login from "./pages/Login";
@@ -37,7 +38,7 @@ export default function App() {
           <Route path="method" element={<Method />} />
           <Route path="method-details" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />
-          <Route path="ansiedad" element={<AnxietyManagement />} />
+          <Route path="ansiedad" element={<Ansiedad />} />
           <Route path="emotion-diary" element={
             <ProtectedRoute>
               <EmotionDiary />
