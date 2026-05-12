@@ -151,18 +151,22 @@ export default function Resources() {
 
   return (
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
-      <main className="pt-12 md:pt-24 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
+      <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
-        <header className="mb-24 mt-12">
-          <div className="max-w-3xl">
-            <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Recursos de Claridad</p>
-            <h1 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
-              El Refugio de la <span className="italic font-normal">Consciencia</span>
-            </h1>
-            <div className="h-px w-24 bg-primary/20 mb-8"></div>
-            <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed max-w-2xl">
-              Una colección repleta de herramientas diseñadas para calmar las emociones y estructurar el pensamiento. Cada módulo es un paso hacia tu bienestar interior.
-            </p>
+        <header className="mb-16 md:mb-20 mt-6 md:mt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+            <div className="lg:col-span-7">
+              <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Recursos de Claridad</p>
+              <h1 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
+                El Refugio de la <span className="italic font-normal">Consciencia</span>
+              </h1>
+              <div className="h-px w-24 bg-primary/20"></div>
+            </div>
+            <div className="lg:col-span-5">
+              <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed">
+                Una colección repleta de herramientas diseñadas para calmar las emociones y estructurar el pensamiento. Cada módulo es un paso hacia tu bienestar interior.
+              </p>
+            </div>
           </div>
         </header>
 
@@ -349,7 +353,7 @@ export default function Resources() {
         </div>
 
       {/* Guías Section: Editorial Layout */}
-      <section className="py-32 bg-transparent">
+      <section className="pt-24 pb-16 md:pt-28 md:pb-20 bg-transparent">
         <div className="max-w-screen-2xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           <div className="order-2 lg:order-1">
             <div className="relative group cursor-pointer" 
@@ -400,7 +404,7 @@ export default function Resources() {
       </section>
 
         {/* Recursos Personalizados Section */}
-        <section className="mt-32 py-24 border-t border-outline-variant/10">
+        <section className="mt-12 md:mt-16 py-20 border-t border-outline-variant/10">
           <div className="flex flex-col md:flex-row gap-16 items-center">
             <div className="w-full md:w-1/2">
               <div 

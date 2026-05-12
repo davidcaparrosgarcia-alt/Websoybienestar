@@ -129,25 +129,15 @@ export default function AnxietyManagement() {
 
   return (
     <div className="flex-1 bg-transparent w-full font-body text-on-surface">
-      {/* Intro Section */}
-      <section className="pt-24 pb-12 bg-transparent">
-        <div className="max-w-screen-2xl mx-auto px-12">
-          <div className="text-center md:text-left">
-            <h2 className="font-headline text-4xl text-primary mb-4">Reconociendo las señales.</h2>
-            <p className="text-xl text-on-surface-variant italic">Escucha lo que tu cuerpo intenta comunicar.</p>
-          </div>
-        </div>
-      </section>
-
       {/* Barometer Section */}
-      <section className="py-24 bg-transparent border-t border-b border-black/5 relative overflow-hidden">
+      <section className="pt-16 pb-24 bg-transparent border-t border-b border-black/5 relative overflow-hidden">
         {/* Subtle background accents */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-fixed/20 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-screen-2xl mx-auto px-12 relative z-10">
           <div className="text-center mb-16">
             <h2 className="font-headline text-4xl text-primary mb-4 tracking-tight">Válvula de Presión Interna.</h2>
             <p className="text-lg text-on-surface-variant font-light max-w-2xl mx-auto">
-              Monitoreo en tiempo real de su carga neuroemocional. Los indicadores reflejan la tensión acumulada y la capacidad de procesamiento actual de su sistema.
+              Conoce en tiempo real tu carga de presión neuroemocional. Los indicadores reflejan la tensión acumulada y la capacidad de procesamiento actual de tu sistema.
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr_0.85fr] gap-8 items-center max-w-7xl mx-auto">
@@ -171,12 +161,12 @@ export default function AnxietyManagement() {
 
             {/* Center: Valve JPG with Clean Projection */}
             <div className="flex flex-col items-center justify-center relative py-4">
-              <div className="relative w-full max-w-[580px] aspect-[1.5/1] flex items-center justify-center">
+              <div className="relative w-full max-w-[580px] aspect-[1.5/1] flex items-center justify-center overflow-hidden rounded-2xl">
                 {/* Background Image (.jpg) */}
                 <img 
                   src="/images/valvula-presion.jpg" 
                   alt="Válvula" 
-                  className="absolute inset-0 w-full h-full object-contain z-0"
+                  className="absolute inset-0 w-full h-full object-contain z-0 rounded-2xl"
                 />
 
                 {/* Projection Layer: Centered over the dial (Adjusted to 29% left, 53% top) */}
@@ -250,8 +240,16 @@ export default function AnxietyManagement() {
         </div>
       </section>
 
+      <section className="pt-10 pb-4 bg-transparent">
+        <div className="max-w-screen-2xl mx-auto px-12 text-center">
+          <p className="font-headline text-2xl md:text-3xl text-primary italic">
+            Selecciona tus síntomas para conocer tu estado de presión actual.
+          </p>
+        </div>
+      </section>
+
       {/* Symptoms Grid Section */}
-      <section className="py-24 bg-transparent">
+      <section className="pt-12 pb-24 bg-transparent">
         <div className="max-w-screen-2xl mx-auto px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
             {SYMPTOMS.map((symptom) => {

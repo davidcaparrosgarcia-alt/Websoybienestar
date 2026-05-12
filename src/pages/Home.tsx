@@ -36,6 +36,33 @@ const ANSIEDAD_FAQS = [
   }
 ];
 
+export const ESTRES_FAQS = [
+  {
+    question: "¿Cómo quitar el estrés?",
+    answer: `Quitar el estrés no siempre significa eliminar todos los problemas de golpe. Muchas veces, el primer paso es bajar la intensidad con la que tu cuerpo y tu mente están intentando sostenerlo todo.\n\nCuando sientas que el estrés te supera, prueba a detenerte unos minutos y preguntarte: “¿Qué parte de todo esto depende realmente de mí ahora mismo?”. Separar lo urgente de lo importante, y lo controlable de lo que no está en tus manos, puede ayudarte a recuperar un poco de claridad. Identificar qué te estresa, centrarte en lo que puedes cambiar y hablar con alguien de confianza cuando el estrés laboral o cotidiano pesa demasiado.\n\nTambién puede ayudarte algo muy sencillo: respirar más despacio, salir a caminar, escribir lo que tienes en la cabeza o reducir una tarea grande a un solo paso manejable. El estrés crece cuando todo parece mezclado; empieza a bajar cuando conseguimos ordenar una parte. Sé que a veces llevar esto a la práctica se hace cuesta arriba, pero todo es empezar.\n\nSi sientes que el estrés lleva tiempo ocupando demasiado espacio en tu vida, nuestra consulta gratuita puede ayudarte a ponerle nombre a lo que estás viviendo y recibir una primera lectura personalizada, sin compromiso y sin tener que explicarlo todo perfecto desde el principio.`
+  },
+  {
+    question: "¿Cuáles son los síntomas del estrés?",
+    answer: `El estrés puede aparecer en la mente, en el cuerpo y en la forma en que te relacionas con los demás. A veces se nota como preocupación constante, irritabilidad, dificultad para concentrarte, sensación de prisa interna o pensamientos que no se apagan.\n\nEn el cuerpo puede sentirse como tensión muscular, dolor de cabeza, molestias digestivas, cansancio, presión en el pecho, sueño alterado o sensación de estar siempre “en marcha”. En el comportamiento puede aparecer como impaciencia, aislamiento, comer peor, procrastinar, discutir más o sentir que todo te cuesta el doble. Y normalmente te das cuenta o se manifiestan estos síntomas cuando ya es tarde y frenas de golpe por unas vacaciones o algo similar.\n\nNo todas las personas viven el estrés igual. Algunas se aceleran; otras se apagan. Algunas parecen funcionar por fuera, pero por dentro sienten que van al límite.\n\nLa señal importante no es solo “tener estrés”, sino notar que empieza a afectar a tu descanso, tu energía, tus relaciones, tu trabajo o tu forma de disfrutar. Cuando eso ocurre, conviene escucharlo antes de que el cuerpo tenga que gritar más fuerte.\n\nSi no lo tienes muy claro aún, podemos ayudarte a identificar los síntomas y tu estado actual. Inicia una consulta gratuita con una IA y un cuestionario para obtener un dosier gratuito que puede ayudarte a definir mejor tu estado.`
+  },
+  {
+    question: "¿Qué es el estrés laboral?",
+    answer: `El estrés laboral aparece cuando lo que el trabajo te exige empieza a sentirse mayor que los recursos, el tiempo, la energía o el control que tienes para resolverlo. No siempre se debe a trabajar mucho; a veces nace de la presión constante, la falta de reconocimiento, los plazos imposibles, la incertidumbre, los conflictos o la sensación de no poder parar.\n\nEl Instituto Nacional de Seguridad y Salud en el Trabajo describe el estrés como una respuesta ante un estímulo o agente estresor, y señala factores laborales habituales como la falta de control sobre el trabajo, la monotonía, los plazos ajustados o trabajar a alta velocidad.\n\nPuede sentirse como cansancio mental, tensión antes de empezar la jornada, ansiedad al abrir el correo, irritabilidad, bloqueo, falta de motivación o sensación de estar perdiendo partes de ti por intentar cumplir con todo.\n\nNo significa que seas débil ni que no sirvas para tu trabajo. A veces significa que tu sistema lleva demasiado tiempo adaptándose a una carga que necesita ser revisada.`
+  },
+  {
+    question: "¿Por qué me da ansiedad en el trabajo?",
+    answer: `La ansiedad en el trabajo puede aparecer por muchas razones: exceso de responsabilidad, miedo a equivocarte, presión por rendir, conflictos con compañeros, sensación de vigilancia, falta de control, inseguridad laboral o acumulación de tareas que nunca termina.\n\nA veces no es una sola causa, sino una suma. Tu cuerpo empieza a asociar el trabajo con amenaza, aunque racionalmente sepas que “solo es trabajo”. Entonces pueden aparecer nervios antes de entrar, palpitaciones, bloqueo, ganas de evitar ciertas tareas, preocupación constante o dificultad para desconectar al llegar a casa.\n\nTambién puede ocurrir que el trabajo active heridas más profundas: miedo a no valer, necesidad de demostrar, miedo al rechazo, culpa por descansar o dificultad para poner límites.\n\nSi te pasa a menudo, no lo reduzcas a “soy así” o “tengo que aguantar”. Puede ser una señal de que necesitas entender mejor qué parte del trabajo está activando esa alarma interna y qué recursos necesitas para recuperar seguridad.\n\nPodemos ayudarte si no eres capaz de resolverlo solo. Da el primer paso, realiza ahora la consulta gratuita con IA y descubre qué puede estar detrás de tu ansiedad, sin diagnósticos automáticos, sin compromiso y con una primera orientación pensada para ayudarte a comprenderte mejor.`
+  },
+  {
+    question: "¿Qué hacer cuando el trabajo me supera?",
+    answer: `Cuando el trabajo te supera, intenta no convertir ese momento en un juicio contra ti. Sentirte desbordado no significa que seas incapaz; significa que tu sistema está intentando responder a más carga de la que puede procesar con calma.\n\nEmpieza por ordenar. Escribe todo lo que tienes pendiente y separa tres grupos: lo urgente, lo importante y lo que puede esperar. Después, elige un solo primer paso. Cuando estás saturado, intentar resolverlo todo a la vez suele aumentar el bloqueo.\n\nTambién es importante revisar límites: horarios, disponibilidad, pausas, nivel de exigencia y capacidad real. Si puedes, habla con alguien de confianza o con una persona responsable para aclarar prioridades. El NHS recomienda, ante el estrés laboral, centrarse en lo que se puede cambiar y buscar apoyo en personas de confianza.\n\nSi el trabajo lleva tiempo superándote y notas que afecta a tu sueño, tu ánimo o tu salud, quizá no necesitas esforzarte más, sino comprender mejor qué está pasando. Nuestra consulta gratuita puede ser un primer espacio para ordenar tu situación y ver si lo que vives es estrés puntual, agotamiento acumulado o una señal de que necesitas acompañamiento.`
+  },
+  {
+    question: "¿Qué es el burnout?",
+    answer: `El burnout, o síndrome de estar quemado por el trabajo, suele aparecer cuando el estrés laboral se mantiene durante demasiado tiempo y la persona empieza a sentirse emocionalmente agotada, distante o cada vez menos capaz de implicarse como antes.\n\nNo es simplemente “estar cansado”. Es una forma de desgaste más profunda, relacionada con la sensación de haber dado demasiado durante demasiado tiempo sin recuperar energía, sentido o control. El INSST lo describe como una respuesta al estrés laboral crónico, vinculada a actitudes y sentimientos negativos en el contexto del trabajo.\n\nPuede manifestarse como agotamiento persistente, desmotivación, cinismo, irritabilidad, sensación de inutilidad, bajo rendimiento, bloqueo o rechazo hacia tareas que antes se toleraban mejor.\n\nSi te reconoces en esto, no lo ignores. El burnout no suele mejorar solo con “un fin de semana de descanso”. A menudo necesita una revisión más profunda de cargas, límites, apoyo, expectativas y recuperación emocional.`
+  }
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
@@ -59,22 +86,39 @@ export default function Home() {
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   
   const [openAnsiedadFaqIndex, setOpenAnsiedadFaqIndex] = useState<number | null>(null);
+  const [openEstresFaqIndex, setOpenEstresFaqIndex] = useState<number | null>(null);
 
   const closeInfographicModal = () => {
-    const wasAnsiedad = selectedInfographic?.id === 'ansiedad';
+    const overlayId = selectedInfographic?.id;
+    const shouldRestoreHome =
+      (overlayId === 'ansiedad' && window.location.pathname === '/ansiedad') ||
+      (overlayId === 'estres' && window.location.pathname === '/estres');
+
     setSelectedInfographic(null);
     setOpenAnsiedadFaqIndex(null);
+    setOpenEstresFaqIndex(null);
 
-    if (wasAnsiedad && window.location.pathname === '/ansiedad') {
+    if (shouldRestoreHome) {
       window.history.pushState({}, '', '/');
     }
   };
 
   useEffect(() => {
     const handlePopState = () => {
-      if (window.location.pathname !== '/ansiedad' && selectedInfographic?.id === 'ansiedad') {
+      if (
+        selectedInfographic?.id === 'ansiedad' &&
+        window.location.pathname !== '/ansiedad'
+      ) {
         setSelectedInfographic(null);
         setOpenAnsiedadFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'estres' &&
+        window.location.pathname !== '/estres'
+      ) {
+        setSelectedInfographic(null);
+        setOpenEstresFaqIndex(null);
       }
     };
 
@@ -253,7 +297,10 @@ export default function Home() {
               icon="speed"
               colSpanClass="md:col-span-4"
               bgColorClass="zen-taupe"
-              onClick={() => setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'estres', src: '/images/info-estres.jpg' });
+                window.history.pushState({ symptomOverlay: 'estres' }, '', '/estres');
+              }}
             />
 
             <SymptomCard
@@ -335,7 +382,7 @@ export default function Home() {
       </section>
 
       {/* Featured Section: Un faro en la niebla */}
-      <section className="relative w-full mb-12 md:mb-20 overflow-visible">
+      <section className="relative w-full mb-6 md:mb-10 overflow-visible">
         <div className="cenefa-decorative mb-16">
           <div className="cenefa-line left"></div>
           <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>flare</span>
@@ -381,7 +428,7 @@ export default function Home() {
             </div>
           </LighthouseBeamFrame>
         </div>
-        <div className="cenefa-decorative mt-16">
+        <div className="cenefa-decorative mt-10 md:mt-12">
           <div className="cenefa-line left"></div>
           <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>flare</span>
           <div className="cenefa-line right"></div>
@@ -389,7 +436,7 @@ export default function Home() {
       </section>
 
       {/* The Hybrid Approach */}
-      <section className="py-32 px-8">
+      <section className="pt-20 pb-32 px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
             <RippleWindow className="rounded-[2rem] shadow-2xl aspect-[4/5]">
@@ -423,7 +470,7 @@ export default function Home() {
 
 
       {/* Main Content Grid */}
-      <section className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 mb-40">
+      <section className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24 md:mb-28">
         {/* Left Column: Value Prop */}
         <div className="lg:col-span-5 flex flex-col justify-center space-y-12">
           <div>
@@ -814,6 +861,48 @@ export default function Home() {
                             </button>
 
                             {openAnsiedadFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'estres' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre estrés
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para empezar a ordenar la presión diaria, el estrés laboral y el cansancio acumulado.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {ESTRES_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openEstresFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenEstresFaqIndex(openEstresFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openEstresFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openEstresFaqIndex === index && (
                               <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
                                 {item.answer}
                               </div>

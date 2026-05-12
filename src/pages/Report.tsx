@@ -346,14 +346,18 @@ export default function Report() {
     <div className="flex-1 bg-transparent w-full">
       {/* POST-ACCESS CONTENT: BENTO GRID SUMMARY */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-12 py-16">
-        <div className="mb-16 border-l-4 border-secondary pl-8">
-          <h2 className="text-5xl font-headline font-bold text-primary mb-4">
-            Tu informe de bienestar
-          </h2>
-          <p className="text-xl text-on-surface-variant max-w-2xl">
-            Esta primera lectura recoge lo que has compartido en la consulta y
-            te ayuda a ordenar tu momento actual antes del Cuestionario Espejo.
-          </p>
+        <div
+          className="mb-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-sm bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
+        >
+          <div className="bg-white/70 dark:bg-[#11181f]/55 backdrop-blur-[1px] px-8 md:px-12 py-8 md:py-10">
+            <h2 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">
+              Tu informe de bienestar
+            </h2>
+            <p className="text-lg md:text-xl text-on-surface-variant max-w-3xl">
+              Esta primera lectura recoge lo que has compartido en la consulta y te ayuda a ordenar tu momento actual antes del Cuestionario Espejo.
+            </p>
+          </div>
         </div>
 
         {error ? (
