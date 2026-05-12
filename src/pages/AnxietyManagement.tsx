@@ -301,7 +301,7 @@ export default function AnxietyManagement() {
             <button onClick={() => navigate('/session')} className="px-8 py-5 bg-[#2c3e50] text-white font-bold rounded-full text-lg hover:bg-[#42617c] transition-all duration-300">
               Iniciar Consulta Gratuita
             </button>
-            <button onClick={() => navigate('/method')} className="px-8 py-5 border border-white/30 text-white font-medium rounded-full text-lg hover:bg-white/10 transition-all duration-300">
+            <button onClick={() => navigate('/resources')} className="px-8 py-5 border border-white/30 text-white font-medium rounded-full text-lg hover:bg-white/10 transition-all duration-300">
               Regresar
             </button>
           </div>

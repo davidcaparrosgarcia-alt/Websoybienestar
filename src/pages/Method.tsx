@@ -19,7 +19,6 @@ type FogTrailPoint = {
 export default function Method() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
@@ -293,71 +292,6 @@ export default function Method() {
         </div>
       </section>
 
-      {/* Treatments Bento Grid */}
-      <section className="py-24 px-12">
-        <div className="max-w-screen-2xl mx-auto">
-          <div className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-            <div className="md:col-span-2 flex flex-col justify-center">
-              <h2 className="text-4xl font-headline text-primary mb-4 italic">Áreas de Especialización</h2>
-              <p className="text-lg text-on-surface-variant max-w-2xl">Un enfoque integral para navegar los diferentes estados de la niebla emocional.</p>
-            </div>
-            <a href="#" className="group bg-primary-container p-6 rounded-2xl flex items-center justify-center text-center relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 min-h-[120px]">
-              <span className="font-headline text-2xl text-white relative z-10 group-hover:scale-105 transition-transform duration-500">Ver todos los tratamientos</span>
-            </a>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <div className="group bg-surface dark:bg-[#d1e7e4] p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-              <div className="hidden dark:block pointer-events-none absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/leather.png')] opacity-30 mix-blend-overlay"></div>
-              <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                <div>
-                  <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">waves</span>
-                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">Gestión de Ansiedad</h3>
-                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Reconoce tu estado actual para calmar las tormentas internas y recuperar el control del presente.</p>
-                </div>
-                <div className="w-fit">
-                  <button onClick={() => navigate('/anxiety')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">
-                    LEER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Card 2 (Highlight/Dark) */}
-            <div className="group bg-primary-container p-10 rounded-2xl flex flex-col justify-between h-[400px] relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500">
-              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity duration-500">
-                <span className="material-symbols-outlined text-8xl text-secondary-fixed group-hover:scale-110 transition-transform duration-500">light_mode</span>
-              </div>
-              <div className="z-10">
-                <span className="material-symbols-outlined text-secondary-container text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">psychology</span>
-                <h3 className="text-2xl font-headline text-white mb-4">Gestión de Emociones</h3>
-                <p className="text-on-primary-container leading-relaxed">Herramientas para comprender lo que sientes, ordenar tus pensamientos y responder con más calma.</p>
-              </div>
-              <div className="w-fit z-10">
-                <button onClick={() => setSelectedInfographic({ id: 'terapia_cognitiva', src: '/images/info-terapia-cognitiva.jpg' })} className="font-label text-sm font-semibold flex items-center gap-2 text-secondary-fixed hover:opacity-80 transition-all duration-500 group-hover:scale-[1.8] origin-left">
-                  DETALLES DEL MÉTODO <span className="material-symbols-outlined text-lg">open_in_new</span>
-                </button>
-              </div>
-            </div>
-            {/* Card 3 */}
-            <div className="group bg-surface dark:bg-[#d1e7e4] p-10 rounded-2xl flex flex-col justify-between h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-              <div className="hidden dark:block pointer-events-none absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/leather.png')] opacity-30 mix-blend-overlay"></div>
-              <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                <div>
-                  <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-4xl mb-6 inline-block group-hover:scale-[1.3] transition-transform duration-500 origin-left">self_improvement</span>
-                  <h3 className="text-2xl font-headline text-primary dark:text-[#2c3e50] mb-4 transition-colors">ReprogrÁmate</h3>
-                  <p className="text-on-surface-variant dark:text-[#43474c] leading-relaxed transition-colors">Espacios de silencio y reflexión guiada para conectar con tu centro interior, con herramientas diseñadas para ayudarte a recuperar calma, claridad y presencia.</p>
-                </div>
-                <div className="w-fit">
-                  <button onClick={() => navigate('/zen')} className="font-label text-sm font-semibold flex items-center gap-2 text-on-surface-variant dark:text-[#2c3e50] group-hover:text-primary dark:group-hover:text-[#1a252f] transition-all duration-500 group-hover:scale-[1.8] origin-left text-left">
-                    SABER MÁS <span className="material-symbols-outlined text-lg">open_in_new</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Hero Section: The Bridge Metaphor */}
       <section className="relative min-h-[60vh] flex items-center pt-8 pb-16 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
@@ -490,63 +424,6 @@ export default function Method() {
           </div>
         </div>
       </section>
-
-      {/* Organic Animated Infographic Modal */}
-      <AnimatePresence>
-        {selectedInfographic && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm"
-              onClick={() => setSelectedInfographic(null)}
-            />
-            
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
-              <motion.div 
-                layoutId={'card-' + selectedInfographic.id}
-                className="relative w-full max-w-5xl max-h-[90vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
-              >
-                {/* Elegant Action Buttons */}
-                <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
-                  <a 
-                    href={selectedInfographic.src} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
-                    title="Abrir en pantalla completa / Descargar"
-                  >
-                    <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
-                  </a>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedInfographic(null);
-                    }}
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
-                  >
-                    <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
-                  </button>
-                </div>
-                
-                {/* Scrollable document area */}
-                <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
-                  <motion.img 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: 0.1, duration: 0.3 }}
-                    src={selectedInfographic.src} 
-                    alt="Infografía Detalle" 
-                    className="w-full h-auto rounded-xl shadow-sm"
-                  />
-                </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Video Modal */}
       <AnimatePresence>

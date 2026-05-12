@@ -161,7 +161,7 @@ export default function Resources() {
             </h1>
             <div className="h-px w-24 bg-primary/20 mb-8"></div>
             <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed max-w-2xl">
-              Una colección curada de herramientas diseñadas para calmar el espíritu y estructurar el pensamiento. Cada módulo es un paso hacia su arquitectura interior.
+              Una colección repleta de herramientas diseñadas para calmar las emociones y estructurar el pensamiento. Cada módulo es un paso hacia tu bienestar interior.
             </p>
           </div>
         </header>
@@ -403,8 +403,19 @@ export default function Resources() {
         <section className="mt-32 py-24 border-t border-outline-variant/10">
           <div className="flex flex-col md:flex-row gap-16 items-center">
             <div className="w-full md:w-1/2">
-              <div className="relative overflow-hidden aspect-[1/1] rounded-2xl group border border-outline-variant/10">
-                <img alt="Recursos Personalizados" className="dynamic-color-img w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-105 grayscale contrast-110 transition-all group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/logo-recursos.jpg" />
+              <div 
+                className="relative overflow-hidden aspect-[1/1] rounded-2xl group border border-outline-variant/10 cursor-pointer"
+                onClick={() => navigate('/anxiety')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate('/anxiety');
+                  }
+                }}
+              >
+                <img alt="Acceso a Gestión de Ansiedad" className="dynamic-color-img w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-105 grayscale contrast-110 transition-all group-hover:grayscale-0 group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo_ansiedad.jpg" />
                 <div className="absolute inset-0 bg-primary/20 mix-blend-multiply transition-opacity duration-1000 group-hover:opacity-60"></div>
               </div>
             </div>
