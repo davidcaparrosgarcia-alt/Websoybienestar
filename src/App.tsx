@@ -37,6 +37,7 @@ export default function App() {
           <Route path="method" element={<Method />} />
           <Route path="method-details" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />
+          <Route path="ansiedad" element={<AnxietyManagement />} />
           <Route path="emotion-diary" element={
             <ProtectedRoute>
               <EmotionDiary />

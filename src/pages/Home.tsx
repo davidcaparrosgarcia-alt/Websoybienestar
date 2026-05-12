@@ -188,7 +188,7 @@ export default function Home() {
               colSpanClass="md:col-span-8"
               bgColorClass="zen-light-gray"
               isDarkText={true}
-              onClick={() => setSelectedInfographic({ id: 'ansiedad', src: '/images/info-ansiedad.jpg'})}
+              onClick={() => navigate('/ansiedad')}
             />
             
             <SymptomCard
