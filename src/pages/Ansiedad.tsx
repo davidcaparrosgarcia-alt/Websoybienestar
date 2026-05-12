@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 
 const ANSIEDAD_FAQS = [
   {
@@ -31,7 +31,7 @@ const ANSIEDAD_FAQS = [
 
 export default function Ansiedad() {
   const navigate = useNavigate();
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -105,66 +105,46 @@ export default function Ansiedad() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 40 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 40 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="min-h-screen px-4 md:px-8 py-10 md:py-16 flex justify-center"
-      >
-        <div className="relative w-full max-w-6xl rounded-[3rem] bg-[#101820] text-white shadow-2xl border border-white/10 overflow-hidden relative">
-          
-          {/* Close button */}
-          <div className="absolute top-6 right-6 md:top-10 md:right-10 z-50 flex gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white font-label font-medium text-sm flex items-center gap-2 backdrop-blur-sm"
-            >
-              Volver al inicio
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white flex items-center justify-center backdrop-blur-sm"
-              aria-label="Cerrar"
-            >
-              <span className="material-symbols-outlined text-2xl">close</span>
-            </button>
-          </div>
+    <div 
+      className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
+      onClick={() => navigate('/')}
+    >
+      <div className="min-h-screen px-4 md:px-8 py-10 md:py-16 flex justify-center items-start">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.86, y: 36 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.86, y: 36 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-6xl rounded-[3rem] bg-[#101820] text-white shadow-2xl border border-white/10 overflow-hidden"
+        >
+          <button
+            type="button"
+            aria-label="Cerrar ventana de ansiedad"
+            onClick={() => navigate('/')}
+            className="absolute right-5 top-5 z-50 w-10 h-10 rounded-full bg-white/10 text-white/60 hover:text-white hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all"
+          >
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
 
-          <div className="p-8 md:p-12 lg:p-16 pt-24 md:pt-32">
-            <p className="font-label text-white/55 uppercase tracking-[0.35em] text-xs mb-6">
+          <div className="p-8 md:p-12 lg:p-16 pt-20 md:pt-24">
+            <p className="font-label text-white/45 uppercase tracking-[0.35em] text-[10px] md:text-xs mb-4">
               Guía sobre ansiedad
             </p>
 
-            <h1 className="font-headline text-4xl md:text-6xl leading-tight mb-6">
+            <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
               Ansiedad: síntomas, causas y qué hacer para recuperar la calma
             </h1>
 
-            <p className="font-headline italic text-2xl md:text-3xl text-white/80 mb-12">
-              Vivir en alerta también agota, sobre todo cuando no consigues sentirte a salvo.
-            </p>
-
-            <div className="space-y-8">
-              <div>
-                <h2 className="font-headline text-3xl md:text-4xl mb-4">
-                  Comprender la ansiedad como una alarma interna
-                </h2>
-                <p className="font-body text-white/72 text-lg leading-relaxed max-w-4xl">
-                  Esta imagen representa la ansiedad como un sistema de alarma interno: una red de pensamientos, señales corporales y sensación de peligro que puede mantenerse activa incluso cuando no existe una amenaza real.
-                </p>
-              </div>
-
-              <img
-                src="/images/info-ansiedad.jpg"
-                alt="Infografía sobre ansiedad con una figura en estado de alerta rodeada de flechas, ondas y señales de alarma. Explica que vivir en alerta también agota y que la ansiedad puede funcionar como un sistema de alarma interno que no siempre responde a un peligro real."
-                className="w-full h-auto object-contain rounded-[2rem] shadow-2xl"
-              />
-            </div>
-
+            <img
+              src="/images/info-ansiedad.jpg"
+              alt="Infografía sobre ansiedad con una figura en estado de alerta rodeada de flechas, ondas y señales de alarma. Explica que vivir en alerta también agota y que la ansiedad puede funcionar como un sistema de alarma interno que no siempre responde a un peligro real."
+              className="w-full h-auto object-contain rounded-[2rem] shadow-2xl"
+            />
+            
             <div className="mt-12 rounded-[2rem] bg-black/20 text-white shadow-2xl overflow-hidden border border-white/10">
               <div className="p-8 md:p-10 border-b border-white/10">
-                <h2 className="font-headline text-3xl md:text-4xl italic">
+                <h2 className="font-headline text-2xl md:text-3xl italic">
                   Preguntas frecuentes sobre ansiedad
                 </h2>
                 <p className="text-white/65 mt-3 font-light">
@@ -181,7 +161,7 @@ export default function Ansiedad() {
                       onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                       className="w-full text-left px-8 md:px-10 py-6 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
                     >
-                      <h3 className="font-headline text-xl md:text-2xl text-white">
+                      <h3 className="font-headline text-lg md:text-xl text-white">
                         {item.question}
                       </h3>
                       <span className="material-symbols-outlined text-white/70">
@@ -223,8 +203,8 @@ export default function Ansiedad() {
             </div>
 
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
