@@ -243,7 +243,7 @@ export default function Method() {
           <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
             <div className="relative w-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-              <div className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
+              <h1 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center">Cómo trabajamos en SoyBienestar</h1>
             </div>
             
             <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">

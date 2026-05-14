@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ALIMENTACION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
@@ -72,7 +72,7 @@ export default function AlimentacionEmocional() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Alimentación emocional: hambre emocional, ansiedad y relación con la comida
+              Alimentación emocional: hambre emocional y comer por ansiedad
             </h1>
 
             <img
@@ -138,6 +138,17 @@ export default function AlimentacionEmocional() {
                 >
                   Ver herramientas
                 </button>
+              </div>
+            </div>
+
+            {/* Internal Links Block */}
+            <div className="mt-12 pt-8 border-t border-outline-variant/10 text-center">
+              <h2 className="font-headline text-2xl text-on-surface-variant mb-6 italic">También puede ayudarte</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Ansiedad</Link>
+                <Link to="/gestion-emocional" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Gestión emocional</Link>
+                <Link to="/estres" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Estrés</Link>
+                <Link to="/resources" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Herramientas</Link>
               </div>
             </div>
 

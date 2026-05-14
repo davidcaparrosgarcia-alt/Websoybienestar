@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ESTRES_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
@@ -68,7 +68,7 @@ export default function Estres() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
-              Estrés: síntomas, causas y qué hacer cuando la presión te supera
+              Estrés y agotamiento mental: síntomas y cómo aliviarlo
             </h1>
 
             <img
@@ -80,7 +80,7 @@ export default function Estres() {
             <div className="mt-12 rounded-[2rem] bg-black/20 text-white shadow-2xl overflow-hidden border border-white/10">
               <div className="p-8 md:p-10 border-b border-white/10">
                 <h2 className="font-headline text-2xl md:text-3xl italic">
-                  Preguntas frecuentes sobre estrés
+                  Preguntas frecuentes sobre estrés y agotamiento mental
                 </h2>
                 <p className="text-white/65 mt-3 font-light">
                   Respuestas claras para empezar a ordenar la presión diaria, el estrés laboral y el cansancio acumulado.
@@ -134,6 +134,17 @@ export default function Estres() {
                 >
                   Ver herramientas
                 </button>
+              </div>
+            </div>
+
+            {/* Internal Links Block */}
+            <div className="mt-12 pt-8 border-t border-white/10 text-center">
+              <h2 className="font-headline text-2xl text-white/80 mb-6 italic">También puede ayudarte</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Ansiedad</Link>
+                <Link to="/insomnio" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Insomnio</Link>
+                <Link to="/procrastinacion" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Procrastinación</Link>
+                <Link to="/resources" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Herramientas</Link>
               </div>
             </div>
 

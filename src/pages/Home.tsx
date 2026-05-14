@@ -290,7 +290,10 @@ export default function Home() {
           
           {/* Floating Quote Overlay Style */}
           <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-lg z-10 w-[calc(100%-2.5rem)]">
-            <p className="font-headline text-2xl md:text-3xl lg:text-4xl text-primary/90 italic font-light tracking-wide drop-shadow-md border-l-4 border-primary/40 pl-4 md:pl-6 py-2">
+            <h1 className="font-headline text-3xl md:text-4xl lg:text-5xl text-primary mb-4 drop-shadow-md">
+              Terapia online para ansiedad, estrés e insomnio
+            </h1>
+            <p className="font-headline text-xl md:text-2xl lg:text-3xl text-primary/90 italic font-light tracking-wide drop-shadow-md border-l-4 border-primary/40 pl-4 md:pl-6 py-2">
               "Un espacio donde ser escuchado sin juicios"
             </p>
           </div>
@@ -841,6 +844,16 @@ export default function Home() {
               >
                 {/* Elegant Action Buttons */}
                 <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
+                  <Link 
+                    to={`/${selectedInfographic.id === 'rumiacion' ? 'pensar-demasiado-rumiacion' : selectedInfographic.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeInfographicModal();
+                    }}
+                    className="h-12 px-6 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group font-medium"
+                  >
+                    Ver guía completa
+                  </Link>
                   <a 
                     href={selectedInfographic.src} 
                     target="_blank" 

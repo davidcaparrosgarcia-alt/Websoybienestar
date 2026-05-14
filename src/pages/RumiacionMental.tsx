@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { RUMIACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
@@ -68,7 +68,7 @@ export default function RumiacionMental() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Pensar demasiado y rumiación mental: cómo salir del bucle
+              Rumiación mental: cómo dejar de pensar tanto
             </h1>
 
             <img
@@ -80,7 +80,7 @@ export default function RumiacionMental() {
             <div className="mt-12 rounded-[2rem] bg-surface-container-low text-on-surface shadow-2xl overflow-hidden border border-outline-variant/10">
               <div className="p-8 md:p-10 border-b border-outline-variant/10">
                 <h2 className="font-headline text-2xl md:text-3xl italic">
-                  Preguntas frecuentes sobre pensar demasiado y rumiación mental
+                  Preguntas frecuentes sobre rumiación mental
                 </h2>
                 <p className="text-on-surface-variant mt-3 font-light">
                   Respuestas claras para empezar a reconocer el bucle mental, ordenar los pensamientos repetitivos y volver al presente.
@@ -134,6 +134,17 @@ export default function RumiacionMental() {
                 >
                   Ver herramientas
                 </button>
+              </div>
+            </div>
+
+            {/* Internal Links Block */}
+            <div className="mt-12 pt-8 border-t border-outline-variant/10 text-center">
+              <h2 className="font-headline text-2xl text-on-surface-variant mb-6 italic">También puede ayudarte</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Ansiedad</Link>
+                <Link to="/insomnio" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Insomnio</Link>
+                <Link to="/procrastinacion" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Procrastinación</Link>
+                <Link to="/resources" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Meditaciones</Link>
               </div>
             </div>
 

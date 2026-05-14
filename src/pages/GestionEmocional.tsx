@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { GESTION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
@@ -68,7 +68,7 @@ export default function GestionEmocional() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Gestión emocional: cómo controlar, regular y entender tus emociones
+              Gestión emocional: cómo controlar y regular tus emociones
             </h1>
 
             <img
@@ -134,6 +134,17 @@ export default function GestionEmocional() {
                 >
                   Ver herramientas
                 </button>
+              </div>
+            </div>
+
+            {/* Internal Links Block */}
+            <div className="mt-12 pt-8 border-t border-outline-variant/10 text-center">
+              <h2 className="font-headline text-2xl text-on-surface-variant mb-6 italic">También puede ayudarte</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Ansiedad</Link>
+                <Link to="/pensar-demasiado-rumiacion" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Rumiación mental</Link>
+                <Link to="/alimentacion-emocional" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Alimentación emocional</Link>
+                <Link to="/resources" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Herramientas</Link>
               </div>
             </div>
 

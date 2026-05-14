@@ -107,6 +107,7 @@ export default function MethodDetails() {
           </div>
         </div>
         <div className="lg:w-1/2 space-y-8">
+          <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs block mb-4">Método ReprogrÁmate: consulta, cuestionario y dossier personal</h1>
           <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">Un espacio para ordenar lo que sientes y recuperar claridad.</h2>
           <p className="text-on-surface-variant leading-relaxed text-xl font-light">
             <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.
@@ -125,7 +126,7 @@ export default function MethodDetails() {
           <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
             <div className="relative w-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-              <div className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase">El Puente</div>
+              <h2 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center bg-transparent">El Puente Digital</h2>
             </div>
             
             <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { INSOMNIO_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
@@ -68,7 +68,7 @@ export default function Insomnio() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
-              Insomnio: causas, síntomas y qué hacer cuando no puedes dormir
+              Insomnio: causas y qué hacer cuando no puedes dormir
             </h1>
 
             <img
@@ -134,6 +134,17 @@ export default function Insomnio() {
                 >
                   Ver herramientas
                 </button>
+              </div>
+            </div>
+
+            {/* Internal Links Block */}
+            <div className="mt-12 pt-8 border-t border-white/10 text-center">
+              <h2 className="font-headline text-2xl text-white/80 mb-6 italic">También puede ayudarte</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Ansiedad</Link>
+                <Link to="/estres" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Estrés</Link>
+                <Link to="/pensar-demasiado-rumiacion" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Rumiación mental</Link>
+                <Link to="/resources" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Meditaciones y respiración</Link>
               </div>
             </div>
 

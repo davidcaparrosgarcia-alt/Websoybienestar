@@ -59,8 +59,8 @@ export default function Treatments() {
       <section className="relative flex items-center pt-16 pb-12 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">
           <div className="z-10 max-w-screen-xl">
-            <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block">Tratamientos Online</span>
-            <h1 className="text-6xl md:text-7xl font-headline text-primary leading-[1.1] mb-8">ReprogrÁmate</h1>
+            <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block">Tratamientos online para tu bienestar emocional</h1>
+            <h2 className="text-6xl md:text-7xl font-headline text-primary leading-[1.1] mb-8">ReprogrÁmate</h2>
             <p className="text-xl md:text-2xl text-on-surface-variant max-w-5xl leading-relaxed mb-10">
               Un sistema de tratamiento online, flexible y cercano para aliviar el malestar mental y transformar tu bienestar desde la base sin importar la distancia.
             </p>
@@ -124,6 +124,22 @@ export default function Treatments() {
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Guías y Síntomas Integrados */}
+      <section className="py-12 px-12">
+        <div className="max-w-screen-2xl mx-auto">
+          <h2 className="text-3xl font-headline text-primary mb-6 italic">También puedes explorar nuestras guías</h2>
+          <div className="flex flex-wrap gap-4">
+            <Link to="/ansiedad" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Ansiedad</Link>
+            <Link to="/estres" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Estrés</Link>
+            <Link to="/insomnio" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Insomnio</Link>
+            <Link to="/procrastinacion" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Procrastinación</Link>
+            <Link to="/pensar-demasiado-rumiacion" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Rumiación mental</Link>
+            <Link to="/gestion-emocional" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Gestión emocional</Link>
+            <Link to="/alimentacion-emocional" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Alimentación emocional</Link>
           </div>
         </div>
       </section>
