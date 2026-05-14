@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type MouseEvent } from "react";
+import { useState, useEffect, useRef, type MouseEvent, type PointerEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -44,16 +44,16 @@ export default function Method() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const handleAnxietyFogMove = (event: MouseEvent<HTMLElement>) => {
+  const addFogPoint = (clientX: number, clientY: number, currentTarget: HTMLElement) => {
     const now = Date.now();
     if (now - lastFogPointAt.current < FOG_ADD_INTERVAL_MS) {
       return;
     }
     lastFogPointAt.current = now;
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    const rect = currentTarget.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
 
     const safeX = Math.max(0, Math.min(100, x));
     const safeY = Math.max(0, Math.min(100, y));
@@ -69,6 +69,15 @@ export default function Method() {
     };
 
     setFogTrail((prev) => [...prev.slice(-MAX_FOG_TRAIL_POINTS + 1), point]);
+  };
+
+  const handleAnxietyFogMove = (event: MouseEvent<HTMLElement>) => {
+    addFogPoint(event.clientX, event.clientY, event.currentTarget as HTMLElement);
+  };
+
+  const handleAnxietyFogPointerMove = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'mouse') return;
+    addFogPoint(event.clientX, event.clientY, event.currentTarget as HTMLElement);
   };
 
   useEffect(() => {
@@ -118,8 +127,9 @@ export default function Method() {
     <div className="flex-1 w-full">
       {/* Hero Section: Anxiety Hero */}
       <section 
-        className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent"
+        className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent touch-pan-y"
         onMouseMove={handleAnxietyFogMove}
+        onPointerMove={handleAnxietyFogPointerMove}
       >
         <div className="absolute inset-0 z-0">
           {/* Imagen base nítida */}

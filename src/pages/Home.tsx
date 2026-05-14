@@ -63,6 +63,141 @@ export const ESTRES_FAQS = [
   }
 ];
 
+export const INSOMNIO_FAQS = [
+  {
+    question: "¿Qué hacer cuando no puedes dormir?",
+    answer: `Cuando no puedes dormir, lo peor suele ser empezar una pelea mental contra el reloj. Mirar la hora, calcular cuánto queda para levantarte o repetirte “tengo que dormir ya” puede activar aún más el cuerpo.\n\nPrueba a cambiar el objetivo: en lugar de obligarte a dormir, intenta crear condiciones para descansar. Baja la luz, aparta el móvil, respira despacio y lleva la atención a algo simple: el peso del cuerpo en la cama, el aire entrando y saliendo, o una imagen tranquila.\n\nSi pasan muchos minutos y sigues muy activado, puede ayudarte levantarte un momento, hacer algo suave y aburrido con poca luz, y volver a la cama cuando aparezca somnolencia. El NHS explica que el insomnio implica problemas regulares para dormir y que suele mejorar con cambios en los hábitos de sueño.\n\nSi esto te ocurre con frecuencia, quizá tu insomnio no sea solo un problema de sueño, sino una señal de preocupación, ansiedad o sobrecarga acumulada. Nuestra consulta gratuita puede ayudarte a ordenar qué está manteniendo tu mente despierta y darte una primera lectura personalizada de tu situación sin compromisos.`
+  },
+  {
+    question: "¿Cómo dormir rápido?",
+    answer: `Dormir rápido no siempre depende de “hacer una técnica para dormir perfecta”. El sueño llega mejor cuando el cuerpo deja de sentirse en alerta. Por eso, más que forzarlo, conviene preparar una transición.\n\nUna hora antes de dormir, intenta bajar estímulos: menos pantallas, menos conversación intensa, menos trabajo, menos luz fuerte. Cuidar el entorno de sueño y gestionar las preocupaciones antes de acostarse, por ejemplo anotando lo que tienes en mente y dejándolo para el día siguiente.\n\nTambién puedes probar una respiración sencilla: inspira lentamente, suelta el aire más despacio de lo que lo tomas y repite varias veces. No busques dormir en el primer minuto; busca decirle al cuerpo que ya no tiene que resolver nada ahora.\n\nUna frase útil puede ser: “Ahora no tengo que solucionar mi vida, solo descansar”. Parece simple, pero a veces la mente necesita permiso para soltar.`
+  },
+  {
+    question: "¿Por qué no puedo dormir?",
+    answer: `No poder dormir puede tener muchas causas. A veces se relaciona con estrés, preocupaciones, cambios de horarios, exceso de pantallas, cafeína, dolor, hábitos irregulares o una etapa emocionalmente exigente. El estrés por trabajo, salud, dinero, familia o acontecimientos vitales puede mantener la mente activa por la noche y dificultar el sueño.\n\nTambién puede ocurrir que durante el día consigas funcionar, pero al llegar la noche tu mente encuentre el primer silencio para sacar todo lo que quedó pendiente. Entonces aparecen pensamientos, anticipaciones, recuerdos o esa sensación de “no puedo desconectar”.\n\nEl insomnio no siempre significa que haya algo “mal” en ti. A veces significa que tu sistema nervioso no ha encontrado todavía una forma segura de bajar la guardia.\n\nSi te pasa de forma repetida, conviene observar no solo cómo duermes, sino cómo estás viviendo durante el día: qué cargas sostienes, qué emociones callas, qué preocupaciones se repiten y qué necesita tu cuerpo para sentirse más seguro. Permítenos ayudarte a descubrir las posibles causas de tu insomnio. Puedes dar un primer paso sin coste realizando una consulta gratuita en nuestra consulta IA y cuestionario; recibirás un dosier que puede intentar ayudarte a conocer esas causas.`
+  },
+  {
+    question: "¿Cómo combatir el insomnio?",
+    answer: `Combatir el insomnio no debería convertirse en otra batalla. Muchas veces ayuda más construir una rutina amable y constante que buscar una solución inmediata cada noche.\n\nIntenta mantener horarios parecidos, reducir pantallas antes de dormir, evitar cenas muy pesadas, cuidar la oscuridad y reservar la cama para dormir o descansar, no para discutir con tus pensamientos. El NHS recomienda acudir a un profesional si los cambios de hábitos no ayudan o si crees que puedes tener un problema de sueño.\n\nTambién puede ser útil escribir antes de acostarte: qué queda pendiente, qué puedes hacer mañana y qué no necesitas resolver esta noche. Esto ayuda a que la mente no use la cama como despacho emocional.\n\nSi el insomnio viene acompañado de ansiedad, tristeza, tensión corporal o preocupación constante, quizá necesita una mirada más amplia. No se trata solo de dormir más, sino de entender qué te mantiene despierto por dentro.`
+  },
+  {
+    question: "¿Cómo dormir con ansiedad?",
+    answer: `Dormir con ansiedad es difícil porque el cuerpo intenta descansar mientras la mente sigue vigilando. Por eso, antes de dormir, no conviene discutir con los pensamientos ni intentar ganarles por fuerza.\n\nPuedes empezar por bajar la activación física: luz suave, respiración lenta, una ducha templada, estiramientos suaves o una música tranquila. Después, intenta sacar los pensamientos de la cabeza y ponerlos en papel. No para resolverlos, sino para decirle a tu mente: “ya está registrado, mañana lo miraré”.\n\nTambién ayuda llevar la atención al cuerpo de forma amable: notar los pies, las piernas, la espalda, la respiración. Si aparece un pensamiento, no hace falta perseguirlo; puedes volver una y otra vez al cuerpo.\n\nLa ansiedad nocturna suele necesitar comprensión, no solo disciplina. Si cada noche se convierte en una lucha, nuestra consulta gratuita puede ayudarte a identificar qué preocupaciones, miedos o cargas están activando y enseñarte alguna herramienta de utilidad para tu caso.`
+  },
+  {
+    question: "¿Por qué me despierto muchas veces por la noche?",
+    answer: `Despertarse varias veces por la noche puede deberse a muchos factores: estrés, ansiedad, hábitos de sueño irregulares, ruido, luz, temperatura, alcohol, cafeína, molestias físicas o preocupaciones que se reactivan cuando el sueño se vuelve más ligero.\n\nA veces la persona se duerme, pero no descansa profundamente porque el cuerpo sigue en modo vigilancia. Es como si una parte de ti comprobara cada cierto tiempo si todo está bajo control.\n\nLa clave está en observar el patrón: si te despiertas siempre a la misma hora, si aparece un pensamiento concreto, si hay tensión corporal, si necesitas mirar el móvil, si te cuesta volver a dormir o si al día siguiente te levantas agotado.\n\nSi los despertares son frecuentes, duran semanas o afectan a tu energía diaria, merece la pena revisarlo con calma. No se trata solo de “dormir del tirón”, sino de entender por qué tu descanso se está fragmentando.`
+  }
+];
+
+export const PROCRASTINACION_FAQS = [
+  {
+    question: "¿Cómo dejar de procrastinar?",
+    answer: `A veces no evitamos la tarea en sí, sino la sensación que nos provoca: miedo a hacerlo mal, presión por hacerlo perfecto, aburrimiento, inseguridad, saturación o cansancio mental. Por eso, repetirte “tengo que hacerlo ya” puede aumentar todavía más el bloqueo.\n\nUn primer paso útil es reducir la tarea hasta que parezca casi demasiado pequeña. En lugar de “tengo que ordenar todo”, prueba con “voy a dedicar cinco minutos a empezar”. En lugar de “tengo que terminar el proyecto”, prueba con “voy a abrir el documento y escribir una primera frase”.\n\nLa clave no es esperar a tener ganas, sino crear una entrada suave. Muchas veces la motivación aparece después de empezar, no antes.\n\nSi sientes que procrastinas mucho y eso empieza a afectar a tu autoestima, tu trabajo o tu tranquilidad, puede ayudarte mirar más allá de la tarea. Nuestra consulta gratuita puede ser un primer espacio para entender qué emoción, miedo o patrón está detrás de ese bloqueo.`
+  },
+  {
+    question: "¿Por qué procrastino tanto?",
+    answer: `Procrastinar mucho no significa necesariamente que seas una persona vaga o irresponsable. A menudo significa que tu mente ha aprendido a posponer aquello que le genera tensión, miedo, confusión o exigencia.\n\nPuedes procrastinar porque una tarea te parece demasiado grande, porque no sabes por dónde empezar, porque temes equivocarte, porque quieres hacerlo perfecto o porque estás mentalmente agotado. También puede ocurrir cuando algo te importa mucho: cuanto más importante es, más presión puede generar.\n\nLa procrastinación alivia a corto plazo, porque al posponer sientes un pequeño descanso. Pero después suele aparecer culpa, prisa, ansiedad o sensación de haber fallado otra vez. Ese ciclo puede ser muy desgastante.\n\nLa pregunta útil no es solo “¿por qué no lo hago?”, sino “¿qué siento justo antes de evitarlo?”. Ahí suele estar la pista más importante.`
+  },
+  {
+    question: "¿La procrastinación es pereza?",
+    answer: `No siempre. A veces puede haber falta de interés o cansancio, claro, pero muchas veces la procrastinación no nace de la pereza, sino de una dificultad para gestionar lo que una tarea despierta por dentro.\n\nUna persona puede querer hacer algo, saber que le conviene hacerlo y aun así no conseguir empezar. Eso suele indicar que no es simplemente “no querer”, sino estar atrapado entre la intención y la emoción que bloquea la acción.\n\nPuede haber ansiedad, perfeccionismo, miedo al juicio, confusión, falta de energía, exceso de opciones o una sensación de que la tarea es demasiado grande para abordarla.\n\nLlamarlo pereza puede hacer que la persona se culpe más y se bloquee todavía más. Entenderlo como una señal permite preguntarse: “¿Qué necesito para empezar de una forma más amable y realista?”.`
+  },
+  {
+    question: "¿Cómo vencer la procrastinación?",
+    answer: `Vencer la procrastinación no consiste en castigarte hasta funcionar. Consiste en diseñar un inicio tan claro y pequeño que tu mente no lo viva como una montaña.\n\nPuedes probar tres pasos:\n\nPrimero, define la tarea de forma concreta. No “ponerme al día”, sino “responder tres correos”. No “estudiar”, sino “leer dos páginas”.\n\nSegundo, reduce el tiempo. Proponte empezar solo diez minutos. Si después continúas, perfecto. Si no, al menos has roto la inercia.\n\nTercero, elimina una fricción. Prepara el documento, deja el material visible, apaga una notificación o limpia el espacio mínimo necesario.\n\nTambién ayuda cambiar la frase “tengo que hacerlo perfecto” por “solo necesito hacer una primera versión”. Muchas tareas no necesitan excelencia al principio; necesitan movimiento.\n\nSi la procrastinación se repite en muchas áreas de tu vida, quizá no se trata solo de organización. Puede haber un patrón emocional detrás que merece ser escuchado.`
+  },
+  {
+    question: "¿Qué hacer cuando no puedo empezar una tarea?",
+    answer: `Cuando no puedes empezar una tarea, no te preguntes primero “¿por qué soy así?”. Pregúntate algo más útil: “¿qué hace que esta tarea se sienta tan difícil ahora mismo?”.\n\nPuede que la tarea sea demasiado grande, que no esté clara, que te dé miedo hacerla mal o que estés agotado. Según la causa, la solución cambia.\n\nPrueba a hacer esto: escribe la tarea y después conviértela en el primer gesto físico. Por ejemplo, “abrir el archivo”, “poner el título”, “leer el primer párrafo”, “buscar el documento”, “preparar la mesa”. El primer paso debe ser tan pequeño que casi no puedas discutirlo.\n\nTambién puedes usar una frase de permiso: “No tengo que terminarlo ahora, solo tengo que empezar de forma imperfecta”. Esto reduce la presión y facilita la acción.\n\nA veces el bloqueo no se rompe pensando más, sino bajando el listón de entrada.`
+  },
+  {
+    question: "¿La procrastinación tiene que ver con la ansiedad?",
+    answer: `Sí, muchas veces puede tener relación. La ansiedad puede hacer que una tarea se sienta amenazante, aunque no lo sea realmente. Entonces aparece la evitación: posponer, distraerse, revisar el móvil, hacer otras tareas menos importantes o esperar “el momento perfecto”.\n\nEl problema es que evitar calma durante unos minutos, pero suele aumentar la ansiedad después. La tarea sigue ahí, el tiempo se reduce y la culpa crece. Así se forma un ciclo: ansiedad, evitación, alivio breve, culpa, más ansiedad.\n\nTambién puede aparecer con el perfeccionismo. Si sientes que algo debe salir impecable, empezar puede dar miedo. Posponer se convierte entonces en una forma de no enfrentarte todavía a la posibilidad de fallar.\n\nSi reconoces este ciclo, no necesitas juzgarte con dureza. Necesitas comprender qué emoción se activa antes de procrastinar y aprender formas más pequeñas, seguras y manejables de entrar en la acción.\n\nNuestra consulta gratuita puede ayudarte a ordenar este patrón y ver si tu procrastinación está más relacionada con ansiedad, agotamiento, miedo al error, perfeccionismo o falta de claridad.`
+  }
+];
+
+export const RUMIACION_FAQS = [
+  {
+    question: "¿Cómo dejar de pensar tanto?",
+    answer: `Dejar de pensar tanto no significa dejar la mente en blanco. La mente no funciona así. El primer paso suele ser dejar de pelearte con cada pensamiento y empezar a relacionarte con ellos de otra manera.\n\nCuando notas que estás pensando demasiado, puedes preguntarte: “¿Estoy resolviendo algo o solo estoy dando vueltas?”. Si la respuesta es que estás dando vueltas, quizá no necesitas más análisis, sino un cambio de estado.\n\nPrueba a llevar la atención al cuerpo: respira despacio, camina, escribe lo que piensas o haz una tarea sencilla con las manos. El objetivo no es negar lo que sientes, sino sacar a la mente del bucle.\n\nTambién ayuda reservar un momento concreto para pensar o escribir sobre el tema. Si aparece fuera de ese momento, puedes decirte: “esto lo miraré luego, ahora no necesito resolverlo”.\n\nSi pensar demasiado se ha convertido en una forma de vivir en alerta, nuestra consulta gratuita puede ayudarte a entender qué hay debajo de ese ruido mental y qué necesitas para recuperar calma.`
+  },
+  {
+    question: "¿Cómo dejar de darle vueltas a las cosas?",
+    answer: `Darle vueltas a las cosas suele aparecer cuando tu mente intenta encontrar seguridad. Quiere una respuesta perfecta, una explicación cerrada o una garantía de que nada saldrá mal. El problema es que muchas veces, cuanto más revisas, menos calma encuentras.\n\nUn paso útil es distinguir entre reflexión y bucle. La reflexión te ayuda a decidir o comprender. El bucle te deja agotado y en el mismo lugar.\n\nPuedes preguntarte: “¿Este pensamiento me está acercando a una acción concreta o solo me está desgastando?”. Si no hay acción posible ahora, quizá es momento de soltar temporalmente el tema.\n\nEscribir también ayuda. Pon en una hoja qué ocurrió, qué interpretación estás haciendo, qué sabes con certeza y qué estás suponiendo. Muchas vueltas mentales se alimentan de mezclar hechos con miedos.\n\nNo se trata de obligarte a no pensar, sino de recuperar el mando sobre cuándo y cómo le das espacio a ese pensamiento.`
+  },
+  {
+    question: "¿Por qué no puedo dejar de pensar?",
+    answer: `A veces no puedes dejar de pensar porque tu mente cree que pensar más te protegerá. Intenta anticipar errores, evitar dolor, entender lo que pasó o controlar lo que todavía no sabes.\n\nEsto puede aparecer en momentos de ansiedad, incertidumbre, culpa, miedo al rechazo, conflictos, cambios importantes o cansancio acumulado. También ocurre cuando una emoción no ha podido expresarse bien y se convierte en pensamiento repetitivo.\n\nPensar mucho puede dar la sensación de estar haciendo algo útil, pero no siempre lo es. A veces solo mantiene activada la alarma interna.\n\nUna pregunta sencilla puede ayudarte: “¿Qué emoción hay debajo de este pensamiento?”. Puede ser miedo, tristeza, rabia, vergüenza, inseguridad o necesidad de control. Cuando reconoces la emoción, el pensamiento deja de ser el único protagonista.\n\nNo es que tu mente esté contra ti. Probablemente está intentando protegerte, pero de una forma que ya te está agotando.`
+  },
+  {
+    question: "¿Qué hacer cuando no puedes sacarte algo de la cabeza?",
+    answer: `Cuando no puedes sacarte algo de la cabeza, intentar expulsarlo con fuerza suele hacer que vuelva con más intensidad. En vez de luchar contra el pensamiento, prueba a darle un lugar más ordenado.\n\nPuedes escribirlo tal como aparece, sin hacerlo bonito. Después añade tres columnas: qué sé con certeza, qué estoy imaginando y qué puedo hacer ahora. Esta separación ayuda a que el pensamiento deje de ser una nube enorme y se convierta en algo más manejable.\n\nTambién puedes cambiar de canal: moverte, ducharte, salir a caminar, hablar con alguien de confianza o hacer una respiración lenta. El cuerpo puede ayudar a la mente a salir del atasco.\n\nSi el pensamiento vuelve, no significa que hayas fallado. Puedes decirte: “ya he visto este pensamiento; ahora vuelvo a lo que estoy haciendo”. Repetir esto con paciencia entrena a la mente a no seguir cada hilo.\n\nSi ese pensamiento está conectado con una situación dolorosa o una preocupación importante, quizá no necesita ser expulsado, sino comprendido con acompañamiento.`
+  },
+  {
+    question: "¿Pensar demasiado genera ansiedad?",
+    answer: `Sí, pensar demasiado puede aumentar la ansiedad, sobre todo cuando los pensamientos se centran en amenazas, errores, dudas o futuros negativos. La mente empieza a buscar certezas, pero muchas veces solo encuentra más preguntas.\n\nEl cuerpo no siempre distingue entre un peligro real y una escena imaginada con mucha intensidad. Por eso, si pasas mucho tiempo anticipando conversaciones, problemas o posibles rechazos, tu cuerpo puede reaccionar como si todo estuviera ocurriendo ahora.\n\nEsto puede provocar tensión, dificultad para dormir, presión en el pecho, cansancio, irritabilidad o sensación de no poder desconectar.\n\nPensar no es malo. De hecho, reflexionar puede ayudarte. El problema aparece cuando pensar deja de abrir caminos y empieza a encerrarte en el mismo círculo.\n\nCuando eso ocurre, el trabajo no es pensar más, sino aprender a cortar el bucle, volver al presente y entender qué miedo o necesidad está intentando proteger ese pensamiento.`
+  },
+  {
+    question: "¿Qué es la rumiación mental?",
+    answer: `La rumiación mental es una forma de pensamiento repetitivo en la que una persona vuelve una y otra vez sobre una preocupación, una conversación, un error, una duda o una situación dolorosa, sin llegar realmente a una solución.\n\nEs como si la mente intentara resolver algo, pero acabara atrapada en el mismo recorrido. Por fuera puede parecer que estás reflexionando, pero por dentro se siente como desgaste, tensión y dificultad para soltar.\n\nLa rumiación suele aparecer con preguntas como: “¿y si hice mal?”, “¿por qué me dijo eso?”, “¿y si pasa algo?”, “¿qué habría ocurrido si…?”, “¿por qué no puedo superarlo?”.\n\nNo es una falta de inteligencia ni una manía sin sentido. Muchas veces es una estrategia de protección: tu mente intenta evitar dolor futuro o encontrar una explicación que te dé calma. El problema es que, cuando se repite demasiado, termina generando más ansiedad.\n\nLa salida no suele estar en encontrar la respuesta perfecta, sino en aprender a reconocer el bucle, regular la emoción que hay debajo y volver poco a poco a una sensación de seguridad interna.`
+  }
+];
+
+export const GESTION_EMOCIONAL_FAQS = [
+  {
+    question: "¿Cómo controlar las emociones?",
+    answer: `Controlar las emociones no significa apagarlas, esconderlas o fingir que no están. Las emociones no son enemigas: son señales. El problema aparece cuando llegan con tanta fuerza que parece que toman el mando por completo.\n\nEl primer paso es hacer una pausa antes de reaccionar. A veces bastan unos segundos para preguntarte: “¿Qué estoy sintiendo realmente?” y “¿Qué necesito antes de responder?”. Esa pequeña distancia puede evitar que una emoción intensa decida por ti.\n\nTambién ayuda llevar la atención al cuerpo: respirar más despacio, notar los pies en el suelo, relajar la mandíbula o salir unos minutos del lugar si la situación lo permite. No se trata de negar lo que sientes, sino de darle espacio sin dejar que lo dirija todo.\n\nSi notas que tus emociones te desbordan con frecuencia, nuestra consulta gratuita puede ayudarte a entender qué situaciones las activan y qué patrón emocional se está repitiendo, sin juzgarte y sin tener que explicarlo todo perfecto desde el principio.`
+  },
+  {
+    question: "¿Cómo gestionar mis emociones?",
+    answer: `Gestionar tus emociones empieza por reconocerlas con honestidad. Muchas veces decimos “estoy mal”, pero debajo puede haber tristeza, miedo, rabia, culpa, vergüenza, cansancio o una mezcla difícil de separar.\n\nUna forma sencilla de empezar es ponerle nombre a lo que sientes. No hace falta hacerlo perfecto. Puedes decir: “creo que esto es miedo”, “creo que estoy saturado” o “me siento herido”. Nombrar una emoción suele hacerla un poco más manejable.\n\nDespués conviene preguntarte qué te está pidiendo esa emoción. La tristeza puede pedir descanso o consuelo. La rabia puede señalar un límite. El miedo puede estar buscando seguridad. La culpa puede necesitar reparación o perspectiva.\n\nGestionar no es controlar con dureza. Es escuchar, comprender y elegir una respuesta más consciente. Con práctica, las emociones dejan de sentirse como una ola que arrasa y empiezan a convertirse en información útil sobre ti.`
+  },
+  {
+    question: "¿Por qué exploto o lloro por todo?",
+    answer: `Explotar o llorar por todo no significa que seas débil ni que estés exagerando. A veces ocurre cuando llevas demasiado tiempo acumulando tensión, conteniendo emociones o intentando funcionar como si nada pasara.\n\nCuando una persona está saturada, el cuerpo puede reaccionar de forma intensa ante cosas pequeñas. No porque esas cosas sean el verdadero problema, sino porque se suman a una carga que ya estaba llena. Es como un vaso que rebosa: la última gota no explica todo el desbordamiento.\n\nTambién puede pasar cuando no has tenido espacio para descansar, expresar lo que sientes, poner límites o sentirte acompañado. Entonces la emoción sale de golpe: como llanto, irritabilidad, bloqueo o necesidad de alejarte.\n\nEn lugar de preguntarte “¿por qué soy así?”, puede ser más útil preguntarte: “¿qué llevo demasiado tiempo sosteniendo?”. Esa pregunta abre una puerta más amable para empezar a comprenderte.`
+  },
+  {
+    question: "¿Cómo regular emociones intensas?",
+    answer: `Cuando una emoción es muy intensa, no suele ayudar intentar razonar demasiado en ese mismo momento. Primero conviene bajar la activación del cuerpo. Después ya será más fácil pensar con claridad.\n\nPuedes empezar por respirar más lento, soltar el aire despacio, apoyar los pies en el suelo y mirar a tu alrededor. Nombra mentalmente cinco cosas que ves, cuatro que puedes tocar y tres sonidos que escuchas. Esto ayuda a volver al presente.\n\nTambién puede servir alejarte un momento de la situación si puedes hacerlo sin empeorar el conflicto. No para huir, sino para no responder desde el pico más alto de la emoción.\n\nCuando la intensidad baje, puedes preguntarte: “¿Qué ha activado esto?”, “¿qué necesitaba en ese momento?” y “¿qué puedo hacer ahora de forma más cuidadosa?”. Regular una emoción no es eliminarla; es atravesarla sin que te arrastre.`
+  },
+  {
+    question: "¿Qué hacer cuando no sé cómo me siento?",
+    answer: `No saber cómo te sientes es más común de lo que parece. A veces hay tantas emociones mezcladas que ninguna se distingue bien. Otras veces llevas tanto tiempo tirando hacia adelante que has dejado de escuchar lo que ocurre dentro.\n\nPuedes empezar por el cuerpo. Pregúntate: “¿Dónde noto algo ahora mismo?”. Puede ser presión en el pecho, nudo en la garganta, tensión en la mandíbula, cansancio, vacío, inquietud o ganas de llorar. El cuerpo muchas veces da pistas antes que las palabras.\n\nDespués prueba con opciones sencillas: “¿esto se parece más a tristeza, miedo, rabia, vergüenza, culpa, cansancio o confusión?”. No hace falta acertar de inmediato. Basta con acercarte.\n\nTambién puedes escribir una frase incompleta: “Ahora mismo me siento como si…”. A veces la imagen aparece antes que el nombre exacto de la emoción.\n\nSi te cuesta mucho identificar lo que sientes, no significa que estés desconectado para siempre. Significa que quizá necesitas un espacio seguro para aprender a escucharte con menos exigencia.`
+  },
+  {
+    question: "¿Qué es la gestión emocional?",
+    answer: `La gestión emocional es la capacidad de reconocer, comprender y regular lo que sentimos para responder de una forma más consciente. No consiste en no enfadarse, no llorar o estar siempre tranquilo.\n\nUna buena gestión emocional permite darte cuenta de lo que está pasando dentro de ti antes de actuar impulsivamente. Te ayuda a distinguir entre sentir una emoción y dejar que esa emoción decida por completo lo que haces.\n\nPor ejemplo, puedes sentir rabia sin atacar, tristeza sin hundirte, miedo sin bloquearte o culpa sin castigarte. La emoción sigue estando ahí, pero tú recuperas un poco de espacio para elegir cómo cuidarte y cómo responder.\n\nGestionar emociones no es controlar la vida. Es aprender a acompañarte mejor cuando la vida te mueve por dentro.`
+  }
+];
+
+export const ALIMENTACION_EMOCIONAL_FAQS = [
+  {
+    question: "¿Qué es el hambre emocional?",
+    answer: `El hambre emocional aparece cuando comes no tanto porque tu cuerpo necesite alimento, sino porque intentas calmar, llenar, distraer o compensar una emoción. Puede surgir con ansiedad, tristeza, aburrimiento, soledad, estrés, cansancio o sensación de vacío.\n\nA diferencia del hambre física, suele aparecer de forma más repentina y pedir alimentos concretos, normalmente muy placenteros o fáciles de comer. También puede venir acompañada de urgencia: “lo necesito ya”. Después, a veces aparece culpa o sensación de haber perdido el control.\n\nEsto no significa que seas débil ni que no tengas voluntad. Muchas veces la comida se convierte en una forma rápida de regular algo que por dentro está siendo difícil de sostener.\n\nSi sientes que comes para calmar ansiedad o vacío, nuestra consulta gratuita puede ayudarte a observar qué emoción aparece antes de comer y qué necesidad real puede estar detrás. No se trata de juzgarte, sino de comprender el patrón para empezar a cuidarte de otra manera.`
+  },
+  {
+    question: "¿Cómo dejar de comer por ansiedad?",
+    answer: `Dejar de comer por ansiedad no empieza por prohibirte comida con más dureza. De hecho, cuanto más te castigas, más fácil es que el ciclo se repita: ansiedad, impulso, comida, culpa y otra vez ansiedad.\n\nUn primer paso es hacer una pausa breve antes de comer. No para prohibirte, sino para preguntarte: “¿Tengo hambre física o necesito calmar algo?”. Si la respuesta es emocional, puedes intentar darte unos minutos antes de decidir: respirar, beber agua, salir a caminar, escribir lo que sientes o llamar a alguien.\n\nTambién ayuda tener alternativas de regulación. Si la comida es la única forma de calmarte, es normal que tu mente vuelva a ella. Necesitas construir otros apoyos: descanso, movimiento suave, conversación, respiración, rutina y menos autoexigencia.\n\nNo se trata de hacerlo perfecto. Se trata de ganar segundos de conciencia antes del impulso. Ahí empieza el cambio.\n\nSi esto se repite mucho o te genera culpa intensa, puede ser importante pedir apoyo profesional para trabajarlo con cuidado.`
+  },
+  {
+    question: "¿Por qué como por ansiedad?",
+    answer: `Puedes comer por ansiedad porque la comida ofrece alivio rápido. Comer puede distraer, calmar, dar sensación de recompensa o llenar momentáneamente un vacío. El problema es que ese alivio suele durar poco si la emoción de fondo sigue sin ser atendida.\n\nA veces comes por ansiedad cuando llevas muchas horas aguantando, cuando te sientes solo, cuando estás saturado, cuando no sabes qué hacer con una preocupación o cuando necesitas una pausa y no te permites descansar de otra forma.\n\nTambién puede influir el cansancio. Cuando estás agotado, tu capacidad de decidir con calma baja, y el cuerpo busca energía o consuelo inmediato.\n\nLa pregunta no debería ser solo “¿por qué no tengo fuerza de voluntad?”, sino “¿qué emoción estoy intentando calmar con comida?”. Esa pregunta cambia la mirada: deja de ser una lucha contra ti y empieza a ser una forma de escucharte.`
+  },
+  {
+    question: "¿Cómo distinguir hambre física y hambre emocional?",
+    answer: `El hambre física suele aparecer poco a poco. Puede sentirse en el estómago, mejora con distintos tipos de comida y normalmente permite esperar un poco. Después de comer, aparece saciedad.\n\nEl hambre emocional suele aparecer de forma más repentina. A menudo pide algo concreto, como dulce, salado, comida rápida o algo muy placentero. Puede sentirse como urgencia, ansiedad o necesidad de calmarte ya.\n\nUna forma sencilla de distinguirlas es preguntarte: “¿Comería algo simple y nutritivo ahora, o solo quiero ese alimento concreto?”. Si aceptarías una comida normal, quizá hay hambre física. Si solo te sirve algo específico y urgente, puede haber hambre emocional.\n\nOtra pista es lo que aparece después. El hambre física suele dejar alivio y energía. El hambre emocional, if se usa como única vía de calma, puede dejar culpa, vergüenza o sensación de desconexión.\n\nNo hace falta acertar siempre. Aprender a distinguirlas es un proceso de observación, no un examen.`
+  },
+  {
+    question: "¿Qué hacer después de un atracón?",
+    answer: `Después de un atracón, lo más importante es no castigarte. Aunque aparezcan culpa, vergüenza o rabia contigo, castigarte suele alimentar el mismo ciclo que quieres romper.\n\nIntenta volver a un gesto básico de cuidado: beber agua, respirar, moverte suavemente si te apetece y evitar compensaciones extremas. No necesitas “pagar” por lo ocurrido. Necesitas comprender qué pasó antes.\n\nCuando estés más tranquilo, pregúntate con honestidad y sin juicio: “¿Qué estaba sintiendo antes del atracón?”, “¿tenía hambre física?”, “¿estaba ansioso, cansado, solo, triste o saturado?”, “¿qué necesitaba en realidad?”.\n\nUn atracón no define quién eres. Es una señal de que algo necesita atención. Si ocurre con frecuencia, si sientes pérdida de control o si intentas compensarlo con vómitos, ayunos extremos, ejercicio excesivo o laxantes, es importante pedir ayuda profesional cuanto antes.`
+  },
+  {
+    question: "¿La ansiedad puede afectar al estómago y la comida?",
+    answer: `Sí. La ansiedad puede afectar mucho al estómago y a la forma de comer. Algunas personas pierden el apetito; otras comen más; otras notan náuseas, nudo en el estómago, digestiones pesadas, urgencia por comer o molestias intestinales.\n\nCuando estás ansioso, el cuerpo entra en modo alerta. En ese estado, la digestión puede alterarse y la comida puede convertirse tanto en un problema como en una forma rápida de buscar calma.\n\nTambién puede ocurrir que la ansiedad cambie tus decisiones alimentarias. Si estás muy activado, cansado o preocupado, es más fácil buscar alimentos que den alivio rápido, aunque luego no te sienten bien o te generen culpa.\n\nNo se trata de culparte por cómo comes, sino de entender la relación entre lo que sientes y cómo responde tu cuerpo. A veces, mejorar la alimentación emocional empieza por cuidar la ansiedad que la está empujando.`
+  }
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
@@ -87,16 +222,31 @@ export default function Home() {
   
   const [openAnsiedadFaqIndex, setOpenAnsiedadFaqIndex] = useState<number | null>(null);
   const [openEstresFaqIndex, setOpenEstresFaqIndex] = useState<number | null>(null);
+  const [openInsomnioFaqIndex, setOpenInsomnioFaqIndex] = useState<number | null>(null);
+  const [openProcrastinacionFaqIndex, setOpenProcrastinacionFaqIndex] = useState<number | null>(null);
+  const [openRumiacionFaqIndex, setOpenRumiacionFaqIndex] = useState<number | null>(null);
+  const [openGestionEmocionalFaqIndex, setOpenGestionEmocionalFaqIndex] = useState<number | null>(null);
+  const [openAlimentacionEmocionalFaqIndex, setOpenAlimentacionEmocionalFaqIndex] = useState<number | null>(null);
 
   const closeInfographicModal = () => {
     const overlayId = selectedInfographic?.id;
     const shouldRestoreHome =
       (overlayId === 'ansiedad' && window.location.pathname === '/ansiedad') ||
-      (overlayId === 'estres' && window.location.pathname === '/estres');
+      (overlayId === 'estres' && window.location.pathname === '/estres') ||
+      (overlayId === 'insomnio' && window.location.pathname === '/insomnio') ||
+      (overlayId === 'procrastinacion' && window.location.pathname === '/procrastinacion') ||
+      (overlayId === 'rumiacion' && window.location.pathname === '/pensar-demasiado-rumiacion') ||
+      (overlayId === 'gestion-emocional' && window.location.pathname === '/gestion-emocional') ||
+      (overlayId === 'alimentacion-emocional' && window.location.pathname === '/alimentacion-emocional');
 
     setSelectedInfographic(null);
     setOpenAnsiedadFaqIndex(null);
     setOpenEstresFaqIndex(null);
+    setOpenInsomnioFaqIndex(null);
+    setOpenProcrastinacionFaqIndex(null);
+    setOpenRumiacionFaqIndex(null);
+    setOpenGestionEmocionalFaqIndex(null);
+    setOpenAlimentacionEmocionalFaqIndex(null);
 
     if (shouldRestoreHome) {
       window.history.pushState({}, '', '/');
@@ -119,6 +269,46 @@ export default function Home() {
       ) {
         setSelectedInfographic(null);
         setOpenEstresFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'insomnio' &&
+        window.location.pathname !== '/insomnio'
+      ) {
+        setSelectedInfographic(null);
+        setOpenInsomnioFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'procrastinacion' &&
+        window.location.pathname !== '/procrastinacion'
+      ) {
+        setSelectedInfographic(null);
+        setOpenProcrastinacionFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'rumiacion' &&
+        window.location.pathname !== '/pensar-demasiado-rumiacion'
+      ) {
+        setSelectedInfographic(null);
+        setOpenRumiacionFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'gestion-emocional' &&
+        window.location.pathname !== '/gestion-emocional'
+      ) {
+        setSelectedInfographic(null);
+        setOpenGestionEmocionalFaqIndex(null);
+      }
+
+      if (
+        selectedInfographic?.id === 'alimentacion-emocional' &&
+        window.location.pathname !== '/alimentacion-emocional'
+      ) {
+        setSelectedInfographic(null);
+        setOpenAlimentacionEmocionalFaqIndex(null);
       }
     };
 
@@ -311,7 +501,10 @@ export default function Home() {
               icon="bedtime"
               colSpanClass="md:col-span-4"
               bgColorClass="zen-sand"
-              onClick={() => setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'insomnio', src: '/images/info-insomnio.jpg' });
+                window.history.pushState({ symptomOverlay: 'insomnio' }, '', '/insomnio');
+              }}
             />
 
             <SymptomCard
@@ -322,7 +515,10 @@ export default function Home() {
               icon="schedule"
               colSpanClass="md:col-span-8"
               bgColorClass="zen-mist"
-              onClick={() => setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'procrastinacion', src: '/images/info-procrastinacion.jpg' });
+                window.history.pushState({ symptomOverlay: 'procrastinacion' }, '', '/procrastinacion');
+              }}
             />
 
             <SymptomCard
@@ -333,7 +529,10 @@ export default function Home() {
               icon="all_inclusive"
               colSpanClass="md:col-span-8"
               bgColorClass="zen-azure-fog"
-              onClick={() => setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'rumiacion', src: '/images/info-rumiacion.jpg' });
+                window.history.pushState({ symptomOverlay: 'rumiacion' }, '', '/pensar-demasiado-rumiacion');
+              }}
             />
 
             <SymptomCard
@@ -344,7 +543,10 @@ export default function Home() {
               icon="psychology_alt"
               colSpanClass="md:col-span-4"
               bgColorClass="zen-stone"
-              onClick={() => setSelectedInfographic({ id: 'emociones', src: '/images/info-emociones.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'gestion-emocional', src: '/images/info-emociones.jpg' });
+                window.history.pushState({ symptomOverlay: 'gestion-emocional' }, '', '/gestion-emocional');
+              }}
             />
 
             <SymptomCard
@@ -356,7 +558,10 @@ export default function Home() {
               colSpanClass="md:col-span-4"
               bgColorClass="zen-light-gray"
               isDarkText={true}
-              onClick={() => setSelectedInfographic({ id: 'alimentacion', src: '/images/info-alimentacion.jpg'})}
+              onClick={() => {
+                setSelectedInfographic({ id: 'alimentacion-emocional', src: '/images/info-alimentacion.jpg' });
+                window.history.pushState({ symptomOverlay: 'alimentacion-emocional' }, '', '/alimentacion-emocional');
+              }}
             />
 
             <div className="md:col-span-8 relative rounded-[2.5rem] overflow-hidden group min-h-[380px] shadow-xl">
@@ -903,6 +1108,216 @@ export default function Home() {
                             </button>
 
                             {openEstresFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'insomnio' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre insomnio
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para empezar a ordenar el descanso, la activación nocturna y las preocupaciones que no se apagan.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {INSOMNIO_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openInsomnioFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenInsomnioFaqIndex(openInsomnioFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openInsomnioFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openInsomnioFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'procrastinacion' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre procrastinación
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para entender por qué cuesta arrancar, cómo gestionar la parálisis y empezar poco a poco.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {PROCRASTINACION_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openProcrastinacionFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenProcrastinacionFaqIndex(openProcrastinacionFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openProcrastinacionFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openProcrastinacionFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'rumiacion' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre pensar demasiado y rumiación mental
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para empezar a reconocer el bucle mental, ordenar los pensamientos repetitivos y volver al presente.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {RUMIACION_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openRumiacionFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenRumiacionFaqIndex(openRumiacionFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openRumiacionFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openRumiacionFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'gestion-emocional' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre gestión emocional
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para empezar a reconocer, regular y comprender lo que sientes sin dejar que tus emociones decidan por ti.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {GESTION_EMOCIONAL_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openGestionEmocionalFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenGestionEmocionalFaqIndex(openGestionEmocionalFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openGestionEmocionalFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openGestionEmocionalFaqIndex === index && (
+                              <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                                {item.answer}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedInfographic?.id === 'alimentacion-emocional' && (
+                    <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
+                      <div className="p-6 md:p-8 border-b border-white/10">
+                        <h2 className="font-headline text-2xl md:text-3xl italic">
+                          Preguntas frecuentes sobre alimentación emocional
+                        </h2>
+                        <p className="text-white/60 mt-2 font-light">
+                          Respuestas claras para empezar a distinguir hambre física, hambre emocional, ansiedad y relación con la comida sin juzgarte.
+                        </p>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {ALIMENTACION_EMOCIONAL_FAQS.map((item, index) => (
+                          <div key={item.question}>
+                            <button
+                              type="button"
+                              aria-expanded={openAlimentacionEmocionalFaqIndex === index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenAlimentacionEmocionalFaqIndex(openAlimentacionEmocionalFaqIndex === index ? null : index);
+                              }}
+                              className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                            >
+                              <h3 className="font-headline text-lg md:text-xl text-white">
+                                {item.question}
+                              </h3>
+                              <span className="material-symbols-outlined text-white/70">
+                                {openAlimentacionEmocionalFaqIndex === index ? "remove" : "add"}
+                              </span>
+                            </button>
+
+                            {openAlimentacionEmocionalFaqIndex === index && (
                               <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
                                 {item.answer}
                               </div>

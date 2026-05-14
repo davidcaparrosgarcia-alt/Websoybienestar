@@ -30,13 +30,27 @@ export default function Resources() {
   const [showGratitudeText, setShowGratitudeText] = useState(false);
   const gratitudeTimer = useRef<NodeJS.Timeout | null>(null);
 
+  const isTouchDevice = () => window.matchMedia('(hover: none)').matches;
+
+  const toggleMobileText = (type: 'breathing' | 'gestion' | 'goals' | 'gratitude') => {
+    if (!isTouchDevice()) return;
+
+    if (type === 'breathing') setShowBreathingText((prev) => !prev);
+    if (type === 'gestion') setShowGestionsTextBg((prev) => !prev);
+    if (type === 'goals') setShowGoalsText((prev) => !prev);
+    if (type === 'gratitude') setShowGratitudeText((prev) => !prev);
+  };
+
   const handlePointerDown = (type: 'breathing' | 'gestion' | 'goals' | 'gratitude') => {
+    if (!isTouchDevice()) return;
+
     const timer = setTimeout(() => {
-      if (type === 'breathing') setShowBreathingText(true);
-      if (type === 'gestion') setShowGestionsTextBg(true);
-      if (type === 'goals') setShowGoalsText(true);
-      if (type === 'gratitude') setShowGratitudeText(true);
-    }, 400); // 400ms para pulsación prolongada
+      if (type === 'breathing') setIsBreathingModalOpen(true);
+      if (type === 'gestion') setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/info-terapia-cognitiva.jpg' });
+      if (type === 'goals') navigate('/weekly-goals');
+      if (type === 'gratitude') navigate('/emotion-diary');
+    }, 750);
+    
     if (type === 'breathing') breathingTimer.current = timer;
     if (type === 'gestion') gestionTimer.current = timer;
     if (type === 'goals') goalsTimer.current = timer;
@@ -154,7 +168,7 @@ export default function Resources() {
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Recursos de Claridad</p>
               <h1 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
@@ -162,7 +176,7 @@ export default function Resources() {
               </h1>
               <div className="h-px w-24 bg-primary/20"></div>
             </div>
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 lg:pt-10">
               <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed">
                 Una colección repleta de herramientas diseñadas para calmar las emociones y estructurar el pensamiento. Cada módulo es un paso hacia tu bienestar interior.
               </p>
@@ -188,21 +202,27 @@ export default function Resources() {
           <div 
              className="md:col-span-4 group cursor-pointer flex flex-col h-full" 
             onClick={() => {
-              if (window.matchMedia('(hover: hover)').matches) navigate('/emotion-diary');
+              if (window.matchMedia('(hover: hover)').matches) {
+                navigate('/emotion-diary');
+              } else {
+                toggleMobileText('gratitude');
+              }
             }}
             onDoubleClick={() => navigate('/emotion-diary')}
             onPointerDown={() => handlePointerDown('gratitude')}
             onPointerUp={() => handlePointerUp('gratitude')}
             onPointerLeave={() => {
               handlePointerUp('gratitude');
-              setShowGratitudeText(false);
+              if (window.matchMedia('(hover: hover)').matches) {
+                setShowGratitudeText(false);
+              }
             }}
             onContextMenu={(e) => {
                if (window.matchMedia('(hover: none)').matches) e.preventDefault();
             }}
           >
-            <div className="relative overflow-hidden rounded-2xl flex-1 flex flex-col">
-              <img alt="Diario de Gratitud" className="dynamic-color-img absolute inset-0 w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 md:group-hover:grayscale-0 md:group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo_diario.jpg" />
+            <div className="relative overflow-hidden rounded-2xl flex-1 flex flex-col min-h-[420px] sm:min-h-[480px] md:min-h-0 md:aspect-auto">
+              <img alt="Diario de Gratitud" className="dynamic-color-img absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 md:group-hover:grayscale-0 md:group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo_diario.jpg" />
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
               
               <div className="relative z-10 flex flex-col justify-end p-6 md:p-8 h-full pointer-events-none text-center">
@@ -225,14 +245,20 @@ export default function Resources() {
           <div 
              className="md:col-span-5 group cursor-pointer" 
             onClick={() => {
-              if (window.matchMedia('(hover: hover)').matches) navigate('/weekly-goals');
+              if (window.matchMedia('(hover: hover)').matches) {
+                navigate('/weekly-goals');
+              } else {
+                toggleMobileText('goals');
+              }
             }}
             onDoubleClick={() => navigate('/weekly-goals')}
             onPointerDown={() => handlePointerDown('goals')}
             onPointerUp={() => handlePointerUp('goals')}
             onPointerLeave={() => {
               handlePointerUp('goals');
-              setShowGoalsText(false);
+              if (window.matchMedia('(hover: hover)').matches) {
+                setShowGoalsText(false);
+              }
             }}
             onContextMenu={(e) => {
                if (window.matchMedia('(hover: none)').matches) e.preventDefault();
@@ -263,16 +289,22 @@ export default function Resources() {
 
           {/* Técnicas de Respiración */}
           <div 
-            className="md:col-span-7 group cursor-pointer" 
+             className="md:col-span-7 group cursor-pointer" 
             onClick={() => {
-              if (window.matchMedia('(hover: hover)').matches) setIsBreathingModalOpen(true);
+              if (window.matchMedia('(hover: hover)').matches) {
+                setIsBreathingModalOpen(true);
+              } else {
+                toggleMobileText('breathing');
+              }
             }}
             onDoubleClick={() => setIsBreathingModalOpen(true)}
             onPointerDown={() => handlePointerDown('breathing')}
             onPointerUp={() => handlePointerUp('breathing')}
             onPointerLeave={() => {
               handlePointerUp('breathing');
-              setShowBreathingText(false);
+              if (window.matchMedia('(hover: hover)').matches) {
+                setShowBreathingText(false);
+              }
             }}
             onContextMenu={(e) => {
                if (window.matchMedia('(hover: none)').matches) e.preventDefault();
@@ -298,6 +330,8 @@ export default function Resources() {
             onClick={() => {
               if (window.matchMedia('(hover: hover)').matches) {
                 setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/info-terapia-cognitiva.jpg' });
+              } else {
+                toggleMobileText('gestion');
               }
             }}
             onDoubleClick={() => {
@@ -307,15 +341,17 @@ export default function Resources() {
             onPointerUp={() => handlePointerUp('gestion')}
             onPointerLeave={() => {
               handlePointerUp('gestion');
-              setShowGestionsTextBg(false);
+              if (window.matchMedia('(hover: hover)').matches) {
+                setShowGestionsTextBg(false);
+              }
             }}
             onContextMenu={(e) => {
                if (window.matchMedia('(hover: none)').matches) e.preventDefault();
             }}
           >
-            <div className="relative w-full aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
+            <div className="relative w-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px] aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
               <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
-              <div className="relative z-10 flex w-full h-full min-h-[400px]">
+              <div className="relative z-10 flex w-full h-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px]">
                 <div className="hidden md:block w-1/2"></div>
                 <div className={`w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
                   <div className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGestionsTextBg ? 'opacity-100' : 'opacity-0'}`}>

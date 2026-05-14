@@ -17,6 +17,10 @@ import MethodDetails from "./pages/MethodDetails";
 import AnxietyManagement from "./pages/AnxietyManagement";
 import Ansiedad from "./pages/Ansiedad";
 import Estres from "./pages/Estres";
+import Insomnio from "./pages/Insomnio";
+import Procrastinacion from "./pages/Procrastinacion";
+import RumiacionMental from "./pages/RumiacionMental";
+import GestionEmocional from "./pages/GestionEmocional";
 import EmotionDiary from "./pages/EmotionDiary";
 import WeeklyGoals from "./pages/WeeklyGoals";
 import Login from "./pages/Login";
@@ -41,6 +45,10 @@ export default function App() {
           <Route path="anxiety" element={<AnxietyManagement />} />
           <Route path="ansiedad" element={<Ansiedad />} />
           <Route path="estres" element={<Estres />} />
+          <Route path="insomnio" element={<Insomnio />} />
+          <Route path="procrastinacion" element={<Procrastinacion />} />
+          <Route path="pensar-demasiado-rumiacion" element={<RumiacionMental />} />
+          <Route path="gestion-emocional" element={<GestionEmocional />} />
           <Route path="emotion-diary" element={
             <ProtectedRoute>
               <EmotionDiary />
