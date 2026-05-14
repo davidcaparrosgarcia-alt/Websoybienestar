@@ -16,6 +16,9 @@ interface Message {
 }
 
 export default function Session() {
+  const seo = (
+    <SEO title="Consulta inicial online | SoyBienestar" description="Espacio privado de consulta inicial online para ordenar tu situación emocional dentro de SoyBienestar.es." canonicalPath="/session" noIndex={true} />
+  );
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -783,18 +786,23 @@ export default function Session() {
 
   if (hasDoneConsultation === null) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-5.5rem)]">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">
-          progress_activity
-        </span>
-      </div>
+      <>
+        {seo}
+        <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-5.5rem)]">
+          <span className="material-symbols-outlined animate-spin text-primary text-4xl">
+            progress_activity
+          </span>
+        </div>
+      </>
     );
   }
 
   if (hasDoneConsultation) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
-        <div className="max-w-md w-full bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
+      <>
+        {seo}
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
+          <div className="max-w-md w-full bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
           <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center">
             <span className="material-symbols-outlined text-4xl">
               fact_check
@@ -826,15 +834,18 @@ export default function Session() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   if (!hasDoneConsultation && !hasStartedGuidedSession) {
     return (
-      <div
-        className="flex-1 flex flex-col items-center justify-center p-8 bg-cover bg-center bg-no-repeat relative"
-        style={{ backgroundImage: 'url("/images/consulta_gratuita.jpg")' }}
-      >
+      <>
+        {seo}
+        <div
+          className="flex-1 flex flex-col items-center justify-center p-8 bg-cover bg-center bg-no-repeat relative"
+          style={{ backgroundImage: 'url("/images/consulta_gratuita.jpg")' }}
+        >
         <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
         <div className="relative z-10 max-w-xl w-full bg-surface-container-low p-10 rounded-[2rem] border border-outline-variant/20 shadow-xl text-center flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-500">
           <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2">
@@ -866,12 +877,13 @@ export default function Session() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   return (
     <>
-      <SEO title="Consulta inicial online | SoyBienestar" description="Espacio privado de consulta inicial online para ordenar tu situación emocional dentro de SoyBienestar.es." canonicalPath="/session" noIndex={true} />
+      {seo}
     <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)] relative">
       {urgentMessage && (
         <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">

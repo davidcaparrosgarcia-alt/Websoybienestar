@@ -17,6 +17,9 @@ import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
 
 export default function Report() {
+  const seo = (
+    <SEO title="Tu primera lectura de claridad | SoyBienestar" description="Informe privado generado tras la consulta inicial de SoyBienestar.es." canonicalPath="/report" noIndex={true} />
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
@@ -305,23 +308,28 @@ export default function Report() {
 
   if (isAuthorized === null || isLoading) {
     return (
-      <div className="flex-1 w-full bg-transparent flex items-center justify-center min-h-[50vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="material-symbols-outlined animate-spin text-secondary text-4xl">
-            progress_activity
-          </span>
-          <p className="font-label text-on-surface-variant">
-            Cargando su informe...
-          </p>
+      <>
+        {seo}
+        <div className="flex-1 w-full bg-transparent flex items-center justify-center min-h-[50vh]">
+          <div className="flex flex-col items-center gap-4">
+            <span className="material-symbols-outlined animate-spin text-secondary text-4xl">
+              progress_activity
+            </span>
+            <p className="font-label text-on-surface-variant">
+              Cargando su informe...
+            </p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!isAuthorized) {
     return (
-      <div className="flex-1 w-full bg-transparent p-8 flex items-center justify-center min-h-[50vh]">
-        <div className="max-w-md w-full bg-surface-container-low p-8 rounded-2xl border border-outline-variant/10 text-center space-y-6">
+      <>
+        {seo}
+        <div className="flex-1 w-full bg-transparent p-8 flex items-center justify-center min-h-[50vh]">
+          <div className="max-w-md w-full bg-surface-container-low p-8 rounded-2xl border border-outline-variant/10 text-center space-y-6">
           <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
             <span className="material-symbols-outlined text-3xl">lock</span>
           </div>
@@ -340,12 +348,13 @@ export default function Report() {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
   return (
     <>
-      <SEO title="Tu primera lectura de claridad | SoyBienestar" description="Informe privado generado tras la consulta inicial de SoyBienestar.es." canonicalPath="/report" noIndex={true} />
+      {seo}
     <div className="flex-1 bg-transparent w-full">
       {/* POST-ACCESS CONTENT: BENTO GRID SUMMARY */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-12 py-16">

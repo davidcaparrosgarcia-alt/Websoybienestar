@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { PROCRASTINACION_FAQS } from "./Home";
+import { PROCRASTINACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 
 export default function Procrastinacion() {

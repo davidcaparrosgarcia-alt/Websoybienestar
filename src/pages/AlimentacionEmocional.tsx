@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { ALIMENTACION_EMOCIONAL_FAQS } from "./Home";
+import { ALIMENTACION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 
 export default function AlimentacionEmocional() {

@@ -5,6 +5,9 @@ import { auth, signInWithGoogle } from "../firebase";
 import SEO from "../components/SEO";
 
 export default function Login() {
+  const seo = (
+    <SEO title="Acceso privado | SoyBienestar" description="Página de acceso privado a SoyBienestar.es." canonicalPath="/login" noIndex={true} />
+  );
   const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,15 +33,18 @@ export default function Login() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-surface">
-        <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
-      </div>
+      <>
+        {seo}
+        <div className="flex-1 flex items-center justify-center bg-surface">
+          <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
+        </div>
+      </>
     );
   }
 
   return (
     <>
-      <SEO title="Acceso privado | SoyBienestar" description="Página de acceso privado a SoyBienestar.es." canonicalPath="/login" noIndex={true} />
+      {seo}
     <div className="flex-1 flex flex-col min-h-[calc(100vh-5.5rem)]">
       <section className="relative flex-1 flex items-center justify-center overflow-hidden py-24">
         <div className="absolute inset-0 z-0">
