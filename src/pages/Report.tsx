@@ -14,6 +14,7 @@ import Markdown from "react-markdown";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
 import NextStepsModal from "../components/NextStepsModal";
+import SEO from "../components/SEO";
 
 export default function Report() {
   const location = useLocation();
@@ -343,6 +344,8 @@ export default function Report() {
   }
 
   return (
+    <>
+      <SEO title="Tu primera lectura de claridad | SoyBienestar" description="Informe privado generado tras la consulta inicial de SoyBienestar.es." canonicalPath="/report" noIndex={true} />
     <div className="flex-1 bg-transparent w-full">
       {/* POST-ACCESS CONTENT: BENTO GRID SUMMARY */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-12 py-16">
@@ -851,5 +854,6 @@ export default function Report() {
         phoneValue={phoneValue}
       />
     </div>
+    </>
   );
 }

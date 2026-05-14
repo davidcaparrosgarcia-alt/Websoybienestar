@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 export default function Privacy() {
   const [copied, setCopied] = useState(false);
@@ -17,6 +18,15 @@ export default function Privacy() {
   };
 
   return (
+    <>
+
+      <SEO
+        title="Política de privacidad | SoyBienestar"
+        description="Consulta cómo SoyBienestar.es trata y protege tus datos personales dentro de sus servicios digitales de bienestar emocional."
+        canonicalPath="/privacy"
+        noIndex={false}
+      />
+
     <div className="flex-1 bg-transparent w-full">
       {/* Hero Section: The Breathing Hero */}
       <section className="relative h-[614px] flex items-center overflow-hidden">
@@ -133,5 +143,6 @@ export default function Privacy() {
         </div>
       </section>
     </div>
+      </>
   );
 }

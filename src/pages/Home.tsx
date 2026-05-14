@@ -8,6 +8,7 @@ import RippleWindow from "../components/RippleWindow";
 import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 import SymptomCard from "../components/SymptomCard";
 import NextStepsModal from "../components/NextStepsModal";
+import SEO from "../components/SEO";
 
 const ANSIEDAD_FAQS = [
   {
@@ -428,6 +429,12 @@ export default function Home() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <SEO
+        title="Terapia online para ansiedad, estrés e insomnio | SoyBienestar"
+        description="Recupera tu bienestar emocional desde casa con SoyBienestar.es: consulta gratuita, recursos de calma y orientación online para ansiedad, estrés, insomnio y otros bloqueos emocionales."
+        canonicalPath="/"
+        noIndex={false}
+      />
       {/* Hero Section */}
       <section className="relative w-full mb-20 md:mb-32">
         <div className="relative w-full">

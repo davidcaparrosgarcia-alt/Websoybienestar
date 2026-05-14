@@ -2,54 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { INSOMNIO_FAQS } from "./Home";
+import SEO from "../components/SEO";
 
 export default function Insomnio() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Insomnio: causas, síntomas y qué hacer cuando no puedes dormir | SoyBienestar.es";
-
-    const metaDescriptionContent = "Comprende por qué puedes tener insomnio, qué hacer cuando no puedes dormir y cómo empezar a ordenar las preocupaciones que mantienen tu mente activa por la noche.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/insomnio`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
-
+  
   useEffect(() => {
     const scriptId = "faq-jsonld-insomnio";
     document.getElementById(scriptId)?.remove();
@@ -73,12 +32,14 @@ export default function Insomnio() {
     script.text = JSON.stringify(jsonLd);
     document.head.appendChild(script);
 
-    return () => {
+  return () => {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
 
   return (
+    <>
+      <SEO title="Insomnio: causas y qué hacer cuando no puedes dormir | SoyBienestar" description="Descubre por qué no puedes dormir, cómo combatir el insomnio, cómo dormir con ansiedad y qué recursos pueden ayudarte a descansar mejor." canonicalPath="/insomnio" noIndex={false} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}
@@ -180,5 +141,6 @@ export default function Insomnio() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }

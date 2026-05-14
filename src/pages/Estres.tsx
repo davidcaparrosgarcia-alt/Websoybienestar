@@ -2,54 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ESTRES_FAQS } from "./Home";
+import SEO from "../components/SEO";
 
 export default function Estres() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Estrés: síntomas, causas y qué hacer cuando la presión te supera | SoyBienestar.es";
-
-    const metaDescriptionContent = "Reconoce síntomas frecuentes de estrés, estrés laboral y burnout, y revisa primeros pasos para ordenar la presión, recuperar claridad y pedir apoyo si lo necesitas.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/estres`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
-
+  
   useEffect(() => {
     const scriptId = "faq-jsonld-estres";
     document.getElementById(scriptId)?.remove();
@@ -73,12 +32,14 @@ export default function Estres() {
     script.text = JSON.stringify(jsonLd);
     document.head.appendChild(script);
 
-    return () => {
+  return () => {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
 
   return (
+    <>
+      <SEO title="Estrés y agotamiento mental: síntomas y cómo aliviarlo | SoyBienestar" description="Aprende a reconocer el estrés, el agotamiento mental y la ansiedad en el trabajo, y descubre recursos para recuperar calma y claridad." canonicalPath="/estres" noIndex={false} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}
@@ -180,5 +141,6 @@ export default function Estres() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }

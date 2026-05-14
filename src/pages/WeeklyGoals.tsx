@@ -5,6 +5,7 @@ import { auth, db } from "../firebase";
 import { collection, query, doc, setDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
+import SEO from "../components/SEO";
 
 type GoalType = "Bienestar Mental" | "Actividad Física" | "Desarrollo Intelectual" | "Gestión de Emociones" | "Azar";
 const GOAL_TYPES: GoalType[] = ["Bienestar Mental", "Actividad Física", "Desarrollo Intelectual", "Gestión de Emociones", "Azar"];
@@ -313,6 +314,11 @@ export default function WeeklyGoals() {
   };
 
   return (
+    <>
+      <SEO title="Propósitos semanales privados | SoyBienestar" description="Herramienta privada para organizar propósitos semanales dentro de SoyBienestar.es." canonicalPath="/weekly-goals" noIndex={true} />
+
+      
+
     <div className="flex-1 bg-transparent text-on-surface font-body w-full min-h-screen">
       <main className="pt-16 pb-20 max-w-7xl mx-auto px-8 min-h-screen">
         {/* Header Section */}
@@ -537,5 +543,6 @@ export default function WeeklyGoals() {
         </div>
       </main>
     </div>
+    </>
   );
 }

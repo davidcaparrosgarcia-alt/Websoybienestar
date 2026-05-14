@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from "../components/SEO";
 
 export default function Terms() {
   useEffect(() => {
@@ -7,6 +8,15 @@ export default function Terms() {
   }, []);
 
   return (
+    <>
+
+      <SEO
+        title="Aviso legal y términos de uso | SoyBienestar"
+        description="Consulta los términos de uso, condiciones legales y responsabilidades asociadas al uso de SoyBienestar.es."
+        canonicalPath="/terms"
+        noIndex={false}
+      />
+
     <div className="flex-1 bg-transparent min-h-screen text-on-surface pb-24">
       {/* Header */}
       <section className="bg-primary pt-32 pb-24 text-center px-6 relative overflow-hidden">
@@ -101,5 +111,6 @@ export default function Terms() {
         </div>
       </section>
     </div>
+      </>
   );
 }

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import Markdown from "react-markdown";
+import SEO from "../components/SEO";
 
 export default function DossierEspejo() {
   const navigate = useNavigate();
@@ -245,6 +246,8 @@ export default function DossierEspejo() {
 
   // Render Dossier
   return (
+    <>
+      <SEO title="Dossier Espejo personalizado | SoyBienestar" description="Acceso privado al Dossier Espejo personalizado de SoyBienestar.es." canonicalPath="/dossier-espejo" noIndex={true} />
     <div className="flex-grow flex flex-col items-center w-full max-w-screen-2xl mx-auto px-6 md:px-12 py-16 space-y-32">
       {/* Hero Section */}
       <section className="w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -483,5 +486,6 @@ export default function DossierEspejo() {
         </div>
       )}
     </div>
+    </>
   );
 }

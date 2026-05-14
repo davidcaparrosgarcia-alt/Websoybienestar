@@ -4,6 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
+import SEO from "../components/SEO";
 
 export default function MethodDetails() {
   const navigate = useNavigate();
@@ -70,6 +71,12 @@ export default function MethodDetails() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <SEO
+        title="Método ReprogrÁmate: claridad, cuestionario y dossier personal | SoyBienestar"
+        description="Descubre las fases del método ReprogrÁmate: consulta inicial, Cuestionario Espejo, Dossier Espejo personalizado y próximos pasos de acompañamiento."
+        canonicalPath="/method-details"
+        noIndex={false}
+      />
       {/* Hero: Professional Presentation with Large Logo Integration */}
       <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
         <div className="absolute inset-0 z-0">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
+import SEO from "../components/SEO";
 
 const ANSIEDAD_FAQS = [
   {
@@ -33,49 +34,7 @@ export default function Ansiedad() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Ansiedad: síntomas, causas y qué hacer para recuperar la calma | SoyBienestar.es";
-
-    const metaDescriptionContent = "Reconoce síntomas frecuentes de ansiedad, comprende por qué puedes vivir en alerta incluso sin un peligro real y descubre primeros pasos para ordenar lo que sientes.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/ansiedad`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
-
+  
   useEffect(() => {
     const scriptId = "faq-jsonld-ansiedad";
     document.getElementById(scriptId)?.remove();
@@ -99,12 +58,14 @@ export default function Ansiedad() {
     script.text = JSON.stringify(jsonLd);
     document.head.appendChild(script);
 
-    return () => {
+  return () => {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
 
   return (
+    <>
+      <SEO title="Ansiedad: síntomas, causas y cómo recuperar la calma | SoyBienestar" description="Descubre cómo controlar la ansiedad, cuáles son sus síntomas, qué hacer cuando aparece y cuándo puede ayudarte una orientación online inicial." canonicalPath="/ansiedad" noIndex={false} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}
@@ -206,5 +167,6 @@ export default function Ansiedad() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }

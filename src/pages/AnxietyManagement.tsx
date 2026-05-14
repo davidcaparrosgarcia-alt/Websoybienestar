@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const SYMPTOMS = [
   { id: 1, icon: 'compress', title: 'Presión en el pecho', desc: 'Un peso invisible que parece restringir la entrada de aire y la expansión natural de la calma.', weight: 15 },
@@ -128,6 +129,11 @@ export default function AnxietyManagement() {
   };
 
   return (
+    <>
+      <SEO title="Válvula de presión interna | SoyBienestar" description="Herramienta interactiva de SoyBienestar.es para explorar señales de presión emocional y ansiedad." canonicalPath="/anxiety" noIndex={true} />
+
+      
+
     <div className="flex-1 bg-transparent w-full font-body text-on-surface">
       {/* Barometer Section */}
       <section className="pt-16 pb-24 bg-transparent border-t border-b border-black/5 relative overflow-hidden">
@@ -307,5 +313,6 @@ export default function AnxietyManagement() {
       </section>
 
     </div>
+    </>
   );
 }

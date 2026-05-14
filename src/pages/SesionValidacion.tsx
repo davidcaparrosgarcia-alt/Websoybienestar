@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import SEO from "../components/SEO";
 
 export default function SesionValidacion() {
   const location = useLocation();
@@ -118,6 +119,11 @@ export default function SesionValidacion() {
   };
 
   return (
+    <>
+      <SEO title="Sesión de validación | SoyBienestar" description="Página privada para continuar el proceso de acompañamiento en SoyBienestar.es." canonicalPath="/sesion-validacion" noIndex={true} />
+
+      
+
     <div className="flex-grow pt-32 pb-24 px-6 lg:px-12 max-w-[1280px] mx-auto w-full">
       {successMessage && (
         <div className="mb-8 p-4 bg-green-50 text-green-800 rounded-xl border border-green-200 shadow-sm">
@@ -386,5 +392,6 @@ export default function SesionValidacion() {
         </div>
       </div>
     </div>
+    </>
   );
 }

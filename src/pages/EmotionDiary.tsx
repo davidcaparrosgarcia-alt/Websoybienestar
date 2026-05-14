@@ -5,6 +5,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
+import SEO from "../components/SEO";
 
 enum OperationType {
   CREATE = 'create',
@@ -302,6 +303,8 @@ export default function EmotionDiary() {
   };
 
   return (
+    <>
+      <SEO title="Diario emocional privado | SoyBienestar" description="Herramienta privada de diario emocional dentro de SoyBienestar.es." canonicalPath="/emotion-diary" noIndex={true} />
     <div className="flex-1 bg-transparent dark:bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-32 pb-20 px-8 max-w-7xl mx-auto w-full">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Image & Title Section */}
@@ -497,5 +500,6 @@ export default function EmotionDiary() {
         </div>
       </div>
     </div>
+    </>
   );
 }

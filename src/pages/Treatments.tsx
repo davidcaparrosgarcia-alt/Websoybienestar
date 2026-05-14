@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
+import SEO from "../components/SEO";
 
 export default function Treatments() {
   const navigate = useNavigate();
@@ -48,6 +49,12 @@ export default function Treatments() {
 
   return (
     <div className="flex-1 w-full">
+      <SEO
+        title="Tratamientos online para ansiedad, estrés e insomnio | SoyBienestar"
+        description="Descubre programas online de bienestar emocional para ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional y alimentación emocional."
+        canonicalPath="/treatments"
+        noIndex={false}
+      />
       {/* Hero Section: The Bridge Metaphor */}
       <section className="relative flex items-center pt-16 pb-12 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">

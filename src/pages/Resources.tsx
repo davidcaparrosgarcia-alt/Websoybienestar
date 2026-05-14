@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
+import SEO from "../components/SEO";
 
 export default function Resources() {
   const navigate = useNavigate();
@@ -165,6 +166,12 @@ export default function Resources() {
 
   return (
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
+      <SEO
+        title="Recursos gratuitos para calmar ansiedad y estrés | SoyBienestar"
+        description="Meditaciones guiadas, ejercicios de respiración, diario de agradecimiento, metas semanales y herramientas para empezar a ordenar tus emociones."
+        canonicalPath="/resources"
+        noIndex={false}
+      />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">

@@ -2,54 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { RUMIACION_FAQS } from "./Home";
+import SEO from "../components/SEO";
 
 export default function RumiacionMental() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Pensar demasiado y rumiación mental: cómo salir del bucle | SoyBienestar.es";
-
-    const metaDescriptionContent = "Comprende por qué no puedes dejar de pensar, cómo funciona la rumiación mental y qué hacer cuando los pensamientos repetitivos te dejan atrapado en el mismo bucle.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/pensar-demasiado-rumiacion`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
-
+  
   useEffect(() => {
     const scriptId = "faq-jsonld-rumiacion";
     document.getElementById(scriptId)?.remove();
@@ -73,12 +32,14 @@ export default function RumiacionMental() {
     script.text = JSON.stringify(jsonLd);
     document.head.appendChild(script);
 
-    return () => {
+  return () => {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
 
   return (
+    <>
+      <SEO title="Rumiación mental: cómo dejar de pensar tanto | SoyBienestar" description="Si no puedes dejar de pensar o darle vueltas a todo, descubre qué es la rumiación mental y cómo empezar a calmar el bucle de pensamientos." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}
@@ -180,5 +141,6 @@ export default function RumiacionMental() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

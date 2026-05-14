@@ -2,54 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { PROCRASTINACION_FAQS } from "./Home";
+import SEO from "../components/SEO";
 
 export default function Procrastinacion() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Procrastinación: causas, bloqueo mental y cómo empezar una tarea | SoyBienestar.es";
-
-    const metaDescriptionContent = "Comprende por qué procrastinas, cómo dejar de posponer tareas y qué hacer cuando el bloqueo, la ansiedad o el perfeccionismo te impiden empezar.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/procrastinacion`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
-
+  
   useEffect(() => {
     const scriptId = "faq-jsonld-procrastinacion";
     document.getElementById(scriptId)?.remove();
@@ -73,12 +32,14 @@ export default function Procrastinacion() {
     script.text = JSON.stringify(jsonLd);
     document.head.appendChild(script);
 
-    return () => {
+  return () => {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
 
   return (
+    <>
+      <SEO title="Procrastinación: por qué procrastinas y cómo dejarlo | SoyBienestar" description="Aprende cómo dejar de procrastinar, por qué pospones tareas y qué relación puede tener la procrastinación con ansiedad, bloqueo o perfeccionismo." canonicalPath="/procrastinacion" noIndex={false} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}
@@ -180,5 +141,6 @@ export default function Procrastinacion() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

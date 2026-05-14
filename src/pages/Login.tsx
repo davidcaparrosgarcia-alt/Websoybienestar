@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, signInWithGoogle } from "../firebase";
+import SEO from "../components/SEO";
 
 export default function Login() {
   const [user, loading] = useAuthState(auth);
@@ -36,6 +37,8 @@ export default function Login() {
   }
 
   return (
+    <>
+      <SEO title="Acceso privado | SoyBienestar" description="Página de acceso privado a SoyBienestar.es." canonicalPath="/login" noIndex={true} />
     <div className="flex-1 flex flex-col min-h-[calc(100vh-5.5rem)]">
       <section className="relative flex-1 flex items-center justify-center overflow-hidden py-24">
         <div className="absolute inset-0 z-0">
@@ -66,5 +69,6 @@ export default function Login() {
         </div>
       </section>
     </div>
+    </>
   );
 }

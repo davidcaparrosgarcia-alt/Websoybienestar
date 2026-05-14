@@ -5,6 +5,7 @@ import { api } from "../services/api";
 import { auth } from "../firebase";
 import { setDoc, updateDoc } from "firebase/firestore";
 import { getOrMigrateUserProfile } from "../services/userProfile";
+import SEO from "../components/SEO";
 
 interface Message {
   id: string;
@@ -869,6 +870,8 @@ export default function Session() {
   }
 
   return (
+    <>
+      <SEO title="Consulta inicial online | SoyBienestar" description="Espacio privado de consulta inicial online para ordenar tu situación emocional dentro de SoyBienestar.es." canonicalPath="/session" noIndex={true} />
     <div className="flex-1 flex flex-col max-h-[calc(100vh-5.5rem)] relative">
       {urgentMessage && (
         <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
@@ -1147,5 +1150,6 @@ export default function Session() {
         </div>
       </div>
     </div>
+    </>
   );
 }

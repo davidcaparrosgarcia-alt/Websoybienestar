@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import SEO from "../components/SEO";
 
 export default function SessionEnded() {
   const location = useLocation();
@@ -136,6 +137,8 @@ export default function SessionEnded() {
   }
 
   return (
+    <>
+      <SEO title="Consulta finalizada | SoyBienestar" description="Pantalla privada de cierre de consulta inicial en SoyBienestar.es." canonicalPath="/session-ended" noIndex={true} />
     <div className="flex-1 w-full bg-transparent">
       <div className="pt-8 pb-32 px-4 md:px-6 max-w-4xl mx-auto w-full">
         {/* Hero Section */}
@@ -299,5 +302,6 @@ export default function SessionEnded() {
         </div>
       )}
     </div>
+    </>
   );
 }

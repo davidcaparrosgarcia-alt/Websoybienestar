@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SEO from "../components/SEO";
 
 export default function Cookies() {
   useEffect(() => {
@@ -6,6 +7,15 @@ export default function Cookies() {
   }, []);
 
   return (
+    <>
+
+      <SEO
+        title="Política de cookies | SoyBienestar"
+        description="Consulta la política de cookies de SoyBienestar.es y cómo se utilizan en la experiencia de navegación."
+        canonicalPath="/cookies"
+        noIndex={false}
+      />
+
     <div className="flex-1 bg-transparent min-h-screen text-on-surface pb-24">
       {/* Header */}
       <section className="bg-primary pt-32 pb-24 text-center px-6 relative overflow-hidden">
@@ -50,5 +60,6 @@ export default function Cookies() {
         </div>
       </section>
     </div>
+      </>
   );
 }

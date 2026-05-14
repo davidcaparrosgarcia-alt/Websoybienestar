@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
+import SEO from "../components/SEO";
 
 type FogTrailPoint = {
   id: number;
@@ -125,6 +126,12 @@ export default function Method() {
 
   return (
     <div className="flex-1 w-full">
+      <SEO
+        title="Cómo trabajamos en SoyBienestar | IA y acompañamiento humano"
+        description="Conoce cómo SoyBienestar.es combina escucha digital, recursos de bienestar emocional y acompañamiento humano para ayudarte a ordenar tu malestar y avanzar con claridad."
+        canonicalPath="/method"
+        noIndex={false}
+      />
       {/* Hero Section: Anxiety Hero */}
       <section 
         className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent touch-pan-y"

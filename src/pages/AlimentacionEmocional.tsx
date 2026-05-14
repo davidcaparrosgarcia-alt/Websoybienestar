@@ -2,53 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ALIMENTACION_EMOCIONAL_FAQS } from "./Home";
+import SEO from "../components/SEO";
 
 export default function AlimentacionEmocional() {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Alimentación emocional: hambre emocional, ansiedad y relación con la comida | SoyBienestar.es";
-
-    const metaDescriptionContent = "Comprende qué es el hambre emocional, cómo distinguirlo del hambre física y qué hacer cuando comes por ansiedad, culpa, vacío o necesidad de calmarte.";
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    const previousDescription = metaDescription?.getAttribute("content") || "";
-
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.setAttribute("name", "description");
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute("content", metaDescriptionContent);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    const previousCanonical = canonical?.getAttribute("href") || "";
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/alimentacion-emocional`);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (metaDescription) {
-        metaDescription.setAttribute("content", previousDescription);
-      }
-
-      if (canonical) {
-        if (previousCanonical) {
-          canonical.setAttribute("href", previousCanonical);
-        } else {
-          canonical.remove();
-        }
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const scriptId = "faq-jsonld-alimentacion-emocional";
@@ -79,10 +37,17 @@ export default function AlimentacionEmocional() {
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
-      onClick={() => navigate('/')}
-    >
+    <>
+      <SEO
+        title="Alimentación emocional: hambre emocional y comer por ansiedad | SoyBienestar"
+        description="Descubre qué es el hambre emocional, por qué comes por ansiedad y cómo empezar a comprender tu relación emocional con la comida."
+        canonicalPath="/alimentacion-emocional"
+      />
+      <div
+        className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
+        onClick={() => navigate('/')}
+      >
+
       <motion.div
         initial={{ opacity: 0, scale: 0.86, y: 36 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -180,5 +145,6 @@ export default function AlimentacionEmocional() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }
