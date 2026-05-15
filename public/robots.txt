@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /session
+Disallow: /session-ended
+Disallow: /report
+Disallow: /dossier-espejo
+Disallow: /sesion-validacion
+Disallow: /emotion-diary
+Disallow: /weekly-goals
+Disallow: /anxiety
+
+Sitemap: https://soybienestar.es/sitemap.xml
