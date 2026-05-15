@@ -29,6 +29,23 @@ export default function Resources() {
     ]
   };
 
+  const resourcesServiceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": "https://soybienestar.es/herramientas#service",
+    "name": "Recursos de bienestar emocional",
+    "serviceType": "Recursos online de calma y autorregulación emocional",
+    "provider": {
+      "@id": "https://soybienestar.es/#organization"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "España"
+    },
+    "url": "https://soybienestar.es/herramientas",
+    "description": "Recursos online de bienestar emocional, meditaciones guiadas, ejercicios de respiración, diario de agradecimientos, metas semanales y herramientas para empezar a ordenar emociones y pensamientos."
+  };
+
   // Modals state
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isBreathingModalOpen, setIsBreathingModalOpen] = useState(false);
@@ -193,6 +210,7 @@ export default function Resources() {
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-herramientas" data={breadcrumbSchema} />
+      <StructuredData id="resources-service-schema" data={resourcesServiceSchema} />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">

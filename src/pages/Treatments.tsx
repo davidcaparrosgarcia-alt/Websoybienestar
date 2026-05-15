@@ -35,6 +35,23 @@ export default function Treatments() {
     ]
   };
 
+  const treatmentsServiceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": "https://soybienestar.es/tratamientos-online#service",
+    "name": "Tratamientos online de bienestar emocional",
+    "serviceType": "Programas online de bienestar emocional",
+    "provider": {
+      "@id": "https://soybienestar.es/#organization"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "España"
+    },
+    "url": "https://soybienestar.es/tratamientos-online",
+    "description": "Programas online de bienestar emocional orientados a ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional y alimentación emocional, sin sustituir una valoración profesional ni constituir diagnóstico."
+  };
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -76,6 +93,7 @@ export default function Treatments() {
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-tratamientos" data={breadcrumbSchema} />
+      <StructuredData id="treatments-service-schema" data={treatmentsServiceSchema} />
       {/* Hero Section: The Bridge Metaphor */}
       <section className="relative flex items-center pt-16 pb-12 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">

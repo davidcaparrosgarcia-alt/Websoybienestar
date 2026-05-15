@@ -46,6 +46,23 @@ export default function Method() {
     ]
   };
 
+  const methodServiceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": "https://soybienestar.es/como-trabajamos#service",
+    "name": "Método de orientación y acompañamiento online",
+    "serviceType": "Orientación inicial y acompañamiento de bienestar emocional",
+    "provider": {
+      "@id": "https://soybienestar.es/#organization"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "España"
+    },
+    "url": "https://soybienestar.es/como-trabajamos",
+    "description": "Método online que combina escucha digital, recursos de bienestar emocional, Cuestionario Espejo y acompañamiento humano para ayudar a ordenar el malestar emocional. No sustituye una valoración profesional."
+  };
+
   const [fogTrail, setFogTrail] = useState<FogTrailPoint[]>([]);
   const [fogTick, setFogTick] = useState(() => Date.now());
   const lastFogPointAt = useRef(0);
@@ -153,6 +170,7 @@ export default function Method() {
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-como-trabajamos" data={breadcrumbSchema} />
+      <StructuredData id="method-service-schema" data={methodServiceSchema} />
       {/* Hero Section: Anxiety Hero */}
       <section 
         className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent touch-pan-y"

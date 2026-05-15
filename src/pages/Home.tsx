@@ -301,6 +301,81 @@ export default function Home() {
     ]
   };
 
+  const homeServiceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": "https://soybienestar.es/#servicio-bienestar-emocional",
+    "name": "Orientación online de bienestar emocional",
+    "serviceType": "Bienestar emocional online",
+    "provider": {
+      "@id": "https://soybienestar.es/#organization"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "España"
+    },
+    "availableChannel": {
+      "@type": "ServiceChannel",
+      "serviceUrl": "https://soybienestar.es/session",
+      "availableLanguage": {
+        "@type": "Language",
+        "name": "Español"
+      }
+    },
+    "description": "SoyBienestar.es ofrece una consulta inicial online, recursos de calma, guías sobre ansiedad, estrés, insomnio y otros bloqueos emocionales, junto con el Cuestionario Espejo y acompañamiento humano. No sustituye una valoración profesional ni constituye un diagnóstico."
+  };
+
+  const homeGuidesItemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": "https://soybienestar.es/#guias-bienestar-emocional",
+    "name": "Guías de bienestar emocional",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Ansiedad",
+        "url": "https://soybienestar.es/ansiedad"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Estrés",
+        "url": "https://soybienestar.es/estres"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Insomnio",
+        "url": "https://soybienestar.es/insomnio"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Procrastinación",
+        "url": "https://soybienestar.es/procrastinacion"
+      },
+      {
+        "@type": "ListItem",
+        "position": 5,
+        "name": "Rumiación mental",
+        "url": "https://soybienestar.es/pensar-demasiado-rumiacion"
+      },
+      {
+        "@type": "ListItem",
+        "position": 6,
+        "name": "Gestión emocional",
+        "url": "https://soybienestar.es/gestion-emocional"
+      },
+      {
+        "@type": "ListItem",
+        "position": 7,
+        "name": "Alimentación emocional",
+        "url": "https://soybienestar.es/alimentacion-emocional"
+      }
+    ]
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <SEO
@@ -312,6 +387,8 @@ export default function Home() {
       <StructuredData id="organization-schema" data={organizationSchema} />
       <StructuredData id="website-schema" data={websiteSchema} />
       <StructuredData id="breadcrumb-schema-home" data={breadcrumbSchema} />
+      <StructuredData id="home-service-schema" data={homeServiceSchema} />
+      <StructuredData id="home-guides-itemlist-schema" data={homeGuidesItemListSchema} />
       {/* Hero Section */}
       <section className="relative w-full mb-20 md:mb-32">
         <div className="relative w-full">
