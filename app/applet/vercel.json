@@ -1,0 +1,24 @@
+{
+  "redirects": [
+    {
+      "source": "/treatments",
+      "destination": "/tratamientos-online",
+      "permanent": true
+    },
+    {
+      "source": "/method",
+      "destination": "/como-trabajamos",
+      "permanent": true
+    },
+    {
+      "source": "/method-details",
+      "destination": "/como-trabajamos/detalles",
+      "permanent": true
+    },
+    {
+      "source": "/resources",
+      "destination": "/herramientas",
+      "permanent": true
+    }
+  ]
+}
