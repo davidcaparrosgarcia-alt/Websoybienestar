@@ -128,22 +128,6 @@ export default function Treatments() {
         </div>
       </section>
 
-      {/* Guías y Síntomas Integrados */}
-      <section className="py-12 px-12">
-        <div className="max-w-screen-2xl mx-auto">
-          <h2 className="text-3xl font-headline text-primary mb-6 italic">También puedes explorar nuestras guías</h2>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/ansiedad" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Ansiedad</Link>
-            <Link to="/estres" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Estrés</Link>
-            <Link to="/insomnio" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Insomnio</Link>
-            <Link to="/procrastinacion" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Procrastinación</Link>
-            <Link to="/pensar-demasiado-rumiacion" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Rumiación mental</Link>
-            <Link to="/gestion-emocional" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Gestión emocional</Link>
-            <Link to="/alimentacion-emocional" className="px-6 py-3 bg-surface-container rounded-full text-primary hover:bg-primary hover:text-white transition-colors duration-300 font-medium">Alimentación emocional</Link>
-          </div>
-        </div>
-      </section>
-
       {/* Contact and Network */}
       <section className="py-24 px-12" id="contacto">
         <div className="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
