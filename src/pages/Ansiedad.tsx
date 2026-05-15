@@ -2,10 +2,30 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 import { ANSIEDAD_FAQS } from "../data/symptomFaqs";
 
 export default function Ansiedad() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Ansiedad",
+        "item": "https://soybienestar.es/ansiedad"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function Ansiedad() {
   return (
     <>
       <SEO title="Ansiedad: síntomas, causas y cómo recuperar la calma | SoyBienestar" description="Descubre cómo controlar la ansiedad, cuáles son sus síntomas, qué hacer cuando aparece y cuándo puede ayudarte una orientación online inicial." canonicalPath="/ansiedad" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-ansiedad" data={breadcrumbSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

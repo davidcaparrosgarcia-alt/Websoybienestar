@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { PROCRASTINACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function Procrastinacion() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Procrastinación",
+        "item": "https://soybienestar.es/procrastinacion"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function Procrastinacion() {
   return (
     <>
       <SEO title="Procrastinación: por qué procrastinas y cómo dejarlo | SoyBienestar" description="Aprende cómo dejar de procrastinar, por qué pospones tareas y qué relación puede tener la procrastinación con ansiedad, bloqueo o perfeccionismo." canonicalPath="/procrastinacion" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-procrastinacion" data={breadcrumbSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

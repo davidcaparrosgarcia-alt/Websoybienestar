@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { RUMIACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function RumiacionMental() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Rumiación mental",
+        "item": "https://soybienestar.es/pensar-demasiado-rumiacion"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function RumiacionMental() {
   return (
     <>
       <SEO title="Rumiación mental: cómo dejar de pensar tanto | SoyBienestar" description="Si no puedes dejar de pensar o darle vueltas a todo, descubre qué es la rumiación mental y cómo empezar a calmar el bucle de pensamientos." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-rumiacion" data={breadcrumbSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ALIMENTACION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function AlimentacionEmocional() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Alimentación emocional",
+        "item": "https://soybienestar.es/alimentacion-emocional"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -43,6 +63,7 @@ export default function AlimentacionEmocional() {
         description="Descubre qué es el hambre emocional, por qué comes por ansiedad y cómo empezar a comprender tu relación emocional con la comida."
         canonicalPath="/alimentacion-emocional"
       />
+      <StructuredData id="breadcrumb-schema-alimentacion-emocional" data={breadcrumbSchema} />
       <div
         className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
         onClick={() => navigate('/')}

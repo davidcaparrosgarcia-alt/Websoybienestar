@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { INSOMNIO_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function Insomnio() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Insomnio",
+        "item": "https://soybienestar.es/insomnio"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function Insomnio() {
   return (
     <>
       <SEO title="Insomnio: causas y qué hacer cuando no puedes dormir | SoyBienestar" description="Descubre por qué no puedes dormir, cómo combatir el insomnio, cómo dormir con ansiedad y qué recursos pueden ayudarte a descansar mejor." canonicalPath="/insomnio" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-insomnio" data={breadcrumbSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

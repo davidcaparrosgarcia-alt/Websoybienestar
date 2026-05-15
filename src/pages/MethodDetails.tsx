@@ -5,6 +5,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function MethodDetails() {
   const navigate = useNavigate();
@@ -12,6 +13,31 @@ export default function MethodDetails() {
   const [user] = useAuthState(auth);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cómo trabajamos",
+        "item": "https://soybienestar.es/como-trabajamos"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Detalles del método",
+        "item": "https://soybienestar.es/como-trabajamos/detalles"
+      }
+    ]
+  };
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -77,6 +103,7 @@ export default function MethodDetails() {
         canonicalPath="/como-trabajamos/detalles"
         noIndex={false}
       />
+      <StructuredData id="breadcrumb-schema-como-trabajamos-detalles" data={breadcrumbSchema} />
       {/* Hero: Professional Presentation with Large Logo Integration */}
       <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
         <div className="absolute inset-0 z-0">

@@ -4,11 +4,31 @@ import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function Resources() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Herramientas",
+        "item": "https://soybienestar.es/herramientas"
+      }
+    ]
+  };
+
   // Modals state
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isBreathingModalOpen, setIsBreathingModalOpen] = useState(false);
@@ -172,6 +192,7 @@ export default function Resources() {
         canonicalPath="/herramientas"
         noIndex={false}
       />
+      <StructuredData id="breadcrumb-schema-herramientas" data={breadcrumbSchema} />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">

@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { GESTION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function GestionEmocional() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Gestión emocional",
+        "item": "https://soybienestar.es/gestion-emocional"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function GestionEmocional() {
   return (
     <>
       <SEO title="Gestión emocional: cómo controlar y regular tus emociones | SoyBienestar" description="Aprende a comprender, regular y acompañar tus emociones sin reprimirlas, con recursos de bienestar emocional y orientación online inicial." canonicalPath="/gestion-emocional" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-gestion-emocional" data={breadcrumbSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

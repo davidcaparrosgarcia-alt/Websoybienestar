@@ -6,6 +6,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 type FogTrailPoint = {
   id: number;
@@ -25,6 +26,25 @@ export default function Method() {
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [phoneValue, setPhoneValue] = useState("+34");
   const [progressStep, setProgressStep] = useState(1);
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cómo trabajamos",
+        "item": "https://soybienestar.es/como-trabajamos"
+      }
+    ]
+  };
 
   const [fogTrail, setFogTrail] = useState<FogTrailPoint[]>([]);
   const [fogTick, setFogTick] = useState(() => Date.now());
@@ -132,6 +152,7 @@ export default function Method() {
         canonicalPath="/como-trabajamos"
         noIndex={false}
       />
+      <StructuredData id="breadcrumb-schema-como-trabajamos" data={breadcrumbSchema} />
       {/* Hero Section: Anxiety Hero */}
       <section 
         className="relative min-h-[85vh] flex items-center overflow-hidden bg-transparent touch-pan-y"

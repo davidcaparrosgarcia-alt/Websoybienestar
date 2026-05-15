@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ESTRES_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function Estres() {
   const navigate = useNavigate();
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Estrés",
+        "item": "https://soybienestar.es/estres"
+      }
+    ]
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
@@ -40,6 +60,7 @@ export default function Estres() {
   return (
     <>
       <SEO title="Estrés y agotamiento mental: síntomas y cómo aliviarlo | SoyBienestar" description="Aprende a reconocer el estrés, el agotamiento mental y la ansiedad en el trabajo, y descubre recursos para recuperar calma y claridad." canonicalPath="/estres" noIndex={false} />
+      <StructuredData id="breadcrumb-schema-estres" data={breadcrumbSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

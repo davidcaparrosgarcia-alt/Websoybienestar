@@ -6,6 +6,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 
 export default function Treatments() {
   const navigate = useNavigate();
@@ -14,6 +15,25 @@ export default function Treatments() {
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [phoneValue, setPhoneValue] = useState("+34");
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Tratamientos online",
+        "item": "https://soybienestar.es/tratamientos-online"
+      }
+    ]
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -55,6 +75,7 @@ export default function Treatments() {
         canonicalPath="/tratamientos-online"
         noIndex={false}
       />
+      <StructuredData id="breadcrumb-schema-tratamientos" data={breadcrumbSchema} />
       {/* Hero Section: The Bridge Metaphor */}
       <section className="relative flex items-center pt-16 pb-12 px-12 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">

@@ -269,7 +269,6 @@ export default function Home() {
     "name": "SoyBienestar",
     "alternateName": "ReprogrÁmate",
     "url": "https://soybienestar.es",
-    "logo": "https://soybienestar.es/images/logo-soybienestar.svg",
     "sameAs": [
       "https://www.instagram.com/soybienestar.es"
     ],
@@ -289,6 +288,19 @@ export default function Home() {
     "inLanguage": "es-ES"
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://soybienestar.es/"
+      }
+    ]
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <SEO
@@ -299,6 +311,7 @@ export default function Home() {
       />
       <StructuredData id="organization-schema" data={organizationSchema} />
       <StructuredData id="website-schema" data={websiteSchema} />
+      <StructuredData id="breadcrumb-schema-home" data={breadcrumbSchema} />
       {/* Hero Section */}
       <section className="relative w-full mb-20 md:mb-32">
         <div className="relative w-full">
