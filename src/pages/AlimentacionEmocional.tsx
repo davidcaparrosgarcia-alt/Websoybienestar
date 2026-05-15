@@ -28,33 +28,18 @@ export default function AlimentacionEmocional() {
   };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const scriptId = "faq-jsonld-alimentacion-emocional";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: ALIMENTACION_EMOCIONAL_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-    return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": ALIMENTACION_EMOCIONAL_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
@@ -64,6 +49,7 @@ export default function AlimentacionEmocional() {
         canonicalPath="/alimentacion-emocional"
       />
       <StructuredData id="breadcrumb-schema-alimentacion-emocional" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-alimentacion-emocional" data={faqSchema} />
       <div
         className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
         onClick={() => navigate('/')}

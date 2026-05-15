@@ -29,38 +29,24 @@ export default function GestionEmocional() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  useEffect(() => {
-    const scriptId = "faq-jsonld-gestion-emocional";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: GESTION_EMOCIONAL_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-  return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": GESTION_EMOCIONAL_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEO title="Gestión emocional: cómo controlar y regular tus emociones | SoyBienestar" description="Aprende a comprender, regular y acompañar tus emociones sin reprimirlas, con recursos de bienestar emocional y orientación online inicial." canonicalPath="/gestion-emocional" noIndex={false} />
       <StructuredData id="breadcrumb-schema-gestion-emocional" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-gestion-emocional" data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

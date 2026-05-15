@@ -29,38 +29,24 @@ export default function Ansiedad() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  useEffect(() => {
-    const scriptId = "faq-jsonld-ansiedad";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: ANSIEDAD_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-  return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": ANSIEDAD_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEO title="Ansiedad: síntomas, causas y cómo recuperar la calma | SoyBienestar" description="Descubre cómo controlar la ansiedad, cuáles son sus síntomas, qué hacer cuando aparece y cuándo puede ayudarte una orientación online inicial." canonicalPath="/ansiedad" noIndex={false} />
       <StructuredData id="breadcrumb-schema-ansiedad" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-ansiedad" data={faqSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

@@ -29,38 +29,24 @@ export default function Procrastinacion() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  useEffect(() => {
-    const scriptId = "faq-jsonld-procrastinacion";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: PROCRASTINACION_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-  return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": PROCRASTINACION_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEO title="Procrastinación: por qué procrastinas y cómo dejarlo | SoyBienestar" description="Aprende cómo dejar de procrastinar, por qué pospones tareas y qué relación puede tener la procrastinación con ansiedad, bloqueo o perfeccionismo." canonicalPath="/procrastinacion" noIndex={false} />
       <StructuredData id="breadcrumb-schema-procrastinacion" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-procrastinacion" data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

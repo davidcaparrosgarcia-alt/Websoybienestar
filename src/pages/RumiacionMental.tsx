@@ -29,38 +29,24 @@ export default function RumiacionMental() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  useEffect(() => {
-    const scriptId = "faq-jsonld-rumiacion";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: RUMIACION_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-  return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": RUMIACION_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEO title="Rumiación mental: cómo dejar de pensar tanto | SoyBienestar" description="Si no puedes dejar de pensar o darle vueltas a todo, descubre qué es la rumiación mental y cómo empezar a calmar el bucle de pensamientos." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
       <StructuredData id="breadcrumb-schema-rumiacion" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-rumiacion" data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

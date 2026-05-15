@@ -29,38 +29,24 @@ export default function Insomnio() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  useEffect(() => {
-    const scriptId = "faq-jsonld-insomnio";
-    document.getElementById(scriptId)?.remove();
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: INSOMNIO_FAQS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-  return () => {
-      document.getElementById(scriptId)?.remove();
-    };
-  }, []);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": INSOMNIO_FAQS.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEO title="Insomnio: causas y qué hacer cuando no puedes dormir | SoyBienestar" description="Descubre por qué no puedes dormir, cómo combatir el insomnio, cómo dormir con ansiedad y qué recursos pueden ayudarte a descansar mejor." canonicalPath="/insomnio" noIndex={false} />
       <StructuredData id="breadcrumb-schema-insomnio" data={breadcrumbSchema} />
+      <StructuredData id="faq-schema-insomnio" data={faqSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}
