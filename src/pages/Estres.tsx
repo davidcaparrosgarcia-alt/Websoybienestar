@@ -129,7 +129,7 @@ export default function Estres() {
                   Realizar consulta gratuita
                 </button>
                 <button
-                  onClick={() => navigate('/resources')}
+                  onClick={() => navigate('/herramientas')}
                   className="px-8 py-4 rounded-full border border-white/30 text-white font-label font-bold hover:bg-white/10 transition-colors"
                 >
                   Ver herramientas
@@ -144,7 +144,7 @@ export default function Estres() {
                 <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Ansiedad</Link>
                 <Link to="/insomnio" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Insomnio</Link>
                 <Link to="/procrastinacion" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Procrastinación</Link>
-                <Link to="/resources" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Herramientas</Link>
+                <Link to="/herramientas" className="px-6 py-2 rounded-full border border-white/20 text-white/90 font-medium hover:bg-white/10 transition-colors">Herramientas</Link>
               </div>
             </div>
 

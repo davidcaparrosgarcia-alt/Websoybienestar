@@ -30,7 +30,15 @@ export default function Layout() {
   };
 
   const getLinkClass = (path: string) => {
-    const isActive = location.pathname === path || (path === "/method" && location.pathname === "/method-details");
+    const activeGroups: Record<string, string[]> = {
+      "/tratamientos-online": ["/tratamientos-online", "/treatments"],
+      "/como-trabajamos": ["/como-trabajamos", "/method", "/method-details", "/como-trabajamos/detalles"],
+      "/herramientas": ["/herramientas", "/resources"],
+    };
+
+    const aliases = activeGroups[path] ?? [path];
+    const isActive = aliases.includes(location.pathname);
+
     if (isActive) {
       // Activo: Blanco puro
       return "text-white border-b-2 border-white pb-1 font-bold font-headline text-lg";
@@ -69,11 +77,11 @@ export default function Layout() {
               </button>
               <div className="flex flex-col gap-8">
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/")} to="/">Inicio</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/treatments")} to="/treatments">Tratamientos</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/tratamientos-online")} to="/tratamientos-online">Tratamientos</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/session")} to="/session">Consulta Gratuita</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/report")} to="/report">Informe</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/resources")} to="/resources">Herramientas</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/method")} to="/method">Método</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
               </div>
             </motion.div>
@@ -127,13 +135,13 @@ export default function Layout() {
           </div>
           <div className="hidden lg:flex items-center justify-center lg:gap-5 xl:gap-7">
             <Link className={getLinkClass("/")} to="/">Inicio</Link>
-            <Link className={getLinkClass("/treatments")} to="/treatments">Tratamientos</Link>
+            <Link className={getLinkClass("/tratamientos-online")} to="/tratamientos-online">Tratamientos</Link>
             <Link className={`${getLinkClass("/session")} text-center leading-[1.1]`} to="/session">
               Consulta<br className="hidden lg:block xl:hidden" /> Gratuita
             </Link>
             <Link className={getLinkClass("/report")} to="/report">Informe</Link>
-            <Link className={getLinkClass("/resources")} to="/resources">Herramientas</Link>
-            <Link className={getLinkClass("/method")} to="/method">Método</Link>
+            <Link className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
+            <Link className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
           <div className="flex items-center justify-end gap-2 md:gap-4 pl-8">
@@ -183,12 +191,12 @@ export default function Layout() {
             <div className="space-y-4 flex flex-col">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 mb-2">Compañía</span>
               <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Inicio</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/method-details">Método</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/como-trabajamos/detalles">Método</Link>
               <a 
                 className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors cursor-pointer" 
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate('/method');
+                  navigate('/como-trabajamos');
                   setTimeout(() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }), 100);
                 }}
               >

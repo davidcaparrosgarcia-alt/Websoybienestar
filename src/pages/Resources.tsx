@@ -169,7 +169,7 @@ export default function Resources() {
       <SEO
         title="Recursos gratuitos para calmar ansiedad y estrés | SoyBienestar"
         description="Meditaciones guiadas, ejercicios de respiración, diario de agradecimiento, metas semanales y herramientas para empezar a ordenar tus emociones."
-        canonicalPath="/resources"
+        canonicalPath="/herramientas"
         noIndex={false}
       />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">

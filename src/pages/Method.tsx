@@ -129,7 +129,7 @@ export default function Method() {
       <SEO
         title="Cómo trabajamos en SoyBienestar | IA y acompañamiento humano"
         description="Conoce cómo SoyBienestar.es combina escucha digital, recursos de bienestar emocional y acompañamiento humano para ayudarte a ordenar tu malestar y avanzar con claridad."
-        canonicalPath="/method"
+        canonicalPath="/como-trabajamos"
         noIndex={false}
       />
       {/* Hero Section: Anxiety Hero */}

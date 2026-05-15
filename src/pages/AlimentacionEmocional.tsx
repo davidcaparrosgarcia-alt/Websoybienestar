@@ -133,7 +133,7 @@ export default function AlimentacionEmocional() {
                   Realizar consulta gratuita
                 </button>
                 <button
-                  onClick={() => navigate('/resources')}
+                  onClick={() => navigate('/herramientas')}
                   className="px-8 py-4 rounded-full border border-primary/30 text-primary font-label font-bold hover:bg-primary/5 transition-colors"
                 >
                   Ver herramientas
@@ -148,7 +148,7 @@ export default function AlimentacionEmocional() {
                 <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Ansiedad</Link>
                 <Link to="/gestion-emocional" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Gestión emocional</Link>
                 <Link to="/estres" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Estrés</Link>
-                <Link to="/resources" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Herramientas</Link>
+                <Link to="/herramientas" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Herramientas</Link>
               </div>
             </div>
 

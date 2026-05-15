@@ -52,7 +52,7 @@ export default function Treatments() {
       <SEO
         title="Tratamientos online para ansiedad, estrés e insomnio | SoyBienestar"
         description="Descubre programas online de bienestar emocional para ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional y alimentación emocional."
-        canonicalPath="/treatments"
+        canonicalPath="/tratamientos-online"
         noIndex={false}
       />
       {/* Hero Section: The Bridge Metaphor */}

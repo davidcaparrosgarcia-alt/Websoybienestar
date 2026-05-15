@@ -129,7 +129,7 @@ export default function RumiacionMental() {
                   Realizar consulta gratuita
                 </button>
                 <button
-                  onClick={() => navigate('/resources')}
+                  onClick={() => navigate('/herramientas')}
                   className="px-8 py-4 rounded-full border border-primary/30 text-primary font-label font-bold hover:bg-primary/5 transition-colors"
                 >
                   Ver herramientas
@@ -144,7 +144,7 @@ export default function RumiacionMental() {
                 <Link to="/ansiedad" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Ansiedad</Link>
                 <Link to="/insomnio" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Insomnio</Link>
                 <Link to="/procrastinacion" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Procrastinación</Link>
-                <Link to="/resources" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Meditaciones</Link>
+                <Link to="/herramientas" className="px-6 py-2 rounded-full border border-primary/20 text-primary font-medium hover:bg-primary/5 transition-colors">Meditaciones</Link>
               </div>
             </div>
 

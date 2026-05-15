@@ -41,8 +41,11 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="treatments" element={<Treatments />} />
+          <Route path="tratamientos-online" element={<Treatments />} />
           <Route path="method" element={<Method />} />
+          <Route path="como-trabajamos" element={<Method />} />
           <Route path="method-details" element={<MethodDetails />} />
+          <Route path="como-trabajamos/detalles" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />
           <Route path="ansiedad" element={<Ansiedad />} />
           <Route path="estres" element={<Estres />} />
@@ -91,6 +94,7 @@ export default function App() {
             </ProtectedRoute>
           } />
           <Route path="resources" element={<Resources />} />
+          <Route path="herramientas" element={<Resources />} />
         </Route>
       </Routes>
     </BrowserRouter>

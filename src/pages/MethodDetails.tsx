@@ -74,7 +74,7 @@ export default function MethodDetails() {
       <SEO
         title="Método ReprogrÁmate: claridad, cuestionario y dossier personal | SoyBienestar"
         description="Descubre las fases del método ReprogrÁmate: consulta inicial, Cuestionario Espejo, Dossier Espejo personalizado y próximos pasos de acompañamiento."
-        canonicalPath="/method-details"
+        canonicalPath="/como-trabajamos/detalles"
         noIndex={false}
       />
       {/* Hero: Professional Presentation with Large Logo Integration */}
