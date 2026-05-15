@@ -9,6 +9,7 @@ import LighthouseBeamFrame from "../components/LighthouseBeamFrame";
 import SymptomCard from "../components/SymptomCard";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
+import StructuredData from "../components/StructuredData";
 import {
   ANSIEDAD_FAQS,
   ESTRES_FAQS,
@@ -261,6 +262,33 @@ export default function Home() {
     }
   };
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://soybienestar.es/#organization",
+    "name": "SoyBienestar",
+    "alternateName": "ReprogrÁmate",
+    "url": "https://soybienestar.es",
+    "logo": "https://soybienestar.es/images/logo-soybienestar.svg",
+    "sameAs": [
+      "https://www.instagram.com/soybienestar.es"
+    ],
+    "description": "SoyBienestar.es es una plataforma online de bienestar emocional que combina consulta inicial, recursos de calma, Cuestionario Espejo y acompañamiento humano para ayudar a ordenar el malestar emocional sin sustituir una valoración profesional."
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://soybienestar.es/#website",
+    "url": "https://soybienestar.es",
+    "name": "SoyBienestar",
+    "alternateName": "ReprogrÁmate",
+    "publisher": {
+      "@id": "https://soybienestar.es/#organization"
+    },
+    "inLanguage": "es-ES"
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <SEO
@@ -269,6 +297,8 @@ export default function Home() {
         canonicalPath="/"
         noIndex={false}
       />
+      <StructuredData id="organization-schema" data={organizationSchema} />
+      <StructuredData id="website-schema" data={websiteSchema} />
       {/* Hero Section */}
       <section className="relative w-full mb-20 md:mb-32">
         <div className="relative w-full">
