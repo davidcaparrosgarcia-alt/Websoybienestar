@@ -125,9 +125,13 @@ export default function Treatments() {
               <h2 className="text-4xl font-headline text-primary mb-4 italic">Elige uno de nuestros programas</h2>
               <p className="text-lg text-on-surface-variant max-w-2xl">Un enfoque integral para navegar los diferentes estados de la niebla emocional.</p>
             </div>
-            <a href="#" className="group bg-primary-container p-6 rounded-2xl flex items-center justify-center text-center relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 min-h-[120px]">
+            <button
+              type="button"
+              onClick={() => alert("Contenido en preparación. Próximamente podrás ver aquí una explicación visual de todos los tratamientos.")}
+              className="group bg-primary-container p-6 rounded-2xl flex items-center justify-center text-center relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 min-h-[120px]"
+            >
               <span className="font-headline text-2xl text-white relative z-10 group-hover:scale-105 transition-transform duration-500">Ver todos los tratamientos</span>
-            </a>
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
