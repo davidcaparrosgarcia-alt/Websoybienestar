@@ -174,14 +174,13 @@ export default function Resources() {
       />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
         {/* Hero Header Section */}
-        <h1 className="sr-only">Recursos gratuitos para calmar ansiedad y estrés</h1>
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Recursos de Claridad</p>
-              <h2 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
+              <h1 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
                 El Refugio de la <span className="italic font-normal">Consciencia</span>
-              </h2>
+              </h1>
               <div className="h-px w-24 bg-primary/20"></div>
             </div>
             <div className="lg:col-span-5 lg:pt-10">
@@ -200,8 +199,7 @@ export default function Resources() {
               <img alt="Meditaciones" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfN1KLjNEUOuARrTiE7gXulSa9Kc3gDaoiuciEFyr9W2a2_vYGBl8MG8tY0s7NgLQ8xtzmawsAH9-hz3-ZTChJ97u8oha7ei3ykxWndbZKwosHDSelxiIrmN9vGCvmMK-UwZ1kCVR22_QRFrsJO2TLPdbs4uxvgTox_9DNIKo-ItEJsjYcpAv2yl_YKLHRM_YVlg3k5YXe9hfkwmB0BaZendMwKPT55nl-F21yDkQbMQxepdQO4CwNKVJEqaCp9WcBLIUMmUhPJz0j" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#162839]/80 to-transparent"></div>
               <div className="absolute bottom-0 left-0 p-10 text-white">
-                <h2 className="sr-only">Meditaciones guiadas</h2>
-                <div aria-hidden="true" className="font-headline text-4xl mb-2 text-white">Meditaciones</div>
+                <h2 className="font-headline text-4xl mb-2 text-white">Meditaciones</h2>
                 <p className="text-white/80 font-light tracking-wide max-w-md">Guías sonoras para navegar el silencio y encontrar el centro gravitacional de su ser.</p>
               </div>
             </div>
@@ -235,7 +233,6 @@ export default function Resources() {
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
               
               <div className="relative z-10 flex flex-col justify-end p-6 md:p-8 h-full pointer-events-none text-center">
-                <h2 className="sr-only">Diario de agradecimientos</h2>
                 <div className={`w-full transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGratitudeText ? 'opacity-100' : 'opacity-0'}`}>
                   <p className="text-white bg-black/40 backdrop-blur-md px-6 py-4 border border-white/10 rounded-2xl shadow-xl font-light text-sm md:text-base inline-block">Tu espacio para anclar lo positivo y reconocer la abundancia en lo sutil.</p>
                 </div>
@@ -279,7 +276,6 @@ export default function Resources() {
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
               
               <div className="relative z-10 flex flex-col justify-between h-full pointer-events-none">
-                <h2 className="sr-only">Metas semanales</h2>
                 <div>
                   <span className="material-symbols-outlined text-white text-4xl drop-shadow-md">architecture</span>
                 </div>
@@ -325,12 +321,11 @@ export default function Resources() {
               <img alt="Respiración" className="dynamic-color-img w-full h-full object-cover transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 md:group-hover:grayscale-0 md:group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo-respira.jpg" />
               <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
               <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 text-center pointer-events-none">
-                <h2 className="sr-only">Ejercicios de respiración</h2>
                 <div className={`w-full mb-6 transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showBreathingText ? 'opacity-100' : 'opacity-0'}`}>
                   <p className="text-white bg-black/40 backdrop-blur-md px-6 py-4 border border-white/10 rounded-2xl shadow-xl font-light text-xl md:text-2xl inline-block max-w-lg">El ritmo de los pulmones es la base de toda estructura mental sólida.</p>
                 </div>
                 <div className="w-full">
-                  <div aria-hidden="true" className="font-headline text-4xl text-white">Técnicas de Respiración</div>
+                  <h2 className="font-headline text-4xl text-white">Técnicas de Respiración</h2>
                 </div>
               </div>
             </div>
@@ -367,14 +362,13 @@ export default function Resources() {
                 <div className="hidden md:block w-1/2"></div>
                 <div className={`w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
                   <div className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGestionsTextBg ? 'opacity-100' : 'opacity-0'}`}>
-                    <h2 className="sr-only">Gestión emocional</h2>
                     <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
-                    <div aria-hidden="true" className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
+                    <h2 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
                       <span>Gestión <br/><span className="italic">Emocional</span></span>
                       <span className="material-symbols-outlined opacity-50 md:group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
                         open_in_new
                       </span>
-                    </div>
+                    </h2>
                     <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
                         Aprende a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para comprender lo que sientes, ordenar tus pensamientos y no estar controlado por tus emociones.
                     </p>
