@@ -116,7 +116,7 @@ export default function Layout() {
           </svg>
         </div>
 
-        <nav className="grid grid-cols-[220px_1fr_220px] items-center w-full px-8 py-4 max-w-7xl mx-auto relative z-10 gap-8">
+        <nav className="flex justify-between lg:grid lg:grid-cols-[220px_1fr_220px] items-center w-full px-4 md:px-8 py-4 max-w-7xl mx-auto relative z-10 gap-2 lg:gap-8">
           <div 
             className="flex items-center justify-start cursor-pointer"
             onClick={(e) => {
@@ -144,7 +144,7 @@ export default function Layout() {
             <Link className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
             <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
           </div>
-          <div className="flex items-center justify-end gap-2 md:gap-4 pl-8">
+          <div className="flex items-center justify-end gap-2 md:gap-4 pl-0 lg:pl-8 shrink-0">
             <button
               onClick={() => navigate(-1)}
               className="hidden md:flex lg:hidden text-white/80 hover:text-white items-center justify-center transition-colors mr-1"

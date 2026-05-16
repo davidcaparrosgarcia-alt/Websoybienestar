@@ -408,12 +408,12 @@ export default function Home() {
           />
           {/* Gradiente sutil inferior para asegurar la legibilidad de la frase */}
           
-          {/* Floating Quote Overlay Style */}
-          <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-lg z-10 w-[calc(100%-2.5rem)]">
-            <h1 className="font-headline text-3xl md:text-4xl lg:text-5xl text-primary mb-4 drop-shadow-md">
+          {/* Floating Quote Overlay Style - Hidden for design but kept for SEO */}
+          <div className="sr-only">
+            <h1>
               Terapia para ansiedad, estrés e insomnio desde casa
             </h1>
-            <p className="font-headline text-xl md:text-2xl lg:text-3xl text-primary/90 italic font-light tracking-wide drop-shadow-md border-l-4 border-primary/40 pl-4 md:pl-6 py-2">
+            <p>
               "Un espacio donde ser escuchado sin juicios"
             </p>
           </div>

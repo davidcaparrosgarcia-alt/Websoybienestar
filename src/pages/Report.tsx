@@ -359,7 +359,7 @@ export default function Report() {
       {/* POST-ACCESS CONTENT: BENTO GRID SUMMARY */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-12 py-16">
         <div
-          className="mb-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-sm bg-cover bg-center"
+          className="mb-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-slate-700/60 shadow-sm bg-cover bg-center"
           style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
         >
           <div className="bg-white/70 dark:bg-[#11181f]/55 backdrop-blur-[1px] px-8 md:px-12 py-8 md:py-10">
@@ -562,7 +562,7 @@ export default function Report() {
               }}
               onMouseLeave={() => setShowDossierText(false)}
             >
-              <div className="absolute inset-0 bg-white/40 dark:bg-[#162839]/50 transition-opacity"></div>
+              <div className="absolute inset-0 bg-white/20 dark:bg-[#162839]/25 transition-opacity"></div>
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div
                   className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showDossierText ? "opacity-100" : "opacity-0"}`}

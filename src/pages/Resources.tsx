@@ -268,8 +268,7 @@ export default function Resources() {
             }}
           >
             <div className="relative overflow-hidden rounded-2xl flex-1 flex flex-col min-h-[420px] sm:min-h-[480px] md:min-h-0 md:aspect-auto">
-              <img alt="Diario de Gratitud" className="dynamic-color-img absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000 grayscale contrast-110 md:group-hover:scale-105 md:group-hover:grayscale-0 md:group-hover:contrast-100 active:grayscale-0 active:contrast-100" src="/images/fondo_diario.jpg" />
-              <div className="absolute inset-0 bg-primary/40 mix-blend-multiply transition-opacity duration-1000 md:group-hover:opacity-60"></div>
+              <img alt="Diario de Gratitud" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-1000 md:group-hover:scale-105" src="/images/fondo_diario.jpg" />
               
               <div className="relative z-10 flex flex-col justify-end p-6 md:p-8 h-full pointer-events-none text-center">
                 <div className={`w-full transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGratitudeText ? 'opacity-100' : 'opacity-0'}`}>
@@ -398,22 +397,21 @@ export default function Resources() {
             <div className="relative w-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px] aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
               <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
               <div className="relative z-10 flex w-full h-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px]">
-                <div className="hidden md:block w-1/2"></div>
-                <div className={`w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
+                <div className="hidden md:block md:w-2/5 lg:w-[45%]"></div>
+                <div className={`w-full md:w-3/5 lg:w-[55%] p-10 md:p-10 lg:p-12 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
                   <div className={`transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGestionsTextBg ? 'opacity-100' : 'opacity-0'}`}>
-                    <p className="text-primary tracking-widest uppercase text-[10px] font-bold mb-6 relative z-20">Nivel Avanzado</p>
-                    <h2 className="font-headline text-4xl md:text-5xl text-primary mb-8 leading-tight flex items-center justify-between relative z-20">
+                    <h2 className="font-headline text-4xl md:text-5xl text-primary mb-5 md:mb-6 leading-tight flex items-center justify-between relative z-20">
                       <span>Gestión <br/><span className="italic">Emocional</span></span>
                       <span className="material-symbols-outlined opacity-50 md:group-hover:opacity-100 transition-opacity !text-[#162839] text-3xl">
                         open_in_new
                       </span>
                     </h2>
-                    <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6 max-w-sm relative z-20">
+                    <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-4 md:mb-5 md:max-w-md lg:max-w-lg relative z-20">
                         Aprende a observar las mareas internas sin ser arrastrado por ellas. Un sistema de herramientas para comprender lo que sientes, ordenar tus pensamientos y no estar controlado por tus emociones.
                     </p>
-                    <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-10 max-w-sm space-y-3 relative z-20">
-                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/70 font-semibold">guia de módulos y método</span></li>
-                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/50 font-medium">Los módulos y método están reservados para miembros que han realizado o están realizando nuestro programa</span></li>
+                    <ul className="text-on-surface-variant text-sm font-light leading-relaxed mb-5 md:mb-6 md:max-w-md lg:max-w-lg space-y-2 md:space-y-3 relative z-20">
+                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary tracking-wide font-bold">guia de módulos y método</span></li>
+                      <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/80 font-medium">Los módulos y método están reservados para miembros que han realizado o están realizando nuestro programa</span></li>
                     </ul>
                     <button onClick={(e) => {
                       e.stopPropagation();

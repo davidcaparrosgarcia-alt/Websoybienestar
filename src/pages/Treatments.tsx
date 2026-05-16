@@ -95,19 +95,19 @@ export default function Treatments() {
       <StructuredData id="breadcrumb-schema-tratamientos" data={breadcrumbSchema} />
       <StructuredData id="treatments-service-schema" data={treatmentsServiceSchema} />
       {/* Hero Section: The Bridge Metaphor */}
-      <section className="relative flex items-center pt-16 pb-12 px-12 overflow-hidden">
-        <div className="max-w-screen-2xl mx-auto w-full">
+      <section className="relative flex items-center pt-16 pb-12 px-6 md:px-12 mx-auto max-w-screen-2xl overflow-hidden w-full">
+        <div className="w-full">
           <div className="z-10 max-w-screen-xl">
-            <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block">Tratamientos online para tu bienestar emocional</h1>
-            <h2 className="text-6xl md:text-7xl font-headline text-primary leading-[1.1] mb-8">ReprogrÁmate</h2>
-            <p className="text-xl md:text-2xl text-on-surface-variant max-w-5xl leading-relaxed mb-10">
+            <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block break-words">Tratamientos online para tu bienestar emocional</h1>
+            <h2 className="text-[12vw] sm:text-6xl md:text-7xl font-headline text-primary leading-[1.1] mb-8 max-w-full break-words">ReprogrÁmate</h2>
+            <p className="text-lg sm:text-xl md:text-2xl text-on-surface-variant max-w-5xl leading-relaxed mb-10">
               Un sistema de tratamiento online, flexible y cercano para aliviar el malestar mental y transformar tu bienestar desde la base sin importar la distancia.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="w-full max-w-screen-2xl mx-auto px-12 mb-24">
+      <div className="w-full max-w-screen-2xl mx-auto px-6 md:px-12 mb-24">
         <div className="w-full rounded-[2rem] overflow-hidden bg-surface-container-low shadow-xl border border-outline-variant/10">
           <img
             src="/images/tratamientos_reprogramate.jpg"
