@@ -137,35 +137,53 @@ export default function Treatments() {
             {/* Card 1 */}
             <div 
               onClick={() => setSelectedInfographic({ id: 'programa_basico', src: '/images/infografia_basico.jpg' })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
-              <img
-                src="/images/programa_basico.jpg"
-                alt="Programa básico"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              <picture>
+                <source
+                  media="(max-width: 1024px) and (orientation: portrait)"
+                  srcSet="/images/programa_basico_vertical.jpg"
+                />
+                <img
+                  src="/images/programa_basico.jpg"
+                  alt="Programa básico"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </picture>
             </div>
             {/* Card 2 */}
             <div 
               onClick={() => setSelectedInfographic({ id: 'programa_intermedio', src: '/images/infografia_intermedio.jpg' })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
-              <img
-                src="/images/programa_Intermedio.jpg"
-                alt="Programa intermedio"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              <picture>
+                <source
+                  media="(max-width: 1024px) and (orientation: portrait)"
+                  srcSet="/images/programa_intermedio_vertical.jpg"
+                />
+                <img
+                  src="/images/programa_intermedio.jpg"
+                  alt="Programa intermedio"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </picture>
             </div>
             {/* Card 3 */}
             <div 
               onClick={() => setSelectedInfographic({ id: 'programa_completo', src: '/images/infografia_completo.jpg' })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl h-[400px] hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
-              <img
-                src="/images/programa_completo.jpg"
-                alt="Programa completo"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              <picture>
+                <source
+                  media="(max-width: 1024px) and (orientation: portrait)"
+                  srcSet="/images/programa_completo_vertical.jpg"
+                />
+                <img
+                  src="/images/programa_completo.jpg"
+                  alt="Programa completo"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </picture>
             </div>
           </div>
         </div>
