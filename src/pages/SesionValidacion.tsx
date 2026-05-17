@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import SEO from "../components/SEO";
 
 export default function SesionValidacion() {
   const location = useLocation();
+  const navigate = useNavigate();
   const auth = getAuth();
   const user = auth.currentUser;
   
@@ -135,13 +136,28 @@ export default function SesionValidacion() {
           <p className="font-body flex items-center gap-2"><span className="material-symbols-outlined">error</span> {errorMessage}</p>
         </div>
       )}
-      <header className="mb-16 md:w-2/3">
-        <h1 className="font-headline text-4xl md:text-5xl lg:text-[3.5rem] leading-tight text-primary mb-6">
-          Confirma tu espacio de serenidad
-        </h1>
-        <p className="text-lg font-body text-on-surface-variant max-w-2xl">
-          Completa los detalles de tu reserva para asegurar tu Sesión de Validación. Un paso más hacia tu arquitectura interior.
-        </p>
+      <header className="mb-16 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <div className="md:w-2/3">
+          <h1 className="font-headline text-4xl md:text-5xl lg:text-[3.5rem] leading-tight text-primary mb-6">
+            Confirma tu espacio de serenidad
+          </h1>
+          <p className="text-lg font-body text-on-surface-variant max-w-2xl">
+            Completa los detalles de tu reserva para asegurar tu Sesión de Validación. Un paso más hacia tu arquitectura interior.
+          </p>
+        </div>
+        <button 
+          onClick={() => {
+            if (window.history.length > 2) {
+              navigate(-1);
+            } else {
+              navigate('/reservar-programa');
+            }
+          }}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-outline-variant/30 text-on-surface-variant font-label font-bold text-sm tracking-wide hover:border-primary hover:text-primary transition-colors bg-surface-container-lowest shadow-sm h-fit shrink-0"
+        >
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          Volver
+        </button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">

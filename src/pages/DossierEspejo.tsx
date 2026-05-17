@@ -10,6 +10,7 @@ import { userCache } from "../lib/userCache";
 export default function DossierEspejo() {
   const navigate = useNavigate();
   const location = useLocation();
+  const testerPreviewParam = new URLSearchParams(location.search).get("testerPreview") === "1";
   const hasCachedData = userCache.userData && userCache.profileData;
   const [loading, setLoading] = useState(!hasCachedData);
   const [userData, setUserData] = useState<any>(userCache.userData);
@@ -28,10 +29,17 @@ export default function DossierEspejo() {
     // Auth observer would be better but we rely on ProtectedRoute which ensures user is logged in
     const checkAuth = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        try {
-          // If we have cached data, fetch in background without blocking
-          if (!hasCachedData) setLoading(true);
+        const isTester = user.email === "davidcaparrosgarcia@gmail.com";
+        const isDemo = isTester && testerPreviewParam;
 
+        if (isDemo) {
+          setUnlocked(true);
+          setLoading(false);
+        } else if (!hasCachedData) {
+          setLoading(true);
+        }
+
+        try {
           const userDocRef = doc(db, 'users', user.uid);
           const profileDocRef = doc(db, 'userProfiles', user.uid);
 
@@ -58,7 +66,7 @@ export default function DossierEspejo() {
         } catch (error) {
           console.error("Error fetching dossier data", error);
         } finally {
-          setLoading(false);
+          if (!isDemo) setLoading(false);
         }
       } else {
         setLoading(false);
@@ -66,7 +74,7 @@ export default function DossierEspejo() {
     });
 
     return () => checkAuth();
-  }, [hasCachedData]);
+  }, [hasCachedData, testerPreviewParam]);
 
   if (loading) {
     return (
@@ -271,12 +279,6 @@ export default function DossierEspejo() {
           <p className="font-body text-lg text-on-surface-variant leading-relaxed italic text-primary/80">
             "Hecho para ti. Contigo."
           </p>
-          <button 
-            onClick={() => navigate("/report")}
-            className="mt-4 px-6 py-2 border border-outline-variant/30 rounded-full text-on-surface-variant font-label font-bold text-sm hover:border-primary hover:text-primary transition-colors inline-block"
-          >
-            Volver a mi lectura
-          </button>
         </div>
         <div className="order-1 lg:order-2 relative rounded-[2rem] overflow-hidden aspect-[4/3] bg-surface-container-low shadow-sm">
           <img alt="Dossier Espejo" className="w-full h-full object-cover" src="/images/fondo_dosier.jpg"/>
