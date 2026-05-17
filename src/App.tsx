@@ -11,6 +11,7 @@ import SessionEnded from "./pages/SessionEnded";
 import Report from "./pages/Report";
 import DossierEspejo from "./pages/DossierEspejo";
 import SesionValidacion from "./pages/SesionValidacion";
+import ReservarPrograma from "./pages/ReservarPrograma";
 import Method from "./pages/Method";
 import Treatments from "./pages/Treatments";
 import MethodDetails from "./pages/MethodDetails";
@@ -86,6 +87,11 @@ export default function App() {
           <Route path="dossier-espejo" element={
             <ProtectedRoute>
               <DossierEspejo />
+            </ProtectedRoute>
+          } />
+          <Route path="reservar-programa" element={
+            <ProtectedRoute>
+              <ReservarPrograma />
             </ProtectedRoute>
           } />
           <Route path="sesion-validacion" element={

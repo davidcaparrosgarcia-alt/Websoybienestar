@@ -23,6 +23,8 @@ export default function Method() {
   const [user] = useAuthState(auth);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  const [dossierAvailable, setDossierAvailable] = useState(false);
+  const [dossierViewed, setDossierViewed] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [phoneValue, setPhoneValue] = useState("+34");
   const [progressStep, setProgressStep] = useState(1);
@@ -125,7 +127,9 @@ export default function Method() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setHasDoneConsultation(data?.hasDoneConsultation === true);
-          if (data?.hasDoneCuestionario) {
+          setDossierAvailable(!!data?.dossierAvailableAt || !!data?.latestDossier);
+          setDossierViewed(!!data?.dossierViewedAt);
+          if (data?.hasDoneCuestionario || data?.questionnaireStatus === "completed" || data?.questionnaireStatus === "concluded" || data?.questionnaireStatus === "finalized") {
              setProgressStep(3);
           } else if (data?.hasDoneConsultation) {
              setProgressStep(2);
@@ -431,7 +435,9 @@ export default function Method() {
             <div className="mt-auto pt-8">
               <button 
                 onClick={() => {
-                  if (hasDoneConsultation) {
+                  if (dossierAvailable && dossierViewed) {
+                    navigate('/reservar-programa');
+                  } else if (hasDoneConsultation) {
                     setIsNextStepsModalOpen(true);
                   } else {
                     navigate('/session');
@@ -441,7 +447,7 @@ export default function Method() {
                 style={{ backgroundImage: 'url("/images/fondo_boton.jpg")' }}
               >
                 <span className="material-symbols-outlined text-xl">psychology</span>
-                {hasDoneConsultation ? "¿Qué debo hacer ahora?" : "Iniciar Consulta Gratuita"}
+                {dossierAvailable && dossierViewed ? "Reservar programa" : hasDoneConsultation ? "¿Qué debo hacer ahora?" : "Iniciar Consulta Gratuita"}
               </button>
             </div>
           </div>

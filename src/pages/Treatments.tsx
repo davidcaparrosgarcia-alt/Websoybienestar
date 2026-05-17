@@ -11,9 +11,71 @@ import StructuredData from "../components/StructuredData";
 export default function Treatments() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
+  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string, mobileSrc?: string, plan?: "basico" | "intermedio" | "completo" } | null>(null);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  const [hasDoneCuestionario, setHasDoneCuestionario] = useState(false);
+  const [dossierAvailable, setDossierAvailable] = useState(false);
+  const [dossierViewed, setDossierViewed] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+  const [showReservationState, setShowReservationState] = useState(false);
+
+  const handleReservationClick = () => {
+    if (dossierViewed) {
+      if (selectedInfographic?.plan) {
+         navigate(`/reservar-programa?plan=${selectedInfographic.plan}`);
+      } else {
+         navigate('/reservar-programa');
+      }
+    } else {
+      setShowReservationState(true);
+    }
+  };
+
+  const renderReservationState = () => {
+    if (!user) {
+      return (
+        <div className="bg-[#11181f]/80 p-6 md:p-8 rounded-2xl max-w-2xl mx-auto text-center border border-white/10 mt-8 mb-4">
+          <p className="text-white/90 text-lg mb-6 leading-relaxed">Para reservar un programa necesitamos que inicies sesión. Así podremos guardar tu proceso y acompañarte de forma segura.</p>
+          <button onClick={() => navigate('/login')} className="bg-white text-[#11181f] px-8 py-3 rounded-full font-label font-bold hover:scale-105 transition-transform">Iniciar sesión</button>
+        </div>
+      );
+    }
+    if (!hasDoneConsultation) {
+      return (
+        <div className="bg-[#11181f]/80 p-6 md:p-8 rounded-2xl max-w-2xl mx-auto text-center border border-white/10 mt-8 mb-4">
+          <p className="text-white/90 text-lg mb-6 leading-relaxed">Antes de reservar, necesitamos conocer tu punto de partida. La consulta gratuita nos ayuda a orientarte mejor y a recomendarte el programa adecuado.</p>
+          <button onClick={() => navigate('/session')} className="bg-white text-[#11181f] px-8 py-3 rounded-full font-label font-bold hover:scale-105 transition-transform">Realizar consulta gratuita</button>
+        </div>
+      );
+    }
+    if (!hasDoneCuestionario) {
+      return (
+        <div className="bg-[#11181f]/80 p-6 md:p-8 rounded-2xl max-w-2xl mx-auto text-center border border-white/10 mt-8 mb-4">
+          <p className="text-white/90 text-lg mb-6 leading-relaxed">Ya tenemos tu primera lectura. El siguiente paso es completar el Cuestionario Espejo para poder recomendarte un programa con más precisión.</p>
+          <button onClick={() => { setShowReservationState(false); setIsNextStepsModalOpen(true); }} className="bg-white text-[#11181f] px-8 py-3 rounded-full font-label font-bold hover:scale-105 transition-transform">¿Qué debo hacer ahora?</button>
+        </div>
+      );
+    }
+    if (!dossierAvailable) {
+      return (
+        <div className="bg-[#11181f]/80 p-6 md:p-8 rounded-2xl max-w-2xl mx-auto text-center border border-white/10 mt-8 mb-4">
+          <p className="text-white/90 text-lg mb-6 leading-relaxed">Tu Dossier Espejo está en preparación. Cuando esté listo, podrás leerlo y reservar el programa más adecuado con más claridad.</p>
+          <button onClick={() => navigate('/report#next-steps')} className="bg-white text-[#11181f] px-8 py-3 rounded-full font-label font-bold hover:scale-105 transition-transform">Ver próximos pasos</button>
+        </div>
+      );
+    }
+    if (!dossierViewed) {
+      return (
+        <div className="bg-[#11181f]/80 p-6 md:p-8 rounded-2xl max-w-2xl mx-auto text-center border border-white/10 mt-8 mb-4">
+          <p className="text-white/90 text-lg mb-6 leading-relaxed">Tu Dossier Espejo ya está disponible. Antes de reservar, te recomendamos leerlo para elegir el programa con más seguridad.</p>
+          <button onClick={() => navigate('/dossier-espejo')} className="bg-white text-[#11181f] px-8 py-3 rounded-full font-label font-bold hover:scale-105 transition-transform">Leer Dossier personalizado</button>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const [showAllTreatmentsModal, setShowAllTreatmentsModal] = useState(false);
   const [phoneValue, setPhoneValue] = useState("+34");
 
   const breadcrumbSchema = {
@@ -71,6 +133,9 @@ export default function Treatments() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setHasDoneConsultation(data?.hasDoneConsultation === true);
+          setHasDoneCuestionario(data?.hasDoneCuestionario === true || data?.questionnaireStatus === "completed" || data?.questionnaireStatus === "concluded" || data?.questionnaireStatus === "finalized");
+          setDossierAvailable(!!data?.dossierAvailableAt || !!data?.latestDossier);
+          setDossierViewed(!!data?.dossierViewedAt);
           const contactPhone = data?.contactPhone || data?.phone || data?.whatsappPhone || data?.smsPhone || data?.telefono;
           if (contactPhone) {
             const prefix = data?.contactPhoneCountryCode || "+34";
@@ -127,7 +192,7 @@ export default function Treatments() {
             </div>
             <button
               type="button"
-              onClick={() => alert("Contenido en preparación. Próximamente podrás ver aquí una explicación visual de todos los tratamientos.")}
+              onClick={() => setSelectedInfographic({ id: 'todos_los_tratamientos', src: '/images/tratamientos.jpg', mobileSrc: '/images/tratamientos_vertical.jpg' })}
               className="group bg-primary-container p-6 rounded-2xl flex items-center justify-center text-center relative overflow-hidden hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 min-h-[120px]"
             >
               <span className="font-headline text-2xl text-white relative z-10 group-hover:scale-105 transition-transform duration-500">Ver todos los tratamientos</span>
@@ -136,7 +201,7 @@ export default function Treatments() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_basico', src: '/images/infografia_basico.jpg' })}
+              onClick={() => setSelectedInfographic({ id: 'programa_basico', src: '/images/infografia_basico.jpg', plan: 'basico' })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>
@@ -153,7 +218,7 @@ export default function Treatments() {
             </div>
             {/* Card 2 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_intermedio', src: '/images/infografia_intermedio.jpg' })}
+              onClick={() => setSelectedInfographic({ id: 'programa_intermedio', src: '/images/infografia_intermedio.jpg', plan: 'intermedio' })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>
@@ -170,7 +235,7 @@ export default function Treatments() {
             </div>
             {/* Card 3 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_completo', src: '/images/infografia_completo.jpg' })}
+              onClick={() => setSelectedInfographic({ id: 'programa_completo', src: '/images/infografia_completo.jpg', plan: 'completo' })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>
@@ -250,7 +315,9 @@ export default function Treatments() {
             <div className="mt-auto pt-8">
               <button 
                 onClick={() => {
-                  if (hasDoneConsultation) {
+                  if (dossierAvailable && dossierViewed) {
+                    navigate('/reservar-programa');
+                  } else if (hasDoneConsultation) {
                     setIsNextStepsModalOpen(true);
                   } else {
                     navigate('/session');
@@ -260,7 +327,7 @@ export default function Treatments() {
                 style={{ backgroundImage: 'url("/images/fondo_boton.jpg")' }}
               >
                 <span className="material-symbols-outlined text-xl">psychology</span>
-                {hasDoneConsultation ? "¿Qué debo hacer ahora?" : "Iniciar Consulta Gratuita"}
+                {dossierAvailable && dossierViewed ? "Reservar programa" : hasDoneConsultation ? "¿Qué debo hacer ahora?" : "Iniciar Consulta Gratuita"}
               </button>
             </div>
           </div>
@@ -311,7 +378,7 @@ export default function Treatments() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
               <motion.div 
                 layoutId={'card-' + selectedInfographic.id}
-                className="relative w-full max-w-5xl max-h-[90vh] bg-surface rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
+                className="relative w-full max-w-6xl max-h-[90vh] bg-[#11181f] rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
               >
                 {/* Elegant Action Buttons */}
                 <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
@@ -319,7 +386,7 @@ export default function Treatments() {
                     href={selectedInfographic.src} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
@@ -328,24 +395,60 @@ export default function Treatments() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedInfographic(null);
+                      setShowReservationState(false);
                     }}
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
                   </button>
                 </div>
                 
                 {/* Scrollable document area */}
-                <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
-                  <motion.img 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: 0.1, duration: 0.3 }}
-                    src={selectedInfographic.src} 
-                    alt="Infografía Detalle" 
-                    className="w-full h-auto rounded-xl shadow-sm"
-                  />
+                <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar flex flex-col">
+                  {selectedInfographic.mobileSrc ? (
+                    <motion.picture
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      className="w-full"
+                    >
+                      <source
+                        media="(max-width: 1024px) and (orientation: portrait)"
+                        srcSet={selectedInfographic.mobileSrc}
+                      />
+                      <img 
+                        src={selectedInfographic.src} 
+                        alt="Infografía Detalle" 
+                        className="w-full h-auto rounded-xl shadow-sm"
+                      />
+                    </motion.picture>
+                  ) : (
+                    <motion.img 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      src={selectedInfographic.src} 
+                      alt="Infografía Detalle" 
+                      className="w-full h-auto rounded-xl shadow-sm"
+                    />
+                  )}
+
+                  {selectedInfographic.id !== 'todos_los_tratamientos' && (
+                    <div className="mt-8 flex flex-col items-center">
+                      {showReservationState ? (
+                        renderReservationState()
+                      ) : (
+                        <button 
+                          onClick={handleReservationClick}
+                          className="w-full sm:w-auto bg-white text-[#11181f] px-12 py-4 rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98] mt-4"
+                        >
+                          Reservar programa
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>
