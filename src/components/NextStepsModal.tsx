@@ -77,6 +77,7 @@ export default function NextStepsModal({
 
   const handleFormSubmit = async () => {
     setQuestionnaireRequestMessage(null);
+    setQuestionnaireSuccessData(null);
 
     if (!emailValue.trim() || !/\S+@\S+\.\S+/.test(emailValue)) {
       setQuestionnaireRequestMessage({ text: "Por favor, introduce un email válido.", type: "error" });
@@ -381,14 +382,19 @@ export default function NextStepsModal({
                     
                     <div className="flex flex-col gap-3">
                       {questionnaireSuccessData.questionnaireUrl && (
-                         <a 
-                           href={questionnaireSuccessData.questionnaireUrl} 
-                           target="_blank" 
-                           rel="noopener noreferrer"
+                         <button 
+                           onClick={(e) => {
+                             e.preventDefault();
+                             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                               window.location.href = questionnaireSuccessData.questionnaireUrl!;
+                             } else {
+                               window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
+                             }
+                           }}
                            className="bg-primary text-white text-center py-4 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-md text-base"
                          >
                            Hacer Cuestionario Espejo ahora
-                         </a>
+                         </button>
                       )}
                       
                       <div className="flex flex-row gap-3">
@@ -418,7 +424,7 @@ export default function NextStepsModal({
                     </div>
                     
                     <p className="text-xs opacity-90 mt-1 font-normal">
-                      También puedes conservar el enlace y la clave por email, WhatsApp o SMS si has elegido alguno de esos canales.
+                      Puedes copiar el enlace y la clave para guardarlos. Si has elegido email, WhatsApp o SMS, el equipo podrá usar esos datos para enviártelo también por la vía indicada.
                     </p>
                   </div>
                 )}

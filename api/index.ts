@@ -1501,12 +1501,18 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     try {
       // 1) Intentar enlace directo
+      const headers: any = {
+        "Content-Type": "application/json",
+        "x-bridge-secret": bridgeSecret,
+      };
+
+      if (isTestUser(req) && (authEmail === "davidcaparrosgarcia@gmail.com")) {
+        headers["x-debug-bridge"] = "true";
+      }
+
       const directResponse = await fetch(`${normalizedApiUrl}/api/direct-questionnaire-link`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-bridge-secret": bridgeSecret,
-        },
+        headers,
         body: JSON.stringify(payload),
       });
 
@@ -1623,9 +1629,9 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       updateData.linkedQuestionnairePatientId = questionnairePatientId;
     }
 
-    await docRef.update(updateData);
+    await docRef.set(updateData, { merge: true });
 
-    await profileRef.update({
+    await profileRef.set({
       questionnaireStatus: "requested",
       ...(finalAccessCode
         ? {
@@ -1634,7 +1640,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
             lastQuestionnaireProposedAccessCode: finalAccessCode,
           }
         : {}),
-    });
+    }, { merge: true });
 
     requestStep = "done";
     
