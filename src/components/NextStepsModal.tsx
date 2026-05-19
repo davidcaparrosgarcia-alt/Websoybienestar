@@ -391,7 +391,7 @@ export default function NextStepsModal({
                                window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
                              }
                            }}
-                           className="bg-primary text-white text-center py-4 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-md text-base"
+                           className="bg-primary text-white text-center py-4 rounded-full font-bold hover:bg-primary/90 text-base cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]"
                          >
                            Hacer Cuestionario Espejo ahora
                          </button>
