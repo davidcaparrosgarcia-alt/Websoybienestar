@@ -1198,6 +1198,10 @@ function normalizeAccessCode(code: string) {
   return String(code || "").trim().toLowerCase();
 }
 
+function isValidPersonalAccessCode(code: string) {
+  return /^[a-z0-9]{4}$/.test(normalizeAccessCode(code));
+}
+
 function generatePersonalAccessCode(length = 4) {
   let code = "";
   for (let i = 0; i < length; i++) {
@@ -1225,13 +1229,20 @@ async function getOrCreatePersonalAccessCode(
 
   const existingCode =
     userData.personalAccessCode || profileData.personalAccessCode;
+    
   if (existingCode) {
-    return normalizeAccessCode(existingCode);
+    if (isValidPersonalAccessCode(existingCode)) {
+      return normalizeAccessCode(existingCode);
+    }
   }
+
+  const isMigration = !!existingCode;
+  const migratedFrom = isMigration ? normalizeAccessCode(existingCode) : null;
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = generatePersonalAccessCode(4);
     const codeRef = db.collection("accessCodes").doc(code);
+    const oldCodeRef = migratedFrom ? db.collection("accessCodes").doc(migratedFrom) : null;
 
     try {
       await db.runTransaction(async (tx) => {
@@ -1246,23 +1257,32 @@ async function getOrCreatePersonalAccessCode(
           createdAt: Date.now(),
         };
 
+        const userUpdate: any = {
+          personalAccessCode: code,
+          personalAccessCodeCreatedAt: Date.now(),
+        };
+        const profileUpdate: any = {
+          personalAccessCode: code,
+          personalAccessCodeCreatedAt: Date.now(),
+        };
+
+        if (isMigration) {
+          userUpdate.previousPersonalAccessCode = migratedFrom;
+          userUpdate.personalAccessCodeMigratedAt = Date.now();
+          userUpdate.personalAccessCodeFormat = "v2_4_alphanumeric";
+          
+          profileUpdate.previousPersonalAccessCode = migratedFrom;
+          profileUpdate.personalAccessCodeMigratedAt = Date.now();
+          profileUpdate.personalAccessCodeFormat = "v2_4_alphanumeric";
+        }
+
         tx.set(codeRef, payload);
-        tx.set(
-          userRef,
-          {
-            personalAccessCode: code,
-            personalAccessCodeCreatedAt: Date.now(),
-          },
-          { merge: true },
-        );
-        tx.set(
-          profileRef,
-          {
-            personalAccessCode: code,
-            personalAccessCodeCreatedAt: Date.now(),
-          },
-          { merge: true },
-        );
+        tx.set(userRef, userUpdate, { merge: true });
+        tx.set(profileRef, profileUpdate, { merge: true });
+        
+        if (oldCodeRef) {
+          tx.delete(oldCodeRef);
+        }
       });
 
       return code;
@@ -1524,7 +1544,11 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
           questionnaireUrl = directData.questionnaireUrl;
           questionnairePatientId = directData.patientId;
           if (directData.accessCode) {
-            finalAccessCode = directData.accessCode;
+            if (isValidPersonalAccessCode(directData.accessCode)) {
+              finalAccessCode = normalizeAccessCode(directData.accessCode);
+            } else {
+              console.warn("Questionnaire returned an invalid access code, keeping local code", directData.accessCode);
+            }
           }
         }
       } else {

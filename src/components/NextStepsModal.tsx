@@ -378,7 +378,7 @@ export default function NextStepsModal({
                 
                 {questionnaireRequestMessage.type === 'success' && questionnaireSuccessData?.accessCode && (
                   <div className="mt-4 p-5 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
-                    <p className="text-base">Tu clave personal es: <strong className="text-xl uppercase ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode}</strong></p>
+                    <p className="text-base">Tu clave personal es: <strong className="text-xl ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode.toUpperCase()}</strong></p>
                     
                     <div className="flex flex-col gap-3">
                       {questionnaireSuccessData.questionnaireUrl && (
@@ -413,7 +413,7 @@ export default function NextStepsModal({
                         <button 
                           onClick={(e) => {
                              e.preventDefault();
-                             navigator.clipboard.writeText(questionnaireSuccessData.accessCode!);
+                             navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
                              alert("Clave copiada al portapapeles");
                           }}
                           className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-3 rounded-full font-bold text-center transition-colors border border-outline-variant/30 dark:text-white"
