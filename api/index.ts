@@ -1192,9 +1192,13 @@ app.get("/api/debug-questionnaire-bridge", requireAuth, async (req, res) => {
   }
 });
 
-const ACCESS_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const ACCESS_CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 
-function generatePersonalAccessCode(length = 6) {
+function normalizeAccessCode(code: string) {
+  return String(code || "").trim().toLowerCase();
+}
+
+function generatePersonalAccessCode(length = 4) {
   let code = "";
   for (let i = 0; i < length; i++) {
     code +=
@@ -1222,11 +1226,11 @@ async function getOrCreatePersonalAccessCode(
   const existingCode =
     userData.personalAccessCode || profileData.personalAccessCode;
   if (existingCode) {
-    return String(existingCode).trim().toUpperCase();
+    return normalizeAccessCode(existingCode);
   }
 
   for (let attempt = 0; attempt < 10; attempt++) {
-    const code = generatePersonalAccessCode(6);
+    const code = generatePersonalAccessCode(4);
     const codeRef = db.collection("accessCodes").doc(code);
 
     try {
@@ -1488,41 +1492,90 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const normalizedApiUrl = apiUrl.replace(/\/$/, "");
 
     requestStep = "send_to_questionnaire";
-    const response = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-bridge-secret": bridgeSecret,
-      },
-      body: JSON.stringify(payload),
-    });
+    let apiResponseData: any = {};
+    let isDirectAccess = false;
+    let questionnaireUrl = null;
+    let questionnairePatientId = null;
+    let finalAccessCode = personalAccessCode;
+    let directError: any = null;
 
-    requestStep = "parse_questionnaire_response";
-    let apiResponseData = {};
-    const responseText = await response.text();
     try {
-      apiResponseData = JSON.parse(responseText);
-    } catch (e) {}
+      // 1) Intentar enlace directo
+      const directResponse = await fetch(`${normalizedApiUrl}/api/direct-questionnaire-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-bridge-secret": bridgeSecret,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      console.error("Error from Cuestionario API", {
-        step: requestStep,
-        status: response.status,
-        statusText: response.statusText,
-        responseText: responseText.substring(0, 500),
+      if (directResponse.ok) {
+        const directData = await directResponse.json();
+        if (directData.success && directData.questionnaireUrl) {
+          isDirectAccess = true;
+          apiResponseData = directData;
+          questionnaireUrl = directData.questionnaireUrl;
+          questionnairePatientId = directData.patientId;
+          if (directData.accessCode) {
+            finalAccessCode = directData.accessCode;
+          }
+        }
+      } else {
+        directError = { status: directResponse.status, text: await directResponse.text() };
+      }
+    } catch (e) {
+      directError = e;
+    }
+
+    let fallbackResponseData: any = null;
+    let fallbackStatus = null;
+
+    if (!isDirectAccess) {
+      // 2) Fallback a solicitudes pendientes
+      const response = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-bridge-secret": bridgeSecret,
+        },
+        body: JSON.stringify(payload),
       });
-      return res.status(502).json({
-        success: false,
-        message:
-          "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.",
-      });
+
+      fallbackStatus = response.status;
+      const responseText = await response.text();
+      try {
+        fallbackResponseData = JSON.parse(responseText);
+        apiResponseData = fallbackResponseData;
+      } catch (e) {
+        apiResponseData = { rawText: responseText };
+      }
+
+      if (!response.ok) {
+        console.error("Error from Cuestionario API (fallback)", {
+          step: requestStep,
+          status: response.status,
+          statusText: response.statusText,
+          responseText: responseText.substring(0, 500),
+          directError
+        });
+        
+        let message = "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
+        if (isTestUser(req) && (authEmail === "davidcaparrosgarcia@gmail.com")) {
+            message = `Error Fallback: ${response.status}. Direct Error: ${JSON.stringify(directError)}`;
+        }
+        return res.status(502).json({
+          success: false,
+          message
+        });
+      }
     }
 
     requestStep = "save_local_request";
     const timestamp = Date.now();
     await requestsRef.doc(requestId).set({
       id: requestId,
-      status: "pending",
+      status: isDirectAccess ? "sent" : "pending",
       createdAt: timestamp,
       resentBecauseContactChanged: isResendingDueToContactChange,
       email,
@@ -1530,7 +1583,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       edad: edad || null,
       sexo: sexo || null,
       preferredChannels,
-      questionnaireApiStatus: response.status,
+      questionnaireApiStatus: isDirectAccess ? 200 : fallbackStatus,
       questionnaireApiResponse: apiResponseData,
       source: "soybienestar",
       sourcePath: "/zen",
@@ -1540,7 +1593,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     requestStep = "update_user_request_metadata";
     const updateData: any = {
-      questionnaireRequestStatus: "pending",
+      questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
       questionnaireStatus: "requested",
       questionnaireRequestedAt: timestamp,
       lastQuestionnaireRequestAt: timestamp,
@@ -1548,9 +1601,17 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       lastQuestionnaireContactSnapshot: contactSnapshot,
     };
 
-    if (personalAccessCode) {
+    if (finalAccessCode) {
+      updateData.personalAccessCode = finalAccessCode; // Normalizado
+      updateData.questionnaireAccessCode = finalAccessCode;
       updateData.questionnaireAccessCodeSharedAt = timestamp;
-      updateData.lastQuestionnaireProposedAccessCode = personalAccessCode;
+      updateData.lastQuestionnaireProposedAccessCode = finalAccessCode;
+    }
+
+    if (isDirectAccess) {
+      updateData.latestQuestionnairePatientId = questionnairePatientId;
+      updateData.latestQuestionnaireDirectUrl = questionnaireUrl;
+      updateData.questionnaireDirectUrlCreatedAt = timestamp;
     }
 
     if (userData.dossierAvailableAt !== undefined)
@@ -1558,40 +1619,39 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     if (userData.dossierViewedAt !== undefined)
       updateData.dossierViewedAt = userData.dossierViewedAt;
 
-    if (!userData.linkedQuestionnairePatientId) {
-      updateData.linkedQuestionnairePatientId = null;
+    if (!userData.linkedQuestionnairePatientId && questionnairePatientId) {
+      updateData.linkedQuestionnairePatientId = questionnairePatientId;
     }
 
     await docRef.update(updateData);
 
     await profileRef.update({
       questionnaireStatus: "requested",
-      ...(personalAccessCode
+      ...(finalAccessCode
         ? {
+            personalAccessCode: finalAccessCode,
             questionnaireAccessCodeSharedAt: timestamp,
-            lastQuestionnaireProposedAccessCode: personalAccessCode,
+            lastQuestionnaireProposedAccessCode: finalAccessCode,
           }
         : {}),
     });
 
     requestStep = "done";
-    if (isResendingDueToContactChange) {
-      return res.json({
-        success: true,
-        status: "resent_contact_changed",
-        message:
-          "Detectamos que has actualizado tus datos de contacto, así que hemos registrado de nuevo tu solicitud.",
-        requestId,
-      });
-    } else {
-      return res.json({
-        success: true,
-        status: "sent",
-        message:
-          "Solicitud recibida. Nuestro equipo revisará tus datos y te enviará el enlace del Cuestionario Espejo por la vía seleccionada.",
-        requestId,
-      });
-    }
+    
+    return res.json({
+      success: true,
+      status: isDirectAccess ? "sent" : "pending",
+      message: isDirectAccess 
+         ? "Hemos generado tu cuestionario."
+         : (isResendingDueToContactChange 
+             ? "Detectamos que has actualizado tus datos de contacto, así que hemos registrado de nuevo tu solicitud." 
+             : "Solicitud recibida. Nuestro equipo revisará tus datos y te enviará el enlace del Cuestionario Espejo por la vía seleccionada."),
+      requestId,
+      accessCode: finalAccessCode,
+      questionnaireUrl: questionnaireUrl,
+      patientId: questionnairePatientId,
+      directAccessAvailable: isDirectAccess
+    });
   } catch (error) {
     console.error("API /api/request-questionnaire error:", {
       step: requestStep,

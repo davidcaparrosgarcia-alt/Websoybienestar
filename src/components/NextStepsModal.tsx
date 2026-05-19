@@ -30,6 +30,7 @@ export default function NextStepsModal({
   const [sexValue, setSexValue] = useState("");
   const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
   const [questionnaireRequestMessage, setQuestionnaireRequestMessage] = useState<{text: string, type: "success"|"error"|"warning"} | null>(null);
+  const [questionnaireSuccessData, setQuestionnaireSuccessData] = useState<{accessCode?: string; questionnaireUrl?: string; directAccessAvailable?: boolean;} | null>(null);
   
   const [isDebuggingQuestionnaireBridge, setIsDebuggingQuestionnaireBridge] = useState(false);
   const [questionnaireDebugResult, setQuestionnaireDebugResult] = useState<string | null>(null);
@@ -143,6 +144,11 @@ export default function NextStepsModal({
 
       if (response.ok) {
         setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
+        setQuestionnaireSuccessData({
+          accessCode: data.accessCode,
+          questionnaireUrl: data.questionnaireUrl,
+          directAccessAvailable: data.directAccessAvailable
+        });
         try {
           await setDoc(doc(db, "users", user.uid), {
             edad: ageValue,
@@ -368,6 +374,54 @@ export default function NextStepsModal({
             {questionnaireRequestMessage && (
               <div className={`mt-4 p-4 whitespace-pre-wrap rounded-xl text-sm font-medium ${questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}>
                 {questionnaireRequestMessage.text}
+                
+                {questionnaireRequestMessage.type === 'success' && questionnaireSuccessData?.accessCode && (
+                  <div className="mt-4 p-5 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
+                    <p className="text-base">Tu clave personal es: <strong className="text-xl uppercase ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode}</strong></p>
+                    
+                    <div className="flex flex-col gap-3">
+                      {questionnaireSuccessData.questionnaireUrl && (
+                         <a 
+                           href={questionnaireSuccessData.questionnaireUrl} 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="bg-primary text-white text-center py-4 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-md text-base"
+                         >
+                           Hacer Cuestionario Espejo ahora
+                         </a>
+                      )}
+                      
+                      <div className="flex flex-row gap-3">
+                        {questionnaireSuccessData.questionnaireUrl && (
+                          <button 
+                            onClick={(e) => {
+                               e.preventDefault();
+                               navigator.clipboard.writeText(questionnaireSuccessData.questionnaireUrl!);
+                               alert("Enlace copiado al portapapeles");
+                            }}
+                            className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-3 rounded-full font-bold text-center transition-colors border border-outline-variant/30 dark:text-white"
+                          >
+                            Copiar enlace
+                          </button>
+                        )}
+                        <button 
+                          onClick={(e) => {
+                             e.preventDefault();
+                             navigator.clipboard.writeText(questionnaireSuccessData.accessCode!);
+                             alert("Clave copiada al portapapeles");
+                          }}
+                          className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-3 rounded-full font-bold text-center transition-colors border border-outline-variant/30 dark:text-white"
+                        >
+                          Copiar clave
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs opacity-90 mt-1 font-normal">
+                      También puedes conservar el enlace y la clave por email, WhatsApp o SMS si has elegido alguno de esos canales.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             

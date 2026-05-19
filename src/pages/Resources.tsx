@@ -275,7 +275,7 @@ export default function Resources() {
               
               <div className="relative z-10 flex flex-col justify-end p-6 md:p-8 h-full pointer-events-none text-center">
                 <div className={`w-full transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGratitudeText ? 'opacity-100' : 'opacity-0'}`}>
-                  <p className="text-white bg-black/40 backdrop-blur-md p-8 border border-white/10 rounded-2xl shadow-xl font-light text-xl md:text-2xl leading-relaxed block w-full break-words">Tu espacio para anclar lo positivo y reconocer la abundancia en lo sutil.</p>
+                  <p className="text-white bg-black/40 backdrop-blur-md px-6 py-5 border border-white/10 rounded-2xl shadow-xl font-light text-base md:text-lg inline-block w-full break-words">Tu espacio para anclar lo positivo y reconocer la abundancia en lo sutil.</p>
                 </div>
               </div>
             </div>

@@ -293,10 +293,9 @@ export default function AnxietyManagement() {
                   window.scrollTo({ top: y, behavior: 'smooth' });
                 }
               }}
-              className="bg-primary hover:bg-primary-container dark:hover:bg-primary-container text-white dark:text-white px-10 py-5 rounded-full font-label font-bold uppercase tracking-widest shadow-lg hover:shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+              className="bg-primary dark:bg-primary-container hover:bg-primary-container text-white px-10 py-5 rounded-full font-label font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center active:scale-[0.98]"
             >
-              Ver presión actual
-              <span className="material-symbols-outlined">arrow_upward</span>
+              Ver Presión Actual
             </button>
           </div>
         </div>
