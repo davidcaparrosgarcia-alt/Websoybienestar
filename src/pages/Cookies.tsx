@@ -19,7 +19,7 @@ export default function Cookies() {
     <div className="flex-1 bg-transparent min-h-screen text-on-surface pb-24">
       {/* Header */}
       <section className="bg-primary pt-32 pb-24 text-center px-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-20">
           <img alt="texture" className="w-full h-full object-cover" src="/images/fondo_cookies.jpg"/>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">

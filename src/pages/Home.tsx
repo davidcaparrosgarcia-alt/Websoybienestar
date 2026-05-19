@@ -305,8 +305,8 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "Service",
     "@id": "https://soybienestar.es/#servicio-bienestar-emocional",
-    "name": "Orientación online de bienestar emocional",
-    "serviceType": "Bienestar emocional online",
+    "name": "Terapia online y bienestar emocional",
+    "serviceType": "Terapia online, acompañamiento emocional y recursos de bienestar emocional",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
     },
@@ -322,7 +322,7 @@ export default function Home() {
         "name": "Español"
       }
     },
-    "description": "SoyBienestar.es ofrece una consulta inicial online, recursos de calma, guías sobre ansiedad, estrés, insomnio y otros bloqueos emocionales, junto con el Cuestionario Espejo y acompañamiento humano. No sustituye una valoración profesional ni constituye un diagnóstico."
+    "description": "SoyBienestar.es ofrece sesiones online personalizadas, recursos de calma, guías sobre ansiedad, estrés, insomnio y bloqueo emocional, junto con el Cuestionario Espejo y acompañamiento humano. No sustituye una valoración profesional ni constituye un diagnóstico."
   };
 
   const homeGuidesItemListSchema = {
@@ -963,7 +963,7 @@ export default function Home() {
                 className="relative w-full max-w-5xl max-h-[90vh] bg-[#0b1221] text-white rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
               >
                 {/* Elegant Action Buttons */}
-                <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
+                <div className="p-4 pb-0 flex flex-wrap justify-center sm:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
                   <Link 
                     to={`/${selectedInfographic.id === 'rumiacion' ? 'pensar-demasiado-rumiacion' : selectedInfographic.id}`}
                     onClick={(e) => {

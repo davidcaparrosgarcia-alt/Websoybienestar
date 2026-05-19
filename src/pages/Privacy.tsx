@@ -36,8 +36,8 @@ export default function Privacy() {
             alt="Interior of a quiet, warm library with floor-to-ceiling wooden bookshelves and soft ambient lighting illuminating leather-bound books and comfortable seating." 
             src="/images/fondo_privacidad.jpg"
           />
-          <div className="absolute inset-0 bg-primary/40 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-primary/20 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/30 to-transparent"></div>
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-8">
           <div className="max-w-2xl">

@@ -52,8 +52,8 @@ export default function Method() {
     "@context": "https://schema.org",
     "@type": "Service",
     "@id": "https://soybienestar.es/como-trabajamos#service",
-    "name": "Método de orientación y acompañamiento online",
-    "serviceType": "Orientación inicial y acompañamiento de bienestar emocional",
+    "name": "Acompañamiento emocional online y método SoyBienestar",
+    "serviceType": "Orientación inicial, Cuestionario Espejo y acompañamiento emocional online",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
     },
@@ -62,7 +62,7 @@ export default function Method() {
       "name": "España"
     },
     "url": "https://soybienestar.es/como-trabajamos",
-    "description": "Método online que combina escucha digital, recursos de bienestar emocional, Cuestionario Espejo y acompañamiento humano para ayudar a ordenar el malestar emocional. No sustituye una valoración profesional."
+    "description": "Método online que combina consulta guiada inicial, recursos de bienestar emocional, Cuestionario Espejo, Dossier Espejo y acompañamiento humano para ayudar a ordenar el malestar emocional. No sustituye una valoración profesional."
   };
 
   const [fogTrail, setFogTrail] = useState<FogTrailPoint[]>([]);

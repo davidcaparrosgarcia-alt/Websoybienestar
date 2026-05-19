@@ -101,7 +101,7 @@ export default function Treatments() {
     "@context": "https://schema.org",
     "@type": "Service",
     "@id": "https://soybienestar.es/tratamientos-online#service",
-    "name": "Tratamientos online de bienestar emocional",
+    "name": "Programas de terapia online y bienestar emocional",
     "serviceType": "Programas online de bienestar emocional",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
@@ -111,7 +111,7 @@ export default function Treatments() {
       "name": "España"
     },
     "url": "https://soybienestar.es/tratamientos-online",
-    "description": "Programas online de bienestar emocional orientados a ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional y alimentación emocional, sin sustituir una valoración profesional ni constituir diagnóstico."
+    "description": "Programas online de 3 meses orientados a ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional, alimentación emocional y bloqueo mental, sin sustituir una valoración profesional ni constituir diagnóstico."
   };
 
   const handleShare = () => {
@@ -381,7 +381,7 @@ export default function Treatments() {
                 className="relative w-full max-w-6xl max-h-[90vh] bg-[#11181f] rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50"
               >
                 {/* Elegant Action Buttons */}
-                <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
+                <div className="p-4 pb-0 flex flex-wrap justify-center md:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
                   <a 
                     href={selectedInfographic.src} 
                     target="_blank" 

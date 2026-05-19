@@ -33,8 +33,8 @@ export default function Resources() {
     "@context": "https://schema.org",
     "@type": "Service",
     "@id": "https://soybienestar.es/herramientas#service",
-    "name": "Recursos de bienestar emocional",
-    "serviceType": "Recursos online de calma y autorregulación emocional",
+    "name": "Herramientas para calmar la ansiedad y el estrés",
+    "serviceType": "Recursos online de respiración, meditación y autorregulación emocional",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
     },
@@ -43,7 +43,7 @@ export default function Resources() {
       "name": "España"
     },
     "url": "https://soybienestar.es/herramientas",
-    "description": "Recursos online de bienestar emocional, meditaciones guiadas, ejercicios de respiración, diario de agradecimientos, metas semanales y herramientas para empezar a ordenar emociones y pensamientos."
+    "description": "Recursos online de respiración, meditación personalizada, diario de agradecimientos, metas semanales y herramientas prácticas para bajar activación, recuperar foco y ordenar emociones."
   };
 
   // Modals state
@@ -275,7 +275,7 @@ export default function Resources() {
               
               <div className="relative z-10 flex flex-col justify-end p-6 md:p-8 h-full pointer-events-none text-center">
                 <div className={`w-full transition-opacity duration-500 md:opacity-0 md:group-hover:opacity-100 ${showGratitudeText ? 'opacity-100' : 'opacity-0'}`}>
-                  <p className="text-white bg-black/40 backdrop-blur-md px-6 py-4 border border-white/10 rounded-2xl shadow-xl font-light text-sm md:text-base inline-block">Tu espacio para anclar lo positivo y reconocer la abundancia en lo sutil.</p>
+                  <p className="text-white bg-black/40 backdrop-blur-md p-8 border border-white/10 rounded-2xl shadow-xl font-light text-xl md:text-2xl leading-relaxed block w-full break-words">Tu espacio para anclar lo positivo y reconocer la abundancia en lo sutil.</p>
                 </div>
               </div>
             </div>

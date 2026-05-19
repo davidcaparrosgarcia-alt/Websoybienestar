@@ -158,7 +158,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             onClick={e => e.stopPropagation()}
           >
             {/* Elegant Action Buttons */}
-            <div className="absolute top-4 right-4 md:top-8 md:right-8 flex gap-3 z-[130]">
+            <div className="p-4 pb-0 flex justify-center md:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
               <a 
                 href={selectedPlanImage} 
                 target="_blank" 

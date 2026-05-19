@@ -136,7 +136,7 @@ export default function AnxietyManagement() {
 
     <div className="flex-1 bg-transparent w-full font-body text-on-surface">
       {/* Barometer Section */}
-      <section className="pt-16 pb-24 bg-transparent border-t border-b border-black/5 relative overflow-hidden">
+      <section id="valvula-presion" className="pt-16 pb-24 bg-transparent border-t border-b border-black/5 relative overflow-hidden">
         {/* Subtle background accents */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-fixed/20 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-screen-2xl mx-auto px-12 relative z-10">
@@ -283,6 +283,21 @@ export default function AnxietyManagement() {
                 </div>
               );
             })}
+          </div>
+          <div className="flex justify-center mt-16 pb-8">
+            <button 
+              onClick={() => {
+                const el = document.getElementById('valvula-presion');
+                if (el) {
+                  const y = el.getBoundingClientRect().top + window.scrollY - 100;
+                  window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+              }}
+              className="bg-primary hover:bg-primary-container dark:hover:bg-primary-container text-white dark:text-white px-10 py-5 rounded-full font-label font-bold uppercase tracking-widest shadow-lg hover:shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+            >
+              Ver presión actual
+              <span className="material-symbols-outlined">arrow_upward</span>
+            </button>
           </div>
         </div>
       </section>
