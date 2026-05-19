@@ -44,7 +44,7 @@ export default function Procrastinacion() {
 
   return (
     <>
-      <SEO title="Procrastinación: por qué procrastinas y cómo dejarlo | SoyBienestar" description="Aprende cómo dejar de procrastinar, por qué pospones tareas y qué relación puede tener la procrastinación con ansiedad, bloqueo o perfeccionismo." canonicalPath="/procrastinacion" noIndex={false} />
+      <SEO title="Cómo dejar de procrastinar | Apoyo online para bloqueo y foco" description="No siempre es pereza: a veces estás bloqueado, sobrepasado o atrapado en perfeccionismo y miedo. Aquí lo desglosamos y lo trabajamos." canonicalPath="/procrastinacion" noIndex={false} />
       <StructuredData id="breadcrumb-schema-procrastinacion" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-procrastinacion" data={faqSchema} />
     <div
@@ -75,7 +75,7 @@ export default function Procrastinacion() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Procrastinación: por qué procrastinas y cómo dejarlo
+              Procrastinación: cómo dejar de posponerlo todo
             </h1>
 
             <img

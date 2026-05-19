@@ -44,7 +44,7 @@ export default function Estres() {
 
   return (
     <>
-      <SEO title="Estrés y agotamiento mental: síntomas y cómo aliviarlo | SoyBienestar" description="Aprende a reconocer el estrés, el agotamiento mental y la ansiedad en el trabajo, y descubre recursos para recuperar calma y claridad." canonicalPath="/estres" noIndex={false} />
+      <SEO title="Terapia online para estrés laboral y sobrecarga emocional" description="Sesiones online para trabajar estrés, presión laboral, agotamiento emocional y sobrecarga mental con herramientas prácticas de regulación." canonicalPath="/estres" noIndex={false} />
       <StructuredData id="breadcrumb-schema-estres" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-estres" data={faqSchema} />
     <div 
@@ -75,7 +75,7 @@ export default function Estres() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
-              Estrés y agotamiento mental: síntomas y cómo aliviarlo
+              Terapia online para estrés laboral y sobrecarga emocional
             </h1>
 
             <img

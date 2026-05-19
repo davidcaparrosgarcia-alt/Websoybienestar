@@ -204,22 +204,25 @@ export default function Resources() {
   return (
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
       <SEO
-        title="Recursos gratuitos para calmar ansiedad y estrés | SoyBienestar"
-        description="Meditaciones guiadas, ejercicios de respiración, diario de agradecimiento, metas semanales y herramientas para empezar a ordenar tus emociones."
+        title="Herramientas para calmar la ansiedad y el estrés | SoyBienestar"
+        description="Respiración, meditación personalizada, recursos de regulación y primeros pasos para bajar activación y recuperar foco."
         canonicalPath="/herramientas"
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-herramientas" data={breadcrumbSchema} />
       <StructuredData id="resources-service-schema" data={resourcesServiceSchema} />
       <main className="pt-8 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
+        {/* Hidden SEO H1 */}
+        <h1 className="sr-only">Herramientas para calmar la ansiedad, el estrés y la mente</h1>
+        
         {/* Hero Header Section */}
         <header className="mb-16 md:mb-20 mt-6 md:mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">Recursos de Claridad</p>
-              <h1 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
+              <h2 className="font-headline text-5xl md:text-7xl text-primary leading-tight mb-8">
                 El Refugio de la <span className="italic font-normal">Consciencia</span>
-              </h1>
+              </h2>
               <div className="h-px w-24 bg-primary/20"></div>
             </div>
             <div className="lg:col-span-5 lg:pt-10">

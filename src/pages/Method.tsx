@@ -168,8 +168,8 @@ export default function Method() {
   return (
     <div className="flex-1 w-full">
       <SEO
-        title="Cómo trabajamos en SoyBienestar | IA y acompañamiento humano"
-        description="Conoce cómo SoyBienestar.es combina escucha digital, recursos de bienestar emocional y acompañamiento humano para ayudarte a ordenar tu malestar y avanzar con claridad."
+        title="Cómo trabajamos tu bienestar emocional online | SoyBienestar"
+        description="Te explicamos cómo unimos orientación inicial, herramientas, reprogramación emocional y acompañamiento para trabajar desde cualquier lugar."
         canonicalPath="/como-trabajamos"
         noIndex={false}
       />
@@ -181,6 +181,9 @@ export default function Method() {
         onMouseMove={handleAnxietyFogMove}
         onPointerMove={handleAnxietyFogPointerMove}
       >
+        {/* Hidden SEO H1 */}
+        <h1 className="sr-only">Cómo trabajamos tu bienestar emocional online</h1>
+        
         <div className="absolute inset-0 z-0">
           {/* Imagen base nítida */}
           <img
@@ -286,7 +289,7 @@ export default function Method() {
           <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
             <div className="relative w-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-              <h1 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center">Cómo trabajamos en SoyBienestar</h1>
+              <h2 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center">Cómo trabajamos en SoyBienestar</h2>
             </div>
             
             <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">

@@ -152,8 +152,8 @@ export default function Treatments() {
   return (
     <div className="flex-1 w-full">
       <SEO
-        title="Tratamientos online para ansiedad, estrés e insomnio | SoyBienestar"
-        description="Descubre programas online de bienestar emocional para ansiedad, estrés, insomnio, procrastinación, rumiación mental, gestión emocional y alimentación emocional."
+        title="Programas de terapia online y bienestar emocional | SoyBienestar"
+        description="Elige entre programas online de 3 meses para ansiedad, estrés, insomnio, rumiación, procrastinación, alimentación emocional y bloqueo mental."
         canonicalPath="/tratamientos-online"
         noIndex={false}
       />
@@ -163,7 +163,7 @@ export default function Treatments() {
       <section className="relative flex items-center pt-16 pb-12 px-6 md:px-12 mx-auto max-w-screen-2xl overflow-hidden w-full">
         <div className="w-full">
           <div className="z-10 max-w-screen-xl">
-            <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block break-words">Tratamientos online para tu bienestar emocional</h1>
+            <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs mb-6 block break-words">Programas de terapia online y bienestar emocional</h1>
             <h2 className="text-[12vw] sm:text-6xl md:text-7xl font-headline text-primary leading-[1.1] mb-8 max-w-full break-words">ReprogrÁmate</h2>
             <p className="text-lg sm:text-xl md:text-2xl text-on-surface-variant max-w-5xl leading-relaxed mb-10">
               Un sistema de tratamiento online, flexible y cercano para aliviar el malestar mental y transformar tu bienestar desde la base sin importar la distancia.

@@ -44,7 +44,7 @@ export default function Insomnio() {
 
   return (
     <>
-      <SEO title="Insomnio: causas y qué hacer cuando no puedes dormir | SoyBienestar" description="Descubre por qué no puedes dormir, cómo combatir el insomnio, cómo dormir con ansiedad y qué recursos pueden ayudarte a descansar mejor." canonicalPath="/insomnio" noIndex={false} />
+      <SEO title="Terapia online para insomnio por ansiedad o estrés" description="Si no puedes dormir porque tu mente sigue activa, trabaja el insomnio online desde la regulación emocional, la ansiedad y el estrés." canonicalPath="/insomnio" noIndex={false} />
       <StructuredData id="breadcrumb-schema-insomnio" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-insomnio" data={faqSchema} />
     <div 
@@ -75,7 +75,7 @@ export default function Insomnio() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
-              Insomnio: causas y qué hacer cuando no puedes dormir
+              Terapia online para insomnio
             </h1>
 
             <img

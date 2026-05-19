@@ -44,7 +44,7 @@ export default function RumiacionMental() {
 
   return (
     <>
-      <SEO title="Rumiación mental: cómo dejar de pensar tanto | SoyBienestar" description="Si no puedes dejar de pensar o darle vueltas a todo, descubre qué es la rumiación mental y cómo empezar a calmar el bucle de pensamientos." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
+      <SEO title="Pensar demasiado y rumiación mental | Ayuda online para frenar el bucle" description="Si tu cabeza no para, repasa, anticipa y no suelta, esta página te ayuda a entender el patrón y empezar a ordenar el ruido mental." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
       <StructuredData id="breadcrumb-schema-rumiacion" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-rumiacion" data={faqSchema} />
     <div
@@ -75,7 +75,7 @@ export default function RumiacionMental() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Rumiación mental: cómo dejar de pensar tanto
+              Pensar demasiado: cómo salir del bucle mental
             </h1>
 
             <img

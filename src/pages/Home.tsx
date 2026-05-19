@@ -379,8 +379,8 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col">
       <SEO
-        title="Terapia online para ansiedad, estrés e insomnio | SoyBienestar"
-        description="Recupera tu bienestar emocional desde casa con SoyBienestar.es: consulta gratuita, recursos de calma y orientación online para ansiedad, estrés, insomnio y otros bloqueos emocionales."
+        title="Terapia online y bienestar emocional | SoyBienestar"
+        description="Sesiones online personalizadas para trabajar ansiedad, estrés, insomnio y bloqueo emocional con PNL, hipnosis consciente y reprogramación emocional."
         canonicalPath="/"
         noIndex={false}
       />
@@ -411,7 +411,7 @@ export default function Home() {
           {/* Floating Quote Overlay Style - Hidden for design but kept for SEO */}
           <div className="sr-only">
             <h1>
-              Terapia para ansiedad, estrés e insomnio desde casa
+              Terapia online y bienestar emocional para recuperar tu calma
             </h1>
             <p>
               "Un espacio donde ser escuchado sin juicios"

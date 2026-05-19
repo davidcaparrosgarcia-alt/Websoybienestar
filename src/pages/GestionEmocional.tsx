@@ -44,7 +44,7 @@ export default function GestionEmocional() {
 
   return (
     <>
-      <SEO title="Gestión emocional: cómo controlar y regular tus emociones | SoyBienestar" description="Aprende a comprender, regular y acompañar tus emociones sin reprimirlas, con recursos de bienestar emocional y orientación online inicial." canonicalPath="/gestion-emocional" noIndex={false} />
+      <SEO title="Terapia y gestión emocional online | SoyBienestar" description="Aprende a regular emociones intensas, entender tus reacciones y trabajar el bloqueo emocional con acompañamiento online." canonicalPath="/gestion-emocional" noIndex={false} />
       <StructuredData id="breadcrumb-schema-gestion-emocional" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-gestion-emocional" data={faqSchema} />
     <div
@@ -75,7 +75,7 @@ export default function GestionEmocional() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Gestión emocional: cómo controlar y regular tus emociones
+              Terapia online para gestión emocional
             </h1>
 
             <img

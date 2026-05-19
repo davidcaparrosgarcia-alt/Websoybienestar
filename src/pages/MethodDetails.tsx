@@ -98,14 +98,15 @@ export default function MethodDetails() {
   return (
     <div className="flex-1 flex flex-col">
       <SEO
-        title="Método ReprogrÁmate: claridad, cuestionario y dossier personal | SoyBienestar"
-        description="Descubre las fases del método ReprogrÁmate: consulta inicial, Cuestionario Espejo, Dossier Espejo personalizado y próximos pasos de acompañamiento."
+        title="PNL, hipnosis consciente y reprogramación emocional | SoyBienestar"
+        description="Página de detalle metodológico para entender con más profundidad el enfoque de SoyBienestar, el Cuestionario Espejo y el Dossier Espejo."
         canonicalPath="/como-trabajamos/detalles"
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-como-trabajamos-detalles" data={breadcrumbSchema} />
       {/* Hero: Professional Presentation with Large Logo Integration */}
       <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
+        <h1 className="sr-only">PNL, hipnosis consciente y reprogramación emocional</h1>
         <div className="absolute inset-0 z-0">
           <picture>
             <source media="(min-width: 768px)" srcSet="/images/metodo-intro.jpg" />
@@ -134,7 +135,7 @@ export default function MethodDetails() {
           </div>
         </div>
         <div className="lg:w-1/2 space-y-8">
-          <h1 className="font-label text-secondary font-semibold tracking-widest uppercase text-xs block mb-4">Método ReprogrÁmate: consulta, cuestionario y dossier personal</h1>
+          <div className="font-label text-secondary font-semibold tracking-widest uppercase text-xs block mb-4">Método ReprogrÁmate: consulta, cuestionario y dossier personal</div>
           <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">Un espacio para ordenar lo que sientes y recuperar claridad.</h2>
           <p className="text-on-surface-variant leading-relaxed text-xl font-light">
             <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.

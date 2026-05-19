@@ -44,8 +44,8 @@ export default function AlimentacionEmocional() {
   return (
     <>
       <SEO
-        title="Alimentación emocional: hambre emocional y comer por ansiedad | SoyBienestar"
-        description="Descubre qué es el hambre emocional, por qué comes por ansiedad y cómo empezar a comprender tu relación emocional con la comida."
+        title="Comer por ansiedad y hambre emocional | Acompañamiento online"
+        description="Si usas la comida para calmar ansiedad, estrés o tristeza, trabaja el patrón emocional sin dietas, culpa ni juicios."
         canonicalPath="/alimentacion-emocional"
       />
       <StructuredData id="breadcrumb-schema-alimentacion-emocional" data={breadcrumbSchema} />
@@ -79,7 +79,7 @@ export default function AlimentacionEmocional() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-primary mb-6 max-w-4xl">
-              Alimentación emocional: hambre emocional y comer por ansiedad
+              Comer por ansiedad: hambre emocional y relación con la comida
             </h1>
 
             <img

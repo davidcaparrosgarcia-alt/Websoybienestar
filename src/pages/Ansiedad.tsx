@@ -44,7 +44,7 @@ export default function Ansiedad() {
 
   return (
     <>
-      <SEO title="Ansiedad: síntomas, causas y cómo recuperar la calma | SoyBienestar" description="Descubre cómo controlar la ansiedad, cuáles son sus síntomas, qué hacer cuando aparece y cuándo puede ayudarte una orientación online inicial." canonicalPath="/ansiedad" noIndex={false} />
+      <SEO title="Terapia para la ansiedad online | Síntomas y apoyo emocional" description="Trabaja la ansiedad online con herramientas de regulación, PNL, respiración y acompañamiento emocional para entender y reducir tus alertas internas." canonicalPath="/ansiedad" noIndex={false} />
       <StructuredData id="breadcrumb-schema-ansiedad" data={breadcrumbSchema} />
       <StructuredData id="faq-schema-ansiedad" data={faqSchema} />
     <div 
@@ -75,7 +75,7 @@ export default function Ansiedad() {
             </p>
 
             <h1 className="font-headline text-2xl md:text-3xl lg:text-4xl leading-tight text-white/85 mb-8 max-w-4xl">
-              Ansiedad: síntomas, causas y cómo recuperar la calma
+              Terapia online para la ansiedad
             </h1>
 
             <img
