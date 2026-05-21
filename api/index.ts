@@ -1712,6 +1712,100 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   }
 });
 
+app.post("/api/resend-questionnaire", requireAuth, async (req, res) => {
+  try {
+    const uid = req.user!.uid;
+    const authEmail = req.user!.email;
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    const userData = userSnap.data() || {};
+    
+    const apiUrl = process.env.QUESTIONNAIRE_API_URL;
+    const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET;
+    
+    if (!apiUrl || !bridgeSecret) {
+      return res.status(500).json({ error: "Servicio de cuestionario no configurado." });
+    }
+
+    const payload = {
+      soybienestarUid: uid,
+      sourceRequestId: userData.lastQuestionnaireRequestId || null,
+      email: userData.email || userData.contactEmail || authEmail || null,
+      patientId: userData.latestQuestionnairePatientId || userData.linkedQuestionnairePatientId || null
+    };
+
+    const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+    const response = await fetch(`${normalizedApiUrl}/api/resend-questionnaire-link`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-bridge-secret": bridgeSecret,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Resend questionnaire failed at bridge:", response.status, errorText);
+      return res.status(502).json({ error: "Error de comunicación con el servicio de cuestionario." });
+    }
+
+    const data: any = await response.json();
+    
+    if (data.success) {
+      const questionnaireUrl = data.questionnaireUrl;
+      const accessCode = normalizeAccessCode(data.accessCode);
+      const patientId = data.patientId;
+      const now = Date.now();
+      
+      const updatePayload = {
+        latestQuestionnaireDirectUrl: questionnaireUrl,
+        questionnaireAccessCode: accessCode,
+        questionnaireResentAt: now,
+        questionnaireStatus: userData.questionnaireStatus || "requested",
+        latestQuestionnairePatientId: patientId,
+        latestQuestionnaireResendStatus: "ok",
+      };
+      
+      await db.collection("users").doc(uid).set(updatePayload, { merge: true });
+      await db.collection("userProfiles").doc(uid).set(updatePayload, { merge: true });
+      
+      return res.json({
+        success: true,
+        questionnaireUrl,
+        accessCode,
+        patientId,
+        status: updatePayload.questionnaireStatus
+      });
+    } else if (data.reason === "not_found_or_deleted") {
+      const now = Date.now();
+      const updatePayload = {
+        questionnaireStatus: "reset_required",
+        questionnaireResetRequiredAt: now,
+        latestQuestionnaireResendStatus: "not_found_or_deleted",
+      };
+      
+      await db.collection("users").doc(uid).set(updatePayload, { merge: true });
+      await db.collection("userProfiles").doc(uid).set(updatePayload, { merge: true });
+      
+      return res.json({
+        success: false,
+        status: "reset_required",
+        message: "Tu solicitud anterior ya no está activa. Puedes iniciar una nueva valoración."
+      });
+    } else {
+      return res.status(502).json({ error: data.message || "Error al procesar el reenvío." });
+    }
+  } catch (error) {
+    console.error("API /api/resend-questionnaire error:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 app.post("/api/questionnaire-status-webhook", async (req, res) => {
   try {
     const incomingSecret = req.headers["x-bridge-secret"];
@@ -1729,6 +1823,7 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       "questionnaire_started",
       "questionnaire_completed",
       "dossier_available",
+      "questionnaire_deleted",
     ];
 
     if (!payload || !allowedEvents.includes(payload.event)) {
@@ -1873,6 +1968,9 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       updatePayload.latestQuestionnaireDossierDateConclusionSent = dossier?.dateConclusionSent || null;
       updatePayload.latestQuestionnaireAudioConclusion = dossier?.audioConclusion || null;
       updatePayload.accessPinProvidedBySoyBienestar = !!accessPinProvidedBySoyBienestar;
+    } else if (payload.event === "questionnaire_deleted") {
+      updatePayload.questionnaireStatus = "reset_required";
+      updatePayload.questionnaireDeletedAt = now;
     }
 
     await targetUserRef.set(updatePayload, { merge: true });
@@ -1898,7 +1996,7 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       ok: true,
       matched: true,
       uid: matchedUid,
-      dossierAvailable: true,
+      dossierAvailable: payload.event === "dossier_available",
     });
   } catch (error) {
     console.error("Webhook error:", error);
