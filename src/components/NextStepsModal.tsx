@@ -31,6 +31,8 @@ export default function NextStepsModal({
   const [isQuestionnaireSubmitting, setIsQuestionnaireSubmitting] = useState(false);
   const [questionnaireRequestMessage, setQuestionnaireRequestMessage] = useState<{text: string, type: "success"|"error"|"warning"} | null>(null);
   const [questionnaireSuccessData, setQuestionnaireSuccessData] = useState<{accessCode?: string; questionnaireUrl?: string; directAccessAvailable?: boolean;} | null>(null);
+  const [questionnaireStatus, setQuestionnaireStatus] = useState<string | null>(null);
+  const [dossierViewedAt, setDossierViewedAt] = useState<any>(null);
   
   const [isDebuggingQuestionnaireBridge, setIsDebuggingQuestionnaireBridge] = useState(false);
   const [questionnaireDebugResult, setQuestionnaireDebugResult] = useState<string | null>(null);
@@ -46,6 +48,8 @@ export default function NextStepsModal({
       getDoc(userRef).then(docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          setQuestionnaireStatus(data?.questionnaireStatus || null);
+          setDossierViewedAt(data?.dossierViewedAt || null);
           const age = data?.age || data?.edad || data?.profileAge || data?.birthDate || "";
           if (age) setAgeValue(String(age));
 
@@ -269,6 +273,33 @@ export default function NextStepsModal({
                  <button onClick={() => navigate('/session')} className="bg-primary hover:bg-primary-container text-white hover:text-on-primary-container transition-colors py-2 px-6 rounded-full text-sm font-bold shadow self-start">
                    Ir a la Consulta Gratuita
                  </button>
+              </div>
+            ) : questionnaireStatus === "dossier_available" || questionnaireStatus === "concluded" || dossierViewedAt ? (
+              <div className="mt-4 p-5 bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed font-bold text-green-700 dark:text-green-300">
+                  {dossierViewedAt ? "Dosier leído" : "Tu dosier está disponible para lectura."}
+                </p>
+                <button onClick={() => { onClose(); navigate('/report'); }} className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors">
+                  Leer dosier
+                </button>
+              </div>
+            ) : questionnaireStatus === "completed_pending_dossier" || questionnaireStatus === "completed" ? (
+              <div className="mt-4 p-5 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed text-blue-700 dark:text-blue-300">
+                  Has completado el Cuestionario Espejo. Nuestro equipo revisará tus respuestas y te avisaremos cuando el dosier esté disponible.
+                </p>
+              </div>
+            ) : questionnaireStatus === "in_progress" ? (
+              <div className="mt-4 p-5 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed text-amber-700 dark:text-amber-300">
+                  Tu Cuestionario Espejo está iniciado y pendiente de finalizar.
+                </p>
+              </div>
+            ) : questionnaireStatus === "requested" || questionnaireStatus === "sent" ? (
+              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed">
+                  Tu Cuestionario Espejo ya ha sido solicitado. Revisa el enlace y la clave que has recibido.
+                </p>
               </div>
             ) : (
               <>

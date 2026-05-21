@@ -1725,7 +1725,13 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
     }
 
     const payload = req.body;
-    if (!payload || payload.event !== "dossier_available") {
+    const allowedEvents = [
+      "questionnaire_started",
+      "questionnaire_completed",
+      "dossier_available",
+    ];
+
+    if (!payload || !allowedEvents.includes(payload.event)) {
       return res.status(400).json({ error: "Evento inválido o no soportado" });
     }
 
@@ -1747,13 +1753,15 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       });
     }
 
-    if (
-      !dossier ||
-      (!dossier.finalConclusion && !dossier.conversationSummary)
-    ) {
-      return res.status(400).json({
-        error: "Debe existir dossier con finalConclusion o conversationSummary",
-      });
+    if (payload.event === "dossier_available") {
+      if (
+        !dossier ||
+        (!dossier.finalConclusion && !dossier.conversationSummary)
+      ) {
+        return res.status(400).json({
+          error: "Debe existir dossier con finalConclusion o conversationSummary",
+        });
+      }
     }
 
     const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
@@ -1839,26 +1847,33 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       return res.status(202).json({ ok: true, matched: false, stored: true });
     }
 
-    const latestDossier = dossier.finalConclusion || "";
-    const latestDossierInternalContext = dossier.conversationSummary || "";
-
-    const updatePayload = {
-      questionnaireStatus: "concluded",
-      dossierAvailableAt: now,
-      latestDossier,
-      latestDossierInternalContext,
+    const updatePayload: any = {
       latestQuestionnaireStatusEvent: payload.event,
       linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
       linkedQuestionnaireSourceRequestId: sourceRequestId || null,
-      latestQuestionnaireCompletedStatus: status || null,
-      latestQuestionnaireDossierReceivedAt: now,
-      latestQuestionnaireDossierDateConclusionSent:
-        dossier.dateConclusionSent || null,
-      latestQuestionnaireAudioConclusion: dossier.audioConclusion || null,
-      accessPinProvidedBySoyBienestar: !!accessPinProvidedBySoyBienestar,
       telefonoFromQuestionnaire: telefono || null,
       questionnaireWebhookLastPayloadAt: now,
+      latestQuestionnaireStatusReceivedAt: now,
     };
+
+    if (payload.event === "questionnaire_started") {
+      updatePayload.questionnaireStatus = "in_progress";
+      updatePayload.questionnaireStartedAt = now;
+    } else if (payload.event === "questionnaire_completed") {
+      updatePayload.questionnaireStatus = "completed_pending_dossier";
+      updatePayload.questionnaireCompletedAt = now;
+      updatePayload.latestQuestionnaireCompletedStatus = status || "completed";
+    } else if (payload.event === "dossier_available") {
+      updatePayload.questionnaireStatus = "dossier_available";
+      updatePayload.dossierAvailableAt = now;
+      updatePayload.latestDossier = dossier?.finalConclusion || "";
+      updatePayload.latestDossierInternalContext = dossier?.conversationSummary || "";
+      updatePayload.latestQuestionnaireCompletedStatus = status || null;
+      updatePayload.latestQuestionnaireDossierReceivedAt = now;
+      updatePayload.latestQuestionnaireDossierDateConclusionSent = dossier?.dateConclusionSent || null;
+      updatePayload.latestQuestionnaireAudioConclusion = dossier?.audioConclusion || null;
+      updatePayload.accessPinProvidedBySoyBienestar = !!accessPinProvidedBySoyBienestar;
+    }
 
     await targetUserRef.set(updatePayload, { merge: true });
     await targetProfileRef.set(updatePayload, { merge: true });
@@ -1874,9 +1889,9 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
         status: status || null,
         occurredAt: occurredAt || null,
         receivedAt: now,
-        hasFinalConclusion: !!dossier.finalConclusion,
-        hasConversationSummary: !!dossier.conversationSummary,
-        hasAudioConclusion: !!dossier.audioConclusion,
+        hasFinalConclusion: dossier ? !!dossier.finalConclusion : false,
+        hasConversationSummary: dossier ? !!dossier.conversationSummary : false,
+        hasAudioConclusion: dossier ? !!dossier.audioConclusion : false,
       });
 
     return res.json({

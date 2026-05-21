@@ -290,9 +290,10 @@ export default function Report() {
     !!mergedUserState?.latestQuestionnaireRequest;
   const questionnaireCompleted =
     !!mergedUserState?.hasDoneCuestionario ||
-    mergedUserState?.questionnaireStatus === "completed" ||
-    mergedUserState?.questionnaireStatus === "concluded" ||
-    mergedUserState?.questionnaireStatus === "finalized";
+    ["completed", "concluded", "finalized", "completed_pending_dossier", "dossier_available"].includes(mergedUserState?.questionnaireStatus || "");
+    
+  const questionnaireInProgressOrRequested =
+    ["requested", "sent", "in_progress"].includes(mergedUserState?.questionnaireStatus || "");
   const dossierAvailable =
     !!mergedUserState?.dossierAvailableAt || !!mergedUserState?.latestDossier;
   const dossierViewed = !!mergedUserState?.dossierViewedAt;
@@ -592,25 +593,30 @@ export default function Report() {
                       e.stopPropagation();
                       if (!hasConsultation) {
                         navigate("/session");
-                      } else if (hasConsultation && !questionnaireCompleted) {
+                      } else if (hasConsultation && !questionnaireCompleted && !questionnaireInProgressOrRequested) {
                         setIsNextStepsModalOpen(true);
-                      } else if (questionnaireCompleted && !dossierAvailable) {
-                        // Deshabilitado visualmente, sin navegación
+                      } else if ((hasConsultation && questionnaireInProgressOrRequested) || (questionnaireCompleted && !dossierAvailable)) {
+                        setIsNextStepsModalOpen(true);
                       } else if (dossierAvailable) {
                         navigate("/dossier-espejo");
                       }
                     }}
-                    disabled={questionnaireCompleted && !dossierAvailable}
+                    disabled={false}
                     className={`px-8 py-3 rounded-full font-label font-bold text-sm transition-all focus:outline-none flex w-fit ${
                       questionnaireCompleted && !dossierAvailable
-                        ? "bg-outline-variant/20 dark:bg-outline-variant/40 text-on-surface-variant dark:text-[#43474c] cursor-not-allowed opacity-70"
+                        ? "bg-outline-variant/20 dark:bg-outline-variant/40 text-on-surface-variant dark:text-[#43474c] cursor-pointer opacity-70"
                         : "bg-primary text-on-primary hover:bg-primary-container hover:text-primary shadow-md hover:scale-105 cursor-pointer"
                     }`}
                   >
                     {!hasConsultation && "Realizar consulta gratuita"}
                     {hasConsultation &&
                       !questionnaireCompleted &&
+                      !questionnaireInProgressOrRequested &&
                       "Solicitar Cuestionario Espejo"}
+                    {hasConsultation &&
+                      !questionnaireCompleted &&
+                      questionnaireInProgressOrRequested &&
+                      "Estado Cuestionario"}
                     {questionnaireCompleted &&
                       !dossierAvailable &&
                       "Dossier en preparación"}
