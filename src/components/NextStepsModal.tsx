@@ -39,10 +39,21 @@ export default function NextStepsModal({
   const [isDebuggingQuestionnaireBridge, setIsDebuggingQuestionnaireBridge] = useState(false);
   const [questionnaireDebugResult, setQuestionnaireDebugResult] = useState<string | null>(null);
 
+  const [lastQuestionnaireAction, setLastQuestionnaireAction] = useState<"manual_request" | "direct_now" | "resend" | null>(null);
+
   useEffect(() => {
     setEmailValue(initialEmailValue);
     setPhoneValue(initialPhoneValue);
   }, [initialEmailValue, initialPhoneValue]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setQuestionnaireSuccessData(null);
+      setResendMessage(null);
+      setQuestionnaireRequestMessage(null);
+      setLastQuestionnaireAction(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (user?.uid) {
@@ -151,6 +162,7 @@ export default function NextStepsModal({
       const data = await response.json();
 
       if (response.ok) {
+        setLastQuestionnaireAction(mode);
         setQuestionnaireStatus(data.status === "sent" ? "sent" : "requested");
         setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
         setQuestionnaireSuccessData({
@@ -207,6 +219,7 @@ export default function NextStepsModal({
       });
       const data = await response.json();
       if (response.ok && data.success) {
+        setLastQuestionnaireAction("resend");
         setQuestionnaireSuccessData({
           accessCode: data.accessCode,
           questionnaireUrl: data.questionnaireUrl
@@ -342,10 +355,55 @@ export default function NextStepsModal({
                   Iniciar nueva valoración
                 </button>
               </div>
-            ) : questionnaireStatus === "requested" || questionnaireStatus === "sent" ? (
+            ) : (questionnaireStatus === "requested" && !questionnaireSuccessData?.questionnaireUrl) ? (
+              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
+                <div className="text-sm text-on-surface-variant leading-relaxed">
+                  <p className="mb-2">
+                    Tu solicitud de Cuestionario Espejo ha sido registrada. En cuanto un terapeuta la valide, recibirás el enlace por los medios que has solicitado.
+                  </p>
+                  <p className="mb-3">
+                    Conserva tu clave personal. Te servirá para acceder al cuestionario cuando recibas el enlace.
+                  </p>
+                  <p>
+                    Si prefieres hacerlo ahora mismo, puedes iniciar el cuestionario de forma inmediata.
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => handleFormSubmit("direct_now")}
+                  disabled={isQuestionnaireSubmitting}
+                  className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-label font-bold text-sm shadow-md transition-all disabled:opacity-50 flex items-center justify-center self-start"
+                >
+                  {isQuestionnaireSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                      Procesando...
+                    </>
+                  ) : (
+                    "Hacer Cuestionario Espejo ahora"
+                  )}
+                </button>
+
+                {questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
+                  <div className="mt-2 p-4 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
+                    <p className="text-sm">Tu clave personal es: <strong className="text-lg ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode?.toUpperCase()}</strong></p>
+                    <button 
+                      onClick={(e) => {
+                         e.preventDefault();
+                         navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
+                         alert("Clave copiada al portapapeles");
+                      }}
+                      className="bg-surface-container-lowest hover:bg-surface-container py-2 px-4 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30 dark:text-white"
+                    >
+                      Copiar clave
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (questionnaireStatus === "sent" || questionnaireSuccessData?.questionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Tu Cuestionario Espejo ya ha sido solicitado. Revisa el enlace y la clave que has recibido.
+                  Tu enlace de Cuestionario Espejo ya está disponible.
                 </p>
                 <div className="flex flex-col gap-2">
                   <button 
@@ -367,7 +425,7 @@ export default function NextStepsModal({
                   )}
                 </div>
 
-                {questionnaireSuccessData && (
+                {questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
                   <div className="mt-2 p-4 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
                     <p className="text-sm">Tu clave personal es: <strong className="text-lg ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode?.toUpperCase()}</strong></p>
                     

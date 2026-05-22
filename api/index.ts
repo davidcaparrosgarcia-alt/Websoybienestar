@@ -1357,15 +1357,39 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     
     // Bloquear si ya hay un cuestionario en curso (ignorando "reset_required" o vacíos)
     requestStep = "check_active_questionnaire";
-    const activeStatuses = [
-      "requested", "sent", "in_progress", "completed_pending_dossier", 
-      "completed", "dossier_available", "concluded"
-    ];
-    if (userData.questionnaireStatus && activeStatuses.includes(userData.questionnaireStatus)) {
+    
+    let isBlocked = false;
+    let blockMessage = "Ya tienes una solicitud o cuestionario activo. Revisa el estado actual o solicita un reenvío del enlace si lo has perdido.";
+    
+    if (userData.questionnaireStatus) {
+      if (requestMode === "manual_request") {
+        const activeStatusesManual = [
+          "requested", "sent", "in_progress", "completed_pending_dossier", 
+          "completed", "dossier_available", "concluded"
+        ];
+        if (activeStatusesManual.includes(userData.questionnaireStatus)) {
+           isBlocked = true;
+        }
+      } else if (requestMode === "direct_now") {
+        const activeStatusesDirect = [
+          "sent", "in_progress", "completed_pending_dossier", 
+          "completed", "dossier_available", "concluded"
+        ];
+        if (activeStatusesDirect.includes(userData.questionnaireStatus)) {
+          isBlocked = true;
+        } else if (userData.questionnaireStatus === "requested") {
+          if (userData.latestQuestionnaireDirectUrl || userData.latestQuestionnairePatientId) {
+            isBlocked = true;
+          }
+        }
+      }
+    }
+
+    if (isBlocked) {
       return res.status(409).json({
         success: false,
         status: "already_has_active_questionnaire",
-        message: "Ya tienes una solicitud o cuestionario activo. Revisa el estado actual o solicita un reenvío del enlace si lo has perdido."
+        message: blockMessage
       });
     }
 
@@ -1650,10 +1674,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     requestStep = "update_user_request_metadata";
     const updateData: any = {
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
-      questionnaireStatus: "requested",
+      questionnaireStatus: isDirectAccess ? "sent" : "requested",
       questionnaireRequestedAt: timestamp,
       lastQuestionnaireRequestAt: timestamp,
-      lastQuestionnaireRequestId: requestId,
+      lastQuestionnaireRequestId: requestId || userData.lastQuestionnaireRequestId || null,
       lastQuestionnaireContactSnapshot: contactSnapshot,
     };
 
