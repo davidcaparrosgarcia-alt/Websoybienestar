@@ -201,7 +201,12 @@ export default function Treatments() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_basico', src: '/images/infografia_basico.jpg', plan: 'basico' })}
+              onClick={() => setSelectedInfographic({ 
+                id: 'programa_basico', 
+                src: '/images/infografia_basico.jpg', 
+                mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
+                plan: 'basico' 
+              })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>
@@ -218,7 +223,12 @@ export default function Treatments() {
             </div>
             {/* Card 2 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_intermedio', src: '/images/infografia_intermedio.jpg', plan: 'intermedio' })}
+              onClick={() => setSelectedInfographic({ 
+                id: 'programa_intermedio', 
+                src: '/images/infografia_intermedio.jpg', 
+                mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
+                plan: 'intermedio' 
+              })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>
@@ -235,7 +245,12 @@ export default function Treatments() {
             </div>
             {/* Card 3 */}
             <div 
-              onClick={() => setSelectedInfographic({ id: 'programa_completo', src: '/images/infografia_completo.jpg', plan: 'completo' })}
+              onClick={() => setSelectedInfographic({ 
+                id: 'programa_completo', 
+                src: '/images/infografia_completo.jpg', 
+                mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
+                plan: 'completo' 
+              })}
               className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               <picture>

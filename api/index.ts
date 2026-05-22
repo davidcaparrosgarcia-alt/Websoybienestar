@@ -1300,7 +1300,9 @@ async function getOrCreatePersonalAccessCode(
 app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   let requestStep = "start";
   try {
-    const { email, telefono, preferredChannels, edad, sexo } = req.body;
+    const reqBody = req.body;
+    const { email, telefono, preferredChannels, edad, sexo } = reqBody;
+    const requestMode = reqBody.requestMode === "direct_now" ? "direct_now" : "manual_request";
     const uid = req.user!.uid;
     const authEmail = req.user!.email;
 
@@ -1331,8 +1333,6 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
           "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono.",
       });
     }
-    // Added validation for edad and sexo, though they might not be fully required if backend allows, but let's encourage them
-    // Wait, the client already validates. But backend can be safe. Let's just pass them through.
 
     requestStep = "init_firestore";
     if (!admin.apps.length)
@@ -1354,6 +1354,20 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     const userData = userDoc.data() || {};
     const profileData = profileDoc.data() || {};
+    
+    // Bloquear si ya hay un cuestionario en curso (ignorando "reset_required" o vacíos)
+    requestStep = "check_active_questionnaire";
+    const activeStatuses = [
+      "requested", "sent", "in_progress", "completed_pending_dossier", 
+      "completed", "dossier_available", "concluded"
+    ];
+    if (userData.questionnaireStatus && activeStatuses.includes(userData.questionnaireStatus)) {
+      return res.status(409).json({
+        success: false,
+        status: "already_has_active_questionnaire",
+        message: "Ya tienes una solicitud o cuestionario activo. Revisa el estado actual o solicita un reenvío del enlace si lo has perdido."
+      });
+    }
 
     const contactSnapshot = {
       email,
@@ -1519,50 +1533,63 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     let finalAccessCode = personalAccessCode;
     let directError: any = null;
 
-    try {
-      // 1) Intentar enlace directo
-      const headers: any = {
-        "Content-Type": "application/json",
-        "x-bridge-secret": bridgeSecret,
-      };
+    if (requestMode === "direct_now") {
+      try {
+        const headers: any = {
+          "Content-Type": "application/json",
+          "x-bridge-secret": bridgeSecret,
+        };
 
-      if (isTestUser(req) && (authEmail === "davidcaparrosgarcia@gmail.com")) {
-        headers["x-debug-bridge"] = "true";
-      }
-
-      const directResponse = await fetch(`${normalizedApiUrl}/api/direct-questionnaire-link`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-
-      if (directResponse.ok) {
-        const directData = await directResponse.json();
-        if (directData.success && directData.questionnaireUrl) {
-          isDirectAccess = true;
-          apiResponseData = directData;
-          questionnaireUrl = directData.questionnaireUrl;
-          questionnairePatientId = directData.patientId;
-          if (directData.accessCode) {
-            if (isValidPersonalAccessCode(directData.accessCode)) {
-              finalAccessCode = normalizeAccessCode(directData.accessCode);
-            } else {
-              console.warn("Questionnaire returned an invalid access code, keeping local code", directData.accessCode);
-            }
-          }
+        if (isTestUser(req) && (authEmail === "davidcaparrosgarcia@gmail.com")) {
+          headers["x-debug-bridge"] = "true";
         }
-      } else {
-        directError = { status: directResponse.status, text: await directResponse.text() };
+
+        const directResponse = await fetch(`${normalizedApiUrl}/api/direct-questionnaire-link`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload),
+        });
+
+        if (directResponse.ok) {
+          const directData = await directResponse.json();
+          if (directData.success && directData.questionnaireUrl) {
+            isDirectAccess = true;
+            apiResponseData = directData;
+            questionnaireUrl = directData.questionnaireUrl;
+            questionnairePatientId = directData.patientId;
+            if (directData.accessCode) {
+              if (isValidPersonalAccessCode(directData.accessCode)) {
+                finalAccessCode = normalizeAccessCode(directData.accessCode);
+              } else {
+                console.warn("Questionnaire returned an invalid access code, keeping local code", directData.accessCode);
+              }
+            }
+          } else {
+            return res.status(502).json({
+              success: false,
+              message: "No hemos podido generar el acceso inmediato. Puedes enviar la solicitud normal para que el equipo la tramite."
+            });
+          }
+        } else {
+          directError = { status: directResponse.status, text: await directResponse.text() };
+          return res.status(502).json({
+            success: false,
+            message: "No hemos podido generar el acceso inmediato. Puedes enviar la solicitud normal para que el equipo la tramite."
+          });
+        }
+      } catch (e) {
+        directError = e;
+        return res.status(502).json({
+          success: false,
+          message: "No hemos podido generar el acceso inmediato. Puedes enviar la solicitud normal para que el equipo la tramite."
+        });
       }
-    } catch (e) {
-      directError = e;
     }
 
     let fallbackResponseData: any = null;
     let fallbackStatus = null;
 
-    if (!isDirectAccess) {
-      // 2) Fallback a solicitudes pendientes
+    if (requestMode === "manual_request") {
       const response = await fetch(`${normalizedApiUrl}/api/patient-requests`, {
         method: "POST",
         headers: {
@@ -1582,17 +1609,16 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       }
 
       if (!response.ok) {
-        console.error("Error from Cuestionario API (fallback)", {
+        console.error("Error from Cuestionario API (manual_request)", {
           step: requestStep,
           status: response.status,
           statusText: response.statusText,
-          responseText: responseText.substring(0, 500),
-          directError
+          responseText: responseText.substring(0, 500)
         });
         
         let message = "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
         if (isTestUser(req) && (authEmail === "davidcaparrosgarcia@gmail.com")) {
-            message = `Error Fallback: ${response.status}. Direct Error: ${JSON.stringify(directError)}`;
+            message = `Error Request: ${response.status}.`;
         }
         return res.status(502).json({
           success: false,
@@ -1675,7 +1701,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
          ? "Hemos generado tu cuestionario."
          : (isResendingDueToContactChange 
              ? "Detectamos que has actualizado tus datos de contacto, así que hemos registrado de nuevo tu solicitud." 
-             : "Solicitud recibida. Nuestro equipo revisará tus datos y te enviará el enlace del Cuestionario Espejo por la vía seleccionada."),
+             : "Tu solicitud ha sido tramitada. En cuanto un terapeuta la valide, se te enviará el enlace por los medios solicitados. Si deseas hacerlo ahora mismo, puedes acceder clicando el botón de arriba y hacer el cuestionario en este preciso momento."),
       requestId,
       accessCode: finalAccessCode,
       questionnaireUrl: questionnaireUrl,

@@ -81,7 +81,7 @@ export default function NextStepsModal({
 
   if (!isOpen) return null;
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (mode: "manual_request" | "direct_now") => {
     setQuestionnaireRequestMessage(null);
     setQuestionnaireSuccessData(null);
 
@@ -139,6 +139,7 @@ export default function NextStepsModal({
           telefono,
           edad: ageValue,
           sexo: sexValue,
+          requestMode: mode,
           preferredChannels: {
             email: emailChecked,
             whatsapp: whatsappChecked,
@@ -150,6 +151,7 @@ export default function NextStepsModal({
       const data = await response.json();
 
       if (response.ok) {
+        setQuestionnaireStatus(data.status === "sent" ? "sent" : "requested");
         setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
         setQuestionnaireSuccessData({
           accessCode: data.accessCode,
@@ -575,20 +577,27 @@ export default function NextStepsModal({
               </div>
             )}
             
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-col md:flex-row gap-3 justify-end">
               <button 
-                onClick={handleFormSubmit}
+                onClick={() => handleFormSubmit("direct_now")}
                 disabled={isQuestionnaireSubmitting}
-                className="bg-primary text-on-primary px-8 py-3 rounded-full font-label font-bold text-sm shadow-md hover:bg-primary-container hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-label font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isQuestionnaireSubmitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div>
-                    Enviando...
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Procesando...
                   </>
                 ) : (
-                  "Enviar Solicitud"
+                  "Hacer Cuestionario Espejo ahora"
                 )}
+              </button>
+              <button 
+                onClick={() => handleFormSubmit("manual_request")}
+                disabled={isQuestionnaireSubmitting}
+                className="bg-surface-container-lowest hover:bg-surface-container border border-outline-variant/30 text-on-surface px-6 py-3 rounded-full font-label font-bold text-sm shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                Enviar Solicitud
               </button>
             </div>
 
