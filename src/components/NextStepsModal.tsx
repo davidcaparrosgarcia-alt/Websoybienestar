@@ -41,6 +41,14 @@ export default function NextStepsModal({
 
   const [lastQuestionnaireAction, setLastQuestionnaireAction] = useState<"manual_request" | "direct_now" | "resend" | null>(null);
 
+  const resetQuestionnaireLocalState = () => {
+    setQuestionnaireStatus(null);
+    setQuestionnaireSuccessData(null);
+    setResendMessage(null);
+    setQuestionnaireRequestMessage(null);
+    setLastQuestionnaireAction(null);
+  };
+
   useEffect(() => {
     setEmailValue(initialEmailValue);
     setPhoneValue(initialPhoneValue);
@@ -225,8 +233,18 @@ export default function NextStepsModal({
           questionnaireUrl: data.questionnaireUrl
         });
         setResendMessage({ text: "Hemos recuperado tu enlace y clave.", type: "success" });
+      } else if (data.status === "manual_request_pending") {
+        setResendMessage({
+          text: data.message || "Tu solicitud sigue pendiente de validación por el terapeuta. Recibirás el enlace por los medios indicados cuando sea enviada.",
+          type: "success"
+        });
+        setQuestionnaireSuccessData(null);
+        setLastQuestionnaireAction(null);
       } else if (data.status === "reset_required" || response.status === 404) {
         setQuestionnaireStatus("reset_required");
+        setQuestionnaireSuccessData(null);
+        setLastQuestionnaireAction(null);
+        setQuestionnaireRequestMessage(null);
         setResendMessage({ text: data.message || "Tu solicitud anterior ya no está activa.", type: "error" });
       } else {
         setResendMessage({ text: data.error || "Error al solicitar el reenvío.", type: "error" });
@@ -259,6 +277,7 @@ export default function NextStepsModal({
   };
 
   const isDeveloper = user?.email === "davidcaparrosgarcia@gmail.com";
+  const hasRecoveredQuestionnaireUrl = !!questionnaireSuccessData?.questionnaireUrl;
   const effectivelyHasDoneConsultation = hasDoneConsultation;
 
   return (
@@ -386,7 +405,35 @@ export default function NextStepsModal({
                 <p className="text-sm text-on-surface-variant leading-relaxed">
                   Tu solicitud anterior de Cuestionario Espejo ya no está activa. Si deseas continuar, inicia una nueva valoración para actualizar tu situación actual.
                 </p>
-                <button onClick={() => setQuestionnaireStatus(null)} className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors">
+                <button 
+                  onClick={async () => {
+                    if (user?.uid) {
+                      await setDoc(doc(db, "users", user.uid), {
+                        questionnaireStatus: null,
+                        questionnaireRequestStatus: null,
+                        questionnaireDeliveryMode: null,
+                        latestQuestionnaireDirectUrl: null,
+                        latestQuestionnairePatientId: null,
+                        linkedQuestionnairePatientId: null,
+                        latestQuestionnaireResendStatus: null,
+                        questionnaireResetClearedAt: serverTimestamp()
+                      }, { merge: true });
+
+                      await setDoc(doc(db, "userProfiles", user.uid), {
+                        questionnaireStatus: null,
+                        questionnaireRequestStatus: null,
+                        questionnaireDeliveryMode: null,
+                        latestQuestionnaireDirectUrl: null,
+                        latestQuestionnairePatientId: null,
+                        linkedQuestionnairePatientId: null,
+                        latestQuestionnaireResendStatus: null,
+                        questionnaireResetClearedAt: serverTimestamp()
+                      }, { merge: true });
+                    }
+                    resetQuestionnaireLocalState();
+                  }}
+                  className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors"
+                >
                   Iniciar nueva valoración
                 </button>
               </div>
@@ -447,7 +494,32 @@ export default function NextStepsModal({
                   </div>
                 )}
               </div>
-            ) : (questionnaireStatus === "sent" || questionnaireSuccessData?.questionnaireUrl) ? (
+            ) : (questionnaireStatus === "sent" && !hasRecoveredQuestionnaireUrl) ? (
+              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed">
+                  Tu Cuestionario Espejo ya fue generado anteriormente, pero ahora necesitamos recuperar el enlace para continuar.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={handleResendQuestionnaire} 
+                    disabled={isResending}
+                    className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
+                  >
+                    {isResending ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                        Solicitando reenvío...
+                      </>
+                    ) : (
+                      "Solicitar reenvío del cuestionario"
+                    )}
+                  </button>
+                  {resendMessage && (
+                    <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
+                  )}
+                </div>
+              </div>
+            ) : ((questionnaireStatus === "sent" && hasRecoveredQuestionnaireUrl) || hasRecoveredQuestionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed">
                   Tu enlace de Cuestionario Espejo ya está disponible.

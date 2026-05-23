@@ -1860,8 +1860,13 @@ app.post("/api/resend-questionnaire", requireAuth, async (req, res) => {
       const now = Date.now();
       const updatePayload = {
         questionnaireStatus: "reset_required",
+        questionnaireRequestStatus: "reset_required",
+        questionnaireDeliveryMode: null,
         questionnaireResetRequiredAt: now,
         latestQuestionnaireResendStatus: "not_found_or_deleted",
+        latestQuestionnaireDirectUrl: null,
+        latestQuestionnairePatientId: null,
+        linkedQuestionnairePatientId: null
       };
       
       await db.collection("users").doc(uid).set(updatePayload, { merge: true });
