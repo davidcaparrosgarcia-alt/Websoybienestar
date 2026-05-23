@@ -1377,8 +1377,11 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
         ];
         if (activeStatusesDirect.includes(userData.questionnaireStatus)) {
           isBlocked = true;
+          blockMessage = "Ya existe un cuestionario activo. Solicita el reenvío del enlace para continuar.";
         } else if (userData.questionnaireStatus === "requested") {
-          if (userData.latestQuestionnaireDirectUrl || userData.latestQuestionnairePatientId) {
+          const isManualPending = userData.questionnaireDeliveryMode === "manual_request" ||
+                                  (!userData.questionnaireDeliveryMode && userData.questionnaireRequestStatus === "pending");
+          if (!isManualPending) {
             isBlocked = true;
           }
         }
@@ -1679,6 +1682,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const updateData: any = {
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
       questionnaireStatus: isDirectAccess ? "sent" : "requested",
+      questionnaireDeliveryMode: requestMode,
       questionnaireRequestedAt: timestamp,
       lastQuestionnaireRequestAt: timestamp,
       lastQuestionnaireRequestId: requestId || userData.lastQuestionnaireRequestId || null,
@@ -1710,7 +1714,9 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     await docRef.set(updateData, { merge: true });
 
     await profileRef.set({
-      questionnaireStatus: "requested",
+      questionnaireStatus: isDirectAccess ? "sent" : "requested",
+      questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
+      questionnaireDeliveryMode: requestMode,
       ...(finalAccessCode
         ? {
             personalAccessCode: finalAccessCode,
@@ -1836,6 +1842,21 @@ app.post("/api/resend-questionnaire", requireAuth, async (req, res) => {
         status: updatePayload.questionnaireStatus
       });
     } else if (data.reason === "not_found_or_deleted") {
+      const isManualRequestPending =
+        userData.questionnaireStatus === "requested" &&
+        (
+          userData.questionnaireDeliveryMode === "manual_request" ||
+          userData.questionnaireRequestStatus === "pending"
+        );
+
+      if (isManualRequestPending) {
+        return res.json({
+          success: false,
+          status: "manual_request_pending",
+          message: "Tu solicitud sigue pendiente de validación por el terapeuta. Recibirás el enlace por los medios indicados cuando sea enviada."
+        });
+      }
+
       const now = Date.now();
       const updatePayload = {
         questionnaireStatus: "reset_required",

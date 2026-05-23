@@ -345,6 +345,41 @@ export default function NextStepsModal({
                 <p className="text-sm text-on-surface-variant leading-relaxed text-amber-700 dark:text-amber-300">
                   Tu Cuestionario Espejo está iniciado y pendiente de finalizar.
                 </p>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={handleResendQuestionnaire} 
+                    disabled={isResending}
+                    className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
+                  >
+                    {isResending ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                        Solicitando reenvío...
+                      </>
+                    ) : (
+                      "Solicitar reenvío del cuestionario"
+                    )}
+                  </button>
+                  {resendMessage && (
+                    <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
+                  )}
+                </div>
+
+                {questionnaireSuccessData?.questionnaireUrl && (
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                        window.location.href = questionnaireSuccessData.questionnaireUrl!;
+                      } else {
+                        window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
+                      }
+                    }}
+                    className="mt-2 bg-primary text-white text-center py-3 rounded-full font-bold hover:bg-primary/90 text-sm cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    Continuar Cuestionario Espejo
+                  </button>
+                )}
               </div>
             ) : questionnaireStatus === "reset_required" ? (
               <div className="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30 rounded-2xl flex flex-col gap-4">
@@ -383,6 +418,18 @@ export default function NextStepsModal({
                     "Hacer Cuestionario Espejo ahora"
                   )}
                 </button>
+
+                {questionnaireRequestMessage && (
+                  <div className={`mt-3 p-3 whitespace-pre-wrap rounded-xl text-sm font-medium ${
+                    questionnaireRequestMessage.type === 'success'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+                      : questionnaireRequestMessage.type === 'warning'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                  }`}>
+                    {questionnaireRequestMessage.text}
+                  </div>
+                )}
 
                 {questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
                   <div className="mt-2 p-4 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
