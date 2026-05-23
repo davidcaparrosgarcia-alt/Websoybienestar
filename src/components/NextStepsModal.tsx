@@ -40,6 +40,7 @@ export default function NextStepsModal({
   const [questionnaireDebugResult, setQuestionnaireDebugResult] = useState<string | null>(null);
 
   const [lastQuestionnaireAction, setLastQuestionnaireAction] = useState<"manual_request" | "direct_now" | "resend" | null>(null);
+  const [forceQuestionnaireRequestForm, setForceQuestionnaireRequestForm] = useState(false);
 
   const resetQuestionnaireLocalState = () => {
     setQuestionnaireStatus(null);
@@ -47,6 +48,7 @@ export default function NextStepsModal({
     setResendMessage(null);
     setQuestionnaireRequestMessage(null);
     setLastQuestionnaireAction(null);
+    setForceQuestionnaireRequestForm(false);
   };
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function NextStepsModal({
       setResendMessage(null);
       setQuestionnaireRequestMessage(null);
       setLastQuestionnaireAction(null);
+      setForceQuestionnaireRequestForm(false);
     }
   }, [isOpen]);
 
@@ -344,7 +347,7 @@ export default function NextStepsModal({
                    Ir a la Consulta Gratuita
                  </button>
               </div>
-            ) : questionnaireStatus === "dossier_available" || questionnaireStatus === "concluded" || dossierViewedAt ? (
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "dossier_available" || questionnaireStatus === "concluded" || dossierViewedAt) ? (
               <div className="mt-4 p-5 bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed font-bold text-green-700 dark:text-green-300">
                   {dossierViewedAt ? "Dosier leído" : "Tu dosier está disponible para lectura."}
@@ -353,13 +356,13 @@ export default function NextStepsModal({
                   Leer dosier
                 </button>
               </div>
-            ) : questionnaireStatus === "completed_pending_dossier" || questionnaireStatus === "completed" ? (
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "completed_pending_dossier" || questionnaireStatus === "completed") ? (
               <div className="mt-4 p-5 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed text-blue-700 dark:text-blue-300">
                   Has completado el Cuestionario Espejo. Nuestro equipo revisará tus respuestas y te avisaremos cuando el dosier esté disponible.
                 </p>
               </div>
-            ) : questionnaireStatus === "in_progress" ? (
+            ) : !forceQuestionnaireRequestForm && questionnaireStatus === "in_progress" ? (
               <div className="mt-4 p-5 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed text-amber-700 dark:text-amber-300">
                   Tu Cuestionario Espejo está iniciado y pendiente de finalizar.
@@ -400,7 +403,7 @@ export default function NextStepsModal({
                   </button>
                 )}
               </div>
-            ) : questionnaireStatus === "reset_required" ? (
+            ) : !forceQuestionnaireRequestForm && questionnaireStatus === "reset_required" ? (
               <div className="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed">
                   Tu solicitud anterior de Cuestionario Espejo ya no está activa. Si deseas continuar, inicia una nueva valoración para actualizar tu situación actual.
@@ -431,13 +434,14 @@ export default function NextStepsModal({
                       }, { merge: true });
                     }
                     resetQuestionnaireLocalState();
+                    setForceQuestionnaireRequestForm(true);
                   }}
                   className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors"
                 >
                   Iniciar nueva valoración
                 </button>
               </div>
-            ) : (questionnaireStatus === "requested" && !questionnaireSuccessData?.questionnaireUrl) ? (
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "requested" && !questionnaireSuccessData?.questionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
                 <div className="text-sm text-on-surface-variant leading-relaxed">
                   <p className="mb-2">
@@ -494,32 +498,27 @@ export default function NextStepsModal({
                   </div>
                 )}
               </div>
-            ) : (questionnaireStatus === "sent" && !hasRecoveredQuestionnaireUrl) ? (
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "sent" && !hasRecoveredQuestionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Tu Cuestionario Espejo ya fue generado anteriormente, pero ahora necesitamos recuperar el enlace para continuar.
+                  Tu cuestionario anterior no está disponible para continuar desde aquí. Puedes solicitar un nuevo envío revisando tus datos y el canal por el que quieres recibirlo.
                 </p>
                 <div className="flex flex-col gap-2">
                   <button 
-                    onClick={handleResendQuestionnaire} 
-                    disabled={isResending}
+                    onClick={() => {
+                      setQuestionnaireSuccessData(null);
+                      setResendMessage(null);
+                      setQuestionnaireRequestMessage(null);
+                      setLastQuestionnaireAction(null);
+                      setForceQuestionnaireRequestForm(true);
+                    }} 
                     className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
                   >
-                    {isResending ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                        Solicitando reenvío...
-                      </>
-                    ) : (
-                      "Solicitar reenvío del cuestionario"
-                    )}
+                    Solicitar de nuevo el cuestionario
                   </button>
-                  {resendMessage && (
-                    <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
-                  )}
                 </div>
               </div>
-            ) : ((questionnaireStatus === "sent" && hasRecoveredQuestionnaireUrl) || hasRecoveredQuestionnaireUrl) ? (
+            ) : !forceQuestionnaireRequestForm && ((questionnaireStatus === "sent" && hasRecoveredQuestionnaireUrl) || hasRecoveredQuestionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed">
                   Tu enlace de Cuestionario Espejo ya está disponible.
