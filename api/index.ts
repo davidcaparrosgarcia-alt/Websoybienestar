@@ -1483,7 +1483,11 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       .collection("users")
       .doc(uid)
       .collection("questionnaireRequests");
-    const requestId = requestsRef.doc().id;
+    
+    let isConvertingFromRequested = (requestMode === "direct_now" && userData.questionnaireStatus === "requested");
+    let requestId = isConvertingFromRequested && userData.lastQuestionnaireRequestId 
+      ? userData.lastQuestionnaireRequestId 
+      : requestsRef.doc().id;
 
     // Create numeric timestamp and ISO string
     const createdAt = Date.now();
@@ -1669,7 +1673,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       sourcePath: "/zen",
       soybienestarContext,
       contactSnapshot,
-    });
+    }, { merge: true });
 
     requestStep = "update_user_request_metadata";
     const updateData: any = {

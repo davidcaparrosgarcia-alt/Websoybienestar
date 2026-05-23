@@ -580,7 +580,7 @@ export default function NextStepsModal({
               <div className={`mt-4 p-4 whitespace-pre-wrap rounded-xl text-sm font-medium ${questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}>
                 {questionnaireRequestMessage.text}
                 
-                {questionnaireRequestMessage.type === 'success' && questionnaireSuccessData?.accessCode && (
+                {questionnaireRequestMessage.type === 'success' && questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
                   <div className="mt-4 p-5 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
                     <p className="text-base">Tu clave personal es: <strong className="text-xl ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode.toUpperCase()}</strong></p>
                     
