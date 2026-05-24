@@ -230,6 +230,16 @@ export default function NextStepsModal({
       });
       const data = await response.json();
       if (response.ok && data.success) {
+        if (data.action === "resend_requested") {
+          setQuestionnaireSuccessData(null);
+          setLastQuestionnaireAction(null);
+          setQuestionnaireStatus("requested");
+          setResendMessage({
+            text: data.message || "Su solicitud ha sido procesada para que reciba por los medios solicitados un enlace y clave del cuestionario. Si no marcó ningún medio, lo recibirá al email con el que se ha registrado.",
+            type: "success"
+          });
+          return;
+        }
         setLastQuestionnaireAction("resend");
         setQuestionnaireSuccessData({
           accessCode: data.accessCode,
