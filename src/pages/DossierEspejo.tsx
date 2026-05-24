@@ -84,13 +84,20 @@ export default function DossierEspejo() {
     );
   }
 
-  const code = userData?.personalAccessCode || profileData?.personalAccessCode;
+  const code =
+    userData?.questionnaireAccessCode ||
+    profileData?.questionnaireAccessCode ||
+    userData?.personalAccessCode ||
+    profileData?.personalAccessCode ||
+    userData?.lastQuestionnaireProposedAccessCode ||
+    profileData?.lastQuestionnaireProposedAccessCode;
+    
   const latestDossier = userData?.latestDossier || profileData?.latestDossier;
   const dossierAvailable = !!userData?.dossierAvailableAt || !!profileData?.dossierAvailableAt || !!latestDossier;
   const auth = getAuth();
   const isTester = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
   const testerPreview = isTester && new URLSearchParams(location.search).get("testerPreview") === "1";
-  const effectiveCode = code || (isTester ? "DEMO25" : "");
+  const effectiveCode = code || (isTester ? "DEMO" : "");
 
   if (!effectiveCode && !testerPreview) {
     return (
@@ -173,27 +180,27 @@ export default function DossierEspejo() {
 
         <div className="bg-surface-container-high rounded-2xl p-8 max-w-sm w-full flex flex-col gap-4 shadow-sm border border-outline-variant/30">
            <div>
-             <label htmlFor="codigoAcceso" className="block text-sm font-label font-bold text-on-surface mb-1">Código personal de 6 caracteres</label>
+             <label htmlFor="codigoAcceso" className="block text-sm font-label font-bold text-on-surface mb-1">Código personal de 4 caracteres</label>
              <input 
                id="codigoAcceso"
                type="text" 
                value={accessCodeInput}
-               onChange={e => setAccessCodeInput(e.target.value.toUpperCase())}
-               placeholder="P. ej. K7M4Q2"
+               onChange={e => setAccessCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4))}
+               placeholder="P. ej. SR3V"
                className="w-full bg-surface border border-outline-variant rounded-xl p-3 text-on-surface font-mono tracking-widest text-center text-lg focus:outline-none focus:border-primary uppercase"
-               maxLength={6}
+               maxLength={4}
              />
            </div>
            
            {errorMsg && (
              <div className="text-error text-xs font-bold text-center bg-error-container text-on-error-container p-2 rounded-lg">
-                {errorMsg}
+               {errorMsg}
              </div>
            )}
 
            <button 
              onClick={handleUnlock}
-             disabled={accessCodeInput.length < 6}
+             disabled={accessCodeInput.trim().length < 4}
              className="w-full bg-primary text-on-primary py-3 rounded-full font-label font-bold hover:bg-primary-container hover:text-primary transition-colors disabled:bg-outline-variant/30 disabled:text-on-surface-variant/50"
            >
              Desbloquear
