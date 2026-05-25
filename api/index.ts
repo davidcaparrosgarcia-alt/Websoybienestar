@@ -1916,6 +1916,8 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       linkedQuestionnairePatientId,
       email,
       telefono,
+      accessCode,
+      accessPin,
       accessPinProvidedBySoyBienestar,
       status,
       occurredAt,
@@ -2003,6 +2005,7 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
     }
 
     const now = Date.now();
+    const receivedAccessCode = normalizeAccessCode(accessCode || accessPin || "");
 
     if (!matchedUid || !targetUserRef || !targetProfileRef) {
       await db.collection("questionnaireWebhookInbox").add({
@@ -2048,6 +2051,15 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       updatePayload.latestQuestionnaireDossierDateConclusionSent = dossier?.dateConclusionSent || null;
       updatePayload.latestQuestionnaireAudioConclusion = dossier?.audioConclusion || null;
       updatePayload.accessPinProvidedBySoyBienestar = !!accessPinProvidedBySoyBienestar;
+
+      if (/^[a-z0-9]{4}$/i.test(receivedAccessCode)) {
+        updatePayload.questionnaireAccessCode = receivedAccessCode;
+        updatePayload.personalAccessCode = receivedAccessCode;
+        updatePayload.latestQuestionnaireAccessCode = receivedAccessCode;
+        updatePayload.latestDossierAccessCode = receivedAccessCode;
+        updatePayload.lastQuestionnaireProposedAccessCode = receivedAccessCode;
+        updatePayload.questionnaireAccessCodeSyncedFromDossierAt = now;
+      }
     } else if (payload.event === "questionnaire_deleted") {
       updatePayload.questionnaireStatus = "reset_required";
       updatePayload.questionnaireDeletedAt = now;

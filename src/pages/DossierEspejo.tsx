@@ -20,7 +20,21 @@ export default function DossierEspejo() {
   const [unlocked, setUnlocked] = useState(userCache.unlocked);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [selectedPlanImage, setSelectedPlanImage] = useState<string | null>(null);
+  const [slowLoad, setSlowLoad] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowLoad(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setSlowLoad(true);
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -40,6 +54,7 @@ export default function DossierEspejo() {
         }
 
         try {
+          const loadStart = performance.now();
           const userDocRef = doc(db, 'users', user.uid);
           const profileDocRef = doc(db, 'userProfiles', user.uid);
 
@@ -47,6 +62,14 @@ export default function DossierEspejo() {
             getDoc(userDocRef),
             getDoc(profileDocRef)
           ]);
+
+          if (isTester) {
+            console.log("[DOSSIER LOAD DEBUG]", {
+              elapsedMs: Math.round(performance.now() - loadStart),
+              userDocExists: userDoc.exists(),
+              profileDocExists: profileDoc.exists()
+            });
+          }
 
           const uData = userDoc.data() || {};
           const pData = profileDoc.data() || {};
@@ -78,13 +101,22 @@ export default function DossierEspejo() {
 
   if (loading) {
     return (
-      <div className="flex-1 w-full bg-surface flex items-center justify-center min-h-[50vh]">
+      <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[50vh]">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        {slowLoad && (
+          <p className="mt-4 text-sm text-on-surface-variant font-medium animate-in fade-in">
+            Estamos recuperando tu dossier. Puede tardar unos segundos.
+          </p>
+        )}
       </div>
     );
   }
 
   const code =
+    userData?.latestDossierAccessCode ||
+    profileData?.latestDossierAccessCode ||
+    userData?.latestQuestionnaireAccessCode ||
+    profileData?.latestQuestionnaireAccessCode ||
     userData?.questionnaireAccessCode ||
     profileData?.questionnaireAccessCode ||
     userData?.personalAccessCode ||
@@ -141,6 +173,17 @@ export default function DossierEspejo() {
   const isDemoMode = (!latestDossier && isTester) || testerPreview;
 
   const handleUnlock = async () => {
+    if (isTester) {
+      console.log("[DOSSIER ACCESS DEBUG]", {
+        hasLatestDossierAccessCode: !!userData?.latestDossierAccessCode || !!profileData?.latestDossierAccessCode,
+        hasLatestQuestionnaireAccessCode: !!userData?.latestQuestionnaireAccessCode || !!profileData?.latestQuestionnaireAccessCode,
+        hasQuestionnaireAccessCode: !!userData?.questionnaireAccessCode || !!profileData?.questionnaireAccessCode,
+        hasPersonalAccessCode: !!userData?.personalAccessCode || !!profileData?.personalAccessCode,
+        effectiveCodeLength: effectiveCode ? String(effectiveCode).length : 0,
+        inputLength: accessCodeInput.trim().length
+      });
+    }
+
     setErrorMsg("");
     const normalizedInput = accessCodeInput.trim().toUpperCase();
     const normalizedCode = effectiveCode.trim().toUpperCase();
