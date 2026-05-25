@@ -33,6 +33,7 @@ export default function NextStepsModal({
   const [questionnaireSuccessData, setQuestionnaireSuccessData] = useState<{accessCode?: string; questionnaireUrl?: string; directAccessAvailable?: boolean;} | null>(null);
   const [questionnaireStatus, setQuestionnaireStatus] = useState<string | null>(null);
   const [dossierViewedAt, setDossierViewedAt] = useState<any>(null);
+  const [fullUserData, setFullUserData] = useState<any>(null);
   const [isResending, setIsResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<{text: string, type: "success"|"error"} | null>(null);
   
@@ -72,6 +73,7 @@ export default function NextStepsModal({
       getDoc(userRef).then(docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          setFullUserData(data || null);
           setQuestionnaireStatus(data?.questionnaireStatus || null);
           setDossierViewedAt(data?.dossierViewedAt || null);
           const age = data?.age || data?.edad || data?.profileAge || data?.birthDate || "";
@@ -293,6 +295,12 @@ export default function NextStepsModal({
   const hasRecoveredQuestionnaireUrl = !!questionnaireSuccessData?.questionnaireUrl;
   const effectivelyHasDoneConsultation = hasDoneConsultation;
 
+  const availableQuestionnaireUrl =
+    questionnaireSuccessData?.questionnaireUrl ||
+    fullUserData?.latestQuestionnaireDirectUrl ||
+    fullUserData?.questionnaireUrl ||
+    null;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-md animate-in fade-in text-left">
       <div className="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative">
@@ -372,11 +380,99 @@ export default function NextStepsModal({
                   Has completado el Cuestionario Espejo. Nuestro equipo revisará tus respuestas y te avisaremos cuando el dosier esté disponible.
                 </p>
               </div>
-            ) : !forceQuestionnaireRequestForm && questionnaireStatus === "in_progress" ? (
-              <div className="mt-4 p-5 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-2xl flex flex-col gap-4">
-                <p className="text-sm text-on-surface-variant leading-relaxed text-amber-700 dark:text-amber-300">
-                  Tu Cuestionario Espejo está iniciado y pendiente de finalizar.
+            ) : !forceQuestionnaireRequestForm && ((questionnaireStatus === "sent" || questionnaireStatus === "in_progress") && availableQuestionnaireUrl) ? (
+              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed text-blue-700 dark:text-blue-300">
+                  Tu Cuestionario Espejo está iniciado. Puedes continuar desde donde lo dejaste usando el mismo enlace y tu clave personal.
                 </p>
+                
+                {questionnaireRequestMessage && (
+                  <div className={`mt-3 p-3 whitespace-pre-wrap rounded-xl text-sm font-medium ${
+                    questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800' : 
+                    questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {questionnaireRequestMessage.text}
+                  </div>
+                )}
+
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                      window.location.href = availableQuestionnaireUrl;
+                    } else {
+                      window.open(availableQuestionnaireUrl, "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                  className="mt-2 bg-primary text-white text-center py-3 rounded-full font-bold hover:bg-primary/90 text-sm cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  Continuar con mi cuestionario iniciado
+                </button>
+
+                <div className="flex flex-col gap-2 mt-2">
+                  <button 
+                    onClick={handleResendQuestionnaire} 
+                    disabled={isResending}
+                    className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
+                  >
+                    {isResending ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                        Solicitando reenvío...
+                      </>
+                    ) : (
+                      "Solicitar reenvío del enlace"
+                    )}
+                  </button>
+                  {resendMessage && (
+                    <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
+                  )}
+                </div>
+                
+                {questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
+                  <div className="mt-2 p-4 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
+                    <p className="text-sm">Tu clave personal es: <strong className="text-lg ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode?.toUpperCase()}</strong></p>
+                    
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-row gap-2">
+                        <button 
+                          onClick={(e) => {
+                             e.preventDefault();
+                             navigator.clipboard.writeText(availableQuestionnaireUrl);
+                             alert("Enlace copiado al portapapeles");
+                          }}
+                          className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-2 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30 dark:text-white"
+                        >
+                          Copiar enlace
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                             e.preventDefault();
+                             navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
+                             alert("Clave copiada al portapapeles");
+                          }}
+                          className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-2 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30 dark:text-white"
+                        >
+                          Copiar clave
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : !forceQuestionnaireRequestForm && ((questionnaireStatus === "sent" || questionnaireStatus === "in_progress") && !availableQuestionnaireUrl) ? (
+              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed">
+                  Tu Cuestionario Espejo está iniciado, pero necesitamos recuperar el enlace para que puedas continuar.
+                </p>
+                {questionnaireRequestMessage && (
+                  <div className={`mt-3 p-3 whitespace-pre-wrap rounded-xl text-sm font-medium ${
+                    questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800' : 
+                    questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {questionnaireRequestMessage.text}
+                  </div>
+                )}
                 <div className="flex flex-col gap-2">
                   <button 
                     onClick={handleResendQuestionnaire} 
@@ -389,29 +485,13 @@ export default function NextStepsModal({
                         Solicitando reenvío...
                       </>
                     ) : (
-                      "Solicitar reenvío del cuestionario"
+                      "Recuperar enlace para continuar"
                     )}
                   </button>
                   {resendMessage && (
                     <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
                   )}
                 </div>
-
-                {questionnaireSuccessData?.questionnaireUrl && (
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        window.location.href = questionnaireSuccessData.questionnaireUrl!;
-                      } else {
-                        window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
-                      }
-                    }}
-                    className="mt-2 bg-primary text-white text-center py-3 rounded-full font-bold hover:bg-primary/90 text-sm cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    Continuar Cuestionario Espejo
-                  </button>
-                )}
               </div>
             ) : !forceQuestionnaireRequestForm && questionnaireStatus === "reset_required" ? (
               <div className="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30 rounded-2xl flex flex-col gap-4">
@@ -508,100 +588,7 @@ export default function NextStepsModal({
                   </div>
                 )}
               </div>
-            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "sent" && !hasRecoveredQuestionnaireUrl) ? (
-              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
-                <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Tu cuestionario anterior no está disponible para continuar desde aquí. Puedes solicitar un nuevo envío revisando tus datos y el canal por el que quieres recibirlo.
-                </p>
-                <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={() => {
-                      setQuestionnaireSuccessData(null);
-                      setResendMessage(null);
-                      setQuestionnaireRequestMessage(null);
-                      setLastQuestionnaireAction(null);
-                      setForceQuestionnaireRequestForm(true);
-                    }} 
-                    className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
-                  >
-                    Solicitar de nuevo el cuestionario
-                  </button>
-                </div>
-              </div>
-            ) : !forceQuestionnaireRequestForm && ((questionnaireStatus === "sent" && hasRecoveredQuestionnaireUrl) || hasRecoveredQuestionnaireUrl) ? (
-              <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
-                <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Tu enlace de Cuestionario Espejo ya está disponible.
-                </p>
-                <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={handleResendQuestionnaire} 
-                    disabled={isResending}
-                    className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors self-start flex items-center gap-2"
-                  >
-                    {isResending ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                        Solicitando reenvío...
-                      </>
-                    ) : (
-                      "Solicitar reenvío del cuestionario"
-                    )}
-                  </button>
-                  {resendMessage && (
-                    <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
-                  )}
-                </div>
 
-                {questionnaireSuccessData?.accessCode && lastQuestionnaireAction !== null && (
-                  <div className="mt-2 p-4 bg-white dark:bg-black/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex flex-col gap-4">
-                    <p className="text-sm">Tu clave personal es: <strong className="text-lg ml-2 px-3 py-1 bg-green-50 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-700">{questionnaireSuccessData.accessCode?.toUpperCase()}</strong></p>
-                    
-                    <div className="flex flex-col gap-3">
-                      {questionnaireSuccessData.questionnaireUrl && (
-                         <button 
-                           onClick={(e) => {
-                             e.preventDefault();
-                             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                               window.location.href = questionnaireSuccessData.questionnaireUrl!;
-                             } else {
-                               window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
-                             }
-                           }}
-                           className="bg-primary text-white text-center py-3 rounded-full font-bold hover:bg-primary/90 text-sm cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
-                         >
-                           Hacer Cuestionario Espejo ahora
-                         </button>
-                      )}
-                      
-                      <div className="flex flex-row gap-2">
-                        {questionnaireSuccessData.questionnaireUrl && (
-                          <button 
-                            onClick={(e) => {
-                               e.preventDefault();
-                               navigator.clipboard.writeText(questionnaireSuccessData.questionnaireUrl!);
-                               alert("Enlace copiado al portapapeles");
-                            }}
-                            className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-2 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30 dark:text-white"
-                          >
-                            Copiar enlace
-                          </button>
-                        )}
-                        <button 
-                          onClick={(e) => {
-                             e.preventDefault();
-                             navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
-                             alert("Clave copiada al portapapeles");
-                          }}
-                          className="flex-1 bg-surface-container-lowest hover:bg-surface-container py-2 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30 dark:text-white"
-                        >
-                          Copiar clave
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
             ) : (
               <>
                 <h5 className="font-bold text-sm text-primary mt-6 mb-3">Tus datos personales</h5>
