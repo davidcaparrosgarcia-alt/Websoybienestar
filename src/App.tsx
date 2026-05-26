@@ -31,6 +31,7 @@ import Cookies from "./pages/Cookies";
 import Terms from "./pages/Terms";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
+import AiDiagnostics from "./pages/AiDiagnostics";
 
 import Resources from "./pages/Resources";
 
@@ -101,6 +102,11 @@ export default function App() {
           } />
           <Route path="resources" element={<Resources />} />
           <Route path="herramientas" element={<Resources />} />
+          <Route path="ai-diagnostics" element={
+            <ProtectedRoute>
+              <AiDiagnostics />
+            </ProtectedRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>
