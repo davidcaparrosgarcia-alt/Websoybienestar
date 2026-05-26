@@ -1772,6 +1772,124 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   }
 });
 
+app.get("/api/dossier-espejo-state", requireAuth, async (req, res) => {
+  try {
+    const uid = req.user!.uid;
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const userSnap = await db.collection("users").doc(uid).get();
+    const profileSnap = await db.collection("userProfiles").doc(uid).get();
+
+    const userData = userSnap.data() || {};
+    const profileData = profileSnap.data() || {};
+
+    const latestDossier = userData.latestDossier || profileData.latestDossier || "";
+    const dossierAvailable = !!userData.dossierAvailableAt || !!profileData.dossierAvailableAt || !!latestDossier;
+    
+    const possibleCodes = [
+      userData.latestDossierAccessCode,
+      profileData.latestDossierAccessCode,
+      userData.latestQuestionnaireAccessCode,
+      profileData.latestQuestionnaireAccessCode,
+      userData.questionnaireAccessCode,
+      profileData.questionnaireAccessCode,
+      userData.personalAccessCode,
+      profileData.personalAccessCode,
+      userData.lastQuestionnaireProposedAccessCode,
+      profileData.lastQuestionnaireProposedAccessCode
+    ];
+    const hasAccessCode = possibleCodes.some(code => code && normalizeAccessCode(code).length > 0);
+    const dossierViewed = !!userData.dossierViewedAt || !!profileData.dossierViewedAt;
+
+    const audioUrl = userData?.latestQuestionnaireAudioConclusion ||
+      profileData?.latestQuestionnaireAudioConclusion ||
+      userData?.latestQuestionnaireAudioConclusionUrl ||
+      profileData?.latestQuestionnaireAudioConclusionUrl ||
+      userData?.audioConclusion ||
+      profileData?.audioConclusion ||
+      userData?.latestDossierAudio ||
+      profileData?.latestDossierAudio ||
+      userData?.latestDossierAudioUrl ||
+      profileData?.latestDossierAudioUrl;
+
+    res.json({
+      success: true,
+      dossierAvailable,
+      hasAccessCode,
+      hasLatestDossier: !!latestDossier,
+      dossierViewed,
+      latestDossier: latestDossier || "",
+      latestDossierInternalContext: userData.latestDossierInternalContext || profileData.latestDossierInternalContext || "",
+      questionnaireStatus: userData.questionnaireStatus || profileData.questionnaireStatus || null,
+      audioUrl: audioUrl || null
+    });
+  } catch (error) {
+    console.error("Error in /api/dossier-espejo-state:", error);
+    res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+app.post("/api/dossier-espejo-verify", requireAuth, async (req, res) => {
+  try {
+    const uid = req.user!.uid;
+    const inputCode = normalizeAccessCode(req.body?.accessCode || "");
+
+    if (!/^[a-z0-9]{4}$/i.test(inputCode)) {
+      return res.status(400).json({ success: false, error: "Formato de clave inválido" });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+    
+    const [userSnap, profileSnap] = await Promise.all([userRef.get(), profileRef.get()]);
+    
+    const userData = userSnap.data() || {};
+    const profileData = profileSnap.data() || {};
+
+    const rawCandidates = [
+      userData.latestDossierAccessCode,
+      profileData.latestDossierAccessCode,
+      userData.latestQuestionnaireAccessCode,
+      profileData.latestQuestionnaireAccessCode,
+      userData.questionnaireAccessCode,
+      profileData.questionnaireAccessCode,
+      userData.personalAccessCode,
+      profileData.personalAccessCode,
+      userData.lastQuestionnaireProposedAccessCode,
+      profileData.lastQuestionnaireProposedAccessCode
+    ];
+
+    const candidates = rawCandidates
+      .filter(code => typeof code === "string")
+      .map(code => normalizeAccessCode(code))
+      .filter(code => code.length > 0);
+
+    if (candidates.length === 0 || !candidates.includes(inputCode)) {
+      return res.status(403).json({
+        success: false,
+        error: "INVALID_CODE",
+        hasCandidates: candidates.length > 0
+      });
+    }
+
+    const now = Date.now();
+    await Promise.all([
+      userRef.set({ dossierViewedAt: now }, { merge: true }),
+      profileRef.set({ dossierViewedAt: now }, { merge: true })
+    ]);
+
+    res.json({
+      success: true,
+      latestDossier: userData.latestDossier || profileData.latestDossier || "",
+      latestDossierInternalContext: userData.latestDossierInternalContext || profileData.latestDossierInternalContext || "",
+      dossierViewedAt: now
+    });
+  } catch (error) {
+    console.error("Error in /api/dossier-espejo-verify:", error);
+    res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
 app.post("/api/resend-questionnaire", requireAuth, async (req, res) => {
   try {
     const uid = req.user!.uid;

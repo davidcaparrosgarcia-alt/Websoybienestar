@@ -11,36 +11,45 @@ export default function DossierEspejo() {
   const navigate = useNavigate();
   const location = useLocation();
   const testerPreviewParam = new URLSearchParams(location.search).get("testerPreview") === "1";
-  const hasCachedData = userCache.userData && userCache.profileData;
-  const [loading, setLoading] = useState(!hasCachedData);
-  const [userData, setUserData] = useState<any>(userCache.userData);
-  const [profileData, setProfileData] = useState<any>(userCache.profileData);
+  const [loading, setLoading] = useState(true);
+  const [slowLoad, setSlowLoad] = useState(false);
+  const [verySlowLoad, setVerySlowLoad] = useState(false);
+  
+  const [dossierState, setDossierState] = useState<any>(null);
+  
+  const [dossierAvailable, setDossierAvailable] = useState(false);
+  const [hasAccessCode, setHasAccessCode] = useState(false);
+  const [unlocked, setUnlocked] = useState(userCache.unlocked);
+  const [latestDossier, setLatestDossier] = useState<any>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [unlocked, setUnlocked] = useState(userCache.unlocked);
+  const [unlocking, setUnlocking] = useState(false);
+  
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [selectedPlanImage, setSelectedPlanImage] = useState<string | null>(null);
-  const [slowLoad, setSlowLoad] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     if (!loading) {
       setSlowLoad(false);
+      setVerySlowLoad(false);
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      setSlowLoad(true);
-    }, 2000);
+    const timer1 = window.setTimeout(() => setSlowLoad(true), 2000);
+    const timer2 = window.setTimeout(() => setVerySlowLoad(true), 8000);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer1);
+      window.clearTimeout(timer2);
+    };
   }, [loading]);
 
   useEffect(() => {
     const auth = getAuth();
-    const db = getFirestore();
     
-    // Auth observer would be better but we rely on ProtectedRoute which ensures user is logged in
     const checkAuth = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const isTester = user.email === "davidcaparrosgarcia@gmail.com";
@@ -49,45 +58,42 @@ export default function DossierEspejo() {
         if (isDemo) {
           setUnlocked(true);
           setLoading(false);
-        } else if (!hasCachedData) {
+        } else {
           setLoading(true);
         }
 
         try {
           const loadStart = performance.now();
-          const userDocRef = doc(db, 'users', user.uid);
-          const profileDocRef = doc(db, 'userProfiles', user.uid);
-
-          const [userDoc, profileDoc] = await Promise.all([
-            getDoc(userDocRef),
-            getDoc(profileDocRef)
-          ]);
+          const token = await user.getIdToken();
+          const response = await fetch("/api/dossier-espejo-state", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await response.json();
 
           if (isTester) {
-            console.log("[DOSSIER LOAD DEBUG]", {
+            console.log("[DOSSIER STATE DEBUG]", {
               elapsedMs: Math.round(performance.now() - loadStart),
-              userDocExists: userDoc.exists(),
-              profileDocExists: profileDoc.exists()
+              dossierAvailable: data.dossierAvailable,
+              hasAccessCode: data.hasAccessCode,
+              dossierViewed: data.dossierViewed,
+              questionnaireStatus: data.questionnaireStatus
             });
           }
 
-          const uData = userDoc.data() || {};
-          const pData = profileDoc.data() || {};
-
-          setUserData(uData);
-          setProfileData(pData);
-          userCache.userData = uData;
-          userCache.profileData = pData;
-
-          // If they already viewed it, unlock automatically
-          const dossierViewed = !!uData.dossierViewedAt || !!pData.dossierViewedAt;
-          if (dossierViewed) {
-             setUnlocked(true);
-             userCache.unlocked = true;
+          if (data.success) {
+            setDossierState(data);
+            setDossierAvailable(data.dossierAvailable);
+            setHasAccessCode(data.hasAccessCode);
+            setLatestDossier(data.latestDossier);
+            setAudioUrl(data.audioUrl || null);
+            
+            if (data.dossierViewed) {
+               setUnlocked(true);
+               userCache.unlocked = true;
+            }
           }
-
         } catch (error) {
-          console.error("Error fetching dossier data", error);
+          console.error("Error fetching dossier state", error);
         } finally {
           if (!isDemo) setLoading(false);
         }
@@ -97,7 +103,7 @@ export default function DossierEspejo() {
     });
 
     return () => checkAuth();
-  }, [hasCachedData, testerPreviewParam]);
+  }, [testerPreviewParam]);
 
   if (loading) {
     return (
@@ -108,30 +114,21 @@ export default function DossierEspejo() {
             Estamos recuperando tu dossier. Puede tardar unos segundos.
           </p>
         )}
+        {verySlowLoad && (
+          <p className="mt-2 text-sm text-on-surface-variant font-medium animate-in fade-in max-w-sm text-center">
+            Si la espera se alarga, recarga la página o vuelve a intentarlo en unos minutos.
+          </p>
+        )}
       </div>
     );
   }
 
-  const code =
-    userData?.latestDossierAccessCode ||
-    profileData?.latestDossierAccessCode ||
-    userData?.latestQuestionnaireAccessCode ||
-    profileData?.latestQuestionnaireAccessCode ||
-    userData?.questionnaireAccessCode ||
-    profileData?.questionnaireAccessCode ||
-    userData?.personalAccessCode ||
-    profileData?.personalAccessCode ||
-    userData?.lastQuestionnaireProposedAccessCode ||
-    profileData?.lastQuestionnaireProposedAccessCode;
-    
-  const latestDossier = userData?.latestDossier || profileData?.latestDossier;
-  const dossierAvailable = !!userData?.dossierAvailableAt || !!profileData?.dossierAvailableAt || !!latestDossier;
   const auth = getAuth();
   const isTester = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
   const testerPreview = isTester && new URLSearchParams(location.search).get("testerPreview") === "1";
-  const effectiveCode = code || (isTester ? "DEMO" : "");
+  const isDemoMode = (!dossierState?.hasLatestDossier && isTester) || testerPreview;
 
-  if (!effectiveCode && !testerPreview) {
+  if (!hasAccessCode && !testerPreview) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
@@ -170,45 +167,57 @@ export default function DossierEspejo() {
     );
   }
 
-  const isDemoMode = (!latestDossier && isTester) || testerPreview;
-
   const handleUnlock = async () => {
-    if (isTester) {
-      console.log("[DOSSIER ACCESS DEBUG]", {
-        hasLatestDossierAccessCode: !!userData?.latestDossierAccessCode || !!profileData?.latestDossierAccessCode,
-        hasLatestQuestionnaireAccessCode: !!userData?.latestQuestionnaireAccessCode || !!profileData?.latestQuestionnaireAccessCode,
-        hasQuestionnaireAccessCode: !!userData?.questionnaireAccessCode || !!profileData?.questionnaireAccessCode,
-        hasPersonalAccessCode: !!userData?.personalAccessCode || !!profileData?.personalAccessCode,
-        effectiveCodeLength: effectiveCode ? String(effectiveCode).length : 0,
-        inputLength: accessCodeInput.trim().length
-      });
-    }
-
     setErrorMsg("");
     const normalizedInput = accessCodeInput.trim().toUpperCase();
-    const normalizedCode = effectiveCode.trim().toUpperCase();
 
-    if (normalizedInput === normalizedCode) {
-      setUnlocked(true);
-      if (!isDemoMode) {
-        // Ensure dossierViewedAt is saved
-        const userDocRef = doc(getFirestore(), 'users', auth.currentUser!.uid);
-        const userProfRef = doc(getFirestore(), 'userProfiles', auth.currentUser!.uid);
+    if (!isDemoMode) {
+      setUnlocking(true);
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user");
+
+        const token = await user.getIdToken();
+        const response = await fetch("/api/dossier-espejo-verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ accessCode: normalizedInput })
+        });
         
-        const ts = Date.now();
-        try {
-          if (!userData.dossierViewedAt) {
-             await updateDoc(userDocRef, { dossierViewedAt: ts });
-          }
-          if (!profileData.dossierViewedAt) {
-             await updateDoc(userProfRef, { dossierViewedAt: ts });
-          }
-        } catch (e) {
-          console.error("Error setting dossierViewedAt", e);
+        const data = await response.json();
+        
+        if (isTester) {
+          console.log("[DOSSIER VERIFY DEBUG]", {
+            status: response.status,
+            ok: response.ok,
+            hasCandidates: data.hasCandidates
+          });
         }
+
+        if (response.ok && data.success) {
+          setUnlocked(true);
+          setLatestDossier(data.latestDossier);
+          userCache.unlocked = true;
+        } else {
+          setErrorMsg(data.error || "La clave no coincide. Revisa el código personal que recibiste con tu enlace.");
+        }
+      } catch (error) {
+        console.error("Error verifying access code", error);
+        setErrorMsg("Error de conexión. Intenta de nuevo.");
+      } finally {
+        setUnlocking(false);
       }
     } else {
-      setErrorMsg("La clave no coincide. Revisa el código personal que recibiste con tu enlace.");
+      // Demo mode
+      if (normalizedInput === "DEMO") {
+        setUnlocked(true);
+      } else {
+        setErrorMsg("La clave no coincide. Revisa el código personal que recibiste con tu enlace.");
+      }
     }
   };
 
@@ -218,7 +227,7 @@ export default function DossierEspejo() {
         <h2 className="font-headline font-bold text-3xl text-primary mb-4 text-center">Dossier Espejo personalizado</h2>
         <p className="text-on-surface-variant font-label text-center mb-8 max-w-xl">
            Introduce tu clave personal para acceder a tu dossier estructurado. 
-           {isDemoMode && <span className="block mt-2 font-bold text-secondary">MODO DEMO TESTER: Ingresa el código "{effectiveCode}" para ver el placeholder.</span>}
+           {isDemoMode && <span className="block mt-2 font-bold text-secondary">MODO DEMO TESTER: Ingresa el código "DEMO" para ver el placeholder.</span>}
         </p>
 
         <div className="bg-surface-container-high rounded-2xl p-8 max-w-sm w-full flex flex-col gap-4 shadow-sm border border-outline-variant/30">
@@ -243,10 +252,10 @@ export default function DossierEspejo() {
 
            <button 
              onClick={handleUnlock}
-             disabled={accessCodeInput.trim().length < 4}
+             disabled={accessCodeInput.trim().length < 4 || unlocking}
              className="w-full bg-primary text-on-primary py-3 rounded-full font-label font-bold hover:bg-primary-container hover:text-primary transition-colors disabled:bg-outline-variant/30 disabled:text-on-surface-variant/50"
            >
-             Desbloquear
+             {unlocking ? "Verificando..." : "Desbloquear"}
            </button>
         </div>
         
@@ -259,17 +268,6 @@ export default function DossierEspejo() {
       </div>
     );
   }
-
-  const audioUrl = userData?.latestQuestionnaireAudioConclusion ||
-    profileData?.latestQuestionnaireAudioConclusion ||
-    userData?.latestQuestionnaireAudioConclusionUrl ||
-    profileData?.latestQuestionnaireAudioConclusionUrl ||
-    userData?.audioConclusion ||
-    profileData?.audioConclusion ||
-    userData?.latestDossierAudio ||
-    profileData?.latestDossierAudio ||
-    userData?.latestDossierAudioUrl ||
-    profileData?.latestDossierAudioUrl;
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
