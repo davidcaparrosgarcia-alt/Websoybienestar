@@ -337,7 +337,8 @@ export default function DossierEspejo() {
       {/* Detailed Report Section */}
       <section className="w-full relative py-8">
         <div className="absolute inset-0 bg-surface-container-low -skew-y-1 transform origin-top-left z-0 rounded-[3rem] overflow-hidden shadow-sm border border-outline-variant/20">
-          <img src="/images/fondo_diario.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.15] dark:opacity-[0.05] pointer-events-none mix-blend-multiply dark:mix-blend-screen" />
+          <img src="/images/fondo_diario.jpg" alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
+          <div className="absolute inset-0 bg-white/[0.02] dark:bg-black/[0.02] pointer-events-none"></div>
         </div>
         <div className="relative z-10 bg-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-md shadow-2xl rounded-[2rem] p-8 md:p-16 max-w-4xl mx-auto border border-outline-variant/15">
           <div className="flex flex-col md:flex-row justify-between md:items-start mb-12 border-b border-outline-variant/20 pb-8 gap-6">
