@@ -100,6 +100,13 @@ let ai: GoogleGenAI | null = null;
 const API_KEY = process.env.GEMINI_API_KEY;
 const AI_MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
 
+const AI_MODEL_CANDIDATES = [
+  AI_MODEL,
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash"
+].filter((value, index, array) => value && array.indexOf(value) === index);
+
 if (!API_KEY) {
   console.warn(
     "CRITICAL: GEMINI_API_KEY is not defined in environment variables. AI features will be disabled.",
@@ -111,6 +118,17 @@ if (!API_KEY) {
   } catch (e) {
     console.error("ERROR: Failed to initialize GoogleGenAI:", e);
   }
+}
+
+function getGeminiErrorInfo(error: unknown) {
+  const anyError = error as any;
+
+  return {
+    name: error instanceof Error ? error.name : null,
+    message: error instanceof Error ? error.message : String(error),
+    status: anyError?.status || anyError?.code || anyError?.response?.status || null,
+    statusText: anyError?.statusText || anyError?.response?.statusText || null
+  };
 }
 
 function parseGeminiJSON(text: string) {
@@ -278,6 +296,75 @@ app.get("/api/health", (req, res) => {
       !!process.env.QUESTIONNAIRE_BRIDGE_SECRET ||
       !!process.env.SOYBIENESTAR_BRIDGE_SECRET,
     serverFirestoreDatabaseId: SERVER_FIRESTORE_DATABASE_ID,
+  });
+});
+
+app.post("/api/ai-smoke-test", requireAuth, async (req, res) => {
+  const isTester = req.user?.email === "davidcaparrosgarcia@gmail.com";
+
+  if (!isTester) {
+    return res.status(403).json({ error: "No autorizado." });
+  }
+
+  if (!ai) {
+    return res.status(503).json({
+      success: false,
+      stage: "ai_not_initialized",
+      configuredModel: AI_MODEL,
+      aiAvailable: false
+    });
+  }
+
+  const attempts: any[] = [];
+
+  for (const model of AI_MODEL_CANDIDATES) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: "Responde exclusivamente con este JSON: {\"ok\":true,\"service\":\"gemini\"}",
+        config: {
+          maxOutputTokens: 80,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              ok: { type: Type.BOOLEAN },
+              service: { type: Type.STRING }
+            },
+            required: ["ok", "service"]
+          }
+        }
+      });
+
+      const parsed = parseGeminiJSON(response.text || "{}");
+
+      return res.json({
+        success: true,
+        configuredModel: AI_MODEL,
+        workingModel: model,
+        aiAvailable: true,
+        attempts,
+        parsed
+      });
+    } catch (error) {
+      const info = getGeminiErrorInfo(error);
+      attempts.push({
+        model,
+        ...info
+      });
+
+      console.error("AI SMOKE TEST model failed", {
+        model,
+        ...info
+      });
+    }
+  }
+
+  return res.status(500).json({
+    success: false,
+    configuredModel: AI_MODEL,
+    aiAvailable: true,
+    attempts
   });
 });
 
@@ -722,12 +809,15 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 
     res.json({ text: response.text });
   } catch (error) {
-    console.error(
-      "AI /api/session-reply failed: " +
-        (error instanceof Error
-          ? error.message + " " + error.stack
-          : JSON.stringify(error)),
-    );
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/session-reply",
+      uid: req.user?.uid,
+      email: req.user?.email,
+      configuredModel: AI_MODEL,
+      aiAvailable: !!ai,
+      ...info
+    });
     res.status(503).json({
       error:
         "En este momento estamos recibiendo muchas consultas y nuestro sistema está algo saturado. Te agradecemos mucho la paciencia. Por favor, toma un respiro e intenta enviar tu mensaje nuevamente.",
@@ -871,9 +961,14 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
 
     res.json(parsed);
   } catch (error) {
-    console.error("AI /api/report failed", {
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/report",
       uid: req.user?.uid,
-      message: error instanceof Error ? error.message : "Desconocido",
+      email: req.user?.email,
+      configuredModel: AI_MODEL,
+      aiAvailable: !!ai,
+      ...info
     });
     res.status(503).json({
       error:
@@ -939,9 +1034,14 @@ Responde EXCLUSIVAMENTE con un JSON:
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error("AI /api/diary-validate failed", {
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/diary-validate",
       uid: req.user?.uid,
-      message: error instanceof Error ? error.message : "Desconocido",
+      email: req.user?.email,
+      configuredModel: AI_MODEL,
+      aiAvailable: !!ai,
+      ...info
     });
     res.status(500).json({ error: "Failed to validate diary" });
   }
@@ -989,9 +1089,14 @@ Responde EXCLUSIVAMENTE con un JSON:
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error("AI /api/diary-deepen failed", {
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/diary-deepen",
       uid: req.user?.uid,
-      message: error instanceof Error ? error.message : "Desconocido",
+      email: req.user?.email,
+      configuredModel: AI_MODEL,
+      aiAvailable: !!ai,
+      ...info
     });
     res.status(500).json({ error: "Failed to deepen emotion diary" });
   }
@@ -1049,9 +1154,14 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
     const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
-    console.error("AI /api/weekly-goal failed", {
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/weekly-goal",
       uid: req.user?.uid,
-      message: error instanceof Error ? error.message : "Desconocido",
+      email: req.user?.email,
+      configuredModel: AI_MODEL,
+      aiAvailable: !!ai,
+      ...info
     });
     res.status(500).json({ error: "Failed to generate weekly goal" });
   }
