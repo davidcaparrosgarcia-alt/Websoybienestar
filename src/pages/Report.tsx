@@ -283,20 +283,32 @@ export default function Report() {
     ...(userData || {}),
   };
 
+  const questionnaireResetRequired =
+    mergedUserState?.questionnaireStatus === "reset_required" ||
+    mergedUserState?.questionnaireRequestStatus === "reset_required";
+
   const hasConsultation =
     !!mergedUserState?.hasDoneConsultation || !!reportData;
   const questionnaireRequested =
-    !!mergedUserState?.lastQuestionnaireRequestAt ||
-    !!mergedUserState?.latestQuestionnaireRequest;
+    !questionnaireResetRequired &&
+    (
+      !!mergedUserState?.lastQuestionnaireRequestAt ||
+      !!mergedUserState?.latestQuestionnaireRequest
+    );
   const questionnaireCompleted =
-    !!mergedUserState?.hasDoneCuestionario ||
-    ["completed", "concluded", "finalized", "completed_pending_dossier", "dossier_available"].includes(mergedUserState?.questionnaireStatus || "");
+    !questionnaireResetRequired &&
+    (
+      !!mergedUserState?.hasDoneCuestionario ||
+      ["completed", "concluded", "finalized", "completed_pending_dossier", "dossier_available"].includes(mergedUserState?.questionnaireStatus || "")
+    );
     
   const questionnaireInProgressOrRequested =
+    !questionnaireResetRequired &&
     ["requested", "sent", "in_progress"].includes(mergedUserState?.questionnaireStatus || "");
   const dossierAvailable =
-    !!mergedUserState?.dossierAvailableAt || !!mergedUserState?.latestDossier;
-  const dossierViewed = !!mergedUserState?.dossierViewedAt;
+    !questionnaireResetRequired &&
+    (!!mergedUserState?.dossierAvailableAt || !!mergedUserState?.latestDossier);
+  const dossierViewed = !questionnaireResetRequired && !!mergedUserState?.dossierViewedAt;
 
   let activeNextStep = "consulta";
   if (!hasConsultation) activeNextStep = "consulta";
@@ -306,6 +318,16 @@ export default function Report() {
     activeNextStep = "dossier";
   else if (dossierAvailable && !dossierViewed) activeNextStep = "dossier";
   else if (dossierViewed) activeNextStep = "validacion";
+
+  const dossierButtonLabel = (() => {
+    if (!hasConsultation) return "Realizar consulta gratuita";
+    if (questionnaireResetRequired) return "Solicitar Cuestionario Espejo";
+    if (hasConsultation && !questionnaireCompleted && !questionnaireInProgressOrRequested) return "Solicitar Cuestionario Espejo";
+    if (hasConsultation && questionnaireInProgressOrRequested) return "Estado Cuestionario";
+    if (questionnaireCompleted && !dossierAvailable) return "Dossier en preparación";
+    if (dossierAvailable) return "Acceder al dossier";
+    return "Solicitar Cuestionario Espejo";
+  })();
 
   if (isAuthorized === null || isLoading) {
     return (
@@ -593,6 +615,8 @@ export default function Report() {
                       e.stopPropagation();
                       if (!hasConsultation) {
                         navigate("/session");
+                      } else if (questionnaireResetRequired) {
+                        setIsNextStepsModalOpen(true);
                       } else if (hasConsultation && !questionnaireCompleted && !questionnaireInProgressOrRequested) {
                         setIsNextStepsModalOpen(true);
                       } else if ((hasConsultation && questionnaireInProgressOrRequested) || (questionnaireCompleted && !dossierAvailable)) {
@@ -608,19 +632,7 @@ export default function Report() {
                         : "bg-primary text-on-primary hover:bg-primary-container hover:text-primary shadow-md hover:scale-105 cursor-pointer"
                     }`}
                   >
-                    {!hasConsultation && "Realizar consulta gratuita"}
-                    {hasConsultation &&
-                      !questionnaireCompleted &&
-                      !questionnaireInProgressOrRequested &&
-                      "Solicitar Cuestionario Espejo"}
-                    {hasConsultation &&
-                      !questionnaireCompleted &&
-                      questionnaireInProgressOrRequested &&
-                      "Estado Cuestionario"}
-                    {questionnaireCompleted &&
-                      !dossierAvailable &&
-                      "Dossier en preparación"}
-                    {dossierAvailable && "Acceder al dossier"}
+                    {dossierButtonLabel}
                   </button>
                   {user?.email === "davidcaparrosgarcia@gmail.com" && (
                     <button

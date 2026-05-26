@@ -2180,7 +2180,26 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
       }
     } else if (payload.event === "questionnaire_deleted") {
       updatePayload.questionnaireStatus = "reset_required";
+      updatePayload.questionnaireRequestStatus = "reset_required";
+      updatePayload.questionnaireDeliveryMode = null;
       updatePayload.questionnaireDeletedAt = now;
+      updatePayload.questionnaireResetRequiredAt = now;
+
+      updatePayload.latestQuestionnaireDirectUrl = null;
+      updatePayload.latestQuestionnairePatientId = null;
+      updatePayload.linkedQuestionnairePatientId = null;
+      updatePayload.latestQuestionnaireAccessCode = null;
+      updatePayload.questionnaireAccessCode = null;
+      updatePayload.latestDossierAccessCode = null;
+      updatePayload.lastQuestionnaireProposedAccessCode = null;
+
+      updatePayload.dossierAvailableAt = null;
+      updatePayload.dossierViewedAt = null;
+      updatePayload.latestDossier = null;
+      updatePayload.latestDossierInternalContext = null;
+      updatePayload.latestQuestionnaireAudioConclusion = null;
+      updatePayload.latestQuestionnaireDossierReceivedAt = null;
+      updatePayload.latestQuestionnaireDossierDateConclusionSent = null;
     }
 
     await targetUserRef.set(updatePayload, { merge: true });

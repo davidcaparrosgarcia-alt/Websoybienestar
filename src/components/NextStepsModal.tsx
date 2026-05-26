@@ -52,6 +52,8 @@ export default function NextStepsModal({
     setForceQuestionnaireRequestForm(false);
   };
 
+  const questionnaireRequestStatus = fullUserData?.questionnaireRequestStatus || null;
+
   useEffect(() => {
     setEmailValue(initialEmailValue);
     setPhoneValue(initialPhoneValue);
@@ -365,7 +367,63 @@ export default function NextStepsModal({
                    Ir a la Consulta Gratuita
                  </button>
               </div>
-            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "dossier_available" || questionnaireStatus === "concluded" || dossierViewedAt) ? (
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "reset_required" || questionnaireRequestStatus === "reset_required") ? (
+              <div className="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30 rounded-2xl flex flex-col gap-4">
+                <p className="text-sm text-on-surface-variant leading-relaxed">
+                  Tu solicitud anterior de Cuestionario Espejo ya no está activa. Si deseas continuar, inicia una nueva valoración para actualizar tu situación actual.
+                </p>
+                <button 
+                  onClick={async () => {
+                    if (user?.uid) {
+                      await setDoc(doc(db, "users", user.uid), {
+                        questionnaireStatus: null,
+                        questionnaireRequestStatus: null,
+                        questionnaireDeliveryMode: null,
+                        latestQuestionnaireDirectUrl: null,
+                        latestQuestionnairePatientId: null,
+                        linkedQuestionnairePatientId: null,
+                        latestQuestionnaireResendStatus: null,
+                        questionnaireResetClearedAt: serverTimestamp()
+                      }, { merge: true });
+
+                      await setDoc(doc(db, "userProfiles", user.uid), {
+                        questionnaireStatus: null,
+                        questionnaireRequestStatus: null,
+                        questionnaireDeliveryMode: null,
+                        latestQuestionnaireDirectUrl: null,
+                        latestQuestionnairePatientId: null,
+                        linkedQuestionnairePatientId: null,
+                        latestQuestionnaireResendStatus: null,
+                        questionnaireResetClearedAt: serverTimestamp()
+                      }, { merge: true });
+                    }
+                    
+                    if (typeof setQuestionnaireStatus === "function") {
+                       setQuestionnaireStatus(null);
+                    }
+                    if (typeof setDossierViewedAt === "function") {
+                       setDossierViewedAt(null);
+                    }
+                    if (typeof setFullUserData === "function") {
+                       setFullUserData(prev => ({
+                         ...(prev || {}),
+                         questionnaireStatus: null,
+                         questionnaireRequestStatus: null,
+                         dossierAvailableAt: null,
+                         dossierViewedAt: null,
+                         latestDossier: null
+                       }));
+                    }
+                    
+                    resetQuestionnaireLocalState();
+                    setForceQuestionnaireRequestForm(true);
+                  }}
+                  className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors"
+                >
+                  Iniciar nueva valoración
+                </button>
+              </div>
+            ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "dossier_available" || questionnaireStatus === "concluded" || dossierViewedAt) && questionnaireStatus !== "reset_required" && questionnaireRequestStatus !== "reset_required" ? (
               <div className="mt-4 p-5 bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 rounded-2xl flex flex-col gap-4">
                 <p className="text-sm text-on-surface-variant leading-relaxed font-bold text-green-700 dark:text-green-300">
                   {dossierViewedAt ? "Dosier leído" : "Tu dosier está disponible para lectura."}
@@ -492,44 +550,6 @@ export default function NextStepsModal({
                     <p className={`text-xs ${resendMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{resendMessage.text}</p>
                   )}
                 </div>
-              </div>
-            ) : !forceQuestionnaireRequestForm && questionnaireStatus === "reset_required" ? (
-              <div className="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30 rounded-2xl flex flex-col gap-4">
-                <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Tu solicitud anterior de Cuestionario Espejo ya no está activa. Si deseas continuar, inicia una nueva valoración para actualizar tu situación actual.
-                </p>
-                <button 
-                  onClick={async () => {
-                    if (user?.uid) {
-                      await setDoc(doc(db, "users", user.uid), {
-                        questionnaireStatus: null,
-                        questionnaireRequestStatus: null,
-                        questionnaireDeliveryMode: null,
-                        latestQuestionnaireDirectUrl: null,
-                        latestQuestionnairePatientId: null,
-                        linkedQuestionnairePatientId: null,
-                        latestQuestionnaireResendStatus: null,
-                        questionnaireResetClearedAt: serverTimestamp()
-                      }, { merge: true });
-
-                      await setDoc(doc(db, "userProfiles", user.uid), {
-                        questionnaireStatus: null,
-                        questionnaireRequestStatus: null,
-                        questionnaireDeliveryMode: null,
-                        latestQuestionnaireDirectUrl: null,
-                        latestQuestionnairePatientId: null,
-                        linkedQuestionnairePatientId: null,
-                        latestQuestionnaireResendStatus: null,
-                        questionnaireResetClearedAt: serverTimestamp()
-                      }, { merge: true });
-                    }
-                    resetQuestionnaireLocalState();
-                    setForceQuestionnaireRequestForm(true);
-                  }}
-                  className="bg-primary hover:bg-primary-container text-white py-2 px-6 rounded-full text-sm font-bold shadow self-start transition-colors"
-                >
-                  Iniciar nueva valoración
-                </button>
               </div>
             ) : !forceQuestionnaireRequestForm && (questionnaireStatus === "requested" && !questionnaireSuccessData?.questionnaireUrl) ? (
               <div className="mt-4 p-5 bg-surface-container-low border border-outline-variant/30 rounded-2xl flex flex-col gap-4">
