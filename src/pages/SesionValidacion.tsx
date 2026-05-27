@@ -308,7 +308,7 @@ export default function SesionValidacion() {
                     <span className="font-headline text-xl text-primary">Pago Único</span>
                     <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
                   </div>
-                  <p className="text-4xl font-headline text-primary mb-2">€{plan.prices.unico}</p>
+                  <p className="text-4xl font-headline text-primary mb-2">{plan.prices.unico} €</p>
                   <p className="text-sm font-body text-on-surface-variant">Acceso completo al programa sin compromisos de cuotas mensuales.</p>
                 </div>
               </label>
@@ -328,10 +328,10 @@ export default function SesionValidacion() {
                     <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
                   </div>
                   <p className="text-4xl font-headline text-primary mb-2">
-                    €{plan.prices.reserva} <span className="text-base font-body text-on-surface-variant">hoy</span>
+                    {plan.prices.reserva} € <span className="text-base font-body text-on-surface-variant">de reserva hoy</span>
                   </p>
                   <p className="text-sm font-body text-on-surface-variant leading-relaxed">
-                    Abona ahora la reserva de espacio. Las 3 mensualidades de {plan.prices.cuotas}€ se gestionarán a posteriori.
+                    Abona ahora la reserva de espacio. Las 3 mensualidades de {plan.prices.cuotas} € se gestionarán a posteriori.
                   </p>
                 </div>
               </label>
@@ -420,7 +420,7 @@ export default function SesionValidacion() {
                     <>
                       <h4 className="font-label font-bold text-primary">Datos para la transferencia</h4>
                       <p className="text-sm text-on-surface-variant font-body">
-                        Realiza la transferencia usando los siguientes datos. Es <strong>muy importante</strong> que incluyas el concepto indicado para que podamos validarla automáticamente.
+                        Realiza la transferencia usando los siguientes datos. Es <strong>muy importante</strong> que incluyas el concepto indicado para que podamos asociarla correctamente.
                       </p>
                       <div className="grid gap-4 mt-6">
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
@@ -440,7 +440,7 @@ export default function SesionValidacion() {
                         </div>
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
                           <span className="text-sm font-label text-on-surface-variant">Importe</span>
-                          <span className="font-mono text-sm font-bold text-primary">€{bankData.amountDueToday}</span>
+                          <span className="font-mono text-sm font-bold text-primary">{bankData.amountDueToday} € {paymentMode === "unico" ? "pago único" : "de reserva"}</span>
                         </div>
                       </div>
                     </>
@@ -471,7 +471,10 @@ export default function SesionValidacion() {
             <div className="mt-8 bg-surface-container-lowest p-8 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-8 shadow-lg border border-outline-variant/10">
               <div>
                 <p className="text-sm text-on-surface-variant font-label uppercase tracking-widest mb-1">Total a abonar hoy</p>
-                <p className="font-headline text-4xl text-primary">€{totalToPay}</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="font-headline text-4xl text-primary">{totalToPay} €</p>
+                  <span className="text-sm text-on-surface-variant bg-surface-container px-2 py-1 rounded-md">{paymentMode === "unico" ? "pago único" : "de reserva"}</span>
+                </div>
               </div>
               
               {paymentMethod === "tarjeta" && (
