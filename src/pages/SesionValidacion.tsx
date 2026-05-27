@@ -53,7 +53,7 @@ export default function SesionValidacion() {
   useEffect(() => {
     const payment = queryParams.get("payment");
     if (payment === "success") {
-      setSuccessMessage("Pago confirmado. Hemos registrado tu reserva.");
+      setSuccessMessage("Pago realizado. Estamos confirmando el estado del pago de forma segura.");
     } else if (payment === "cancelled") {
       setErrorMessage("El pago se canceló. Puedes intentarlo de nuevo cuando quieras.");
     }
@@ -133,9 +133,7 @@ export default function SesionValidacion() {
         },
         body: JSON.stringify({
           planId,
-          paymentMode: mode,
-          uid: user?.uid,
-          email: user?.email
+          paymentMode: mode
         }),
       });
       const data = await response.json();

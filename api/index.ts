@@ -2357,9 +2357,15 @@ const PLAN_DETAILS: Record<string, { name: string; oneTimeAmount: number; reserv
   "completo": { name: "Plan Completo", oneTimeAmount: 220000, reservationAmount: 40000, currency: "eur" }
 };
 
-app.post("/api/create-checkout-session", async (req, res) => {
+app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
   try {
-    const { planId, paymentMode, uid, email } = req.body;
+    const { planId, paymentMode } = req.body;
+    const uid = req.user?.uid;
+    const email = req.user?.email || "";
+
+    if (!uid) {
+      return res.status(401).json({ error: "Usuario no autenticado." });
+    }
 
     if (!stripe) {
       return res.status(500).json({ error: "Stripe no está configurado." });
@@ -2392,16 +2398,66 @@ app.post("/api/create-checkout-session", async (req, res) => {
       ],
       customer_email: email || undefined,
       metadata: {
-        uid: uid || "",
-        email: email || "",
+        uid,
+        email,
         planId,
         planName: plan.name,
         paymentMode,
-        source: "sesion-validacion"
+        source: "sesion-validacion",
+        paymentMethod: "card"
       },
       success_url: `${APP_URL}/sesion-validacion?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/sesion-validacion?payment=cancelled&plan=${planId}`,
     });
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const now = Date.now();
+
+    const intentPayload = {
+      id: session.id,
+      source: "soybienestar",
+      type: "program_card_payment",
+      planId,
+      planName: plan.name,
+      paymentMode,
+      amountDueToday: amount / 100,
+      amountCents: amount,
+      currency: plan.currency.toUpperCase(),
+      paymentMethod: "card",
+      paymentStatus: "checkout_created",
+      stripeSessionId: session.id,
+      email,
+      uid,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const userUpdate = {
+      selectedProgram: planId,
+      selectedProgramLabel: plan.name,
+      selectedProgramPaymentMode: paymentMode,
+      selectedProgramPaymentMethod: "card",
+      selectedProgramPaymentStatus: "checkout_created",
+      selectedProgramAmountDueToday: amount / 100,
+      selectedProgramStripeSessionId: session.id,
+      selectedProgramPaymentIntentId: session.id,
+      selectedProgramUpdatedAt: now
+    };
+
+    const batch = db.batch();
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+    const intentRef = userRef.collection("paymentIntents").doc(session.id);
+    
+    batch.set(intentRef, intentPayload);
+    batch.set(userRef, userUpdate, { merge: true });
+    batch.set(profileRef, userUpdate, { merge: true });
+    
+    await batch.commit();
 
     res.json({ url: session.url });
   } catch (error) {
@@ -2640,7 +2696,10 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
       const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
       const metadata = session.metadata || {};
 
-      await db.collection("paymentSessions").doc(session.id).set({
+      const batch = db.batch();
+
+      const sessionRef = db.collection("paymentSessions").doc(session.id);
+      batch.set(sessionRef, {
         status: "paid",
         paymentMethod: "card",
         stripeSessionId: session.id,
@@ -2654,6 +2713,37 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
         source: metadata.source || null,
         paidAt: Date.now()
       }, { merge: true });
+
+      const uid = metadata.uid;
+      if (uid) {
+        const now = Date.now();
+        const userRef = db.collection("users").doc(uid);
+        const profileRef = db.collection("userProfiles").doc(uid);
+        const intentRef = userRef.collection("paymentIntents").doc(session.id);
+
+        batch.update(intentRef, {
+          paymentStatus: "confirmed",
+          stripePaymentStatus: session.payment_status,
+          paidAt: now,
+          updatedAt: now,
+          stripeCustomerEmail: session.customer_details?.email || metadata.email || null,
+          amountPaidCents: session.amount_total || null,
+          amountPaid: session.amount_total ? session.amount_total / 100 : null
+        });
+
+        const userUpdate = {
+          selectedProgramPaymentStatus: "confirmed",
+          selectedProgramPaymentMethod: "card",
+          selectedProgramPaidAt: now,
+          selectedProgramStripeSessionId: session.id,
+          selectedProgramUpdatedAt: now
+        };
+
+        batch.set(userRef, userUpdate, { merge: true });
+        batch.set(profileRef, userUpdate, { merge: true });
+      }
+
+      await batch.commit();
     }
 
     res.json({ received: true });
