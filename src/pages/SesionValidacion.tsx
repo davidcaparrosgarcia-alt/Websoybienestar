@@ -419,7 +419,7 @@ export default function SesionValidacion() {
               {paymentMethod === "tarjeta" && (
                 <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/20 flex flex-col items-center justify-center text-center space-y-4">
                   <span className="material-symbols-outlined text-4xl text-primary/40">lock</span>
-                  <p className="font-body text-on-surface-variant">Serás redirigido a la pasarela de pago segura de Stripe para completar la transacción.</p>
+                  <p className="font-body text-on-surface-variant">Para pagos con tarjeta, selecciona Realizar pago con tarjeta y confirma operación desde una plataforma segura.</p>
                 </div>
               )}
 
@@ -531,7 +531,7 @@ export default function SesionValidacion() {
                   disabled={loading}
                   className="w-full md:w-auto bg-primary text-on-primary rounded-xl py-4 px-10 font-bold font-label text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? "Preparando pago seguro..." : "Continuar a pago seguro"} <span className="material-symbols-outlined">lock</span>
+                  {loading ? "Preparando pago seguro..." : "Realizar pago con tarjeta"} <span className="material-symbols-outlined">lock</span>
                 </button>
               )}
 
