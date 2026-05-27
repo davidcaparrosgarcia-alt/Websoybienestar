@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import SEO from "../components/SEO";
 
 export default function SesionValidacion() {
@@ -61,6 +63,54 @@ export default function SesionValidacion() {
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
+
+  useEffect(() => {
+    async function loadUserData() {
+      if (!user?.uid) return;
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const profileRef = doc(db, "userProfiles", user.uid);
+        const [userSnap, profileSnap] = await Promise.all([getDoc(userRef), getDoc(profileRef)]);
+        
+        const userData = userSnap.exists() ? userSnap.data() : {};
+        const profileData = profileSnap.exists() ? profileSnap.data() : {};
+        
+        const mergedData = { ...profileData, ...userData }; // userData takes precedence
+        
+        setFullName(prev => {
+          if (prev) return prev;
+          return mergedData.fullName || mergedData.nombre || mergedData.displayName || mergedData.name || user.displayName || "";
+        });
+        
+        setPhone(prev => {
+          if (prev) return prev;
+          let p = mergedData.contactPhone || mergedData.telefono || mergedData.phone || mergedData.whatsappPhone || mergedData.smsPhone || "";
+          if (p && !p.startsWith("+") && mergedData.contactPhoneCountryCode) {
+            p = mergedData.contactPhoneCountryCode + " " + p;
+          }
+          return p;
+        });
+        
+        setAge(prev => {
+          if (prev) return prev;
+          return mergedData.edad || mergedData.profileAge || mergedData.age || mergedData.birthDate || "";
+        });
+        
+        setSex(prev => {
+          if (prev) return prev;
+          let s = String(mergedData.sexo || mergedData.gender || mergedData.sex || mergedData.genero || "").toLowerCase();
+          if (["mujer", "femenino", "female", "fem"].includes(s)) return "femenino";
+          if (["hombre", "masculino", "male", "masc"].includes(s)) return "masculino";
+          if (["prefiero_no_definirme", "prefiero_no_decirlo", "no_definido"].includes(s)) return "prefiero_no_decirlo";
+          if (s === "otro") return "otro";
+          return "";
+        });
+      } catch (error) {
+        console.error("Error loading user data for checkout:", error);
+      }
+    }
+    loadUserData();
+  }, [user]);
 
   const [bankTransferState, setBankTransferState] = useState<"form" | "details" | "done">("form");
   const [bankData, setBankData] = useState<any>(null);

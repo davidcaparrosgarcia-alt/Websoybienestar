@@ -132,12 +132,16 @@ export default function NextStepsModal({
     }
     
     let telefono = "";
+    const normalizedPhone = phoneValue.trim();
+    
     if (whatsappChecked || smsChecked) {
-      telefono = phoneValue;
+      telefono = normalizedPhone;
       if (!telefono || telefono === "+34" || telefono.trim().length < 5) {
         setQuestionnaireRequestMessage({ text: "Para recibir el enlace por WhatsApp o SMS necesitamos que indiques tu número de teléfono.", type: "error" });
         return;
       }
+    } else if (normalizedPhone && normalizedPhone !== "+34" && normalizedPhone.length >= 5) {
+      telefono = normalizedPhone;
     }
 
     if (!user) {
