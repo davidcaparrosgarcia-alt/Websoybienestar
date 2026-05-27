@@ -469,28 +469,28 @@ export default function SesionValidacion() {
                   {bankTransferState === "details" && bankData && (
                     <>
                       <h4 className="font-label font-bold text-primary">Datos para la transferencia</h4>
-                      <p className="text-sm text-on-surface-variant font-body">
+                      <p className="text-base text-on-surface-variant font-body">
                         Realiza la transferencia usando los siguientes datos. Es <strong>muy importante</strong> que incluyas el concepto indicado para que podamos asociarla correctamente.
                       </p>
                       <div className="grid gap-4 mt-6">
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
-                          <span className="text-sm font-label text-on-surface-variant">Titular</span>
+                          <span className="text-base font-label text-on-surface-variant">Titular</span>
                           <div className="text-right">
-                            <div className="font-mono text-sm text-primary font-bold">{bankData.accountHolder}</div>
-                            <div className="text-xs text-on-surface-variant mt-1">{bankData.accountHolderRole}</div>
+                            <div className="font-mono text-lg text-primary font-bold">{bankData.accountHolder}</div>
+                            <div className="text-sm text-on-surface-variant mt-1">{bankData.accountHolderRole}</div>
                           </div>
                         </div>
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
-                          <span className="text-sm font-label text-on-surface-variant">IBAN</span>
-                          <span className="font-mono text-sm font-bold text-primary">{bankData.iban}</span>
+                          <span className="text-base font-label text-on-surface-variant">IBAN</span>
+                          <span className="font-mono text-lg font-bold text-primary">{bankData.iban}</span>
                         </div>
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
-                          <span className="text-sm font-label text-on-surface-variant">Concepto requerido</span>
-                          <span className="font-mono text-sm bg-primary/10 text-primary px-3 py-1.5 rounded-lg border border-primary/20">{bankData.bankConcept}</span>
+                          <span className="text-base font-label text-on-surface-variant">Concepto requerido</span>
+                          <span className="font-mono text-lg bg-primary/10 text-primary px-3 py-1.5 rounded-lg border border-primary/20">{bankData.bankConcept}</span>
                         </div>
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
-                          <span className="text-sm font-label text-on-surface-variant">Importe</span>
-                          <span className="font-mono text-sm font-bold text-primary">{bankData.amountDueToday} € {paymentMode === "unico" ? "pago único" : "de reserva"}</span>
+                          <span className="text-base font-label text-on-surface-variant">Importe</span>
+                          <span className="font-mono text-lg font-bold text-primary">{bankData.amountDueToday} €</span>
                         </div>
                       </div>
                     </>
@@ -553,7 +553,7 @@ export default function SesionValidacion() {
                   disabled={loading}
                   className="w-full md:w-auto bg-primary text-on-primary rounded-xl py-4 px-10 font-bold font-label text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? "Confirmando..." : "Ya he realizado la transferencia"} <span className="material-symbols-outlined">check_circle</span>
+                  {loading ? "Confirmando..." : "Avisar de que he realizado la transferencia"} <span className="material-symbols-outlined">notifications</span>
                 </button>
               )}
               
