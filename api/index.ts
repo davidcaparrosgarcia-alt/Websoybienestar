@@ -2410,20 +2410,68 @@ app.post("/api/create-checkout-session", async (req, res) => {
   }
 });
 
-app.post("/api/register-bank-transfer-intent", async (req, res) => {
-  try {
-    const { planId, paymentMode, uid, email, concept } = req.body;
+const PROGRAM_PLANS: Record<string, { label: string; full: number; reservation: number }> = {
+  "basico": { label: "BASICO", full: 550, reservation: 90 },
+  "intermedio": { label: "INTERMEDIO", full: 1700, reservation: 290 },
+  "completo": { label: "COMPLETO", full: 2200, reservation: 400 }
+};
 
-    if (!PLAN_DETAILS[planId]) {
+const BANK_TRANSFER_CONFIG = {
+  accountHolder: "Maria Bàdenas Nicolás",
+  accountHolderRole: "Gestora responsable del acompañamiento terapéutico SoyBienestar",
+  iban: "ES00 0000 0000 0000 0000 0000"
+};
+
+function normalizeBankConceptPart(value: string) {
+  return String(value)
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .toUpperCase();
+}
+
+function buildBankTransferConcept(planLabel: string, fullName: string, phone: string) {
+  const parts = fullName.trim().split(/\s+/);
+  const nombre = normalizeBankConceptPart(parts[0] || "");
+  const primerApellido = normalizeBankConceptPart(parts[1] || "");
+  
+  const numericPhone = phone.replace(/\D/g, "");
+  const utlimos4Telefono = numericPhone.slice(-4);
+  
+  return `SB ${planLabel} ${nombre} ${primerApellido} ${utlimos4Telefono}`.trim();
+}
+
+app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => {
+  try {
+    const { planId, paymentMode, fullName, phone, age, sex } = req.body;
+    const uid = req.user?.uid;
+    const email = req.user?.email || "";
+
+    if (!uid) {
+      return res.status(401).json({ error: "Usuario no autenticado." });
+    }
+
+    if (!PROGRAM_PLANS[planId]) {
       return res.status(400).json({ error: "Plan inválido." });
     }
 
     if (paymentMode !== "full" && paymentMode !== "reservation") {
       return res.status(400).json({ error: "Modo de pago inválido." });
     }
+    
+    if (!fullName || fullName.trim().split(/\s+/).length < 2) {
+      return res.status(400).json({ error: "El nombre completo debe tener al menos nombre y primer apellido." });
+    }
+    
+    const numericPhone = (phone || "").replace(/\D/g, "");
+    if (numericPhone.length < 4) {
+      return res.status(400).json({ error: "El teléfono debe tener al menos 4 dígitos para generar el concepto bancario." });
+    }
 
-    const plan = PLAN_DETAILS[planId];
-    const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
+    const plan = PROGRAM_PLANS[planId];
+    const amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
+    const bankConcept = buildBankTransferConcept(plan.label, fullName, numericPhone);
 
     if (!admin.apps.length) {
       return res.status(500).json({ error: "Firebase Admin no está configurado." });
@@ -2431,26 +2479,136 @@ app.post("/api/register-bank-transfer-intent", async (req, res) => {
 
     const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
     const now = Date.now();
+    
+    const intentId = `bt_${uid}_${now}`;
 
-    await db.collection("paymentSessions").add({
-      uid: uid || null,
-      email: email || null,
+    const intentPayload = {
+      id: intentId,
+      source: "soybienestar",
+      type: "program_bank_transfer",
       planId,
-      planName: plan.name,
+      planLabel: plan.label,
       paymentMode,
+      amountDueToday,
+      currency: "EUR",
       paymentMethod: "bank_transfer",
-      amount,
-      currency: plan.currency,
-      concept: concept || "",
-      status: "awaiting_manual_validation",
+      paymentStatus: "bank_details_shown",
+      bankConcept,
+      accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
+      accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
+      iban: BANK_TRANSFER_CONFIG.iban,
+      fullName,
+      phone,
+      age,
+      sex,
+      email,
+      uid,
       createdAt: now,
-      updatedAt: now,
-    });
+      updatedAt: now
+    };
 
-    res.json({ ok: true, status: "awaiting_manual_validation" });
+    const userPayload = {
+      nombre: fullName,
+      fullName,
+      telefono: phone,
+      contactPhone: phone,
+      edad: age,
+      profileAge: age,
+      sexo: sex,
+      gender: sex,
+      selectedProgram: planId,
+      selectedProgramLabel: plan.label,
+      selectedProgramPaymentMode: paymentMode,
+      selectedProgramPaymentStatus: "bank_details_shown",
+      selectedProgramBankConcept: bankConcept,
+      selectedProgramAmountDueToday: amountDueToday,
+      selectedProgramPaymentIntentId: intentId,
+      selectedProgramUpdatedAt: now,
+      paymentProfileUpdatedAt: now
+    };
+
+    const batch = db.batch();
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+    const intentRef = userRef.collection("paymentIntents").doc(intentId);
+    
+    batch.set(intentRef, intentPayload);
+    batch.set(userRef, userPayload, { merge: true });
+    batch.set(profileRef, userPayload, { merge: true });
+    
+    await batch.commit();
+
+    res.json({
+      ok: true,
+      paymentIntentId: intentId,
+      bankConcept,
+      amountDueToday,
+      accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
+      accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
+      iban: BANK_TRANSFER_CONFIG.iban,
+      paymentStatus: "bank_details_shown"
+    });
   } catch (error) {
     console.error("Error registering bank transfer:", error);
     res.status(500).json({ error: "Error interno al registrar la intención." });
+  }
+});
+
+app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
+  try {
+    const { paymentIntentId } = req.body;
+    const uid = req.user?.uid;
+
+    if (!uid) {
+      return res.status(401).json({ error: "Usuario no autenticado." });
+    }
+    
+    if (!paymentIntentId) {
+      return res.status(400).json({ error: "Falta el identificador del pago." });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const now = Date.now();
+    
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+    const intentRef = userRef.collection("paymentIntents").doc(paymentIntentId);
+    
+    const intentDoc = await intentRef.get();
+    if (!intentDoc.exists) {
+      return res.status(404).json({ error: "Intención de pago no encontrada." });
+    }
+    
+    const batch = db.batch();
+    
+    batch.update(intentRef, {
+      paymentStatus: "pending_bank_review",
+      transferMarkedDoneAt: now,
+      updatedAt: now
+    });
+    
+    const userUpdate = {
+      selectedProgramPaymentStatus: "pending_bank_review",
+      selectedProgramTransferMarkedDoneAt: now,
+      selectedProgramUpdatedAt: now
+    };
+    
+    batch.set(userRef, userUpdate, { merge: true });
+    batch.set(profileRef, userUpdate, { merge: true });
+    
+    await batch.commit();
+
+    res.json({
+      ok: true,
+      paymentStatus: "pending_bank_review"
+    });
+  } catch (error) {
+    console.error("Error marking bank transfer as done:", error);
+    res.status(500).json({ error: "Error interno al actualizar el estado de la transferencia." });
   }
 });
 
