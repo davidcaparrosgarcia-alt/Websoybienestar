@@ -2721,15 +2721,26 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
         const profileRef = db.collection("userProfiles").doc(uid);
         const intentRef = userRef.collection("paymentIntents").doc(session.id);
 
-        batch.update(intentRef, {
+        batch.set(intentRef, {
+          id: session.id,
+          source: "soybienestar",
+          type: "program_card_payment",
+          planId: metadata.planId || null,
+          planName: metadata.planName || null,
+          paymentMode: metadata.paymentMode || null,
+          paymentMethod: "card",
           paymentStatus: "confirmed",
           stripePaymentStatus: session.payment_status,
+          stripeSessionId: session.id,
+          uid,
+          email: metadata.email || session.customer_details?.email || null,
           paidAt: now,
           updatedAt: now,
           stripeCustomerEmail: session.customer_details?.email || metadata.email || null,
           amountPaidCents: session.amount_total || null,
-          amountPaid: session.amount_total ? session.amount_total / 100 : null
-        });
+          amountPaid: session.amount_total ? session.amount_total / 100 : null,
+          currency: session.currency ? session.currency.toUpperCase() : null
+        }, { merge: true });
 
         const userUpdate = {
           selectedProgramPaymentStatus: "confirmed",
