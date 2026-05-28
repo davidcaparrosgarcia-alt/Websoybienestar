@@ -675,121 +675,141 @@ export default function Resources() {
         </section>
 
         {/* Herramienta Estado Actual */}
-        <section className="mt-8 md:mt-12 py-12 border-t border-outline-variant/10">
-          <div className="max-w-4xl mx-auto relative overflow-hidden rounded-[2.5rem] bg-surface-container-lowest shadow-2xl border border-outline-variant/10 min-h-[400px]">
-            <img alt="Estado actual" className="absolute inset-0 w-full h-full object-cover" src="/images/fondo_estado_actual.jpg" />
-            <div className="absolute inset-0 bg-black/60 md:bg-black/40 backdrop-blur-sm transition-all duration-700"></div>
+        <section className="mt-8 md:mt-12 py-16 border-t border-outline-variant/10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
-            <div className="relative z-10 flex flex-col justify-center h-full min-h-[400px] p-8 md:p-16 text-white w-full">
+            <div>
+              <p className="text-primary tracking-[0.2em] uppercase text-xs font-bold mb-4">
+                Autoobservación guiada
+              </p>
+              <h2 className="font-headline text-4xl md:text-5xl text-primary mb-6">
+                Aprender a nombrar lo que ocurre dentro
+              </h2>
+              <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6">
+                Regular una emoción empieza por reconocerla con precisión. Al cruzar cómo te sientes con tu nivel de energía, este ejercicio te ayuda a distinguir si necesitas calma, descanso, acción, foco o simplemente observar sin reaccionar.
+              </p>
+              <p className="text-on-surface-variant text-base font-light leading-relaxed">
+                Cuanto más practicas este escaneo, más entrenas tu capacidad de gestión emocional: dejas de actuar en automático y empiezas a responder con más claridad a lo que realmente necesitas.
+              </p>
+            </div>
+
+            <div className="w-full relative overflow-hidden group rounded-[2.5rem] bg-surface-container-lowest shadow-2xl border border-outline-variant/10 min-h-[400px]">
+              <img alt="Estado actual" className="absolute inset-0 w-full h-full object-cover" src="/images/fondo_estado_actual.jpg" />
+              <div className="absolute inset-0 bg-black/60 md:bg-black/40 backdrop-blur-sm transition-all duration-700"></div>
               
-              {estadoPaso === "inicio" && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <h3 className="font-headline text-4xl md:text-5xl text-white mb-6">Estado actual</h3>
-                  <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-xl">
-                    Observa cómo te sientes y cuánta energía tienes ahora. Este ejercicio entrena tu capacidad de reconocer tu estado interno con más claridad.
-                  </p>
-                  <div className="mt-10 text-right">
-                    <button 
-                      onClick={() => setEstadoPaso("sentimiento")}
-                      className="bg-white text-black px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-all shadow-lg"
-                    >
-                      Iniciar
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {estadoPaso === "sentimiento" && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
-                  <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cómo te sientes ahora?</h3>
-                  <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
-                    0 = Sufrimiento / incomodidad profunda <br/>
-                    10 = Bienestar absoluto
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2 md:gap-3">
-                    {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
-                      <button 
-                        key={n}
-                        onClick={() => handleSentimientoSelect(n)}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="mt-12 text-right">
-                    <button 
-                      onClick={resetEstadoActual}
-                      className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
-                    >
-                      Reiniciar
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {estadoPaso === "energia" && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
-                  <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cuál es tu nivel de energía?</h3>
-                  <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
-                    0 = Agotado <br/>
-                    10 = A tope / lleno de energía
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2 md:gap-3">
-                    {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
-                      <button 
-                        key={n}
-                        onClick={() => handleEnergiaSelect(n)}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="mt-12 text-right">
-                    <button 
-                      onClick={resetEstadoActual}
-                      className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
-                    >
-                      Reiniciar
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {estadoPaso === "resultado" && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
-                  {getResultadoEstado() ? (
-                    <>
-                      <p className="text-white/70 uppercase tracking-widest text-xs font-bold mb-3 md:mb-4">
-                        Sentimiento: {valorSentimiento} | Energía: {valorEnergia}
+              <div className="relative z-10 flex flex-col justify-center h-full min-h-[400px] p-8 md:p-16 text-white w-full">
+                
+                {estadoPaso === "inicio" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h3 className="font-headline text-4xl md:text-5xl text-white mb-6">Escaneo Emocional Preciso</h3>
+                    <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                      <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-xl">
+                        Observa cómo te sientes y cuánta energía tienes ahora. Este ejercicio entrena tu capacidad de reconocer tu estado interno con más claridad.
                       </p>
-                      <h3 className="font-headline text-4xl md:text-5xl text-white mb-4 md:mb-6">
-                        {getResultadoEstado()?.sintoma}
-                      </h3>
-                      <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-2xl">
-                        {getResultadoEstado()?.explicacion}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-white">Error al obtener resultado.</p>
-                  )}
-                  
-                  <div className="mt-10 md:mt-12 text-right">
-                    <button 
-                      onClick={resetEstadoActual}
-                      className="bg-white text-black px-8 py-3 rounded-full hover:bg-white/90 font-bold uppercase tracking-widest text-xs transition-all shadow-lg"
-                    >
-                      Reiniciar Autoanálisis
-                    </button>
+                    </div>
+                    <div className="mt-10 text-right">
+                      <button 
+                        onClick={() => setEstadoPaso("sentimiento")}
+                        className="bg-white text-black px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-all shadow-lg"
+                      >
+                        Iniciar
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
+                {estadoPaso === "sentimiento" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                    <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cómo te sientes ahora?</h3>
+                    <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
+                      0 = Sufrimiento / incomodidad profunda <br/>
+                      10 = Bienestar absoluto
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                        <button 
+                          key={n}
+                          onClick={() => handleSentimientoSelect(n)}
+                          className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-12 text-right">
+                      <button 
+                        onClick={resetEstadoActual}
+                        className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
+                      >
+                        Reiniciar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {estadoPaso === "energia" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                    <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cuál es tu nivel de energía?</h3>
+                    <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
+                      0 = Agotado <br/>
+                      10 = A tope / lleno de energía
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                        <button 
+                          key={n}
+                          onClick={() => handleEnergiaSelect(n)}
+                          className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-12 text-right">
+                      <button 
+                        onClick={resetEstadoActual}
+                        className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
+                      >
+                        Reiniciar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {estadoPaso === "resultado" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                    {getResultadoEstado() ? (
+                      <>
+                        <p className="text-white/70 uppercase tracking-widest text-xs font-bold mb-3 md:mb-4">
+                          Sentimiento: {valorSentimiento} | Energía: {valorEnergia}
+                        </p>
+                        <h3 className="font-headline text-4xl md:text-5xl text-white mb-4 md:mb-6">
+                          {getResultadoEstado()?.sintoma}
+                        </h3>
+                        <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-2xl">
+                          {getResultadoEstado()?.explicacion}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-white">Error al obtener resultado.</p>
+                    )}
+                    
+                    <div className="mt-10 md:mt-12 text-right">
+                      <button 
+                        onClick={resetEstadoActual}
+                        className="bg-white text-black px-8 py-3 rounded-full hover:bg-white/90 font-bold uppercase tracking-widest text-xs transition-all shadow-lg"
+                      >
+                        Reiniciar Autoanálisis
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
             </div>
           </div>
         </section>
