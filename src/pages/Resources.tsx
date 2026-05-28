@@ -6,6 +6,130 @@ import { auth } from "../firebase";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
 
+const MATRIZ_ESTADOS = [
+  {"sentimiento":0,"energia":0,"sintoma":"Bloqueo absoluto","explicacion":"Sientes un sufrimiento muy intenso y el cuerpo está sin fuerzas, como si todo pesara demasiado."},
+  {"sentimiento":0,"energia":1,"sintoma":"Bloqueo absoluto","explicacion":"Sientes un sufrimiento muy intenso y el cuerpo está sin fuerzas, como si todo pesara demasiado."},
+  {"sentimiento":0,"energia":2,"sintoma":"Bloqueo absoluto","explicacion":"Sientes un sufrimiento muy intenso y el cuerpo está sin fuerzas, como si todo pesara demasiado."},
+  {"sentimiento":0,"energia":3,"sintoma":"Hundimiento emocional","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":0,"energia":4,"sintoma":"Hundimiento emocional","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":0,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":0,"energia":6,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar muy fuerte junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":0,"energia":7,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar muy fuerte junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":0,"energia":8,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":0,"energia":9,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":0,"energia":10,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":1,"energia":0,"sintoma":"Angustia paralizante","explicacion":"Sientes mucha angustia y muy poca energía, con una sensación de bloqueo difícil de mover."},
+  {"sentimiento":1,"energia":1,"sintoma":"Angustia paralizante","explicacion":"Sientes mucha angustia y muy poca energía, con una sensación de bloqueo difícil de mover."},
+  {"sentimiento":1,"energia":2,"sintoma":"Angustia paralizante","explicacion":"Sientes mucha angustia y muy poca energía, con una sensación de bloqueo difícil de mover."},
+  {"sentimiento":1,"energia":3,"sintoma":"Melancolía profunda","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":1,"energia":4,"sintoma":"Melancolía profunda","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":1,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":1,"energia":6,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar fuerte junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":1,"energia":7,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar fuerte junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":1,"energia":8,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":1,"energia":9,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":1,"energia":10,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":2,"energia":0,"sintoma":"Dolor interno con bloqueo","explicacion":"Hay mucho malestar y casi nada de energía disponible, por lo que reaccionar puede costar bastante."},
+  {"sentimiento":2,"energia":1,"sintoma":"Dolor interno con bloqueo","explicacion":"Hay mucho malestar y casi nada de energía disponible, por lo que reaccionar puede costar bastante."},
+  {"sentimiento":2,"energia":2,"sintoma":"Dolor interno con bloqueo","explicacion":"Hay mucho malestar y casi nada de energía disponible, por lo que reaccionar puede costar bastante."},
+  {"sentimiento":2,"energia":3,"sintoma":"Desánimo intenso","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":2,"energia":4,"sintoma":"Desánimo intenso","explicacion":"El ánimo está muy bajo y tu energía apenas te permite avanzar despacio, con sensación de apatía y pesadez."},
+  {"sentimiento":2,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":2,"energia":6,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar marcada junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":2,"energia":7,"sintoma":"Desesperación contenida / Frustración","explicacion":"Hay un malestar marcada junto a un impulso interno acelerado, lo que puede sentirse como rabia, impotencia o ganas de estallar."},
+  {"sentimiento":2,"energia":8,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":2,"energia":9,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":2,"energia":10,"sintoma":"Alarma extrema / Crisis de ansiedad","explicacion":"El sufrimiento es muy alto y el cuerpo está muy activado, con sensación de urgencia, tensión y necesidad de escapar."},
+  {"sentimiento":3,"energia":0,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":3,"energia":1,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":3,"energia":2,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":3,"energia":3,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":3,"energia":4,"sintoma":"Estrés por sobrecarga / Agobio ordinario","explicacion":"Hay malestar moderado con energía suficiente para seguir, pero con sensación de carga, presión o desgaste."},
+  {"sentimiento":3,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":3,"energia":6,"sintoma":"Estrés por sobrecarga / Agobio ordinario","explicacion":"Hay malestar moderado con energía suficiente para seguir, pero con sensación de carga, presión o desgaste."},
+  {"sentimiento":3,"energia":7,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":3,"energia":8,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":3,"energia":9,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":3,"energia":10,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":4,"energia":0,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":4,"energia":1,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":4,"energia":2,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":4,"energia":3,"sintoma":"Desmotivación por cansancio / Bajón físico","explicacion":"Te sientes incómodo o bajo de ánimo, y el cansancio físico hace que todo parezca más pesado de lo normal."},
+  {"sentimiento":4,"energia":4,"sintoma":"Estrés por sobrecarga / Agobio ordinario","explicacion":"Hay malestar moderado con energía suficiente para seguir, pero con sensación de carga, presión o desgaste."},
+  {"sentimiento":4,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":4,"energia":6,"sintoma":"Estrés por sobrecarga / Agobio ordinario","explicacion":"Hay malestar moderado con energía suficiente para seguir, pero con sensación de carga, presión o desgaste."},
+  {"sentimiento":4,"energia":7,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":4,"energia":8,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":4,"energia":9,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":4,"energia":10,"sintoma":"Ansiedad nerviosa / Nerviosismo acelerado","explicacion":"Sientes incomodidad y el cuerpo está demasiado activado, con tensión, inquietud y la mente yendo muy rápido."},
+  {"sentimiento":5,"energia":0,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":1,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":2,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":3,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":4,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":6,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":7,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":8,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":9,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":5,"energia":10,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":6,"energia":0,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":6,"energia":1,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":6,"energia":2,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":6,"energia":3,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":6,"energia":4,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":6,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":6,"energia":6,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":6,"energia":7,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":6,"energia":8,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":6,"energia":9,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":6,"energia":10,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":7,"energia":0,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":7,"energia":1,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":7,"energia":2,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":7,"energia":3,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":7,"energia":4,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":7,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":7,"energia":6,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":7,"energia":7,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":7,"energia":8,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":7,"energia":9,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":7,"energia":10,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":8,"energia":0,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":8,"energia":1,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":8,"energia":2,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":8,"energia":3,"sintoma":"Relajación / Descanso reparador","explicacion":"Te sientes bien y con poca energía, un estado adecuado para descansar, recuperar fuerzas y bajar el ritmo."},
+  {"sentimiento":8,"energia":4,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":8,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":8,"energia":6,"sintoma":"Equilibrio / Bienestar estable","explicacion":"Te sientes bastante bien y con energía suficiente para funcionar con calma, claridad y comodidad."},
+  {"sentimiento":8,"energia":7,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":8,"energia":8,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":8,"energia":9,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":8,"energia":10,"sintoma":"Motivación alta / Acción enfocada","explicacion":"Te sientes bien y con energía alta, un buen momento para crear, moverte, trabajar con foco o hacer ejercicio."},
+  {"sentimiento":9,"energia":0,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":9,"energia":1,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":9,"energia":2,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":9,"energia":3,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":9,"energia":4,"sintoma":"Bienestar alto / Claridad estable","explicacion":"Te sientes muy bien y con energía equilibrada, con una sensación clara de satisfacción, seguridad y presencia."},
+  {"sentimiento":9,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":9,"energia":6,"sintoma":"Bienestar alto / Claridad estable","explicacion":"Te sientes muy bien y con energía equilibrada, con una sensación clara de satisfacción, seguridad y presencia."},
+  {"sentimiento":9,"energia":7,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":9,"energia":8,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":9,"energia":9,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":9,"energia":10,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":10,"energia":0,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":10,"energia":1,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":10,"energia":2,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":10,"energia":3,"sintoma":"Bienestar sereno / Descanso pleno","explicacion":"Te sientes muy bien aunque el cuerpo esté tranquilo o cansado, ideal para descansar con una sensación profunda de paz."},
+  {"sentimiento":10,"energia":4,"sintoma":"Bienestar alto / Claridad estable","explicacion":"Te sientes muy bien y con energía equilibrada, con una sensación clara de satisfacción, seguridad y presencia."},
+  {"sentimiento":10,"energia":5,"sintoma":"Calma plana / Neutralidad","explicacion":"Estás en un punto medio: ni claramente bien ni claramente mal, con una sensación de pausa útil para observarte sin forzarte."},
+  {"sentimiento":10,"energia":6,"sintoma":"Bienestar alto / Claridad estable","explicacion":"Te sientes muy bien y con energía equilibrada, con una sensación clara de satisfacción, seguridad y presencia."},
+  {"sentimiento":10,"energia":7,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":10,"energia":8,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":10,"energia":9,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."},
+  {"sentimiento":10,"energia":10,"sintoma":"Plenitud total / Alegría a tope","explicacion":"Te sientes plenamente bien y con mucha energía, como si tu cuerpo y tu ánimo estuvieran alineados y radiantes."}
+];
+
 export default function Resources() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
@@ -128,6 +252,34 @@ export default function Resources() {
 
   // Code Modal State
   const [accessCode, setAccessCode] = useState(["", "", "", ""]);
+  
+  // Estado Actual Tool State
+  const [estadoPaso, setEstadoPaso] = useState<"inicio" | "sentimiento" | "energia" | "resultado">("inicio");
+  const [valorSentimiento, setValorSentimiento] = useState<number | null>(null);
+  const [valorEnergia, setValorEnergia] = useState<number | null>(null);
+
+  const resetEstadoActual = () => {
+    setEstadoPaso("inicio");
+    setValorSentimiento(null);
+    setValorEnergia(null);
+  };
+
+  const handleSentimientoSelect = (val: number) => {
+    setValorSentimiento(val);
+    setEstadoPaso("energia");
+  };
+
+  const handleEnergiaSelect = (val: number) => {
+    setValorEnergia(val);
+    setEstadoPaso("resultado");
+  };
+
+  const getResultadoEstado = () => {
+    if (valorSentimiento === null || valorEnergia === null) return null;
+    return MATRIZ_ESTADOS.find(
+      (m) => m.sentimiento === valorSentimiento && m.energia === valorEnergia
+    );
+  };
   
   const meditations = [
     {
@@ -518,6 +670,126 @@ export default function Resources() {
                 {hasAccess ? "Ver Colección" : "Introducir Clave"}
                 <span className="material-symbols-outlined text-sm dark:text-white">{hasAccess ? "arrow_forward" : "lock"}</span>
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Herramienta Estado Actual */}
+        <section className="mt-8 md:mt-12 py-12 border-t border-outline-variant/10">
+          <div className="max-w-4xl mx-auto relative overflow-hidden rounded-[2.5rem] bg-surface-container-lowest shadow-2xl border border-outline-variant/10 min-h-[400px]">
+            <img alt="Estado actual" className="absolute inset-0 w-full h-full object-cover" src="/images/fondo_estado_actual.jpg" />
+            <div className="absolute inset-0 bg-black/60 md:bg-black/40 backdrop-blur-sm transition-all duration-700"></div>
+            
+            <div className="relative z-10 flex flex-col justify-center h-full min-h-[400px] p-8 md:p-16 text-white w-full">
+              
+              {estadoPaso === "inicio" && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <h3 className="font-headline text-4xl md:text-5xl text-white mb-6">Estado actual</h3>
+                  <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-xl">
+                    Observa cómo te sientes y cuánta energía tienes ahora. Este ejercicio entrena tu capacidad de reconocer tu estado interno con más claridad.
+                  </p>
+                  <div className="mt-10 text-right">
+                    <button 
+                      onClick={() => setEstadoPaso("sentimiento")}
+                      className="bg-white text-black px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-all shadow-lg"
+                    >
+                      Iniciar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {estadoPaso === "sentimiento" && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                  <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cómo te sientes ahora?</h3>
+                  <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
+                    0 = Sufrimiento / incomodidad profunda <br/>
+                    10 = Bienestar absoluto
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 md:gap-3">
+                    {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                      <button 
+                        key={n}
+                        onClick={() => handleSentimientoSelect(n)}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-12 text-right">
+                    <button 
+                      onClick={resetEstadoActual}
+                      className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
+                    >
+                      Reiniciar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {estadoPaso === "energia" && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                  <h3 className="font-headline text-3xl md:text-4xl text-white mb-3">¿Cuál es tu nivel de energía?</h3>
+                  <p className="text-white/80 text-sm md:text-base font-light mb-8 max-w-2xl leading-relaxed">
+                    0 = Agotado <br/>
+                    10 = A tope / lleno de energía
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 md:gap-3">
+                    {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                      <button 
+                        key={n}
+                        onClick={() => handleEnergiaSelect(n)}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-white hover:text-black border border-white/20 flex items-center justify-center font-headline text-xl md:text-2xl transition-all"
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-12 text-right">
+                    <button 
+                      onClick={resetEstadoActual}
+                      className="text-white/60 hover:text-white uppercase tracking-widest text-xs font-bold transition-colors"
+                    >
+                      Reiniciar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {estadoPaso === "resultado" && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                  {getResultadoEstado() ? (
+                    <>
+                      <p className="text-white/70 uppercase tracking-widest text-xs font-bold mb-3 md:mb-4">
+                        Sentimiento: {valorSentimiento} | Energía: {valorEnergia}
+                      </p>
+                      <h3 className="font-headline text-4xl md:text-5xl text-white mb-4 md:mb-6">
+                        {getResultadoEstado()?.sintoma}
+                      </h3>
+                      <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed max-w-2xl">
+                        {getResultadoEstado()?.explicacion}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-white">Error al obtener resultado.</p>
+                  )}
+                  
+                  <div className="mt-10 md:mt-12 text-right">
+                    <button 
+                      onClick={resetEstadoActual}
+                      className="bg-white text-black px-8 py-3 rounded-full hover:bg-white/90 font-bold uppercase tracking-widest text-xs transition-all shadow-lg"
+                    >
+                      Reiniciar Autoanálisis
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </section>
