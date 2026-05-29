@@ -4,6 +4,7 @@
  */
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Session from "./pages/Session";
@@ -39,6 +40,7 @@ import Emocionario from "./pages/Emocionario";
 export default function App() {
   return (
     <BrowserRouter>
+      <Analytics />
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
