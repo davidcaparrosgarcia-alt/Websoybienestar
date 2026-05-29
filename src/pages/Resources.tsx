@@ -176,7 +176,7 @@ export default function Resources() {
   const [selectedBreathingInfographic, setSelectedBreathingInfographic] = useState<{ id: string, src: string } | null>(null);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"reservado" | "emocional" | "emocionario" | null>(null);
   const [isGrayscaleForceOff, setIsGrayscaleForceOff] = useState(false);
 
   // Mobile interactions state
@@ -344,6 +344,9 @@ export default function Resources() {
           setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
         } else if (pendingAction === "reservado") {
           alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
+        } else if (pendingAction === "emocionario") {
+          sessionStorage.setItem("emocionarioAccess", "true");
+          navigate("/emocionario");
         }
         setPendingAction(null);
       } else {
@@ -568,18 +571,34 @@ export default function Resources() {
                       <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary tracking-wide font-bold">guia de módulos y método</span></li>
                       <li><span style={{fontSize: '12px', letterSpacing: '0.6px', textTransform: 'uppercase'}} className="text-primary/80 font-medium">Los módulos y método están reservados para miembros que han realizado o están realizando nuestro programa</span></li>
                     </ul>
-                    <button onClick={(e) => {
-                      e.stopPropagation();
-                      if (hasAccess) {
-                        setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
-                      } else {
-                        setPendingAction("emocional");
-                        setIsCodeModalOpen(true);
-                      }
-                    }} className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
-                        Explorar Metodología
-                        <span className="material-symbols-outlined text-sm">open_in_new</span>
-                    </button>
+                    <div className="flex flex-wrap gap-4">
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        if (hasAccess) {
+                          setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
+                        } else {
+                          setPendingAction("emocional");
+                          setIsCodeModalOpen(true);
+                        }
+                      }} className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
+                          Explorar Metodología
+                          <span className="material-symbols-outlined text-sm">open_in_new</span>
+                      </button>
+
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        if (hasAccess) {
+                          sessionStorage.setItem("emocionarioAccess", "true");
+                          navigate("/emocionario");
+                        } else {
+                          setPendingAction("emocionario");
+                          setIsCodeModalOpen(true);
+                        }
+                      }} className="flex items-center justify-center gap-4 w-fit bg-surface-container-highest text-primary px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-outline-variant/30 transition-all relative z-20">
+                          Entrar en Emocionario
+                          <span className="material-symbols-outlined text-sm">open_in_new</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

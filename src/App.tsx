@@ -34,6 +34,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AiDiagnostics from "./pages/AiDiagnostics";
 
 import Resources from "./pages/Resources";
+import Emocionario from "./pages/Emocionario";
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="emocionario" element={<Emocionario />} />
           <Route path="treatments" element={<Treatments />} />
           <Route path="tratamientos-online" element={<Treatments />} />
           <Route path="method" element={<Method />} />
