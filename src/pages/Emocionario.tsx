@@ -2,17 +2,314 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 
+interface EmocionarioProgress {
+  moduloActual: string;
+  pantallaActual: number;
+  ejercicioActual: number;
+  intentosActuales: number;
+  modulo0Completado: boolean;
+  fundamentosDesbloqueados: boolean;
+}
+
+const defaultProgress: EmocionarioProgress = {
+  moduloActual: "Módulo 0 — El Despertar del Arquitecto",
+  pantallaActual: 0,
+  ejercicioActual: 0,
+  intentosActuales: 0,
+  modulo0Completado: false,
+  fundamentosDesbloqueados: false
+};
+
+const MODULO_0_CONTENT = [
+  {
+    titulo: "La Revelación",
+    nivel: "0.1",
+    texto: "La mayoría de los adultos nunca recibieron educación formal sobre sus emociones en la infancia. Si a veces sientes que el estrés te supera, debes saber algo importante: la falta de control no es un defecto tuyo, es simplemente una estructura incompleta. A esto lo llamamos el Analfabetismo Emocional Heredado.",
+    ejercicios: [
+      {
+        pregunta: "Cuando una situación te desborda por completo, ¿cuál suele ser tu respuesta automática más frecuente?",
+        respuestas: [
+          "Salto a la defensiva o intento controlarlo todo.",
+          "Me desconecto, miro para otro lado o huyo.",
+          "Me quedo paralizado y bloqueado."
+        ],
+        check: (idx: number, intentos: number) => ({
+          correct: true,
+          msg: "¡Exacto! Esa es una respuesta de supervivencia completamente normal. Tu cerebro hizo lo que pudo con las herramientas que tenía. Hoy empezamos a actualizar ese sistema operativo para lograr un nuevo alfabetismo emocional adquirido y a no dejar que sean las emociones quienes nos dominen."
+        })
+      },
+      {
+        pregunta: "Si de pequeños no nos enseñaron a gestionar la frustración, ¿qué es lo más normal que nos ocurra de adultos ante un problema grave?",
+        respuestas: [
+          "Que lo resolvamos siempre con calma absoluta.",
+          "Que reaccionemos de forma automática para defendernos, sin pensarlo.",
+          "Que nuestro cerebro se apague y dejemos de sentir."
+        ],
+        check: (idx: number, intentos: number) => {
+          if (idx === 1) return { correct: true, msg: "¡Eso es! Saltan nuestras defensas automáticas. Pero eso está a punto de cambiar." };
+          if (intentos === 0) return { correct: false, msg: "Piénsalo un poco más. Si nos faltan las herramientas, nuestro cuerpo busca protegerse de forma instintiva. Inténtalo de nuevo." };
+          return { correct: false, showCorrect: true, msg: "La respuesta correcta es la segunda. Al no tener ese alfabetismo emocional, saltan nuestras defensas automáticas. ¡Pero eso lo vamos a cambiar!" };
+        }
+      }
+    ]
+  },
+  {
+    titulo: "El Paradigma",
+    nivel: "0.2",
+    texto: "Hasta ahora, probablemente has intentado ser fuerte como un Muro de Ladrillos: aguantando la presión, tragándote lo que sientes hasta acabar rompiéndote. Aquí vamos a construir un Enrejado Vivo: una estructura firme pero flexible, capaz de adaptarse y crecer con los golpes de la vida.",
+    ejercicios: [
+      {
+        pregunta: "¿Qué frase crees que diría una persona que funciona como un Muro de Ladrillos?",
+        respuestas: [
+          "\"No debería sentirme así, tengo que aguantar y que nadie me vea mal.\"",
+          "\"Siento mucha presión ahora mismo, voy a respirar un poco.\"",
+          "\"Es normal sentir miedo en esta situación.\""
+        ],
+        check: (idx: number, intentos: number) => {
+          if (idx === 0) return { correct: true, msg: "¡Muy bien! Esa necesidad de aguantarlo todo es la clásica trampa del muro rígido." };
+          if (intentos === 0) return { correct: false, msg: "Recuerda que el muro es rígido y oculta lo que siente bajo una apariencia de dureza. Dale una vuelta y elige otra opción." };
+          return { correct: false, showCorrect: true, msg: "La correcta es la primera. Esa necesidad rígida de aguantar todo es lo que nos hace quebrar bajo presión. Las otras opciones muestran flexibilidad." };
+        }
+      },
+      {
+        pregunta: "Ahora busca la opción del Enrejado Vivo. ¿Qué harías si quieres ser flexible y aprender a calmarte a ti mismo?",
+        respuestas: [
+          "Evitar pensar en el problema y ponerme a ver la televisión.",
+          "Notar la tensión en mi cuerpo, observarla sin juzgarla y decidir qué hacer.",
+          "Enfadarte contigo mismo por estar nervioso otra vez."
+        ],
+        check: (idx: number, intentos: number) => {
+          if (idx === 1) return { correct: true, msg: "¡Brillante! Esa es la clave para reconstruirnos: observar sin juzgar nos da verdadera flexibilidad." };
+          if (intentos === 0) return { correct: false, msg: "El enrejado no huye del problema ni se ataca a sí mismo; aprende a convivir con la carga para adaptarse. Inténtalo de nuevo." };
+          return { correct: false, showCorrect: true, msg: "La respuesta correcta es la segunda. Observar lo que sentimos sin machacarnos es lo que nos permite aprender y no rompernos." };
+        }
+      }
+    ]
+  },
+  {
+    titulo: "Tu Mapa de Ruta",
+    nivel: "0.3",
+    texto: "El viaje que vas a empezar ocurre tanto en tu cuerpo como en tu mente. Vas a ser el arquitecto de tu propia recuperación. Vamos a seguir un orden claro, desde los cimientos hasta el tejado.",
+    ejercicios: []
+  }
+];
+
+const SORT_PIECES = [
+  { id: 0, label: "El Cuerpo", desc: "Sentir la emoción físicamente." },
+  { id: 2, label: "La Acción", desc: "Usar esa información para actuar mejor." },
+  { id: 1, label: "La Mente", desc: "Ponerle nombre a lo que siento." },
+];
+
+const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void }) => {
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [showContinue, setShowContinue] = useState(false);
+  const [slots, setSlots] = useState<(number | null)[]>([null, null, null]);
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+  const [errorSlot, setErrorSlot] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFeedback(null);
+    setShowContinue(false);
+    setSlots([null, null, null]);
+    setSelectedPiece(null);
+    setErrorSlot(null);
+  }, [progress.pantallaActual, progress.ejercicioActual]);
+
+  if (progress.modulo0Completado) {
+    return (
+      <div className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-primary/20 shadow-sm animate-in fade-in slide-in-from-top-4 text-center">
+        <span className="material-symbols-outlined text-4xl text-primary mb-4">task_alt</span>
+        <h4 className="font-headline text-2xl md:text-3xl text-primary mb-4">El Despertar del Arquitecto Completado</h4>
+        <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed">
+          ¡Cimientos listos! Recuerda siempre esta regla de oro: el cuerpo siempre nota la emoción mucho antes de que la mente la entienda.
+        </p>
+      </div>
+    );
+  }
+
+  const p = MODULO_0_CONTENT[progress.pantallaActual];
+  const isSort = p.titulo === "Tu Mapa de Ruta";
+  const ex = isSort ? null : p.ejercicios[progress.ejercicioActual];
+
+  const handleAnswer = (idx: number) => {
+    if (showContinue || isSort || !ex) return;
+    const res = ex.check(idx, progress.intentosActuales);
+    setFeedback(res.msg);
+    if (res.correct || (res as any).showCorrect) {
+      setShowContinue(true);
+    } else {
+      updateProgress({ intentosActuales: progress.intentosActuales + 1 });
+    }
+  };
+
+  const handleSlotClick = (slotIdx: number) => {
+    if (selectedPiece === null) return;
+    if (selectedPiece === slotIdx) {
+      const newSlots = [...slots];
+      newSlots[slotIdx] = selectedPiece;
+      setSlots(newSlots);
+      setSelectedPiece(null);
+      if (newSlots.every(s => s !== null)) {
+        setFeedback("¡Cimientos listos! Recuerda siempre esta regla de oro: el cuerpo siempre nota la emoción mucho antes de que la mente la entienda. ¡Acabas de desbloquear el Módulo I!");
+        setShowContinue(true);
+      }
+    } else {
+      setErrorSlot(slotIdx);
+      setTimeout(() => setErrorSlot(null), 1000);
+      setSelectedPiece(null);
+    }
+  };
+
+  const handleContinue = () => {
+    if (isSort) {
+      updateProgress({
+        modulo0Completado: true,
+        fundamentosDesbloqueados: true,
+        moduloActual: "I. Fundamentos y Diagnóstico",
+        pantallaActual: 0,
+        ejercicioActual: 0,
+        intentosActuales: 0
+      });
+    } else if (progress.ejercicioActual + 1 < p.ejercicios.length) {
+      updateProgress({
+        ejercicioActual: progress.ejercicioActual + 1,
+        intentosActuales: 0
+      });
+    } else {
+      updateProgress({
+        pantallaActual: progress.pantallaActual + 1,
+        ejercicioActual: 0,
+        intentosActuales: 0
+      });
+    }
+  };
+
+  return (
+    <div className="mt-4 p-6 md:p-10 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
+        <h4 className="font-headline text-2xl md:text-3xl text-primary">{p.titulo}</h4>
+        <div className="text-secondary tracking-widest uppercase font-bold text-xs inline-block">Nivel {p.nivel}</div>
+      </div>
+      <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-10">
+        {p.texto}
+      </p>
+
+      {isSort ? (
+        <div className="animate-in fade-in duration-500 delay-150">
+          <p className="text-xl md:text-2xl text-primary mb-8 font-light">
+            Instrucción: Ordena los 3 pasos fundamentales que vamos a entrenar. Toca las piezas para ponerlas en el orden correcto. Si aciertas la posición, la casilla se pondrá en verde. Si la posición es incorrecta, se pondrá en rojo. No podrás avanzar hasta que todo esté en verde.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <div className="space-y-4">
+              <h5 className="font-bold tracking-widest uppercase text-xs text-on-surface-variant/50 mb-4">Piezas por clasificar</h5>
+              {SORT_PIECES.map(piece => {
+                if (slots.includes(piece.id)) return <div key={piece.id} className="h-[76px] md:h-[72px]"></div>;
+                return (
+                  <button 
+                    key={piece.id}
+                    onClick={() => { if (!showContinue) setSelectedPiece(piece.id); }}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all min-h-[76px] md:min-h-[72px] ${selectedPiece === piece.id ? 'border-primary bg-primary/5 text-primary shadow-sm' : 'border-outline-variant/20 bg-surface text-on-surface hover:border-primary/30'}`}
+                  >
+                    <span className="font-medium text-lg">{piece.label}</span> — <span className="font-light">{piece.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="space-y-4">
+              <h5 className="font-bold tracking-widest uppercase text-xs text-on-surface-variant/50 mb-4">Tu orden</h5>
+              {[0, 1, 2].map(slotIdx => {
+                const filled = slots[slotIdx] !== null;
+                const isError = errorSlot === slotIdx;
+                let c = "";
+                if (filled) c = "bg-[#dcedc8] dark:bg-[#33691e]/30 border-[#4caf50] text-[#2e7d32] dark:text-[#aed581]";
+                else if (isError) c = "bg-[#ffcdd2] dark:bg-[#d32f2f]/30 border-[#f44336]";
+                else if (selectedPiece !== null) c = "bg-primary/5 border-primary border-dashed hover:bg-primary/10 cursor-pointer shadow-inner";
+                else c = "bg-surface-container border-outline-variant/30 border-dashed text-on-surface-variant/50";
+                
+                return (
+                  <div 
+                    key={slotIdx}
+                    onClick={() => { if (!filled) handleSlotClick(slotIdx); }}
+                    className={`w-full min-h-[76px] md:min-h-[72px] flex items-center p-4 rounded-xl border-2 transition-all ${c}`}
+                  >
+                    {filled && (
+                       <span>
+                         <span className="font-medium text-lg">{SORT_PIECES.find(p => p.id === slots[slotIdx])?.label}</span> — <span className="font-light">{SORT_PIECES.find(p => p.id === slots[slotIdx])?.desc}</span>
+                       </span>
+                    )}
+                    {!filled && <span className="font-light text-sm tracking-wide">Posición {slotIdx + 1}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div key={progress.ejercicioActual} className="animate-in fade-in slide-in-from-right-8 duration-500">
+          <p className="text-xl md:text-2xl text-primary font-medium leading-relaxed mb-6">
+            {ex?.pregunta}
+          </p>
+          <div className="space-y-3 mb-8">
+            {ex?.respuestas.map((r, idx) => (
+              <button 
+                key={idx}
+                onClick={() => handleAnswer(idx)}
+                disabled={showContinue}
+                className="w-full text-left p-5 md:p-6 rounded-2xl border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high transition-all text-lg md:text-xl font-light disabled:opacity-70 disabled:cursor-default"
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {feedback && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 p-6 md:p-8 bg-surface-container-high rounded-2xl border-l-4 border-primary mb-8">
+          <p className="text-lg md:text-xl font-medium text-primary leading-relaxed">
+            {feedback}
+          </p>
+        </div>
+      )}
+      
+      {showContinue && (
+        <button 
+          onClick={handleContinue}
+          className="w-full bg-primary text-white py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-secondary transition-colors shadow-lg"
+        >
+          {isSort ? 'Desbloquear Módulo I' : 'Continuar'}
+        </button>
+      )}
+    </div>
+  );
+};
+
 export default function Emocionario() {
   const navigate = useNavigate();
   const [accessGranted, setAccessGranted] = useState(false);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [progress, setProgress] = useState<EmocionarioProgress>(defaultProgress);
 
   useEffect(() => {
     // Check if access was granted via sessionStorage
     if (sessionStorage.getItem('emocionarioAccess') === 'true') {
       setAccessGranted(true);
     }
+    
+    // Load progress
+    const saved = localStorage.getItem("emocionarioProgress");
+    if (saved) {
+      try {
+        setProgress(JSON.parse(saved));
+      } catch(e) {}
+    }
   }, []);
+
+  const updateProgress = (updates: Partial<EmocionarioProgress>) => {
+    const newProgress = { ...progress, ...updates };
+    setProgress(newProgress);
+    localStorage.setItem("emocionarioProgress", JSON.stringify(newProgress));
+  };
 
   if (!accessGranted) {
     return (
@@ -277,6 +574,19 @@ export default function Emocionario() {
               <h3 className="font-headline text-2xl md:text-3xl text-primary mb-8">
                 Selecciona un módulo para iniciar tu aventura emocional.
               </h3>
+
+              {/* Bloque Módulo 0 */}
+              <div className="mb-10">
+                <button 
+                  onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
+                  className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                >
+                  Módulo 0 — El Despertar del Arquitecto
+                </button>
+                {selectedModule === "Módulo 0 — El Despertar del Arquitecto" && (
+                  <Modulo0Panel progress={progress} updateProgress={updateProgress} />
+                )}
+              </div>
               
               {/* Bloque 1: El Viaje Interior */}
               <div className="mb-10">
@@ -288,16 +598,35 @@ export default function Emocionario() {
                     "III. Flexibilidad Cognitiva",
                     "IV. Fortalezas de Carácter",
                     "V. Integración y Acción Consciente"
-                  ].map((modulo, idx) => (
-                    <li key={idx}>
-                      <button 
-                        onClick={() => setSelectedModule(modulo)}
-                        className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
-                      >
-                        {modulo}
-                      </button>
-                    </li>
-                  ))}
+                  ].map((modulo, idx) => {
+                    const isLocked = !progress.fundamentosDesbloqueados; 
+                    return (
+                      <li key={idx}>
+                        <button 
+                          onClick={() => setSelectedModule(modulo)}
+                          className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg ${isLocked ? 'opacity-70' : ''}`}
+                        >
+                          {modulo}
+                        </button>
+                        {selectedModule === modulo && (
+                          <div className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4">
+                            {isLocked ? (
+                              <div className="text-center text-on-surface-variant flex flex-col items-center">
+                                <span className="material-symbols-outlined text-3xl mb-3">lock</span>
+                                <p className="font-light text-lg">
+                                  Completa primero El Despertar del Arquitecto para desbloquear el viaje interior.
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-on-surface-variant font-light text-center italic">
+                                Aquí se desplegarán preguntas, explicaciones y respuestas del módulo seleccionado.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -332,20 +661,19 @@ export default function Emocionario() {
                           >
                             {modulo}
                           </button>
+                          {selectedModule === modulo && (
+                            <div className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4">
+                              <p className="text-on-surface-variant font-light text-center italic">
+                                Aquí se desplegarán preguntas, explicaciones y respuestas del módulo seleccionado.
+                              </p>
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>
                   );
                 })()}
               </div>
-
-              {selectedModule && (
-                <div className="p-8 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4">
-                  <p className="text-on-surface-variant font-light text-center italic">
-                    Aquí se desplegarán preguntas, explicaciones y respuestas del módulo seleccionado.
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Columna Derecha: Mockup Emocionario 9:16 */}
@@ -373,31 +701,80 @@ export default function Emocionario() {
 
                 {/* Zona de scroll del recorrido */}
                 <div className="flex-1 overflow-y-auto relative p-6 flex flex-col items-center justify-start bg-surface-container-lowest" style={{ scrollbarWidth: 'none' }}>
-                  
-                  <h4 className="text-primary font-bold tracking-widest uppercase text-xs mb-8">Isla 1</h4>
-                  
-                  {/* Nodo Camino completado */}
-                  <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg relative z-10 ring-4 ring-secondary/30 mb-8">
-                    <span className="material-symbols-outlined text-2xl font-bold">check</span>
-                  </div>
-                  {/* Línea conexión */}
-                  <div className="w-2 h-10 bg-secondary/50 -mt-10 mb-2 relative z-0 left-[-20px] rounded-full"></div>
+                  {(() => {
+                    if (selectedModule === "Módulo 0 — El Despertar del Arquitecto") {
+                      const screenData = MODULO_0_CONTENT[Math.min(progress.pantallaActual, 2)];
+                      return (
+                        <>
+                          <h4 className="text-primary font-bold tracking-widest uppercase text-xs mb-8">Módulo 0</h4>
+                          
+                          {(progress.pantallaActual > 0 || progress.modulo0Completado) && (
+                            <>
+                              <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg relative z-10 ring-4 ring-secondary/30 mb-8">
+                                <span className="material-symbols-outlined text-2xl font-bold">check</span>
+                              </div>
+                              <div className="w-2 h-10 bg-secondary/50 -mt-10 mb-1 relative z-0 left-[0px] rounded-full"></div>
+                            </>
+                          )}
 
-                  <div className="text-center mb-2">
-                    <span className="bg-white dark:bg-black/50 text-[10px] font-bold px-3 py-1 rounded-full text-on-surface shadow-md">Lección 1</span>
-                  </div>
-                  {/* Nodo Camino actual */}
-                  <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-primary/20 mb-8 hover:scale-105 transition-transform cursor-pointer">
-                    <span className="material-symbols-outlined text-4xl pl-1">play_arrow</span>
-                  </div>
+                          {!progress.modulo0Completado && (
+                            <>
+                              <div className="text-center mb-2 mt-4">
+                                <span className="bg-white dark:bg-black/50 text-[10px] font-bold px-3 py-1 rounded-full text-on-surface shadow-md">Nivel {screenData.nivel}</span>
+                              </div>
+                              <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-primary/20 mb-8 hover:scale-105 transition-transform cursor-pointer">
+                                <span className="material-symbols-outlined text-4xl pl-1">play_arrow</span>
+                              </div>
+                            </>
+                          )}
+                          
+                          {progress.modulo0Completado && (
+                            <div className="mt-4 w-20 h-20 rounded-full bg-secondary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-secondary/30 mb-8">
+                                <span className="material-symbols-outlined text-4xl">task_alt</span>
+                            </div>
+                          )}
 
-                  {/* Línea conexión bloqueada */}
-                  <div className="w-2 h-14 bg-outline-variant/20 -mt-10 mb-2 relative z-0 right-[-15px] rounded-full"></div>
+                          {!progress.modulo0Completado && (
+                            <>
+                              <div className="w-2 h-14 bg-outline-variant/20 -mt-10 mb-2 relative z-0 right-[0px] rounded-full"></div>
+                              <div className="w-14 h-14 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center shadow-inner relative z-10 mb-12">
+                                 <span className="material-symbols-outlined text-xl">lock</span>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      );
+                    }
+                    
+                    return (
+                        <>
+                          <h4 className="text-primary font-bold tracking-widest uppercase text-xs mb-8">Isla 1</h4>
+                          
+                          {/* Nodo Camino completado */}
+                          <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg relative z-10 ring-4 ring-secondary/30 mb-8">
+                            <span className="material-symbols-outlined text-2xl font-bold">check</span>
+                          </div>
+                          {/* Línea conexión */}
+                          <div className="w-2 h-10 bg-secondary/50 -mt-10 mb-2 relative z-0 left-[-20px] rounded-full"></div>
 
-                  {/* Nodo Camino bloqueado */}
-                  <div className="w-14 h-14 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center shadow-inner relative z-10 mb-12">
-                     <span className="material-symbols-outlined text-xl">lock</span>
-                  </div>
+                          <div className="text-center mb-2">
+                            <span className="bg-white dark:bg-black/50 text-[10px] font-bold px-3 py-1 rounded-full text-on-surface shadow-md">Lección 1</span>
+                          </div>
+                          {/* Nodo Camino actual */}
+                          <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-primary/20 mb-8 hover:scale-105 transition-transform cursor-pointer">
+                            <span className="material-symbols-outlined text-4xl pl-1">play_arrow</span>
+                          </div>
+
+                          {/* Línea conexión bloqueada */}
+                          <div className="w-2 h-14 bg-outline-variant/20 -mt-10 mb-2 relative z-0 right-[-15px] rounded-full"></div>
+
+                          {/* Nodo Camino bloqueado */}
+                          <div className="w-14 h-14 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center shadow-inner relative z-10 mb-12">
+                             <span className="material-symbols-outlined text-xl">lock</span>
+                          </div>
+                        </>
+                    );
+                  })()}
 
                   <h4 className="text-on-surface-variant font-bold tracking-widest uppercase text-[10px] mb-8">Próximamente</h4>
 

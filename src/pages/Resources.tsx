@@ -575,27 +575,14 @@ export default function Resources() {
                       <button onClick={(e) => {
                         e.stopPropagation();
                         if (hasAccess) {
-                          setSelectedBreathingInfographic({ id: 'gestion_emocional', src: '/images/gestion-emocional.pdf' });
-                        } else {
-                          setPendingAction("emocional");
-                          setIsCodeModalOpen(true);
-                        }
-                      }} className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
-                          Explorar Metodología
-                          <span className="material-symbols-outlined text-sm">open_in_new</span>
-                      </button>
-
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        if (hasAccess) {
                           sessionStorage.setItem("emocionarioAccess", "true");
                           navigate("/emocionario");
                         } else {
                           setPendingAction("emocionario");
                           setIsCodeModalOpen(true);
                         }
-                      }} className="flex items-center justify-center gap-4 w-fit bg-surface-container-highest text-primary px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-outline-variant/30 transition-all relative z-20">
-                          Entrar en Emocionario
+                      }} className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all relative z-20">
+                          Explorar Metodología
                           <span className="material-symbols-outlined text-sm">open_in_new</span>
                       </button>
                     </div>
