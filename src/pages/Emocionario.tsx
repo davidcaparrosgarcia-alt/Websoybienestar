@@ -43,7 +43,7 @@ export default function Emocionario() {
     <div className="min-h-screen bg-surface pt-32 pb-24 font-sans">
       <SEO 
         title="Emocionario | Aprendizaje de gestión emocional" 
-        description="Entorno privado de aprendizaje emocional con módulos de estudio y una futura experiencia gamificada para entrenar gestión de emociones."
+        description="Entorno privado de aprendizaje emocional con módulos de estudio y una futura experiencia de aprendizaje para entrenar gestión de emociones."
         noIndex={true}
       />
       
@@ -51,12 +51,9 @@ export default function Emocionario() {
         
         {/* Header */}
         <header className="mb-24 text-center max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h1 className="font-headline text-5xl md:text-6xl text-primary mb-6">Emocionario</h1>
-          <p className="text-primary text-xl md:text-2xl font-light mb-8 leading-relaxed">
-            Aprender a reconocer, ordenar y entrenar tus emociones paso a paso.
-          </p>
+          <h1 className="font-headline text-5xl md:text-6xl text-primary mb-6">Aprender a reconocer, ordenar y entrenar tus emociones paso a paso.</h1>
           <p className="text-on-surface-variant text-lg font-light leading-relaxed">
-            Este espacio reúne el método de gestión emocional y un futuro recorrido gamificado para practicarlo. Primero comprendes los módulos; después entrenas con ejercicios, preguntas y pequeños desafíos.
+            Este espacio reúne el método de gestión emocional y un futuro recorrido de aprendizaje para practicarlo. Primero comprendes los módulos; después entrenas con ejercicios, preguntas y pequeños desafíos.
           </p>
         </header>
 
@@ -71,30 +68,8 @@ export default function Emocionario() {
 
           {/* Fila base del método */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
-            {/* Tarjeta Método */}
-            <div className="relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-primary/30 to-surface-container-highest border border-outline-variant/10 shadow-xl min-h-[400px] w-full cursor-pointer transition-all hover:shadow-2xl">
-              <div className="absolute inset-0 bg-surface-container-highest/20 placeholder-fallback"></div>
-              {/* Nota: si en el futuro existe 'fondo_metodo.jpg', se puede usar una etiqueta img aquí */}
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-500"></div>
-              
-              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-end text-white">
-                <h3 className="font-headline text-3xl md:text-4xl mb-4 group-hover:-translate-y-2 transition-transform duration-500 shadow-sm text-shadow">
-                  Método Gestión de Emociones
-                </h3>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-lg font-light leading-relaxed max-w-sm">
-                    Abre el dosier base del método y recorre la escalera de aprendizaje emocional.
-                  </p>
-                  {/* Enlace estático al PDF. Se previene su acción si no existe por ahora. */}
-                  <button onClick={(e) => { e.preventDefault(); alert("Documento pendiente de vincular"); }} className="mt-8 inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors">
-                    Ver documento <span className="material-symbols-outlined text-sm">open_in_new</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Texto Explicativo */}
-            <div>
+            <div className="order-1 lg:order-1">
               <h3 className="font-headline text-3xl md:text-4xl text-primary mb-6">Método Gestión de Emociones</h3>
               <p className="text-on-surface-variant text-lg font-light leading-relaxed mb-6">
                 Este dosier reúne las bases del aprendizaje emocional en cinco módulos progresivos. La propuesta funciona como una escalera práctica: primero observas lo que ocurre dentro, después aprendes a detener la reacción automática, ordenas tus pensamientos, activas tus recursos personales y finalmente aplicas lo aprendido a situaciones reales.
@@ -102,6 +77,34 @@ export default function Emocionario() {
               <p className="text-on-surface-variant text-lg font-light leading-relaxed opacity-80">
                 El objetivo no es dejar de sentir, sino dejar de vivir controlado por lo que sientes. Cada módulo traduce la gestión emocional en acciones, ejercicios y pequeñas decisiones entrenables.
               </p>
+            </div>
+            
+            {/* Tarjeta Método */}
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-primary/30 to-surface-container-highest border border-outline-variant/10 shadow-xl min-h-[400px] w-full cursor-pointer transition-all hover:shadow-2xl order-2 lg:order-2"
+              onClick={() => window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer')}
+            >
+              <div className="absolute inset-0 bg-surface-container-highest/20 placeholder-fallback"></div>
+              {/* Nota: si en el futuro existe 'fondo_metodo.jpg', se puede usar una etiqueta img aquí */}
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-500"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-end text-white">
+                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                  <p className="text-white/90 text-xl md:text-2xl font-light leading-relaxed max-w-sm">
+                    Abre el dosier base del método y recorre la escalera de aprendizaje emocional.
+                  </p>
+                  {/* Enlace al PDF. */}
+                  <button 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer'); 
+                    }} 
+                    className="mt-8 inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Ver documento <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -113,7 +116,7 @@ export default function Emocionario() {
               <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
                 <h4 className="font-headline text-2xl mb-2">Módulo I</h4>
                 <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-base font-light">
+                  <p className="text-white/90 text-xl md:text-2xl font-light">
                     Mapea tu estado interno y descubre tus primeras señales de autocontrol.
                   </p>
                 </div>
@@ -143,7 +146,7 @@ export default function Emocionario() {
               <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white lg:items-start text-left">
                 <h4 className="font-headline text-2xl mb-2">Módulo II</h4>
                 <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-base font-light">
+                  <p className="text-white/90 text-xl md:text-2xl font-light">
                     Entrena la pausa corporal antes de que la emoción tome el mando.
                   </p>
                 </div>
@@ -159,7 +162,7 @@ export default function Emocionario() {
               <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
                 <h4 className="font-headline text-2xl mb-2">Módulo III</h4>
                 <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-base font-light">
+                  <p className="text-white/90 text-xl md:text-2xl font-light">
                     Aprende a tomar distancia de pensamientos rígidos y bucles mentales.
                   </p>
                 </div>
@@ -189,7 +192,7 @@ export default function Emocionario() {
               <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white lg:items-start text-left">
                 <h4 className="font-headline text-2xl mb-2">Módulo IV</h4>
                 <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-base font-light">
+                  <p className="text-white/90 text-xl md:text-2xl font-light">
                     Reconoce tus recursos internos y conviértelos en herramientas activas.
                   </p>
                 </div>
@@ -205,7 +208,7 @@ export default function Emocionario() {
               <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
                 <h4 className="font-headline text-2xl mb-2">Módulo V</h4>
                 <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-base font-light">
+                  <p className="text-white/90 text-xl md:text-2xl font-light">
                     Convierte lo aprendido en decisiones, límites y acciones concretas.
                   </p>
                 </div>
@@ -263,7 +266,7 @@ export default function Emocionario() {
           <div className="mb-16 text-center">
             <h2 className="font-headline text-4xl md:text-5xl text-primary mb-4">Emocionario</h2>
             <p className="text-on-surface-variant text-lg lg:text-xl font-light">
-              Un recorrido gamificado para aprender a dominar tus emociones practicando.
+              Un divertido recorrido para aprender a dominar tus emociones practicando.
             </p>
           </div>
 
@@ -275,27 +278,66 @@ export default function Emocionario() {
                 Selecciona un módulo para iniciar tu aventura emocional.
               </h3>
               
-              <ul className="space-y-3 mb-10 flex-grow">
-                {[
-                  "Fundamentos y Diagnóstico",
-                  "Conciencia Somática",
-                  "Flexibilidad Cognitiva",
-                  "Fortalezas de Carácter",
-                  "Integración y Acción Consciente",
-                  "Crisis, Pérdida y Salud",
-                  "Amor y Desamor",
-                  "Trabajo y Finanzas"
-                ].map((modulo, idx) => (
-                  <li key={idx}>
-                    <button 
-                      onClick={() => setSelectedModule(modulo)}
-                      className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
-                    >
-                      {modulo}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {/* Bloque 1: El Viaje Interior */}
+              <div className="mb-10">
+                <h4 className="font-headline text-xl text-primary mb-4">El Viaje Interior (Fundamentos)</h4>
+                <ul className="space-y-3">
+                  {[
+                    "I. Fundamentos y Diagnóstico",
+                    "II. Conciencia Somática",
+                    "III. Flexibilidad Cognitiva",
+                    "IV. Fortalezas de Carácter",
+                    "V. Integración y Acción Consciente"
+                  ].map((modulo, idx) => (
+                    <li key={idx}>
+                      <button 
+                        onClick={() => setSelectedModule(modulo)}
+                        className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                      >
+                        {modulo}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Bloque 2: Módulos Especiales */}
+              <div className="mb-10 flex-grow">
+                <h4 className="font-headline text-xl text-primary mb-4">Módulos Especiales (Gestión de Crisis)</h4>
+                {(() => {
+                  const fundamentosCompletados = false;
+                  
+                  if (!fundamentosCompletados) {
+                    return (
+                      <div className="p-6 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/10 flex flex-col items-center justify-center text-center text-on-surface-variant opacity-80 h-full min-h-[140px]">
+                        <span className="material-symbols-outlined text-3xl mb-3">lock</span>
+                        <p className="font-light">
+                          Completa primero los cinco módulos de El Viaje Interior para desbloquear las herramientas de gestión de crisis.
+                        </p>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <ul className="space-y-3">
+                      {[
+                        "Crisis, Pérdida y Salud",
+                        "Amor y Desamor",
+                        "Trabajo y Finanzas"
+                      ].map((modulo, idx) => (
+                        <li key={idx}>
+                          <button 
+                            onClick={() => setSelectedModule(modulo)}
+                            className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                          >
+                            {modulo}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()}
+              </div>
 
               {selectedModule && (
                 <div className="p-8 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4">
