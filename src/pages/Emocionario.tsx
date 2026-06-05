@@ -112,7 +112,7 @@ const SORT_PIECES = [
   { id: 1, label: "La Mente", desc: "Ponerle nombre a lo que siento." },
 ];
 
-const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceRequest }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, onPieceEarned?: () => void, onAdvanceRequest?: () => void }) => {
+const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceRequest, panelRef }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, onPieceEarned?: () => void, onAdvanceRequest?: () => void, panelRef?: React.RefObject<HTMLDivElement | null> }) => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showContinue, setShowContinue] = useState(false);
   const [slots, setSlots] = useState<(number | null)[]>([null, null, null]);
@@ -129,7 +129,7 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
 
   if (progress.modulo0Completado) {
     return (
-      <div className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-primary/20 shadow-sm animate-in fade-in slide-in-from-top-4 text-center">
+      <div ref={panelRef} className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-primary/20 shadow-sm animate-in fade-in slide-in-from-top-4 text-center">
         <span className="material-symbols-outlined text-4xl text-primary mb-4">task_alt</span>
         <h4 className="font-headline text-2xl md:text-3xl text-primary mb-4">El Despertar del Arquitecto Completado</h4>
         <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed">
@@ -182,14 +182,18 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
       setSlots(newSlots);
       setSelectedPiece(null);
       if (newSlots.every(s => s !== null)) {
-        setFeedback("¡Cimientos listos! Has conseguido la última pieza del puzle. Ahora resuélvelo en el panel derecho o deslizando hacia abajo.");
+        setFeedback("¡Cimientos listos! Has conseguido las dos últimas piezas del puzle. Ahora ordénalo en el panel derecho o deslizando hacia abajo.");
         setShowContinue(true);
         const currentPieces = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) ? progress.puzzlePieces["modulo-0"] : [];
-        if (!currentPieces.includes(4)) {
+        const newPieces = [...currentPieces];
+        [4, 5].forEach((pId) => {
+          if (!newPieces.includes(pId)) newPieces.push(pId);
+        });
+        if (newPieces.length > currentPieces.length) {
             updateProgress({
              puzzlePieces: {
                ...progress.puzzlePieces,
-               "modulo-0": [...currentPieces, 4]
+               "modulo-0": newPieces
              }
             });
             if (onPieceEarned) onPieceEarned();
@@ -224,7 +228,7 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
   };
 
   return (
-    <div className="mt-4 p-6 md:p-10 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
+    <div ref={panelRef} className="mt-4 p-6 md:p-10 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
       <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
         <h4 className="font-headline text-2xl md:text-3xl text-primary">{p.titulo}</h4>
         <div className="text-secondary tracking-widest uppercase font-bold text-xs inline-block">Nivel {p.nivel}</div>
@@ -321,7 +325,7 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
       {showContinue && (
         <button 
           onClick={handleContinue}
-          className="w-full bg-primary text-white py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-secondary transition-colors shadow-lg"
+          className="w-full bg-primary text-on-primary py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-secondary transition-colors shadow-lg"
         >
           Continuar
         </button>
@@ -344,8 +348,8 @@ export const MODULE_PUZZLE_CONFIG: Record<string, { moduleId: string, title: str
     moduleId: "modulo-0",
     title: "Módulo 0",
     image: "/images/puzle_modulo_0.jpg",
-    totalPieces: 5,
-    layoutKey: "5-special"
+    totalPieces: 6,
+    layoutKey: "6-grid"
   },
   "I. Fundamentos y Diagnóstico": {
     moduleId: "modulo-1",
@@ -405,74 +409,88 @@ export const MODULE_PUZZLE_CONFIG: Record<string, { moduleId: string, title: str
   }
 };
 
-function generateGridPuzzlePieces(cols: number, rows: number): PuzzlePieceDef[] {
+function generateInterlockingPuzzlePieces(cols: number, rows: number): PuzzlePieceDef[] {
   const BOARD_W = 200;
   const BOARD_H = 300;
   const w = BOARD_W / cols;
   const h = BOARD_H / rows;
   const pieces: PuzzlePieceDef[] = [];
   
+  const hEdges: number[][] = []; 
+  const vEdges: number[][] = [];
+  
+  for (let r = 0; r <= rows; r++) {
+    hEdges.push([]);
+    for (let c = 0; c < cols; c++) hEdges[r].push(((r * 13 + c * 17) % 2 === 0) ? 1 : -1);
+  }
+  for (let r = 0; r < rows; r++) {
+    vEdges.push([]);
+    for (let c = 0; c <= cols; c++) vEdges[r].push(((r * 19 + c * 23) % 2 === 0) ? 1 : -1);
+  }
+
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const id = r * cols + c;
       const x = c * w;
       const y = r * h;
       
-      const TAB_H = h * 0.15;
-      const TAB_W = w * 0.15;
+      const TAB_W = w * 0.18;
+      const TAB_H = h * 0.18;
       
       let path = `M ${x} ${y}`;
       
       // Top edge
       if (r === 0) {
-        path += ` H ${x + w}`;
+        path += ` L ${x + w} ${y}`;
       } else {
-        path += ` H ${x + w / 2 - TAB_W} C ${x + w/2 - TAB_W} ${y + TAB_H}, ${x + w/2 + TAB_W} ${y + TAB_H}, ${x + w/2 + TAB_W} ${y} H ${x + w}`;
+        const sign = hEdges[r][c];
+        path += ` L ${x + w/2 - TAB_W} ${y}`;
+        path += ` C ${x + w/2 - TAB_W} ${y + sign*TAB_H}, ${x + w/2 + TAB_W} ${y + sign*TAB_H}, ${x + w/2 + TAB_W} ${y}`;
+        path += ` L ${x + w} ${y}`;
       }
       
       // Right edge
       if (c === cols - 1) {
-        path += ` V ${y + h}`;
+        path += ` L ${x + w} ${y + h}`;
       } else {
-        path += ` V ${y + h / 2 - TAB_H} C ${x + w + TAB_W} ${y + h/2 - TAB_H}, ${x + w + TAB_W} ${y + h/2 + TAB_H}, ${x + w} ${y + h/2 + TAB_H} V ${y + h}`;
+        const sign = vEdges[r][c + 1];
+        path += ` L ${x + w} ${y + h/2 - TAB_H}`;
+        path += ` C ${x + w + sign*TAB_W} ${y + h/2 - TAB_H}, ${x + w + sign*TAB_W} ${y + h/2 + TAB_H}, ${x + w} ${y + h/2 + TAB_H}`;
+        path += ` L ${x + w} ${y + h}`;
       }
       
       // Bottom edge
       if (r === rows - 1) {
-        path += ` H ${x}`;
+        path += ` L ${x} ${y + h}`;
       } else {
-        path += ` H ${x + w / 2 + TAB_W} C ${x + w/2 + TAB_W} ${y + h + TAB_H}, ${x + w/2 - TAB_W} ${y + h + TAB_H}, ${x + w/2 - TAB_W} ${y + h} H ${x}`;
+        const sign = hEdges[r + 1][c];
+        path += ` L ${x + w/2 + TAB_W} ${y + h}`;
+        path += ` C ${x + w/2 + TAB_W} ${y + h + sign*TAB_H}, ${x + w/2 - TAB_W} ${y + h + sign*TAB_H}, ${x + w/2 - TAB_W} ${y + h}`;
+        path += ` L ${x} ${y + h}`;
       }
       
       // Left edge
       if (c === 0) {
-        path += ` V ${y}`;
+        path += ` L ${x} ${y}`;
       } else {
-         path += ` V ${y + h / 2 + TAB_H} C ${x - TAB_W} ${y + h/2 + TAB_H}, ${x - TAB_W} ${y + h/2 - TAB_H}, ${x} ${y + h/2 - TAB_H} V ${y}`;
+        const sign = vEdges[r][c];
+        path += ` L ${x} ${y + h/2 + TAB_H}`;
+        path += ` C ${x + sign*TAB_W} ${y + h/2 + TAB_H}, ${x + sign*TAB_W} ${y + h/2 - TAB_H}, ${x} ${y + h/2 - TAB_H}`;
+        path += ` L ${x} ${y}`;
       }
       
       path += " Z";
-      
       pieces.push({ id, x, y, w, h, path });
     }
   }
   return pieces;
 }
 
-const MODULE_0_PUZZLE_PIECES: PuzzlePieceDef[] = [
-  { id: 0, x: 0, y: 0, w: 100, h: 100, path: "M 0 0 H 100 V 35 C 115 35 115 65 100 65 V 100 H 65 C 65 115 35 115 35 100 H 0 Z" },
-  { id: 1, x: 100, y: 0, w: 100, h: 100, path: "M 100 0 H 200 V 100 H 165 C 165 85 135 85 135 100 H 100 V 65 C 85 65 85 35 100 35 Z" },
-  { id: 2, x: 0, y: 100, w: 100, h: 100, path: "M 0 100 H 35 C 35 85 65 85 65 100 H 100 V 135 C 115 135 115 165 100 165 V 200 H 0 Z" },
-  { id: 3, x: 100, y: 100, w: 100, h: 100, path: "M 100 100 H 135 C 135 85 165 85 165 100 H 200 V 200 H 100 V 165 C 85 165 85 135 100 135 Z" },
-  { id: 4, x: 0, y: 200, w: 200, h: 100, path: "M 0 200 H 85 C 85 185 115 185 115 200 H 200 V 300 H 0 Z" }
-];
-
 export const PUZZLE_LAYOUTS: Record<string, PuzzlePieceDef[]> = {
-  "5-special": MODULE_0_PUZZLE_PIECES,
-  "6-grid": generateGridPuzzlePieces(2, 3),
-  "8-grid": generateGridPuzzlePieces(2, 4),
-  "10-grid": generateGridPuzzlePieces(2, 5),
-  "12-grid": generateGridPuzzlePieces(3, 4)
+  "6-grid": generateInterlockingPuzzlePieces(2, 3),
+  "8-grid": generateInterlockingPuzzlePieces(2, 4),
+  "10-grid": generateInterlockingPuzzlePieces(2, 5),
+  "12-grid": generateInterlockingPuzzlePieces(3, 4)
 };
 
 const PuzzlePieceSvg = ({
@@ -496,17 +514,9 @@ const PuzzlePieceSvg = ({
   
   let wrapperClass = "";
   if (size === "reward") {
-     if (piece.w === 200) {
-       wrapperClass = "w-[240px] md:w-[320px] aspect-[2/1]";
-     } else {
-       wrapperClass = "w-[120px] md:w-[160px] aspect-square";
-     }
+     wrapperClass = "w-[120px] md:w-[160px] aspect-[2/3]";
   } else if (size === "pool") {
-     if (piece.w === 200) {
-       wrapperClass = "w-[160px] md:w-[200px] aspect-[2/1]"; 
-     } else {
-       wrapperClass = "w-[80px] md:w-[100px] aspect-square";
-     }
+     wrapperClass = "w-[80px] md:w-[100px] aspect-[2/3]";
   } else if (size === "slot") {
      wrapperClass = "w-full h-full absolute top-0 left-0";
   }
@@ -519,7 +529,7 @@ const PuzzlePieceSvg = ({
     >
       <svg
         viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
-        className="w-full h-full drop-shadow-sm"
+        className="w-full h-full drop-shadow-sm overflow-visible"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
@@ -548,6 +558,20 @@ const PuzzlePieceSvg = ({
   );
 };
 
+const AnimatedTitle = ({ text }: { text: string }) => (
+  <span>
+    {text.split("").map((char, i) => (
+      <span
+        key={i}
+        className="inline-block animate-in fade-in slide-in-from-bottom-2 fill-mode-both"
+        style={{ animationDelay: `${i * 35}ms` }}
+      >
+        {char === " " ? "\u00A0" : char}
+      </span>
+    ))}
+  </span>
+);
+
 const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobilePendingContinue, onMobileContinue }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, mobilePendingContinue?: boolean, onMobileContinue?: () => void }) => {
   if (!selectedModule) return null;
 
@@ -575,6 +599,19 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
   const [inResolution, setInResolution] = useState(false);
   const [puzzleSlots, setPuzzleSlots] = useState<(number | null)[]>(Array(totalPieces).fill(null));
   const [selectedPuzzlePiece, setSelectedPuzzlePiece] = useState<number | null>(null);
+
+  const completedPuzzleRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (puzzleCompleted && window.matchMedia('(hover: none)').matches) {
+      setTimeout(() => {
+        if (completedPuzzleRef.current) {
+          const y = completedPuzzleRef.current.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 150);
+    }
+  }, [puzzleCompleted]);
 
   useEffect(() => {
     if (currentPiecesCount === totalPieces && !puzzleCompleted) {
@@ -622,7 +659,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
           ...(moduleId === "modulo-0" ? { modulo0Completado: true, fundamentosDesbloqueados: true } : {})
         });
         setInResolution(false);
-      }, 500);
+      }, 1200);
     }
   };
 
@@ -633,14 +670,24 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
       <div className="relative z-10 flex-grow flex flex-col items-center">
         
         {puzzleCompleted ? (
-           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700 w-full">
+           <div ref={completedPuzzleRef} className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700 w-full pt-8">
               <span className="material-symbols-outlined text-green-500 text-5xl mb-4">workspace_premium</span>
-              <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">{title} Completado</h4>
+              <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">
+                 <AnimatedTitle text={`${title} Completado`} />
+              </h4>
               <p className="text-on-surface-variant font-light mb-6 text-center text-lg">Has reconstruido la imagen del módulo.</p>
               
               <div className="w-full max-w-[520px] mx-auto aspect-[2/3] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/20 relative bg-surface-container-lowest">
                  <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-contain relative z-10" />
               </div>
+
+              {mobilePendingContinue && onMobileContinue && (
+                  <div className="mt-8 md:hidden animate-in fade-in slide-in-from-bottom-4 z-50">
+                    <button onClick={() => {
+                      document.getElementById("module-button-modulo-1")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }} className="bg-primary text-on-primary px-8 py-4 rounded-full font-bold shadow-lg text-lg">Siguiente módulo</button>
+                  </div>
+              )}
            </div>
         ) : inResolution ? (
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
@@ -668,7 +715,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                                {!hasAnyPiece && (
                                  <svg
                                    viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
-                                   className={`w-full h-full transition-all ${selectedPuzzlePiece !== null ? 'opacity-100 cursor-pointer pointer-events-auto' : 'opacity-60'}`}
+                                   className={`w-full h-full overflow-visible transition-all ${selectedPuzzlePiece !== null ? 'opacity-100 cursor-pointer pointer-events-auto' : 'opacity-60'}`}
                                    preserveAspectRatio="xMidYMid meet"
                                  >
                                    <path
@@ -682,13 +729,18 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                                  </svg>
                                )}
                                {hasAnyPiece && (
-                                   <PuzzlePieceSvg 
-                                      pieceId={pieceIdInSlot!} 
-                                      puzzleImage={puzzleImage} 
-                                      layoutPieces={layoutPieces}
-                                      size="slot" 
-                                      className="animate-in zoom-in"
-                                   />
+                                   <div 
+                                     className={`w-full h-full absolute inset-0 transition-all duration-1000 ease-out ${puzzleSlots.every((s,idx) => s === idx) ? "scale-100 !translate-y-0 drop-shadow-sm" : "scale-[1.04] drop-shadow-xl -translate-y-1"}`}
+                                     style={puzzleSlots.every((s,idx) => s === idx) ? { transitionDelay: `${i * 90}ms` } : {}}
+                                   >
+                                       <PuzzlePieceSvg 
+                                          pieceId={pieceIdInSlot!} 
+                                          puzzleImage={puzzleImage} 
+                                          layoutPieces={layoutPieces}
+                                          size="slot" 
+                                          className="animate-in zoom-in"
+                                       />
+                                   </div>
                                )}
                            </div>
                        );
@@ -1271,7 +1323,7 @@ export default function Emocionario() {
               </h3>
 
               {/* Bloque Módulo 0 */}
-              <div ref={questionPanelRef} className="mb-10">
+              <div className="mb-10">
                 <div className="flex items-center gap-4">
                   <button 
                     onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
@@ -1303,7 +1355,7 @@ export default function Emocionario() {
                   )}
                 </div>
                 {selectedModule === "Módulo 0 — El Despertar del Arquitecto" && (
-                  <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} />
+                  <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} panelRef={questionPanelRef} />
                 )}
               </div>
               
@@ -1322,6 +1374,7 @@ export default function Emocionario() {
                     return (
                       <li key={idx}>
                         <button 
+                          id={modulo === "I. Fundamentos y Diagnóstico" ? "module-button-modulo-1" : undefined}
                           onClick={() => setSelectedModule(modulo)}
                           className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg ${isLocked ? 'opacity-70' : ''}`}
                         >
