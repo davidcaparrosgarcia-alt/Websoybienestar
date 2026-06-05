@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { auth, db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import SEO from '../components/SEO';
 
 interface EmocionarioProgress {
@@ -110,7 +112,7 @@ const SORT_PIECES = [
   { id: 1, label: "La Mente", desc: "Ponerle nombre a lo que siento." },
 ];
 
-const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void }) => {
+const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceRequest }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, onPieceEarned?: () => void, onAdvanceRequest?: () => void }) => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showContinue, setShowContinue] = useState(false);
   const [slots, setSlots] = useState<(number | null)[]>([null, null, null]);
@@ -162,7 +164,8 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
           }
         });
         // Override msg to tell them they got a piece
-        setFeedback(res.msg + " ¡Has conseguido una pieza del puzle! Mira en el panel derecho.");
+        setFeedback(res.msg + " ¡Has conseguido una pieza del puzle! Mira en el panel derecho o desliza hacia abajo.");
+        if (onPieceEarned) onPieceEarned();
       }
 
       setShowContinue(true);
@@ -179,7 +182,7 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
       setSlots(newSlots);
       setSelectedPiece(null);
       if (newSlots.every(s => s !== null)) {
-        setFeedback("¡Cimientos listos! Has conseguido la última pieza del puzle. Ahora resuélvelo en el panel derecho.");
+        setFeedback("¡Cimientos listos! Has conseguido la última pieza del puzle. Ahora resuélvelo en el panel derecho o deslizando hacia abajo.");
         setShowContinue(true);
         const currentPieces = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) ? progress.puzzlePieces["modulo-0"] : [];
         if (!currentPieces.includes(4)) {
@@ -189,6 +192,7 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
                "modulo-0": [...currentPieces, 4]
              }
             });
+            if (onPieceEarned) onPieceEarned();
         }
       }
     } else {
@@ -326,10 +330,155 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
   );
 };
 
-const PuzzlePiece = ({
+export interface PuzzlePieceDef {
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  path: string;
+}
+
+export const MODULE_PUZZLE_CONFIG: Record<string, { moduleId: string, title: string, image: string, totalPieces: number, layoutKey: "5-special" | "6-grid" | "8-grid" | "10-grid" | "12-grid" }> = {
+  "Módulo 0 — El Despertar del Arquitecto": {
+    moduleId: "modulo-0",
+    title: "Módulo 0",
+    image: "/images/puzle_modulo_0.jpg",
+    totalPieces: 5,
+    layoutKey: "5-special"
+  },
+  "I. Fundamentos y Diagnóstico": {
+    moduleId: "modulo-1",
+    title: "Módulo I",
+    image: "/images/puzle_modulo_1.jpg",
+    totalPieces: 8,
+    layoutKey: "8-grid"
+  },
+  "II. Conciencia Somática": {
+    moduleId: "modulo-2",
+    title: "Módulo II",
+    image: "/images/puzle_modulo_2.jpg",
+    totalPieces: 8,
+    layoutKey: "8-grid"
+  },
+  "III. Flexibilidad Cognitiva": {
+    moduleId: "modulo-3",
+    title: "Módulo III",
+    image: "/images/puzle_modulo_3.jpg",
+    totalPieces: 10,
+    layoutKey: "10-grid"
+  },
+  "IV. Fortalezas de Carácter": {
+    moduleId: "modulo-4",
+    title: "Módulo IV",
+    image: "/images/fondo_modulo_4.jpg",
+    totalPieces: 10,
+    layoutKey: "10-grid"
+  },
+  "V. Integración y Acción Consciente": {
+    moduleId: "modulo-5",
+    title: "Módulo V",
+    image: "/images/fondo_modulo_5.jpg",
+    totalPieces: 10,
+    layoutKey: "10-grid"
+  },
+  "Crisis, Pérdida y Salud": {
+    moduleId: "crisis",
+    title: "Crisis, Pérdida y Salud",
+    image: "/images/fondo_modulo_crisis.jpg",
+    totalPieces: 12,
+    layoutKey: "12-grid"
+  },
+  "Amor y Desamor": {
+    moduleId: "amor",
+    title: "Amor y Desamor",
+    image: "/images/fondo_modulo_amor.jpg",
+    totalPieces: 12,
+    layoutKey: "12-grid"
+  },
+  "Trabajo y Finanzas": {
+    moduleId: "trabajo",
+    title: "Trabajo y Finanzas",
+    image: "/images/fondo_modulo_trabajo.jpg",
+    totalPieces: 12,
+    layoutKey: "12-grid"
+  }
+};
+
+function generateGridPuzzlePieces(cols: number, rows: number): PuzzlePieceDef[] {
+  const BOARD_W = 200;
+  const BOARD_H = 300;
+  const w = BOARD_W / cols;
+  const h = BOARD_H / rows;
+  const pieces: PuzzlePieceDef[] = [];
+  
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const id = r * cols + c;
+      const x = c * w;
+      const y = r * h;
+      
+      const TAB_H = h * 0.15;
+      const TAB_W = w * 0.15;
+      
+      let path = `M ${x} ${y}`;
+      
+      // Top edge
+      if (r === 0) {
+        path += ` H ${x + w}`;
+      } else {
+        path += ` H ${x + w / 2 - TAB_W} C ${x + w/2 - TAB_W} ${y + TAB_H}, ${x + w/2 + TAB_W} ${y + TAB_H}, ${x + w/2 + TAB_W} ${y} H ${x + w}`;
+      }
+      
+      // Right edge
+      if (c === cols - 1) {
+        path += ` V ${y + h}`;
+      } else {
+        path += ` V ${y + h / 2 - TAB_H} C ${x + w + TAB_W} ${y + h/2 - TAB_H}, ${x + w + TAB_W} ${y + h/2 + TAB_H}, ${x + w} ${y + h/2 + TAB_H} V ${y + h}`;
+      }
+      
+      // Bottom edge
+      if (r === rows - 1) {
+        path += ` H ${x}`;
+      } else {
+        path += ` H ${x + w / 2 + TAB_W} C ${x + w/2 + TAB_W} ${y + h + TAB_H}, ${x + w/2 - TAB_W} ${y + h + TAB_H}, ${x + w/2 - TAB_W} ${y + h} H ${x}`;
+      }
+      
+      // Left edge
+      if (c === 0) {
+        path += ` V ${y}`;
+      } else {
+         path += ` V ${y + h / 2 + TAB_H} C ${x - TAB_W} ${y + h/2 + TAB_H}, ${x - TAB_W} ${y + h/2 - TAB_H}, ${x} ${y + h/2 - TAB_H} V ${y}`;
+      }
+      
+      path += " Z";
+      
+      pieces.push({ id, x, y, w, h, path });
+    }
+  }
+  return pieces;
+}
+
+const MODULE_0_PUZZLE_PIECES: PuzzlePieceDef[] = [
+  { id: 0, x: 0, y: 0, w: 100, h: 100, path: "M 0 0 H 100 V 35 C 115 35 115 65 100 65 V 100 H 65 C 65 115 35 115 35 100 H 0 Z" },
+  { id: 1, x: 100, y: 0, w: 100, h: 100, path: "M 100 0 H 200 V 100 H 165 C 165 85 135 85 135 100 H 100 V 65 C 85 65 85 35 100 35 Z" },
+  { id: 2, x: 0, y: 100, w: 100, h: 100, path: "M 0 100 H 35 C 35 85 65 85 65 100 H 100 V 135 C 115 135 115 165 100 165 V 200 H 0 Z" },
+  { id: 3, x: 100, y: 100, w: 100, h: 100, path: "M 100 100 H 135 C 135 85 165 85 165 100 H 200 V 200 H 100 V 165 C 85 165 85 135 100 135 Z" },
+  { id: 4, x: 0, y: 200, w: 200, h: 100, path: "M 0 200 H 85 C 85 185 115 185 115 200 H 200 V 300 H 0 Z" }
+];
+
+export const PUZZLE_LAYOUTS: Record<string, PuzzlePieceDef[]> = {
+  "5-special": MODULE_0_PUZZLE_PIECES,
+  "6-grid": generateGridPuzzlePieces(2, 3),
+  "8-grid": generateGridPuzzlePieces(2, 4),
+  "10-grid": generateGridPuzzlePieces(2, 5),
+  "12-grid": generateGridPuzzlePieces(3, 4)
+};
+
+const PuzzlePieceSvg = ({
   pieceId,
   puzzleImage,
-  totalPieces = 5,
+  layoutPieces,
   size,
   className = "",
   onClick,
@@ -337,106 +486,114 @@ const PuzzlePiece = ({
 }: {
   pieceId: number,
   puzzleImage: string,
-  totalPieces?: number,
+  layoutPieces: PuzzlePieceDef[],
   size: "reward" | "pool" | "slot",
   className?: string,
   onClick?: () => void,
   selected?: boolean
 }) => {
-  // We use a 3x2 grid layout (2 cols, 3 rows). Pieces 0-3 are squares. Piece 4 is wide (2x1).
-  const isWide = pieceId === 4;
-  const aspectClass = isWide ? "aspect-[2/1]" : "aspect-square";
+  const piece = layoutPieces.find(p => p.id === pieceId) || layoutPieces[0];
   
-  let sizeClass = "";
+  let wrapperClass = "";
   if (size === "reward") {
-    sizeClass = `w-[200px] md:w-[280px] ${aspectClass}`;
+     if (piece.w === 200) {
+       wrapperClass = "w-[240px] md:w-[320px] aspect-[2/1]";
+     } else {
+       wrapperClass = "w-[120px] md:w-[160px] aspect-square";
+     }
   } else if (size === "pool") {
-    sizeClass = `w-16 md:w-24 ${aspectClass}`;
+     if (piece.w === 200) {
+       wrapperClass = "w-[160px] md:w-[200px] aspect-[2/1]"; 
+     } else {
+       wrapperClass = "w-[80px] md:w-[100px] aspect-square";
+     }
   } else if (size === "slot") {
-    sizeClass = "w-full h-full";
+     wrapperClass = "w-full h-full absolute top-0 left-0";
   }
-
-  // Organic clip-paths to simulate puzzle tabs slightly
-  const clipPaths = [
-    "polygon(5% 0%, 95% 0%, 100% 15%, 100% 85%, 95% 100%, 5% 100%, 0% 85%, 0% 15%)",
-    "polygon(0% 5%, 85% 0%, 100% 5%, 100% 95%, 85% 100%, 0% 95%, 15% 50%)",
-    "polygon(5% 0%, 100% 5%, 95% 50%, 100% 95%, 5% 100%, 0% 85%, 0% 15%)",
-    "polygon(15% 0%, 100% 0%, 100% 100%, 15% 100%, 0% 80%, 5% 50%, 0% 20%)",
-    "polygon(0% 0%, 85% 0%, 100% 20%, 95% 50%, 100% 80%, 85% 100%, 0% 100%)"
-  ];
-  const clipPath = clipPaths[pieceId % clipPaths.length];
-
-  const pieceLayout = [
-    { bgSize: "200% 300%", bgPos: "0% 0%" },
-    { bgSize: "200% 300%", bgPos: "100% 0%" },
-    { bgSize: "200% 300%", bgPos: "0% 50%" },
-    { bgSize: "200% 300%", bgPos: "100% 50%" },
-    { bgSize: "100% 300%", bgPos: "0% 100%" } 
-  ];
-  const layout = pieceLayout[pieceId % pieceLayout.length];
 
   return (
     <div 
-      className={`relative transition-all duration-300 ${sizeClass} ${className} ${onClick ? 'cursor-pointer hover:scale-105' : ''} ${selected ? 'scale-110' : ''}`}
+      className={`relative transition-all duration-300 ${wrapperClass} ${className} ${onClick ? 'cursor-pointer hover:scale-105' : ''} ${selected ? 'scale-[1.12] ring-4 ring-primary ring-offset-2 ring-offset-surface-container-lowest rounded-2xl shadow-xl z-20' : ''}`}
       onClick={onClick}
-      style={{ filter: "drop-shadow(0px 8px 16px rgba(0,0,0,0.3))" }}
+      style={size !== "slot" ? { filter: "drop-shadow(0px 8px 16px rgba(0,0,0,0.3))" } : {}}
     >
-      <div 
-         className={`w-full h-full relative overflow-hidden flex items-center justify-center ${selected ? 'ring-4 ring-primary ring-offset-2 ring-offset-surface-container-lowest' : ''}`}
-         style={{
-           clipPath: clipPath,
-           backgroundImage: `url(${puzzleImage})`,
-           backgroundSize: layout.bgSize,
-           backgroundPosition: layout.bgPos,
-           backgroundColor: "rgba(0,0,0,0.1)",
-           backgroundBlendMode: "overlay"
-         }}
+      <svg
+        viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
+        className="w-full h-full drop-shadow-sm"
+        preserveAspectRatio="xMidYMid meet"
       >
-        <div className="absolute inset-0 rounded-2xl border border-white/30 mix-blend-overlay"></div>
-      </div>
+        <defs>
+          <clipPath id={`clip-${piece.id}-${size}`}>
+            <path d={piece.path} />
+          </clipPath>
+        </defs>
+        <image
+          href={puzzleImage}
+          x="0"
+          y="0"
+          width="200"
+          height="300"
+          preserveAspectRatio="xMidYMid slice"
+          clipPath={`url(#clip-${piece.id}-${size})`}
+        />
+        <path
+          d={piece.path}
+          fill="transparent"
+          stroke="currentColor"
+          className="text-white/40"
+          strokeWidth="2"
+        />
+      </svg>
     </div>
   );
 };
 
-const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void }) => {
+const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobilePendingContinue, onMobileContinue }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, mobilePendingContinue?: boolean, onMobileContinue?: () => void }) => {
   if (!selectedModule) return null;
 
-  const isModulo0 = selectedModule === "Módulo 0 — El Despertar del Arquitecto";
-  const piecesCollected = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) || [];
-  const puzzleCompleted = (progress.puzzleCompleted && progress.puzzleCompleted["modulo-0"]) || false;
+  const config = MODULE_PUZZLE_CONFIG[selectedModule];
+  if (!config) {
+    return (
+      <div className="w-full flex flex-col h-full rounded-[2.5rem] bg-surface border border-outline-variant/10 shadow-lg p-6 md:p-8 flex-grow">
+        <div className="w-full flex-grow flex items-center justify-center pb-20">
+          <div className="text-center p-8 bg-surface-container/50 rounded-3xl border border-outline-variant/10 max-w-sm">
+            <span className="material-symbols-outlined text-5xl text-primary/40 mb-4">extension</span>
+            <p className="text-on-surface-variant text-lg font-light leading-relaxed">Este módulo no tiene un puzle configurado.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const totalPieces = 5;
-  const currentPiecesCount = isModulo0 ? piecesCollected.length : 0;
-  
-  const imageMap: Record<string, string> = {
-    "Módulo 0 — El Despertar del Arquitecto": "/images/puzle_modulo_0.jpg",
-    "I. Fundamentos y Diagnóstico": "/images/puzle_modulo_1.jpg",
-    "II. Conciencia Somática": "/images/puzle_modulo_2.jpg",
-    "III. Flexibilidad Cognitiva": "/images/puzle_modulo_3.jpg",
-    "IV. Fortalezas de Carácter": "/images/puzle_modulo_4.jpg",
-    "V. Integración y Acción Consciente": "/images/puzle_modulo_5.jpg",
-    "Crisis, Pérdida y Salud": "/images/puzle_modulo_crisis.jpg",
-    "Amor y Desamor": "/images/puzle_modulo_amor.jpg",
-    "Trabajo y Finanzas": "/images/puzle_modulo_trabajo.jpg",
-  };
+  const { moduleId, title, image: puzzleImage, totalPieces, layoutKey } = config;
+  const layoutPieces = PUZZLE_LAYOUTS[layoutKey] || [];
 
-  const puzzleImage = imageMap[selectedModule] || "/images/puzle_modulo_0.jpg";
+  const piecesCollected = (progress.puzzlePieces && progress.puzzlePieces[moduleId]) || [];
+  const puzzleCompleted = (progress.puzzleCompleted && progress.puzzleCompleted[moduleId]) || false;
+  const currentPiecesCount = piecesCollected.length;
 
   const [inResolution, setInResolution] = useState(false);
   const [puzzleSlots, setPuzzleSlots] = useState<(number | null)[]>(Array(totalPieces).fill(null));
   const [selectedPuzzlePiece, setSelectedPuzzlePiece] = useState<number | null>(null);
 
   useEffect(() => {
-    if (currentPiecesCount === totalPieces && !puzzleCompleted && isModulo0) {
+    if (currentPiecesCount === totalPieces && !puzzleCompleted) {
       setInResolution(true);
     } else {
       setInResolution(false);
     }
-  }, [currentPiecesCount, puzzleCompleted, isModulo0, totalPieces]);
+  }, [currentPiecesCount, puzzleCompleted, totalPieces]);
+
+  // Reset slots when changing module
+  useEffect(() => {
+    setPuzzleSlots(Array(totalPieces).fill(null));
+    setSelectedPuzzlePiece(null);
+  }, [selectedModule, totalPieces]);
 
   const handlePuzzleSlotClick = (slotIdx: number) => {
     if (selectedPuzzlePiece === null) {
         if (puzzleSlots[slotIdx] !== null) {
+            setSelectedPuzzlePiece(puzzleSlots[slotIdx]);
             const newSlots = [...puzzleSlots];
             newSlots[slotIdx] = null;
             setPuzzleSlots(newSlots);
@@ -454,16 +611,18 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
     setPuzzleSlots(newSlots);
     setSelectedPuzzlePiece(null);
 
+    // Dynamic completion check: piece IDs matched to slot IDs sequentially
     if (newSlots.every((s, i) => s === i)) {
-      updateProgress({
-        puzzleCompleted: {
-          ...progress.puzzleCompleted,
-          "modulo-0": true
-        },
-        modulo0Completado: true,
-        fundamentosDesbloqueados: true
-      });
-      setInResolution(false);
+      setTimeout(() => {
+        updateProgress({
+          puzzleCompleted: {
+            ...progress.puzzleCompleted,
+            [moduleId]: true
+          },
+          ...(moduleId === "modulo-0" ? { modulo0Completado: true, fundamentosDesbloqueados: true } : {})
+        });
+        setInResolution(false);
+      }, 500);
     }
   };
 
@@ -472,16 +631,14 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
       <div className="absolute inset-0 bg-transparent"></div>
       
       <div className="relative z-10 flex-grow flex flex-col items-center">
-        <h3 className="font-headline text-2xl md:text-3xl text-primary mb-2 text-center">Puzle del módulo</h3>
-        <p className="text-sm font-bold tracking-widest uppercase text-on-surface-variant/70 mb-8 text-center">{selectedModule}</p>
         
         {puzzleCompleted ? (
-           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700 w-full pt-4 md:pt-8">
-              <span className="material-symbols-outlined text-green-500 text-6xl mb-4 md:mb-6">workspace_premium</span>
-              <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">Módulo completado</h4>
-              <p className="text-on-surface-variant font-light mb-8 text-center text-lg">Has reconstruido la imagen del módulo.</p>
+           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700 w-full">
+              <span className="material-symbols-outlined text-green-500 text-5xl mb-4">workspace_premium</span>
+              <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">{title} Completado</h4>
+              <p className="text-on-surface-variant font-light mb-6 text-center text-lg">Has reconstruido la imagen del módulo.</p>
               
-              <div className="w-full max-w-[420px] md:max-w-[480px] mx-auto aspect-[2/3] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/20 relative bg-surface-container-lowest">
+              <div className="w-full max-w-[520px] mx-auto aspect-[2/3] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/20 relative bg-surface-container-lowest">
                  <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-contain relative z-10" />
               </div>
            </div>
@@ -489,30 +646,49 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
                <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
                
-               <div className="w-full max-w-[340px] md:max-w-[400px] aspect-[2/3] mx-auto grid grid-cols-2 grid-rows-3 gap-1 md:gap-2 relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] p-2 md:p-3 mb-8 md:mb-12">
-                   {Array.from({length: totalPieces}).map((_, i) => {
-                       const isBottom = i === 4;
-                       const colClass = isBottom ? "col-span-2" : "col-span-1";
-                       const hasPiece = puzzleSlots[i] !== null;
+               <div className="w-full max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-8 md:mb-12">
+                   {layoutPieces.map((piece, i) => {
+                       const pieceIdInSlot = puzzleSlots[i];
+                       const hasAnyPiece = pieceIdInSlot !== null;
+                       const BOARD_W = 200;
+                       const BOARD_H = 300;
                        
                        return (
                            <div 
                              key={`slot-${i}`}
                              onClick={() => handlePuzzleSlotClick(i)}
-                             className={`${colClass} border-2 border-dashed ${hasPiece ? 'border-transparent' : (selectedPuzzlePiece !== null ? 'border-primary/50 bg-primary/5 cursor-pointer hover:bg-primary/20 hover:scale-[1.02]' : 'border-outline-variant/30')} rounded-[1rem] md:rounded-[1.5rem] transition-all flex items-center justify-center overflow-hidden relative group`}
+                             className="absolute group z-10"
+                             style={{
+                                left: `${(piece.x / BOARD_W) * 100}%`,
+                                top: `${(piece.y / BOARD_H) * 100}%`,
+                                width: `${(piece.w / BOARD_W) * 100}%`,
+                                height: `${(piece.h / BOARD_H) * 100}%`,
+                             }}
                            >
-                               {hasPiece && (
-                                   <PuzzlePiece 
-                                      pieceId={puzzleSlots[i]!} 
+                               {!hasAnyPiece && (
+                                 <svg
+                                   viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
+                                   className={`w-full h-full transition-all ${selectedPuzzlePiece !== null ? 'opacity-100 cursor-pointer pointer-events-auto' : 'opacity-60'}`}
+                                   preserveAspectRatio="xMidYMid meet"
+                                 >
+                                   <path
+                                     d={piece.path}
+                                     fill={selectedPuzzlePiece !== null ? "rgba(var(--color-primary), 0.05)" : "transparent"}
+                                     stroke="rgba(var(--color-outline-variant), 0.3)"
+                                     strokeWidth="2"
+                                     strokeDasharray="4 4"
+                                     className="group-hover:fill-primary/20 transition-colors"
+                                   />
+                                 </svg>
+                               )}
+                               {hasAnyPiece && (
+                                   <PuzzlePieceSvg 
+                                      pieceId={pieceIdInSlot!} 
                                       puzzleImage={puzzleImage} 
+                                      layoutPieces={layoutPieces}
                                       size="slot" 
                                       className="animate-in zoom-in"
                                    />
-                               )}
-                               {!hasPiece && selectedPuzzlePiece !== null && (
-                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                       <span className="material-symbols-outlined text-primary text-3xl">download_done</span>
-                                   </div>
                                )}
                            </div>
                        );
@@ -521,12 +697,13 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
                
                <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
                    <p className="text-xs uppercase tracking-widest font-bold text-center mb-6 text-on-surface-variant/70">Piezas Disponibles</p>
-                   <div className="flex flex-wrap justify-center gap-4 md:gap-6 min-h-[80px]">
+                   <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 min-h-[80px]">
                        {piecesCollected.filter(p => !puzzleSlots.includes(p)).map(p => (
-                           <PuzzlePiece 
+                           <PuzzlePieceSvg 
                               key={`pool-${p}`}
                               pieceId={p}
                               puzzleImage={puzzleImage}
+                              layoutPieces={layoutPieces}
                               size="pool"
                               selected={selectedPuzzlePiece === p}
                               onClick={() => setSelectedPuzzlePiece(p === selectedPuzzlePiece ? null : p)}
@@ -570,9 +747,10 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
                                         zIndex: idx
                                     }}
                                  >
-                                     <PuzzlePiece 
+                                     <PuzzlePieceSvg 
                                         pieceId={p}
                                         puzzleImage={puzzleImage}
+                                        layoutPieces={layoutPieces}
                                         size="reward"
                                      />
                                  </div>
@@ -583,21 +761,28 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
                          <div 
                             className="relative z-50 animate-in zoom-in slide-in-from-bottom-12 duration-700"
                          >
-                             <PuzzlePiece 
+                             <PuzzlePieceSvg 
                                 pieceId={piecesCollected[currentPiecesCount - 1]}
                                 puzzleImage={puzzleImage}
+                                layoutPieces={layoutPieces}
                                 size="reward"
                              />
                              {/* Brillo de recompensa sutil */}
                              <div className="absolute inset-0 bg-primary/5 blur-2xl rounded-full -z-10 animate-pulse"></div>
                          </div>
                      </div>
+                     
+                     {mobilePendingContinue && onMobileContinue && (
+                         <div className="mt-8 md:hidden animate-in fade-in slide-in-from-bottom-4 z-50">
+                           <button onClick={onMobileContinue} className="bg-primary text-on-primary px-8 py-4 rounded-full font-bold shadow-lg text-lg">Siguiente ejercicio</button>
+                         </div>
+                     )}
                  </div>
              ) : (
                  <div className="w-full flex-grow flex items-center justify-center pb-20">
                      <div className="text-center p-8 bg-surface-container/50 rounded-3xl border border-outline-variant/10 max-w-sm">
                          <span className="material-symbols-outlined text-5xl text-primary/40 mb-4">extension</span>
-                         {isModulo0 ? (
+                         {moduleId === "modulo-0" ? (
                              <p className="text-on-surface-variant text-lg font-light leading-relaxed">Completa un ejercicio para recibir tu primera pieza.</p>
                          ) : (
                              <p className="text-on-surface-variant text-lg font-light leading-relaxed">Este módulo no tiene piezas desbloqueables todavía.</p>
@@ -618,31 +803,132 @@ export default function Emocionario() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [progress, setProgress] = useState<EmocionarioProgress>(defaultProgress);
 
+  const [mobilePendingContinue, setMobilePendingContinue] = useState(false);
+  const questionPanelRef = useRef<HTMLDivElement | null>(null);
+  const puzzlePanelRef = useRef<HTMLDivElement | null>(null);
+  const isTouchDevice = () => window.matchMedia('(hover: none)').matches;
+  const [activeMobileCard, setActiveMobileCard] = useState<string | null>(null);
+
+  const [isTester, setIsTester] = useState(false);
+
   useEffect(() => {
-    // Check if access was granted via sessionStorage
     if (sessionStorage.getItem('emocionarioAccess') === 'true') {
       setAccessGranted(true);
     }
     
-    // Load progress
-    const saved = localStorage.getItem("emocionarioProgress");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setProgress({
-          ...defaultProgress,
-          ...parsed,
-          puzzlePieces: parsed.puzzlePieces || { "modulo-0": [] },
-          puzzleCompleted: parsed.puzzleCompleted || {}
-        });
-      } catch(e) {}
-    }
+    const loadLocal = () => {
+      const saved = localStorage.getItem("emocionarioProgress");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setProgress({
+            ...defaultProgress,
+            ...parsed,
+            puzzlePieces: parsed.puzzlePieces || { "modulo-0": [] },
+            puzzleCompleted: parsed.puzzleCompleted || {}
+          });
+        } catch(e) {}
+      }
+    };
+
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        if (user.email === "davidcaparrosgarcia@gmail.com") {
+          setIsTester(true);
+        }
+        try {
+          const docSnap = await getDoc(doc(db, "users", user.uid, "emocionarioProgress", "data"));
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const loaded = {
+              ...defaultProgress,
+              ...data,
+              puzzlePieces: data.puzzlePieces || { "modulo-0": [] },
+              puzzleCompleted: data.puzzleCompleted || {}
+            };
+            setProgress(loaded as EmocionarioProgress);
+            localStorage.setItem("emocionarioProgress", JSON.stringify(loaded));
+          } else {
+             loadLocal();
+          }
+        } catch (e) {
+          console.error("Error loading progress from firestore", e);
+          loadLocal();
+        }
+      } else {
+        loadLocal();
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const updateProgress = (updates: Partial<EmocionarioProgress>) => {
+  const updateProgress = async (updates: Partial<EmocionarioProgress>) => {
     const newProgress = { ...progress, ...updates };
     setProgress(newProgress);
     localStorage.setItem("emocionarioProgress", JSON.stringify(newProgress));
+    
+    if (auth.currentUser) {
+       try {
+         await setDoc(doc(db, "users", auth.currentUser.uid, "emocionarioProgress", "data"), newProgress, { merge: true });
+       } catch (e) {
+         console.error("Error saving progress to firestore", e);
+       }
+    }
+  };
+
+  const triggerMobilePuzzleScroll = () => {
+    if (isTouchDevice()) {
+      setMobilePendingContinue(true);
+      setTimeout(() => {
+        puzzlePanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  };
+
+  const advanceLevel = () => {
+    const p = MODULO_0_CONTENT[progress.pantallaActual];
+    if (!p) return;
+    const isSort = p.titulo === "Tu Mapa de Ruta";
+    if (isSort) {
+      updateProgress({
+        pantallaActual: progress.pantallaActual + 1,
+        ejercicioActual: 0,
+        intentosActuales: 0
+      });
+    } else if (p.ejercicios && progress.ejercicioActual + 1 < p.ejercicios.length) {
+      updateProgress({
+        ejercicioActual: progress.ejercicioActual + 1,
+        intentosActuales: 0
+      });
+    } else {
+      updateProgress({
+        pantallaActual: progress.pantallaActual + 1,
+        ejercicioActual: 0,
+        intentosActuales: 0
+      });
+    }
+  };
+
+  const handleMobileNextExercise = () => {
+    setMobilePendingContinue(false);
+    advanceLevel();
+    setTimeout(() => {
+      questionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const getCardOverlayClasses = (id: string) => {
+    return `absolute inset-0 transition-all duration-500 ${isTouchDevice() ? (activeMobileCard === id ? 'bg-black/45 backdrop-blur-sm' : 'bg-black/0') : 'bg-black/0 md:group-hover:bg-black/45 md:group-hover:backdrop-blur-sm'}`;
+  };
+  const getCardTitleClasses = (id: string, isSpecialty = false) => {
+    if (isSpecialty) {
+      return `absolute bottom-8 left-0 right-0 p-4 md:p-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 ${isTouchDevice() ? (activeMobileCard === id ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0') : 'md:group-hover:opacity-0 md:group-hover:translate-y-4'}`;
+    }
+    return `absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 ${isTouchDevice() ? (activeMobileCard === id ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0') : 'md:group-hover:opacity-0 md:group-hover:translate-y-4'}`;
+  };
+  const getCardContentClasses = (id: string) => {
+    return `w-full transition-all duration-500 flex flex-col items-center ${isTouchDevice() ? (activeMobileCard === id ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none') : 'opacity-0 pointer-events-none md:pointer-events-auto md:group-hover:opacity-100 translate-y-3 md:group-hover:translate-y-0'}`;
   };
 
   if (!accessGranted) {
@@ -713,14 +999,24 @@ export default function Emocionario() {
             {/* Tarjeta Método */}
             <div 
               className="relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-primary/30 to-surface-container-highest border border-outline-variant/10 shadow-xl min-h-[400px] w-full cursor-pointer transition-all hover:shadow-2xl order-2 lg:order-2"
-              onClick={() => window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer')}
+              onClick={() => {
+                if (isTouchDevice()) {
+                  if (activeMobileCard === 'metodo') {
+                     window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer');
+                  } else {
+                     setActiveMobileCard('metodo');
+                  }
+                } else {
+                  window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer');
+                }
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_metodo_gestion_emociones.jpg" alt="Método Gestión de Emociones" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('metodo')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center text-white text-center">
-                <div className="transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0 w-full flex flex-col items-center">
+                <div className={getCardContentClasses('metodo')}>
                   <div className="bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md max-w-lg w-full">
                     <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl mb-8">
                       Abre el dosier base del método y recorre la escalera de aprendizaje emocional.
@@ -742,14 +1038,17 @@ export default function Emocionario() {
 
           {/* Módulo 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1 cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'mod1' ? null : 'mod1'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_1.jpg" alt="Módulo I" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('mod1')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
-                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo I</h4>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <h4 className={getCardTitleClasses('mod1')}>Módulo I</h4>
+                <div className={getCardContentClasses('mod1')}>
                   <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Mapea tu estado interno y descubre tus primeras señales de autocontrol.
                   </p>
@@ -774,14 +1073,17 @@ export default function Emocionario() {
                 Este módulo entrena la capacidad de escuchar el cuerpo antes de reaccionar. La pausa, la respiración y la observación física se convierten en una puerta de entrada para regular la intensidad emocional.
               </p>
             </div>
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2 cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'mod2' ? null : 'mod2'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_2.jpg" alt="Módulo II" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('mod2')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
-                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo II</h4>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <h4 className={getCardTitleClasses('mod2')}>Módulo II</h4>
+                <div className={getCardContentClasses('mod2')}>
                   <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Entrena la pausa corporal antes de que la emoción tome el mando.
                   </p>
@@ -792,14 +1094,17 @@ export default function Emocionario() {
 
           {/* Módulo 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1 cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'mod3' ? null : 'mod3'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_3.jpg" alt="Módulo III" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('mod3')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
-                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo III</h4>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <h4 className={getCardTitleClasses('mod3')}>Módulo III</h4>
+                <div className={getCardContentClasses('mod3')}>
                   <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Aprende a tomar distancia de pensamientos rígidos y bucles mentales.
                   </p>
@@ -824,14 +1129,17 @@ export default function Emocionario() {
                 Identifica los recursos personales que ya existen en ti: valores, capacidades, hábitos útiles y formas sanas de responder. El objetivo es construir desde lo que sí sostiene, no solo desde lo que duele.
               </p>
             </div>
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2 cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'mod4' ? null : 'mod4'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_4.jpg" alt="Módulo IV" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('mod4')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
-                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo IV</h4>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <h4 className={getCardTitleClasses('mod4')}>Módulo IV</h4>
+                <div className={getCardContentClasses('mod4')}>
                   <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Reconoce tus recursos internos y conviértelos en herramientas activas.
                   </p>
@@ -842,14 +1150,17 @@ export default function Emocionario() {
 
           {/* Módulo 5 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16">
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1 cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'mod5' ? null : 'mod5'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_5.jpg" alt="Módulo V" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('mod5')}></div>
               
               <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
-                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo V</h4>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <h4 className={getCardTitleClasses('mod5')}>Módulo V</h4>
+                <div className={getCardContentClasses('mod5')}>
                   <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Convierte lo aprendido en decisiones, límites y acciones concretas.
                   </p>
@@ -877,17 +1188,20 @@ export default function Emocionario() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
             {/* Especialidad 1 */}
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec1' ? null : 'spec1'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_crisis.jpg" alt="Crisis, Pérdida y Salud" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('spec1')}></div>
               
               <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
-                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                <div className={getCardTitleClasses('spec1', true)}>
                   <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">healing</span>
                   <h4 className="font-headline text-2xl drop-shadow-md">Crisis, Pérdida y Salud</h4>
                 </div>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <div className={getCardContentClasses('spec1')}>
                   <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
                     Protocolos de estabilización emocional y narrativa de trauma para momentos de pérdida, enfermedad, miedo o ruptura del equilibrio personal.
                   </p>
@@ -895,17 +1209,20 @@ export default function Emocionario() {
               </div>
             </div>
             {/* Especialidad 2 */}
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec2' ? null : 'spec2'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_amor.jpg" alt="Amor y Desamor" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('spec2')}></div>
               
               <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
-                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                <div className={getCardTitleClasses('spec2', true)}>
                   <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">favorite</span>
                   <h4 className="font-headline text-2xl drop-shadow-md">Amor y Desamor</h4>
                 </div>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <div className={getCardContentClasses('spec2')}>
                   <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
                     Trabajo con el Adulto Saludable para comprender heridas afectivas, dependencia emocional, ruptura, apego y reconstrucción interna.
                   </p>
@@ -913,17 +1230,20 @@ export default function Emocionario() {
               </div>
             </div>
             {/* Especialidad 3 */}
-            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+            <div 
+              className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
+              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec3' ? null : 'spec3'); }}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_trabajo.jpg" alt="Trabajo y Finanzas" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              <div className={getCardOverlayClasses('spec3')}></div>
               
               <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
-                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                <div className={getCardTitleClasses('spec3', true)}>
                   <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">work</span>
                   <h4 className="font-headline text-2xl drop-shadow-md">Trabajo y Finanzas</h4>
                 </div>
-                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                <div className={getCardContentClasses('spec3')}>
                   <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
                     Ejercicios para alinear decisiones, límites y acciones con valores personales cuando el estrés laboral, la incertidumbre económica o la presión externa desordenan el sistema emocional.
                   </p>
@@ -951,15 +1271,39 @@ export default function Emocionario() {
               </h3>
 
               {/* Bloque Módulo 0 */}
-              <div className="mb-10">
-                <button 
-                  onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
-                  className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
-                >
-                  Módulo 0 — El Despertar del Arquitecto
-                </button>
+              <div ref={questionPanelRef} className="mb-10">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
+                    className={`flex-grow text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                  >
+                    Módulo 0 — El Despertar del Arquitecto
+                  </button>
+                  {isTester && (
+                    <button
+                      onClick={() => {
+                        const confirmReset = window.confirm("¿Seguro que quieres borrar todo el progreso del Módulo 0 y el puzle?");
+                        if (confirmReset) {
+                          updateProgress({
+                            pantallaActual: 0,
+                            ejercicioActual: 0,
+                            intentosActuales: 0,
+                            modulo0Completado: false,
+                            fundamentosDesbloqueados: false,
+                            puzzlePieces: { ...progress.puzzlePieces, "modulo-0": [] },
+                            puzzleCompleted: { ...progress.puzzleCompleted, "modulo-0": false }
+                          });
+                        }
+                      }}
+                      className="shrink-0 w-12 h-12 flex items-center justify-center bg-error/10 text-error rounded-full hover:bg-error hover:text-white transition-colors border border-error/30"
+                      title="Resetear Módulo 0 (David)"
+                    >
+                      <span className="material-symbols-outlined">restart_alt</span>
+                    </button>
+                  )}
+                </div>
                 {selectedModule === "Módulo 0 — El Despertar del Arquitecto" && (
-                  <Modulo0Panel progress={progress} updateProgress={updateProgress} />
+                  <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} />
                 )}
               </div>
               
@@ -1052,8 +1396,14 @@ export default function Emocionario() {
             </div>
 
             {/* Columna Derecha: Panel Puzle Emocionario */}
-            <div className="flex justify-center items-stretch h-full min-h-[500px]">
-              <PuzzleProgressPanel selectedModule={selectedModule} progress={progress} updateProgress={updateProgress} />
+            <div ref={puzzlePanelRef} className="flex justify-center items-stretch h-full min-h-[500px]">
+              <PuzzleProgressPanel 
+                selectedModule={selectedModule} 
+                progress={progress} 
+                updateProgress={updateProgress} 
+                mobilePendingContinue={mobilePendingContinue}
+                onMobileContinue={handleMobileNextExercise}
+              />
             </div>
           </div>
         </section>

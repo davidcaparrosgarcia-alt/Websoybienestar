@@ -321,21 +321,36 @@ export default function Resources() {
   };
 
   const handleCodeChange = (index: number, value: string) => {
-    if (value.length > 1) return;
+    const clean = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    if (clean.length > 1) return;
     const newCode = [...accessCode];
-    newCode[index] = value;
+    newCode[index] = clean;
     setAccessCode(newCode);
     
-    if (value && index < 3) {
+    if (clean && index < 3) {
       const el = document.getElementById(`code-input-${index + 1}`);
       el?.focus();
     }
   };
 
-  const handleCodeSubmit = () => {
+  const ALLOW_TEST_CODES = true;
+
+  const validatePrivateAccessCode = async (code: string): Promise<boolean> => {
+    // TODO: Conectar a la validación real compartida via backend.
+    // Reutilizar la verificación como en DossierEspejo requeriría auth en esta página, formaremos a futuro.
+    if (ALLOW_TEST_CODES) {
+      if (code === "1234" || code === "0000" || code === "TEST" || code === "DEMO") {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handleCodeSubmit = async () => {
     const code = accessCode.join("");
     if (code.length === 4) {
-      if (code === "1234" || code === "0000") { // Códigos de prueba
+      const isValid = await validatePrivateAccessCode(code);
+      if (isValid) {
         setHasAccess(true);
         setIsCodeModalOpen(false);
         setAccessCode(["", "", "", ""]);
@@ -909,11 +924,18 @@ export default function Resources() {
                     key={index}
                     id={`code-input-${index}`}
                     type="text"
-                    inputMode="numeric"
+                    inputMode="text"
+                    autoCapitalize="characters"
                     maxLength={1}
                     value={accessCode[index]}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
-                    className="w-14 h-16 text-center text-2xl font-serif text-[#cca969] bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#cca969]/50 focus:bg-white/10 transition-all shadow-inner"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && accessCode.join("").length === 4) {
+                        e.preventDefault();
+                        handleCodeSubmit();
+                      }
+                    }}
+                    className="w-14 h-16 text-center text-2xl font-serif text-[#cca969] bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#cca969]/50 focus:bg-white/10 transition-all shadow-inner uppercase"
                   />
                 ))}
               </div>
