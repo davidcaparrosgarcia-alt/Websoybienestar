@@ -17,6 +17,9 @@ export default function SesionValidacion() {
   // Normalizar planParam por seguridad
   const planId = ["basico", "intermedio", "completo"].includes(planParam) ? planParam : "intermedio";
   
+  const modeParam = queryParams.get("mode");
+  const initialMode = modeParam === "reservation" ? "reserva" : (modeParam === "full" ? "unico" : "unico");
+  
   const planDetails: Record<string, {
     name: string;
     duration: string;
@@ -44,11 +47,13 @@ export default function SesionValidacion() {
   };
 
   const plan = planDetails[planId];
-  const [paymentMode, setPaymentMode] = useState<"unico" | "reserva">("unico");
+  const [paymentMode, setPaymentMode] = useState<"unico" | "reserva">(initialMode);
   const [paymentMethod, setPaymentMethod] = useState<"tarjeta" | "transferencia" | "paypal">("tarjeta");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const isReturningFromSuccessfulCardPayment = queryParams.get("payment") === "success";
 
   useEffect(() => {
     const payment = queryParams.get("payment");
@@ -336,8 +341,34 @@ export default function SesionValidacion() {
 
         {/* Right Column: Payment Form */}
         <div className="lg:col-span-7 flex flex-col gap-12">
-          {/* Payment Mode Selection */}
-          <section>
+          {isReturningFromSuccessfulCardPayment ? (
+            <div className="bg-surface-container-lowest p-8 md:p-12 rounded-[2rem] shadow-xl border border-outline-variant/10 text-center flex flex-col items-center">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">check_circle</span>
+              </div>
+              <h2 className="font-headline text-3xl md:text-4xl text-primary mb-4">Pago realizado</h2>
+              <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-lg mb-8">
+                Has completado el pago de <strong>{plan.name}</strong> — {paymentMode === "unico" ? "pago único" : "reserva"}.
+              </p>
+              <div className="bg-surface-container-low p-6 rounded-2xl w-full text-left mb-8">
+                <div className="flex gap-4">
+                  <span className="material-symbols-outlined text-primary shrink-0 mt-1">shield</span>
+                  <p className="font-body text-on-surface-variant leading-relaxed">
+                    Estamos confirmando la operación de forma segura. Si la confirmación no aparece reflejada de inmediato, no repitas el pago.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/')}
+                className="bg-primary hover:opacity-90 text-on-primary px-8 py-4 rounded-xl font-bold font-label transition-opacity shadow-md"
+              >
+                Volver al inicio
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Payment Mode Selection */}
+              <section>
             <h3 className="font-headline text-3xl text-primary mb-6">Selecciona tu modalidad de inversión</h3>
             <p className="text-on-surface-variant font-label mb-6 text-sm">Mostrando opciones para: <strong className="text-primary">{plan.name}</strong></p>
             
@@ -585,6 +616,8 @@ export default function SesionValidacion() {
               </div>
             </button>
           </section>
+            </>
+          )}
 
         </div>
       </div>

@@ -700,8 +700,8 @@ export default function Resources() {
             </div>
 
             <div className="w-full relative overflow-hidden group rounded-[2.5rem] bg-surface-container-lowest shadow-2xl border border-outline-variant/10 min-h-[400px]">
-              <img alt="Estado actual" className="absolute inset-0 w-full h-full object-cover" src="/images/fondo_estado_actual.jpg" />
-              <div className="absolute inset-0 bg-black/60 md:bg-black/40 backdrop-blur-sm transition-all duration-700"></div>
+              <img alt="Estado actual" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700" src="/images/fondo_estado_actual.jpg" />
+              <div className={`absolute inset-0 transition-all duration-700 ${estadoPaso === "inicio" ? "bg-black/0 backdrop-blur-0" : "bg-black/60 md:bg-black/40 backdrop-blur-sm"}`} style={estadoPaso === "inicio" ? { backgroundColor: "rgba(0,0,0,0.02)" } : {}}></div>
               
               <div className="relative z-10 flex flex-col justify-center h-full min-h-[400px] p-8 md:p-16 text-white w-full">
                 

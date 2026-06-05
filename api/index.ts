@@ -2406,8 +2406,8 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
         source: "sesion-validacion",
         paymentMethod: "card"
       },
-      success_url: `${APP_URL}/sesion-validacion?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${APP_URL}/sesion-validacion?payment=cancelled&plan=${planId}`,
+      success_url: `${APP_URL}/sesion-validacion?payment=success&plan=${planId}&mode=${paymentMode}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_URL}/sesion-validacion?payment=cancelled&plan=${planId}&mode=${paymentMode}`,
     });
 
     if (!admin.apps.length) {

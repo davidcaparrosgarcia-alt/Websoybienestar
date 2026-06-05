@@ -381,25 +381,25 @@ export default function Emocionario() {
               className="relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-primary/30 to-surface-container-highest border border-outline-variant/10 shadow-xl min-h-[400px] w-full cursor-pointer transition-all hover:shadow-2xl order-2 lg:order-2"
               onClick={() => window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer')}
             >
-              <div className="absolute inset-0 bg-surface-container-highest/20 placeholder-fallback"></div>
-              {/* Nota: si en el futuro existe 'fondo_metodo.jpg', se puede usar una etiqueta img aquí */}
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-500"></div>
+              <img src="/images/fondo_metodo_gestion_emociones.jpg" alt="Método Gestión de Emociones" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
-              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-end text-white">
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light leading-relaxed max-w-sm">
-                    Abre el dosier base del método y recorre la escalera de aprendizaje emocional.
-                  </p>
-                  {/* Enlace al PDF. */}
-                  <button 
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer'); 
-                    }} 
-                    className="mt-8 inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
-                  >
-                    Ver documento <span className="material-symbols-outlined text-sm">open_in_new</span>
-                  </button>
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center text-white text-center">
+                <div className="transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0 w-full flex flex-col items-center">
+                  <div className="bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md max-w-lg w-full">
+                    <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl mb-8">
+                      Abre el dosier base del método y recorre la escalera de aprendizaje emocional.
+                    </p>
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer'); 
+                      }} 
+                      className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
+                    >
+                      Ver documento <span className="material-symbols-outlined text-sm">open_in_new</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -408,12 +408,13 @@ export default function Emocionario() {
           {/* Módulo 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
-              <div className="absolute inset-0 bg-primary/5"></div>
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
-                <h4 className="font-headline text-2xl mb-2">Módulo I</h4>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light">
+              <img src="/images/fondo_modulo_1.jpg" alt="Módulo I" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
+                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo I</h4>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Mapea tu estado interno y descubre tus primeras señales de autocontrol.
                   </p>
                 </div>
@@ -438,12 +439,13 @@ export default function Emocionario() {
               </p>
             </div>
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
-              <div className="absolute inset-0 bg-primary/5"></div>
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white lg:items-start text-left">
-                <h4 className="font-headline text-2xl mb-2">Módulo II</h4>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light">
+              <img src="/images/fondo_modulo_2.jpg" alt="Módulo II" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
+                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo II</h4>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Entrena la pausa corporal antes de que la emoción tome el mando.
                   </p>
                 </div>
@@ -454,12 +456,13 @@ export default function Emocionario() {
           {/* Módulo 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
-              <div className="absolute inset-0 bg-primary/5"></div>
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
-                <h4 className="font-headline text-2xl mb-2">Módulo III</h4>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light">
+              <img src="/images/fondo_modulo_3.jpg" alt="Módulo III" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
+                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo III</h4>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Aprende a tomar distancia de pensamientos rígidos y bucles mentales.
                   </p>
                 </div>
@@ -484,12 +487,13 @@ export default function Emocionario() {
               </p>
             </div>
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
-              <div className="absolute inset-0 bg-primary/5"></div>
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white lg:items-start text-left">
-                <h4 className="font-headline text-2xl mb-2">Módulo IV</h4>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light">
+              <img src="/images/fondo_modulo_4.jpg" alt="Módulo IV" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
+                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo IV</h4>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Reconoce tus recursos internos y conviértelos en herramientas activas.
                   </p>
                 </div>
@@ -500,12 +504,13 @@ export default function Emocionario() {
           {/* Módulo 5 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
-              <div className="absolute inset-0 bg-primary/5"></div>
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
-                <h4 className="font-headline text-2xl mb-2">Módulo V</h4>
-                <div className="transition-opacity duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                  <p className="text-white/90 text-xl md:text-2xl font-light">
+              <img src="/images/fondo_modulo_5.jpg" alt="Módulo V" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center items-center text-white text-center">
+                <h4 className="absolute bottom-8 left-8 md:bottom-auto md:left-auto font-headline text-2xl text-white drop-shadow-md transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">Módulo V</h4>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-2xl md:text-3xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md">
                     Convierte lo aprendido en decisiones, límites y acciones concretas.
                   </p>
                 </div>
@@ -532,28 +537,55 @@ export default function Emocionario() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
             {/* Especialidad 1 */}
-            <div className="bg-surface-container hover:bg-surface-container-high transition-colors p-8 rounded-[2rem] border border-outline-variant/10 text-center flex flex-col">
-              <span className="material-symbols-outlined text-4xl text-primary mb-4 mx-auto">healing</span>
-              <h4 className="font-headline text-2xl text-primary mb-4">Crisis, Pérdida y Salud</h4>
-              <p className="text-on-surface-variant font-light text-base leading-relaxed flex-grow">
-                Protocolos de estabilización emocional y narrativa de trauma para momentos de pérdida, enfermedad, miedo o ruptura del equilibrio personal.
-              </p>
+            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <img src="/images/fondo_modulo_crisis.jpg" alt="Crisis, Pérdida y Salud" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
+                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                  <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">healing</span>
+                  <h4 className="font-headline text-2xl drop-shadow-md">Crisis, Pérdida y Salud</h4>
+                </div>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+                    Protocolos de estabilización emocional y narrativa de trauma para momentos de pérdida, enfermedad, miedo o ruptura del equilibrio personal.
+                  </p>
+                </div>
+              </div>
             </div>
             {/* Especialidad 2 */}
-            <div className="bg-surface-container hover:bg-surface-container-high transition-colors p-8 rounded-[2rem] border border-outline-variant/10 text-center flex flex-col">
-              <span className="material-symbols-outlined text-4xl text-primary mb-4 mx-auto">favorite</span>
-              <h4 className="font-headline text-2xl text-primary mb-4">Amor y Desamor</h4>
-              <p className="text-on-surface-variant font-light text-base leading-relaxed flex-grow">
-                Trabajo con el Adulto Saludable para comprender heridas afectivas, dependencia emocional, ruptura, apego y reconstrucción interna.
-              </p>
+            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <img src="/images/fondo_modulo_amor.jpg" alt="Amor y Desamor" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
+                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                  <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">favorite</span>
+                  <h4 className="font-headline text-2xl drop-shadow-md">Amor y Desamor</h4>
+                </div>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+                    Trabajo con el Adulto Saludable para comprender heridas afectivas, dependencia emocional, ruptura, apego y reconstrucción interna.
+                  </p>
+                </div>
+              </div>
             </div>
             {/* Especialidad 3 */}
-            <div className="bg-surface-container hover:bg-surface-container-high transition-colors p-8 rounded-[2rem] border border-outline-variant/10 text-center flex flex-col">
-              <span className="material-symbols-outlined text-4xl text-primary mb-4 mx-auto">work</span>
-              <h4 className="font-headline text-2xl text-primary mb-4">Trabajo y Finanzas</h4>
-              <p className="text-on-surface-variant font-light text-base leading-relaxed flex-grow">
-                Ejercicios para alinear decisiones, límites y acciones con valores personales cuando el estrés laboral, la incertidumbre económica o la presión externa desordenan el sistema emocional.
-              </p>
+            <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <img src="/images/fondo_modulo_trabajo.jpg" alt="Trabajo y Finanzas" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
+              
+              <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-center items-center text-white text-center">
+                <div className="absolute bottom-8 left-0 right-0 md:bottom-auto md:left-auto md:right-auto flex flex-col items-center justify-center transition-all duration-500 md:group-hover:opacity-0 md:group-hover:translate-y-4">
+                  <span className="material-symbols-outlined text-4xl mb-3 drop-shadow-md">work</span>
+                  <h4 className="font-headline text-2xl drop-shadow-md">Trabajo y Finanzas</h4>
+                </div>
+                <div className="w-full transition-all duration-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+                  <p className="font-headline text-xl md:text-2xl leading-snug text-white drop-shadow-xl bg-black/35 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+                    Ejercicios para alinear decisiones, límites y acciones con valores personales cuando el estrés laboral, la incertidumbre económica o la presión externa desordenan el sistema emocional.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
