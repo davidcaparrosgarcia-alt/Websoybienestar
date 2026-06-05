@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -112,7 +112,7 @@ const SORT_PIECES = [
   { id: 1, label: "La Mente", desc: "Ponerle nombre a lo que siento." },
 ];
 
-const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceRequest, panelRef }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, onPieceEarned?: () => void, onAdvanceRequest?: () => void, panelRef?: React.RefObject<HTMLDivElement | null> }) => {
+const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceRequest, panelRef, exerciseRef }: { progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, onPieceEarned?: () => void, onAdvanceRequest?: () => void, panelRef?: React.RefObject<HTMLDivElement | null>, exerciseRef?: React.RefObject<HTMLDivElement | null> }) => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showContinue, setShowContinue] = useState(false);
   const [slots, setSlots] = useState<(number | null)[]>([null, null, null]);
@@ -229,13 +229,15 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
 
   return (
     <div ref={panelRef} className="mt-4 p-6 md:p-10 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 shadow-sm animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
-      <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
-        <h4 className="font-headline text-2xl md:text-3xl text-primary">{p.titulo}</h4>
-        <div className="text-secondary tracking-widest uppercase font-bold text-xs inline-block">Nivel {p.nivel}</div>
+      <div ref={exerciseRef}>
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
+          <h4 className="font-headline text-2xl md:text-3xl text-primary">{p.titulo}</h4>
+          <div className="text-secondary tracking-widest uppercase font-bold text-xs inline-block">Nivel {p.nivel}</div>
+        </div>
+        <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-10">
+          {p.texto}
+        </p>
       </div>
-      <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-10">
-        {p.texto}
-      </p>
 
       {isSort ? (
         <div className="animate-in fade-in duration-500 delay-150">
@@ -325,7 +327,7 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
       {showContinue && (
         <button 
           onClick={handleContinue}
-          className="w-full bg-primary text-on-primary py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-secondary transition-colors shadow-lg"
+          className="w-full bg-white text-[#162839] border border-outline-variant/20 py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-surface-container-high transition-colors shadow-lg"
         >
           Continuar
         </button>
@@ -511,6 +513,8 @@ const PuzzlePieceSvg = ({
   selected?: boolean
 }) => {
   const piece = layoutPieces.find(p => p.id === pieceId) || layoutPieces[0];
+  const reactId = useId().replace(/:/g, "");
+  const uniqueClipId = `clip-${reactId}-${piece.id}-${size}`;
   
   let wrapperClass = "";
   if (size === "reward") {
@@ -521,11 +525,47 @@ const PuzzlePieceSvg = ({
      wrapperClass = "w-full h-full absolute top-0 left-0";
   }
 
+  if (size === "slot") {
+    return (
+      <div 
+        className={`relative transition-all duration-300 ${wrapperClass} ${className} ${onClick ? 'cursor-pointer' : ''} ${selected ? 'z-20' : ''}`}
+        onClick={onClick}
+      >
+        <svg
+          viewBox="0 0 200 300"
+          className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <clipPath id={uniqueClipId}>
+              <path d={piece.path} />
+            </clipPath>
+          </defs>
+          <image
+            href={puzzleImage}
+            x="0"
+            y="0"
+            width="200"
+            height="300"
+            preserveAspectRatio="xMidYMid slice"
+            clipPath={`url(#${uniqueClipId})`}
+          />
+          <path
+            d={piece.path}
+            fill="transparent"
+            stroke="rgba(255,255,255,0.35)"
+            strokeWidth="1.5"
+          />
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div 
       className={`relative transition-all duration-300 ${wrapperClass} ${className} ${onClick ? 'cursor-pointer hover:scale-105' : ''} ${selected ? 'scale-[1.12] ring-4 ring-primary ring-offset-2 ring-offset-surface-container-lowest rounded-2xl shadow-xl z-20' : ''}`}
       onClick={onClick}
-      style={size !== "slot" ? { filter: "drop-shadow(0px 8px 16px rgba(0,0,0,0.3))" } : {}}
+      style={{ filter: "drop-shadow(0px 8px 16px rgba(0,0,0,0.3))" }}
     >
       <svg
         viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
@@ -533,7 +573,7 @@ const PuzzlePieceSvg = ({
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <clipPath id={`clip-${piece.id}-${size}`}>
+          <clipPath id={uniqueClipId}>
             <path d={piece.path} />
           </clipPath>
         </defs>
@@ -544,7 +584,7 @@ const PuzzlePieceSvg = ({
           width="200"
           height="300"
           preserveAspectRatio="xMidYMid slice"
-          clipPath={`url(#clip-${piece.id}-${size})`}
+          clipPath={`url(#${uniqueClipId})`}
         />
         <path
           d={piece.path}
@@ -559,18 +599,35 @@ const PuzzlePieceSvg = ({
 };
 
 const AnimatedTitle = ({ text }: { text: string }) => (
-  <span>
+  <span className="inline-flex flex-wrap justify-center">
     {text.split("").map((char, i) => (
       <span
         key={i}
-        className="inline-block animate-in fade-in slide-in-from-bottom-2 fill-mode-both"
-        style={{ animationDelay: `${i * 35}ms` }}
+        className="inline-block opacity-0 animate-[letterReveal_700ms_ease-out_forwards]"
+        style={{ animationDelay: `${i * 45}ms` }}
       >
         {char === " " ? "\u00A0" : char}
       </span>
     ))}
   </span>
 );
+
+const getShuffledPieceOrder = (pieceIds: number[], moduleId: string) => {
+  const preferredOrders: Record<string, number[]> = {
+    "modulo-0": [2, 5, 0, 3, 1, 4],
+    "modulo-1": [3, 0, 6, 1, 4, 7, 2, 5],
+    "modulo-2": [4, 1, 6, 3, 0, 7, 2, 5],
+    "modulo-3": [5, 1, 8, 3, 0, 7, 2, 9, 4, 6],
+    "modulo-4": [6, 2, 9, 0, 4, 8, 1, 7, 3, 5],
+    "modulo-5": [2, 8, 0, 6, 4, 9, 1, 7, 3, 5],
+    "crisis": [5, 0, 9, 2, 11, 4, 7, 1, 10, 3, 8, 6],
+    "amor": [4, 10, 1, 7, 3, 11, 0, 8, 2, 9, 5, 6],
+    "trabajo": [6, 1, 10, 3, 8, 0, 11, 4, 9, 2, 7, 5]
+  };
+
+  const order = preferredOrders[moduleId] || pieceIds;
+  return order.filter(id => pieceIds.includes(id));
+};
 
 const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobilePendingContinue, onMobileContinue }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void, mobilePendingContinue?: boolean, onMobileContinue?: () => void }) => {
   if (!selectedModule) return null;
@@ -730,8 +787,8 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                                )}
                                {hasAnyPiece && (
                                    <div 
-                                     className={`w-full h-full absolute inset-0 transition-all duration-1000 ease-out ${puzzleSlots.every((s,idx) => s === idx) ? "scale-100 !translate-y-0 drop-shadow-sm" : "scale-[1.04] drop-shadow-xl -translate-y-1"}`}
-                                     style={puzzleSlots.every((s,idx) => s === idx) ? { transitionDelay: `${i * 90}ms` } : {}}
+                                     className={`w-full h-full absolute inset-0 transition-all duration-[900ms] ease-out ${puzzleSlots.every((s,idx) => s === idx) ? "scale-100 !translate-y-0 drop-shadow-md" : "scale-[1.08] drop-shadow-2xl -translate-y-2"}`}
+                                     style={puzzleSlots.every((s,idx) => s === idx) ? { transitionDelay: `${i * 100}ms` } : {}}
                                    >
                                        <PuzzlePieceSvg 
                                           pieceId={pieceIdInSlot!} 
@@ -750,7 +807,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
                    <p className="text-xs uppercase tracking-widest font-bold text-center mb-6 text-on-surface-variant/70">Piezas Disponibles</p>
                    <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 min-h-[80px]">
-                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).map(p => (
+                       {getShuffledPieceOrder(piecesCollected.filter(p => !puzzleSlots.includes(p)), moduleId).map(p => (
                            <PuzzlePieceSvg 
                               key={`pool-${p}`}
                               pieceId={p}
@@ -857,6 +914,7 @@ export default function Emocionario() {
 
   const [mobilePendingContinue, setMobilePendingContinue] = useState(false);
   const questionPanelRef = useRef<HTMLDivElement | null>(null);
+  const exerciseContentRef = useRef<HTMLDivElement | null>(null);
   const puzzlePanelRef = useRef<HTMLDivElement | null>(null);
   const isTouchDevice = () => window.matchMedia('(hover: none)').matches;
   const [activeMobileCard, setActiveMobileCard] = useState<string | null>(null);
@@ -966,7 +1024,12 @@ export default function Emocionario() {
     setMobilePendingContinue(false);
     advanceLevel();
     setTimeout(() => {
-      questionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (exerciseContentRef.current) {
+         const y = exerciseContentRef.current.getBoundingClientRect().top + window.scrollY - 24;
+         window.scrollTo({ top: y, behavior: "smooth" });
+      } else {
+         questionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }, 100);
   };
 
@@ -1015,6 +1078,25 @@ export default function Emocionario() {
         description="Entorno privado de aprendizaje emocional con módulos de estudio y una futura experiencia de aprendizaje para entrenar gestión de emociones."
         noIndex={true}
       />
+      <style>{`
+        @keyframes letterReveal {
+          0% {
+            opacity: 0;
+            transform: translateY(14px) scale(0.96);
+            filter: blur(5px);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(-2px) scale(1.03);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+      `}</style>
       
       <div className="max-w-screen-2xl mx-auto px-6 md:px-12 lg:px-20">
         
@@ -1355,7 +1437,7 @@ export default function Emocionario() {
                   )}
                 </div>
                 {selectedModule === "Módulo 0 — El Despertar del Arquitecto" && (
-                  <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} panelRef={questionPanelRef} />
+                  <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} panelRef={questionPanelRef} exerciseRef={exerciseContentRef} />
                 )}
               </div>
               
