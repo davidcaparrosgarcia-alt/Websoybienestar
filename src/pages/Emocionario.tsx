@@ -326,6 +326,78 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
   );
 };
 
+const PuzzlePiece = ({
+  pieceId,
+  puzzleImage,
+  totalPieces = 5,
+  size,
+  className = "",
+  onClick,
+  selected = false
+}: {
+  pieceId: number,
+  puzzleImage: string,
+  totalPieces?: number,
+  size: "reward" | "pool" | "slot",
+  className?: string,
+  onClick?: () => void,
+  selected?: boolean
+}) => {
+  // We use a 3x2 grid layout (2 cols, 3 rows). Pieces 0-3 are squares. Piece 4 is wide (2x1).
+  const isWide = pieceId === 4;
+  const aspectClass = isWide ? "aspect-[2/1]" : "aspect-square";
+  
+  let sizeClass = "";
+  if (size === "reward") {
+    sizeClass = `w-[200px] md:w-[280px] ${aspectClass}`;
+  } else if (size === "pool") {
+    sizeClass = `w-16 md:w-24 ${aspectClass}`;
+  } else if (size === "slot") {
+    sizeClass = "w-full h-full";
+  }
+
+  // Organic clip-paths to simulate puzzle tabs slightly
+  const clipPaths = [
+    "polygon(5% 0%, 95% 0%, 100% 15%, 100% 85%, 95% 100%, 5% 100%, 0% 85%, 0% 15%)",
+    "polygon(0% 5%, 85% 0%, 100% 5%, 100% 95%, 85% 100%, 0% 95%, 15% 50%)",
+    "polygon(5% 0%, 100% 5%, 95% 50%, 100% 95%, 5% 100%, 0% 85%, 0% 15%)",
+    "polygon(15% 0%, 100% 0%, 100% 100%, 15% 100%, 0% 80%, 5% 50%, 0% 20%)",
+    "polygon(0% 0%, 85% 0%, 100% 20%, 95% 50%, 100% 80%, 85% 100%, 0% 100%)"
+  ];
+  const clipPath = clipPaths[pieceId % clipPaths.length];
+
+  const pieceLayout = [
+    { bgSize: "200% 300%", bgPos: "0% 0%" },
+    { bgSize: "200% 300%", bgPos: "100% 0%" },
+    { bgSize: "200% 300%", bgPos: "0% 50%" },
+    { bgSize: "200% 300%", bgPos: "100% 50%" },
+    { bgSize: "100% 300%", bgPos: "0% 100%" } 
+  ];
+  const layout = pieceLayout[pieceId % pieceLayout.length];
+
+  return (
+    <div 
+      className={`relative transition-all duration-300 ${sizeClass} ${className} ${onClick ? 'cursor-pointer hover:scale-105' : ''} ${selected ? 'scale-110' : ''}`}
+      onClick={onClick}
+      style={{ filter: "drop-shadow(0px 8px 16px rgba(0,0,0,0.3))" }}
+    >
+      <div 
+         className={`w-full h-full relative overflow-hidden flex items-center justify-center ${selected ? 'ring-4 ring-primary ring-offset-2 ring-offset-surface-container-lowest' : ''}`}
+         style={{
+           clipPath: clipPath,
+           backgroundImage: `url(${puzzleImage})`,
+           backgroundSize: layout.bgSize,
+           backgroundPosition: layout.bgPos,
+           backgroundColor: "rgba(0,0,0,0.1)",
+           backgroundBlendMode: "overlay"
+         }}
+      >
+        <div className="absolute inset-0 rounded-2xl border border-white/30 mix-blend-overlay"></div>
+      </div>
+    </div>
+  );
+};
+
 const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void }) => {
   if (!selectedModule) return null;
 
@@ -404,116 +476,135 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { sel
         <p className="text-sm font-bold tracking-widest uppercase text-on-surface-variant/70 mb-8 text-center">{selectedModule}</p>
         
         {puzzleCompleted ? (
-           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700">
-              <span className="material-symbols-outlined text-green-500 text-6xl mb-6">task_alt</span>
-              <h4 className="font-headline text-2xl text-center mb-6">Módulo Completado</h4>
+           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700 w-full pt-4 md:pt-8">
+              <span className="material-symbols-outlined text-green-500 text-6xl mb-4 md:mb-6">workspace_premium</span>
+              <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">Módulo completado</h4>
+              <p className="text-on-surface-variant font-light mb-8 text-center text-lg">Has reconstruido la imagen del módulo.</p>
               
-              <div className="w-full max-w-[280px] aspect-video rounded-xl overflow-hidden shadow-2xl border-4 border-white/20 relative">
-                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
-                 <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-cover relative z-10" />
+              <div className="w-full max-w-[420px] md:max-w-[480px] mx-auto aspect-[2/3] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/20 relative bg-surface-container-lowest">
+                 <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-contain relative z-10" />
               </div>
            </div>
         ) : inResolution ? (
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
-               <p className="font-medium text-center text-primary mb-6 text-lg">Ordena el puzle para completar el módulo.</p>
+               <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
                
-               <div className="w-full bg-surface-container-high/50 rounded-2xl p-4 mb-8 shadow-inner border border-outline-variant/10">
-                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-4 text-on-surface-variant/50">Piezas Disponibles</p>
-                   <div className="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[80px]">
-                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).map(p => (
-                           <div 
-                             key={`pool-${p}`}
-                             onClick={() => setSelectedPuzzlePiece(p === selectedPuzzlePiece ? null : p)}
-                             className={`w-14 h-14 md:w-20 md:h-20 rounded-lg cursor-pointer transition-all border-2 flex items-center justify-center text-white font-bold drop-shadow-md ${selectedPuzzlePiece === p ? 'border-primary ring-4 ring-primary/30 scale-110 shadow-xl' : 'border-outline-variant/50 hover:border-primary/80'}`}
-                             style={{
-                               backgroundImage: `url(${puzzleImage})`,
-                               backgroundColor: "rgba(0,0,0,0.3)", // slight tint if image misses
-                               backgroundBlendMode: "overlay",
-                               backgroundSize: "500% 100%",
-                               backgroundPosition: `${(p / 4) * 100}% 0%`
-                             }}
-                           >
-                            <span className="opacity-0 hover:opacity-100 transition-opacity bg-black/40 rounded-full w-6 h-6 flex items-center justify-center">{p+1}</span>
-                           </div>
-                       ))}
-                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).length === 0 && (
-                           <span className="text-sm text-on-surface-variant/50 font-light py-4">Has colocado todas las piezas.</span>
-                       )}
-                   </div>
-               </div>
-               
-               <div className="w-full mt-auto mb-auto">
-                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-4 text-on-surface-variant/50">Puzle Final</p>
-                   {/* Aspect video container for 5 pieces */}
-                   <div className="w-full max-w-[400px] mx-auto flex">
-                       {Array.from({length: totalPieces}).map((_, i) => (
+               <div className="w-full max-w-[340px] md:max-w-[400px] aspect-[2/3] mx-auto grid grid-cols-2 grid-rows-3 gap-1 md:gap-2 relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] p-2 md:p-3 mb-8 md:mb-12">
+                   {Array.from({length: totalPieces}).map((_, i) => {
+                       const isBottom = i === 4;
+                       const colClass = isBottom ? "col-span-2" : "col-span-1";
+                       const hasPiece = puzzleSlots[i] !== null;
+                       
+                       return (
                            <div 
                              key={`slot-${i}`}
                              onClick={() => handlePuzzleSlotClick(i)}
-                             className={`flex-1 aspect-[1/5] md:aspect-[3/10] border text-transparent ${puzzleSlots[i] !== null ? 'border-transparent' : (selectedPuzzlePiece !== null ? 'border-primary/50 border-dashed bg-primary/5 cursor-pointer hover:bg-primary/20' : 'border-outline-variant/30 border-dashed')} transition-all flex items-center justify-center`}
+                             className={`${colClass} border-2 border-dashed ${hasPiece ? 'border-transparent' : (selectedPuzzlePiece !== null ? 'border-primary/50 bg-primary/5 cursor-pointer hover:bg-primary/20 hover:scale-[1.02]' : 'border-outline-variant/30')} rounded-[1rem] md:rounded-[1.5rem] transition-all flex items-center justify-center overflow-hidden relative group`}
                            >
-                               {puzzleSlots[i] !== null && (
-                                   <div 
-                                      className="w-full h-full border border-white/20 select-none shadow-md cursor-pointer hover:opacity-80 transition-opacity"
-                                      style={{
-                                        backgroundImage: `url(${puzzleImage})`,
-                                        backgroundSize: "500% 100%",
-                                        backgroundPosition: `${(puzzleSlots[i]! / 4) * 100}% 0%`
-                                      }}
+                               {hasPiece && (
+                                   <PuzzlePiece 
+                                      pieceId={puzzleSlots[i]!} 
+                                      puzzleImage={puzzleImage} 
+                                      size="slot" 
+                                      className="animate-in zoom-in"
                                    />
                                )}
+                               {!hasPiece && selectedPuzzlePiece !== null && (
+                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                       <span className="material-symbols-outlined text-primary text-3xl">download_done</span>
+                                   </div>
+                               )}
                            </div>
+                       );
+                   })}
+               </div>
+               
+               <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
+                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-6 text-on-surface-variant/70">Piezas Disponibles</p>
+                   <div className="flex flex-wrap justify-center gap-4 md:gap-6 min-h-[80px]">
+                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).map(p => (
+                           <PuzzlePiece 
+                              key={`pool-${p}`}
+                              pieceId={p}
+                              puzzleImage={puzzleImage}
+                              size="pool"
+                              selected={selectedPuzzlePiece === p}
+                              onClick={() => setSelectedPuzzlePiece(p === selectedPuzzlePiece ? null : p)}
+                           />
                        ))}
+                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).length === 0 && (
+                           <span className="text-sm text-on-surface-variant/50 font-light py-4 flex items-center gap-2">
+                               <span className="material-symbols-outlined">done_all</span> Has colocado todas las piezas.
+                           </span>
+                       )}
                    </div>
                </div>
            </div>
         ) : (
-           <div className="w-full flex-grow flex flex-col items-center justify-center -mt-6">
-             <div className="text-center mb-10">
-               <span className="text-base font-bold bg-surface-container-high px-5 py-2.5 rounded-full shadow-sm text-on-surface-variant">
-                 Piezas conseguidas: {currentPiecesCount} / {totalPieces}
+           <div className="w-full flex-grow flex flex-col items-center justify-start pt-4">
+             <div className="text-center mb-10 md:mb-12">
+               <span className="text-sm font-bold tracking-widest uppercase bg-surface-container-high px-6 py-3 rounded-full text-primary shadow-sm border border-outline-variant/10">
+                 Piezas reunidas: {currentPiecesCount} / {totalPieces}
                </span>
              </div>
              
-             <div className="w-full max-w-[320px] aspect-video rounded-2xl bg-surface-container-high/30 border-2 border-dashed border-outline-variant/20 relative overflow-visible flex flex-wrap justify-center content-center p-6 shadow-inner">
-                 <div className="absolute inset-0 opacity-10 blur-sm mix-blend-luminosity rounded-2xl overflow-hidden">
-                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
-                     <img src={puzzleImage} alt="" className="w-full h-full object-cover" />
-                 </div>
-                 
-                 <div className="relative z-10 w-full h-full">
-                     {piecesCollected.map((p, idx) => {
-                         const positions = [
-                             { top: '10%', left: '10%' },
-                             { top: '50%', left: '70%' },
-                             { top: '20%', left: '40%' },
-                             { top: '60%', left: '10%' },
-                             { top: '30%', left: '80%' }
-                         ];
-                         return (
-                             <div 
-                                key={idx}
-                                className="absolute w-[20%] h-full rounded shadow-xl border border-white/20 animate-in zoom-in"
-                                style={{
-                                   backgroundImage: `url(${puzzleImage})`,
-                                   backgroundSize: "500% 100%",
-                                   backgroundPosition: `${(p / 4) * 100}% 0%`,
-                                   top: positions[p]?.top || '50%',
-                                   left: positions[p]?.left || '50%',
-                                   transform: `translate(-50%, -50%) rotate(${Math.sin(p * 100) * 20}deg) scale(1.1)`,
-                                }}
+             {currentPiecesCount > 0 ? (
+                 <div className="w-full flex flex-col items-center justify-center flex-grow relative pb-10">
+                     <p className="text-lg md:text-xl font-headline text-primary mb-12 animate-in fade-in slide-in-from-top-4">¡Pieza conseguida!</p>
+                     
+                     <div className="relative flex items-center justify-center w-full max-w-[400px] min-h-[350px] md:min-h-[450px]">
+                         {/* Pila de piezas anteriores (fondo) */}
+                         {piecesCollected.slice(0, currentPiecesCount - 1).map((p, idx) => {
+                             // Calcular posiciones de pila (apariencia de fotos desordenadas)
+                             const isEven = idx % 2 === 0;
+                             const rotate = isEven ? -8 + (idx * 3) : 8 - (idx * 3);
+                             const xOffset = isEven ? -15 + (idx * 6) : 15 - (idx * 6);
+                             const yOffset = -20 + (idx * 8);
+                             
+                             return (
+                                 <div 
+                                    key={`stack-${p}`}
+                                    className="absolute transition-all duration-700 opacity-70 grayscale-[20%] blur-[0.5px]"
+                                    style={{
+                                        transform: `translate(${xOffset}px, ${yOffset}px) rotate(${rotate}deg) scale(0.9)`,
+                                        zIndex: idx
+                                    }}
+                                 >
+                                     <PuzzlePiece 
+                                        pieceId={p}
+                                        puzzleImage={puzzleImage}
+                                        size="reward"
+                                     />
+                                 </div>
+                             );
+                         })}
+                         
+                         {/* Pieza Principal (Recompensa Actual) */}
+                         <div 
+                            className="relative z-50 animate-in zoom-in slide-in-from-bottom-12 duration-700"
+                         >
+                             <PuzzlePiece 
+                                pieceId={piecesCollected[currentPiecesCount - 1]}
+                                puzzleImage={puzzleImage}
+                                size="reward"
                              />
-                         );
-                     })}
+                             {/* Brillo de recompensa sutil */}
+                             <div className="absolute inset-0 bg-primary/5 blur-2xl rounded-full -z-10 animate-pulse"></div>
+                         </div>
+                     </div>
                  </div>
-                 
-                 {currentPiecesCount === 0 && (
-                     <p className="absolute inset-0 flex items-center justify-center text-on-surface-variant/40 text-sm font-light italic text-center p-4">Actitud activa: completa los ejercicios para ganar piezas.</p>
-                 )}
-                 {!isModulo0 && (
-                     <p className="absolute bottom-4 left-0 right-0 text-on-surface-variant/40 text-xs font-light text-center z-20">Este módulo aún no tiene piezas desbloqueables.</p>
-                 )}
-             </div>
+             ) : (
+                 <div className="w-full flex-grow flex items-center justify-center pb-20">
+                     <div className="text-center p-8 bg-surface-container/50 rounded-3xl border border-outline-variant/10 max-w-sm">
+                         <span className="material-symbols-outlined text-5xl text-primary/40 mb-4">extension</span>
+                         {isModulo0 ? (
+                             <p className="text-on-surface-variant text-lg font-light leading-relaxed">Completa un ejercicio para recibir tu primera pieza.</p>
+                         ) : (
+                             <p className="text-on-surface-variant text-lg font-light leading-relaxed">Este módulo no tiene piezas desbloqueables todavía.</p>
+                         )}
+                     </div>
+                 </div>
+             )}
            </div>
         )}
       </div>
