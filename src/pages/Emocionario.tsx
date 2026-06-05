@@ -9,6 +9,8 @@ interface EmocionarioProgress {
   intentosActuales: number;
   modulo0Completado: boolean;
   fundamentosDesbloqueados: boolean;
+  puzzlePieces: Record<string, number[]>;
+  puzzleCompleted: Record<string, boolean>;
 }
 
 const defaultProgress: EmocionarioProgress = {
@@ -17,7 +19,9 @@ const defaultProgress: EmocionarioProgress = {
   ejercicioActual: 0,
   intentosActuales: 0,
   modulo0Completado: false,
-  fundamentosDesbloqueados: false
+  fundamentosDesbloqueados: false,
+  puzzlePieces: { "modulo-0": [] },
+  puzzleCompleted: {}
 };
 
 const MODULO_0_CONTENT = [
@@ -91,6 +95,12 @@ const MODULO_0_CONTENT = [
     nivel: "0.3",
     texto: "El viaje que vas a empezar ocurre tanto en tu cuerpo como en tu mente. Vas a ser el arquitecto de tu propia recuperación. Vamos a seguir un orden claro, desde los cimientos hasta el tejado.",
     ejercicios: []
+  },
+  {
+    titulo: "El Puzle Final",
+    nivel: "0.4",
+    texto: "Has reunido todas las piezas. Dirígete al panel de puzle de la derecha para ordenarlas y completar el módulo.",
+    ejercicios: []
   }
 ];
 
@@ -136,6 +146,25 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
     const res = ex.check(idx, progress.intentosActuales);
     setFeedback(res.msg);
     if (res.correct || (res as any).showCorrect) {
+      // Logic for adding pieces
+      let pieceId = -1;
+      if (progress.pantallaActual === 0 && progress.ejercicioActual === 0) pieceId = 0;
+      if (progress.pantallaActual === 0 && progress.ejercicioActual === 1) pieceId = 1;
+      if (progress.pantallaActual === 1 && progress.ejercicioActual === 0) pieceId = 2;
+      if (progress.pantallaActual === 1 && progress.ejercicioActual === 1) pieceId = 3;
+      
+      const currentPieces = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) ? progress.puzzlePieces["modulo-0"] : [];
+      if (pieceId !== -1 && !currentPieces.includes(pieceId)) {
+        updateProgress({
+          puzzlePieces: {
+            ...progress.puzzlePieces,
+            "modulo-0": [...currentPieces, pieceId]
+          }
+        });
+        // Override msg to tell them they got a piece
+        setFeedback(res.msg + " ¡Has conseguido una pieza del puzle! Mira en el panel derecho.");
+      }
+
       setShowContinue(true);
     } else {
       updateProgress({ intentosActuales: progress.intentosActuales + 1 });
@@ -150,8 +179,17 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
       setSlots(newSlots);
       setSelectedPiece(null);
       if (newSlots.every(s => s !== null)) {
-        setFeedback("¡Cimientos listos! Recuerda siempre esta regla de oro: el cuerpo siempre nota la emoción mucho antes de que la mente la entienda. ¡Acabas de desbloquear el Módulo I!");
+        setFeedback("¡Cimientos listos! Has conseguido la última pieza del puzle. Ahora resuélvelo en el panel derecho.");
         setShowContinue(true);
+        const currentPieces = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) ? progress.puzzlePieces["modulo-0"] : [];
+        if (!currentPieces.includes(4)) {
+            updateProgress({
+             puzzlePieces: {
+               ...progress.puzzlePieces,
+               "modulo-0": [...currentPieces, 4]
+             }
+            });
+        }
       }
     } else {
       setErrorSlot(slotIdx);
@@ -163,10 +201,7 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
   const handleContinue = () => {
     if (isSort) {
       updateProgress({
-        modulo0Completado: true,
-        fundamentosDesbloqueados: true,
-        moduloActual: "I. Fundamentos y Diagnóstico",
-        pantallaActual: 0,
+        pantallaActual: progress.pantallaActual + 1,
         ejercicioActual: 0,
         intentosActuales: 0
       });
@@ -244,13 +279,20 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
             </div>
           </div>
         </div>
+      ) : p.titulo === "El Puzle Final" ? (
+        <div className="animate-in fade-in slide-in-from-right-8 duration-500 text-center py-10">
+           <span className="material-symbols-outlined text-5xl text-primary mb-6 animate-pulse">extension</span>
+           <p className="text-xl md:text-2xl text-on-surface-variant font-light">
+             Resuelve el puzle en el panel de la derecha para completar este nivel.
+           </p>
+        </div>
       ) : (
         <div key={progress.ejercicioActual} className="animate-in fade-in slide-in-from-right-8 duration-500">
           <p className="text-xl md:text-2xl text-primary font-medium leading-relaxed mb-6">
             {ex?.pregunta}
           </p>
           <div className="space-y-3 mb-8">
-            {ex?.respuestas.map((r, idx) => (
+            {ex?.respuestas?.map((r, idx) => (
               <button 
                 key={idx}
                 onClick={() => handleAnswer(idx)}
@@ -277,9 +319,204 @@ const Modulo0Panel = ({ progress, updateProgress }: { progress: EmocionarioProgr
           onClick={handleContinue}
           className="w-full bg-primary text-white py-5 md:py-6 rounded-2xl text-lg md:text-xl font-bold tracking-wider hover:bg-secondary transition-colors shadow-lg"
         >
-          {isSort ? 'Desbloquear Módulo I' : 'Continuar'}
+          Continuar
         </button>
       )}
+    </div>
+  );
+};
+
+const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress }: { selectedModule: string | null, progress: EmocionarioProgress, updateProgress: (u: Partial<EmocionarioProgress>) => void }) => {
+  if (!selectedModule) return null;
+
+  const isModulo0 = selectedModule === "Módulo 0 — El Despertar del Arquitecto";
+  const piecesCollected = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) || [];
+  const puzzleCompleted = (progress.puzzleCompleted && progress.puzzleCompleted["modulo-0"]) || false;
+
+  const totalPieces = 5;
+  const currentPiecesCount = isModulo0 ? piecesCollected.length : 0;
+  
+  const imageMap: Record<string, string> = {
+    "Módulo 0 — El Despertar del Arquitecto": "/images/puzle_modulo_0.jpg",
+    "I. Fundamentos y Diagnóstico": "/images/puzle_modulo_1.jpg",
+    "II. Conciencia Somática": "/images/puzle_modulo_2.jpg",
+    "III. Flexibilidad Cognitiva": "/images/puzle_modulo_3.jpg",
+    "IV. Fortalezas de Carácter": "/images/puzle_modulo_4.jpg",
+    "V. Integración y Acción Consciente": "/images/puzle_modulo_5.jpg",
+    "Crisis, Pérdida y Salud": "/images/puzle_modulo_crisis.jpg",
+    "Amor y Desamor": "/images/puzle_modulo_amor.jpg",
+    "Trabajo y Finanzas": "/images/puzle_modulo_trabajo.jpg",
+  };
+
+  const puzzleImage = imageMap[selectedModule] || "/images/puzle_modulo_0.jpg";
+
+  const [inResolution, setInResolution] = useState(false);
+  const [puzzleSlots, setPuzzleSlots] = useState<(number | null)[]>(Array(totalPieces).fill(null));
+  const [selectedPuzzlePiece, setSelectedPuzzlePiece] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (currentPiecesCount === totalPieces && !puzzleCompleted && isModulo0) {
+      setInResolution(true);
+    } else {
+      setInResolution(false);
+    }
+  }, [currentPiecesCount, puzzleCompleted, isModulo0, totalPieces]);
+
+  const handlePuzzleSlotClick = (slotIdx: number) => {
+    if (selectedPuzzlePiece === null) {
+        if (puzzleSlots[slotIdx] !== null) {
+            const newSlots = [...puzzleSlots];
+            newSlots[slotIdx] = null;
+            setPuzzleSlots(newSlots);
+        }
+        return;
+    }
+    
+    const newSlots = [...puzzleSlots];
+    const prevIdx = newSlots.findIndex(p => p === selectedPuzzlePiece);
+    if (prevIdx !== -1) {
+        newSlots[prevIdx] = null;
+    }
+    
+    newSlots[slotIdx] = selectedPuzzlePiece;
+    setPuzzleSlots(newSlots);
+    setSelectedPuzzlePiece(null);
+
+    if (newSlots.every((s, i) => s === i)) {
+      updateProgress({
+        puzzleCompleted: {
+          ...progress.puzzleCompleted,
+          "modulo-0": true
+        },
+        modulo0Completado: true,
+        fundamentosDesbloqueados: true
+      });
+      setInResolution(false);
+    }
+  };
+
+  return (
+    <div className="w-full h-full p-8 md:p-10 bg-surface-container-lowest rounded-[2.5rem] border border-outline-variant/20 shadow-xl overflow-hidden relative flex flex-col min-h-[500px]">
+      <div className="absolute inset-0 bg-transparent"></div>
+      
+      <div className="relative z-10 flex-grow flex flex-col items-center">
+        <h3 className="font-headline text-2xl md:text-3xl text-primary mb-2 text-center">Puzle del módulo</h3>
+        <p className="text-sm font-bold tracking-widest uppercase text-on-surface-variant/70 mb-8 text-center">{selectedModule}</p>
+        
+        {puzzleCompleted ? (
+           <div className="flex flex-col items-center my-auto animate-in fade-in zoom-in duration-700">
+              <span className="material-symbols-outlined text-green-500 text-6xl mb-6">task_alt</span>
+              <h4 className="font-headline text-2xl text-center mb-6">Módulo Completado</h4>
+              
+              <div className="w-full max-w-[280px] aspect-video rounded-xl overflow-hidden shadow-2xl border-4 border-white/20 relative">
+                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
+                 <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-cover relative z-10" />
+              </div>
+           </div>
+        ) : inResolution ? (
+           <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
+               <p className="font-medium text-center text-primary mb-6 text-lg">Ordena el puzle para completar el módulo.</p>
+               
+               <div className="w-full bg-surface-container-high/50 rounded-2xl p-4 mb-8 shadow-inner border border-outline-variant/10">
+                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-4 text-on-surface-variant/50">Piezas Disponibles</p>
+                   <div className="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[80px]">
+                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).map(p => (
+                           <div 
+                             key={`pool-${p}`}
+                             onClick={() => setSelectedPuzzlePiece(p === selectedPuzzlePiece ? null : p)}
+                             className={`w-14 h-14 md:w-20 md:h-20 rounded-lg cursor-pointer transition-all border-2 flex items-center justify-center text-white font-bold drop-shadow-md ${selectedPuzzlePiece === p ? 'border-primary ring-4 ring-primary/30 scale-110 shadow-xl' : 'border-outline-variant/50 hover:border-primary/80'}`}
+                             style={{
+                               backgroundImage: `url(${puzzleImage})`,
+                               backgroundColor: "rgba(0,0,0,0.3)", // slight tint if image misses
+                               backgroundBlendMode: "overlay",
+                               backgroundSize: "500% 100%",
+                               backgroundPosition: `${(p / 4) * 100}% 0%`
+                             }}
+                           >
+                            <span className="opacity-0 hover:opacity-100 transition-opacity bg-black/40 rounded-full w-6 h-6 flex items-center justify-center">{p+1}</span>
+                           </div>
+                       ))}
+                       {piecesCollected.filter(p => !puzzleSlots.includes(p)).length === 0 && (
+                           <span className="text-sm text-on-surface-variant/50 font-light py-4">Has colocado todas las piezas.</span>
+                       )}
+                   </div>
+               </div>
+               
+               <div className="w-full mt-auto mb-auto">
+                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-4 text-on-surface-variant/50">Puzle Final</p>
+                   {/* Aspect video container for 5 pieces */}
+                   <div className="w-full max-w-[400px] mx-auto flex">
+                       {Array.from({length: totalPieces}).map((_, i) => (
+                           <div 
+                             key={`slot-${i}`}
+                             onClick={() => handlePuzzleSlotClick(i)}
+                             className={`flex-1 aspect-[1/5] md:aspect-[3/10] border text-transparent ${puzzleSlots[i] !== null ? 'border-transparent' : (selectedPuzzlePiece !== null ? 'border-primary/50 border-dashed bg-primary/5 cursor-pointer hover:bg-primary/20' : 'border-outline-variant/30 border-dashed')} transition-all flex items-center justify-center`}
+                           >
+                               {puzzleSlots[i] !== null && (
+                                   <div 
+                                      className="w-full h-full border border-white/20 select-none shadow-md cursor-pointer hover:opacity-80 transition-opacity"
+                                      style={{
+                                        backgroundImage: `url(${puzzleImage})`,
+                                        backgroundSize: "500% 100%",
+                                        backgroundPosition: `${(puzzleSlots[i]! / 4) * 100}% 0%`
+                                      }}
+                                   />
+                               )}
+                           </div>
+                       ))}
+                   </div>
+               </div>
+           </div>
+        ) : (
+           <div className="w-full flex-grow flex flex-col items-center justify-center -mt-6">
+             <div className="text-center mb-10">
+               <span className="text-base font-bold bg-surface-container-high px-5 py-2.5 rounded-full shadow-sm text-on-surface-variant">
+                 Piezas conseguidas: {currentPiecesCount} / {totalPieces}
+               </span>
+             </div>
+             
+             <div className="w-full max-w-[320px] aspect-video rounded-2xl bg-surface-container-high/30 border-2 border-dashed border-outline-variant/20 relative overflow-visible flex flex-wrap justify-center content-center p-6 shadow-inner">
+                 <div className="absolute inset-0 opacity-10 blur-sm mix-blend-luminosity rounded-2xl overflow-hidden">
+                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
+                     <img src={puzzleImage} alt="" className="w-full h-full object-cover" />
+                 </div>
+                 
+                 <div className="relative z-10 w-full h-full">
+                     {piecesCollected.map((p, idx) => {
+                         const positions = [
+                             { top: '10%', left: '10%' },
+                             { top: '50%', left: '70%' },
+                             { top: '20%', left: '40%' },
+                             { top: '60%', left: '10%' },
+                             { top: '30%', left: '80%' }
+                         ];
+                         return (
+                             <div 
+                                key={idx}
+                                className="absolute w-[20%] h-full rounded shadow-xl border border-white/20 animate-in zoom-in"
+                                style={{
+                                   backgroundImage: `url(${puzzleImage})`,
+                                   backgroundSize: "500% 100%",
+                                   backgroundPosition: `${(p / 4) * 100}% 0%`,
+                                   top: positions[p]?.top || '50%',
+                                   left: positions[p]?.left || '50%',
+                                   transform: `translate(-50%, -50%) rotate(${Math.sin(p * 100) * 20}deg) scale(1.1)`,
+                                }}
+                             />
+                         );
+                     })}
+                 </div>
+                 
+                 {currentPiecesCount === 0 && (
+                     <p className="absolute inset-0 flex items-center justify-center text-on-surface-variant/40 text-sm font-light italic text-center p-4">Actitud activa: completa los ejercicios para ganar piezas.</p>
+                 )}
+                 {!isModulo0 && (
+                     <p className="absolute bottom-4 left-0 right-0 text-on-surface-variant/40 text-xs font-light text-center z-20">Este módulo aún no tiene piezas desbloqueables.</p>
+                 )}
+             </div>
+           </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -300,7 +537,13 @@ export default function Emocionario() {
     const saved = localStorage.getItem("emocionarioProgress");
     if (saved) {
       try {
-        setProgress(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setProgress({
+          ...defaultProgress,
+          ...parsed,
+          puzzlePieces: parsed.puzzlePieces || { "modulo-0": [] },
+          puzzleCompleted: parsed.puzzleCompleted || {}
+        });
       } catch(e) {}
     }
   }, []);
@@ -313,7 +556,7 @@ export default function Emocionario() {
 
   if (!accessGranted) {
     return (
-      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 pt-32">
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 pt-32">
         <SEO 
           title="Acceso Privado | Emocionario" 
           description="Contenido exclusivo de aprendizaje emocional."
@@ -337,7 +580,7 @@ export default function Emocionario() {
   }
 
   return (
-    <div className="min-h-screen bg-surface pt-32 pb-24 font-sans">
+    <div className="min-h-screen bg-transparent pt-32 pb-24 font-sans">
       <SEO 
         title="Emocionario | Aprendizaje de gestión emocional" 
         description="Entorno privado de aprendizaje emocional con módulos de estudio y una futura experiencia de aprendizaje para entrenar gestión de emociones."
@@ -381,6 +624,7 @@ export default function Emocionario() {
               className="relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-primary/30 to-surface-container-highest border border-outline-variant/10 shadow-xl min-h-[400px] w-full cursor-pointer transition-all hover:shadow-2xl order-2 lg:order-2"
               onClick={() => window.open('/images/gestion-emocional.pdf', '_blank', 'noopener,noreferrer')}
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_metodo_gestion_emociones.jpg" alt="Método Gestión de Emociones" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -408,6 +652,7 @@ export default function Emocionario() {
           {/* Módulo 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_1.jpg" alt="Módulo I" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -439,6 +684,7 @@ export default function Emocionario() {
               </p>
             </div>
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_2.jpg" alt="Módulo II" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -456,6 +702,7 @@ export default function Emocionario() {
           {/* Módulo 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_3.jpg" alt="Módulo III" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -487,6 +734,7 @@ export default function Emocionario() {
               </p>
             </div>
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_4.jpg" alt="Módulo IV" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -504,6 +752,7 @@ export default function Emocionario() {
           {/* Módulo 5 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16">
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-highest border border-outline-variant/10 shadow-lg min-h-[300px] w-full transition-all hover:shadow-xl order-2 lg:order-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_5.jpg" alt="Módulo V" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -538,6 +787,7 @@ export default function Emocionario() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
             {/* Especialidad 1 */}
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_crisis.jpg" alt="Crisis, Pérdida y Salud" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -555,6 +805,7 @@ export default function Emocionario() {
             </div>
             {/* Especialidad 2 */}
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_amor.jpg" alt="Amor y Desamor" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -572,6 +823,7 @@ export default function Emocionario() {
             </div>
             {/* Especialidad 3 */}
             <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_trabajo.jpg" alt="Trabajo y Finanzas" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/45 transition-all duration-500 md:group-hover:backdrop-blur-sm"></div>
               
@@ -611,7 +863,7 @@ export default function Emocionario() {
               <div className="mb-10">
                 <button 
                   onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
-                  className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                  className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
                 >
                   Módulo 0 — El Despertar del Arquitecto
                 </button>
@@ -636,7 +888,7 @@ export default function Emocionario() {
                       <li key={idx}>
                         <button 
                           onClick={() => setSelectedModule(modulo)}
-                          className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg ${isLocked ? 'opacity-70' : ''}`}
+                          className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg ${isLocked ? 'opacity-70' : ''}`}
                         >
                           {modulo}
                         </button>
@@ -689,7 +941,7 @@ export default function Emocionario() {
                         <li key={idx}>
                           <button 
                             onClick={() => setSelectedModule(modulo)}
-                            className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-primary text-white border-primary shadow-lg scale-[1.02]' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                            className={`w-full text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === modulo ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
                           >
                             {modulo}
                           </button>
@@ -708,119 +960,9 @@ export default function Emocionario() {
               </div>
             </div>
 
-            {/* Columna Derecha: Mockup Emocionario 9:16 */}
-            <div className="flex justify-center items-center">
-              {/* Contenedor del mockup estilo teléfono */}
-              <div className="w-full max-w-[360px] aspect-[9/16] bg-[#f8f9fa] dark:bg-[#121212] rounded-[3rem] border-[12px] border-surface-container shadow-2xl overflow-hidden relative flex flex-col mx-auto">
-                
-                {/* Status bar (decorativa) */}
-                <div className="h-7 w-full flex justify-between items-center px-6 mt-1 text-[10px] text-on-surface-variant/50 font-bold">
-                  <span>9:41</span>
-                  <div className="flex gap-1 items-center">
-                    <span className="material-symbols-outlined text-[12px]">signal_cellular_4_bar</span>
-                    <span className="material-symbols-outlined text-[12px]">wifi</span>
-                    <span className="material-symbols-outlined text-[12px]">battery_full</span>
-                  </div>
-                </div>
-
-                {/* Cabecera del juego */}
-                <div className="px-6 py-4 pb-6 bg-primary text-white shadow-md relative z-10 text-center">
-                  <h3 className="font-bold uppercase tracking-widest text-[10px] opacity-80 mb-1">Progreso</h3>
-                  <h2 className="font-headline text-lg leading-snug">
-                    {selectedModule || "Elige un Módulo"}
-                  </h2>
-                </div>
-
-                {/* Zona de scroll del recorrido */}
-                <div className="flex-1 overflow-y-auto relative p-6 flex flex-col items-center justify-start bg-surface-container-lowest" style={{ scrollbarWidth: 'none' }}>
-                  {(() => {
-                    if (selectedModule === "Módulo 0 — El Despertar del Arquitecto") {
-                      const screenData = MODULO_0_CONTENT[Math.min(progress.pantallaActual, 2)];
-                      return (
-                        <>
-                          <h4 className="text-primary font-bold tracking-widest uppercase text-xs mb-8">Módulo 0</h4>
-                          
-                          {(progress.pantallaActual > 0 || progress.modulo0Completado) && (
-                            <>
-                              <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg relative z-10 ring-4 ring-secondary/30 mb-8">
-                                <span className="material-symbols-outlined text-2xl font-bold">check</span>
-                              </div>
-                              <div className="w-2 h-10 bg-secondary/50 -mt-10 mb-1 relative z-0 left-[0px] rounded-full"></div>
-                            </>
-                          )}
-
-                          {!progress.modulo0Completado && (
-                            <>
-                              <div className="text-center mb-2 mt-4">
-                                <span className="bg-white dark:bg-black/50 text-[10px] font-bold px-3 py-1 rounded-full text-on-surface shadow-md">Nivel {screenData.nivel}</span>
-                              </div>
-                              <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-primary/20 mb-8 hover:scale-105 transition-transform cursor-pointer">
-                                <span className="material-symbols-outlined text-4xl pl-1">play_arrow</span>
-                              </div>
-                            </>
-                          )}
-                          
-                          {progress.modulo0Completado && (
-                            <div className="mt-4 w-20 h-20 rounded-full bg-secondary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-secondary/30 mb-8">
-                                <span className="material-symbols-outlined text-4xl">task_alt</span>
-                            </div>
-                          )}
-
-                          {!progress.modulo0Completado && (
-                            <>
-                              <div className="w-2 h-14 bg-outline-variant/20 -mt-10 mb-2 relative z-0 right-[0px] rounded-full"></div>
-                              <div className="w-14 h-14 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center shadow-inner relative z-10 mb-12">
-                                 <span className="material-symbols-outlined text-xl">lock</span>
-                              </div>
-                            </>
-                          )}
-                        </>
-                      );
-                    }
-                    
-                    return (
-                        <>
-                          <h4 className="text-primary font-bold tracking-widest uppercase text-xs mb-8">Isla 1</h4>
-                          
-                          {/* Nodo Camino completado */}
-                          <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg relative z-10 ring-4 ring-secondary/30 mb-8">
-                            <span className="material-symbols-outlined text-2xl font-bold">check</span>
-                          </div>
-                          {/* Línea conexión */}
-                          <div className="w-2 h-10 bg-secondary/50 -mt-10 mb-2 relative z-0 left-[-20px] rounded-full"></div>
-
-                          <div className="text-center mb-2">
-                            <span className="bg-white dark:bg-black/50 text-[10px] font-bold px-3 py-1 rounded-full text-on-surface shadow-md">Lección 1</span>
-                          </div>
-                          {/* Nodo Camino actual */}
-                          <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-xl relative z-10 ring-4 ring-primary/20 mb-8 hover:scale-105 transition-transform cursor-pointer">
-                            <span className="material-symbols-outlined text-4xl pl-1">play_arrow</span>
-                          </div>
-
-                          {/* Línea conexión bloqueada */}
-                          <div className="w-2 h-14 bg-outline-variant/20 -mt-10 mb-2 relative z-0 right-[-15px] rounded-full"></div>
-
-                          {/* Nodo Camino bloqueado */}
-                          <div className="w-14 h-14 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center shadow-inner relative z-10 mb-12">
-                             <span className="material-symbols-outlined text-xl">lock</span>
-                          </div>
-                        </>
-                    );
-                  })()}
-
-                  <h4 className="text-on-surface-variant font-bold tracking-widest uppercase text-[10px] mb-8">Próximamente</h4>
-
-                  {/* Mascota emocional placeholder */}
-                  <div className="mt-8 pt-8 w-full border-t border-outline-variant/10">
-                    <div className="w-full aspect-square rounded-2xl bg-gradient-to-tr from-surface-container to-surface-container-lowest border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center p-4 text-center">
-                       <span className="material-symbols-outlined text-4xl text-primary/30 mb-2">pets</span>
-                       <span className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider leading-relaxed">Mascota emocional<br/>pendiente</span>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
+            {/* Columna Derecha: Panel Puzle Emocionario */}
+            <div className="flex justify-center items-stretch h-full min-h-[500px]">
+              <PuzzleProgressPanel selectedModule={selectedModule} progress={progress} updateProgress={updateProgress} />
             </div>
           </div>
         </section>
