@@ -105,24 +105,36 @@ export default function NextStepsModal({
     }
   }, [user, initialPhoneValue]);
 
-  // Clases de botones constantes locales para asegurar legibilidad en modo claro y oscuro
-  const primaryActionButtonClass =
-    "bg-white text-[#162839] border border-outline-variant/20 hover:bg-surface-container-high px-6 py-3 rounded-full font-label font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
+  // Clases de botones constantes locales corregidas para asegurar legibilidad en modo claro y oscuro
+  const actionButtonLightClass =
+    "bg-white text-[#162839] border border-outline-variant/20 hover:bg-surface-container-high text-center rounded-full font-bold cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed";
 
-  const primaryActionButtonWideClass =
-    "bg-white text-[#162839] border border-outline-variant/20 hover:bg-surface-container-high text-center py-3 rounded-full font-bold text-sm cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 w-full flex items-center justify-center";
+  const actionButtonLightSmallClass =
+    `${actionButtonLightClass} px-6 py-3 text-sm flex items-center justify-center gap-2`;
 
-  const primaryActionButtonLargeClass =
-    "bg-white text-[#162839] border border-outline-variant/20 hover:bg-surface-container-high text-center py-4 rounded-full font-bold text-base cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] w-full flex items-center justify-center";
+  const actionButtonLightWideClass =
+    `${actionButtonLightClass} py-3 text-sm hover:-translate-y-0.5 w-full flex items-center justify-center gap-2`;
 
-  const secondaryLightButtonClass =
-    "bg-surface-container-lowest text-[#162839] dark:text-[#162839] hover:bg-surface-container py-2 px-4 rounded-full font-bold text-xs text-center transition-colors border border-outline-variant/30";
+  const actionButtonLightLargeClass =
+    `${actionButtonLightClass} py-4 text-base hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] w-full flex items-center justify-center`;
 
-  const secondaryLightButtonLargeClass =
-    "bg-surface-container-lowest text-[#162839] dark:text-[#162839] hover:bg-surface-container py-3 rounded-full font-bold text-center transition-colors border border-outline-variant/30";
+  const buttonOnDarkPanelClass =
+    "bg-[#162839] text-white border border-white/10 hover:bg-[#20384f] text-center rounded-full font-bold cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed";
 
-  const secondaryActionButtonClass =
-    "bg-surface-container-lowest text-[#162839] dark:text-[#162839] border border-outline-variant/30 hover:bg-surface-container px-6 py-3 rounded-full font-label font-bold text-sm shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
+  const buttonOnDarkPanelSmallClass =
+    `${buttonOnDarkPanelClass} py-2 px-4 text-xs`;
+
+  const buttonOnDarkPanelLargeClass =
+    `${buttonOnDarkPanelClass} py-3 px-4 text-sm`;
+
+  const actionButtonLightOutlineClass =
+    "bg-transparent text-[#162839] dark:text-white border border-[#162839]/30 dark:border-white/30 hover:bg-black/5 dark:hover:bg-white/10 text-center rounded-full font-bold cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
+
+  const actionButtonLightOutlineSmallClass =
+    `${actionButtonLightOutlineClass} px-6 py-3 text-sm flex items-center justify-center gap-2`;
+
+  const dangerDebugButtonClass =
+    "bg-red-600 text-white border border-red-400/30 hover:bg-red-700 text-center rounded-full font-bold cursor-pointer transition-all duration-300";
 
   if (!isOpen) return null;
 
@@ -386,7 +398,7 @@ export default function NextStepsModal({
                  <p className="text-sm text-on-surface-variant leading-relaxed">
                    Antes de solicitar el Cuestionario Espejo, necesitamos que completes la Consulta gratuita. Así podremos preparar una solicitud más útil y personalizada para ti.
                  </p>
-                 <button onClick={() => navigate('/session')} className={`${primaryActionButtonClass} self-start`}>
+                 <button onClick={() => navigate('/session')} className={`${actionButtonLightSmallClass} self-start`}>
                    Ir a la Consulta Gratuita
                  </button>
               </div>
@@ -441,7 +453,7 @@ export default function NextStepsModal({
                     resetQuestionnaireLocalState();
                     setForceQuestionnaireRequestForm(true);
                   }}
-                  className={`${primaryActionButtonClass} self-start`}
+                  className={`${actionButtonLightSmallClass} self-start`}
                 >
                   Iniciar nueva valoración
                 </button>
@@ -451,7 +463,7 @@ export default function NextStepsModal({
                 <p className="text-sm text-on-surface-variant leading-relaxed font-bold text-green-700 dark:text-green-300">
                   {dossierViewedAt ? "Dosier leído" : "Tu dosier está disponible para lectura."}
                 </p>
-                <button onClick={() => { onClose(); navigate('/report'); }} className={`${primaryActionButtonClass} self-start`}>
+                <button onClick={() => { onClose(); navigate('/report'); }} className={`${actionButtonLightSmallClass} self-start`}>
                   Leer dosier
                 </button>
               </div>
@@ -470,7 +482,7 @@ export default function NextStepsModal({
                 {questionnaireRequestMessage && (
                   <div className={`mt-3 p-3 whitespace-pre-wrap rounded-xl text-sm font-medium ${
                     questionnaireRequestMessage.type === 'success' ? 'bg-green-100 text-green-800' : 
-                    questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-105 text-yellow-800' : 'bg-red-100 text-red-800'
+                    questionnaireRequestMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                   }`}>
                     {questionnaireRequestMessage.text}
                   </div>
@@ -485,7 +497,7 @@ export default function NextStepsModal({
                       window.open(availableQuestionnaireUrl, "_blank", "noopener,noreferrer");
                     }
                   }}
-                  className={`${primaryActionButtonWideClass} mt-2`}
+                  className={`${actionButtonLightWideClass} mt-2`}
                 >
                   Continuar con mi cuestionario iniciado
                 </button>
@@ -522,7 +534,7 @@ export default function NextStepsModal({
                              navigator.clipboard.writeText(availableQuestionnaireUrl);
                              alert("Enlace copiado al portapapeles");
                           }}
-                          className={`${secondaryLightButtonClass} flex-1`}
+                          className={`${buttonOnDarkPanelSmallClass} flex-1`}
                         >
                           Copiar enlace
                         </button>
@@ -532,7 +544,7 @@ export default function NextStepsModal({
                              navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
                              alert("Clave copiada al portapapeles");
                           }}
-                          className={`${secondaryLightButtonClass} flex-1`}
+                          className={`${buttonOnDarkPanelSmallClass} flex-1`}
                         >
                           Copiar clave
                         </button>
@@ -591,7 +603,7 @@ export default function NextStepsModal({
                 <button 
                   onClick={() => handleFormSubmit("direct_now")}
                   disabled={isQuestionnaireSubmitting}
-                  className={`${primaryActionButtonClass} self-start`}
+                  className={`${actionButtonLightSmallClass} self-start`}
                 >
                   {isQuestionnaireSubmitting ? (
                     <>
@@ -608,8 +620,8 @@ export default function NextStepsModal({
                     questionnaireRequestMessage.type === 'success'
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
                       : questionnaireRequestMessage.type === 'warning'
-                      ? 'bg-yellow-101 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
-                      : 'bg-red-101 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
                   }`}>
                     {questionnaireRequestMessage.text}
                   </div>
@@ -624,7 +636,7 @@ export default function NextStepsModal({
                          navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
                          alert("Clave copiada al portapapeles");
                       }}
-                      className={secondaryLightButtonClass}
+                      className={buttonOnDarkPanelLargeClass}
                     >
                       Copiar clave
                     </button>
@@ -753,7 +765,7 @@ export default function NextStepsModal({
                                window.open(questionnaireSuccessData.questionnaireUrl!, "_blank", "noopener,noreferrer");
                              }
                            }}
-                           className={primaryActionButtonLargeClass}
+                           className={actionButtonLightLargeClass}
                          >
                            Hacer Cuestionario Espejo ahora
                          </button>
@@ -767,7 +779,7 @@ export default function NextStepsModal({
                                navigator.clipboard.writeText(questionnaireSuccessData.questionnaireUrl!);
                                alert("Enlace copiado al portapapeles");
                             }}
-                            className={`${secondaryLightButtonLargeClass} flex-1`}
+                            className={`${buttonOnDarkPanelLargeClass} flex-1`}
                           >
                             Copiar enlace
                           </button>
@@ -778,7 +790,7 @@ export default function NextStepsModal({
                              navigator.clipboard.writeText(questionnaireSuccessData.accessCode!.toUpperCase());
                              alert("Clave copiada al portapapeles");
                           }}
-                          className={`${secondaryLightButtonLargeClass} flex-1`}
+                          className={`${buttonOnDarkPanelLargeClass} flex-1`}
                         >
                           Copiar clave
                         </button>
@@ -797,7 +809,7 @@ export default function NextStepsModal({
               <button 
                 onClick={() => handleFormSubmit("direct_now")}
                 disabled={isQuestionnaireSubmitting}
-                className={primaryActionButtonClass}
+                className={actionButtonLightSmallClass}
               >
                 {isQuestionnaireSubmitting ? (
                   <>
@@ -811,7 +823,7 @@ export default function NextStepsModal({
               <button 
                 onClick={() => handleFormSubmit("manual_request")}
                 disabled={isQuestionnaireSubmitting}
-                className={secondaryActionButtonClass}
+                className={actionButtonLightOutlineSmallClass}
               >
                 Enviar Solicitud
               </button>
@@ -823,7 +835,7 @@ export default function NextStepsModal({
                 <button 
                   onClick={handleDebugQuestionnaireBridge}
                   disabled={isDebuggingQuestionnaireBridge}
-                  className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors"
+                  className={`${dangerDebugButtonClass} py-1.5 px-3 text-xs`}
                 >
                   {isDebuggingQuestionnaireBridge ? "Diagnosticando..." : "Diagnóstico puente cuestionario"}
                 </button>
