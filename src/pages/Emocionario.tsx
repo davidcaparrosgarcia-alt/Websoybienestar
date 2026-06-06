@@ -526,15 +526,23 @@ const PuzzlePieceSvg = ({
   }
 
   if (size === "slot") {
+    const padX = piece.w * 0.22;
+    const padY = piece.h * 0.22;
+    
+    const viewX = Math.max(0, piece.x - padX);
+    const viewY = Math.max(0, piece.y - padY);
+    const viewW = Math.min(200 - viewX, piece.w + padX * 2);
+    const viewH = Math.min(300 - viewY, piece.h + padY * 2);
+
     return (
       <div 
         className={`relative transition-all duration-300 ${wrapperClass} ${className} ${onClick ? 'cursor-pointer' : ''} ${selected ? 'z-20' : ''}`}
         onClick={onClick}
       >
         <svg
-          viewBox="0 0 200 300"
+          viewBox={`${viewX} ${viewY} ${viewW} ${viewH}`}
           className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
         >
           <defs>
             <clipPath id={uniqueClipId}>

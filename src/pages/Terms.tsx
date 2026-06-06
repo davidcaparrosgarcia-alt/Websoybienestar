@@ -86,7 +86,7 @@ export default function Terms() {
             <div className="space-y-4">
               <h2 className="font-headline text-2xl text-primary font-bold">6. Identificación del titular</h2>
               <p>
-                En cumplimiento de la normativa vigente de servicios de la sociedad de la información y de comercio electrónico, se facilitan a continuación los datos legales: el titular de este espacio es <strong>Maria Bàdenas Nicolás</strong> (NIF: <strong>47703980W</strong>), con domicilio en Calle Ferret, 1, 08150 Parets del Vallès, Barcelona.
+                En cumplimiento de la normativa vigente de servicios de la sociedad de la información y de comercio electrónico, se facilitan a continuación los datos legales: el titular de este espacio es <strong>Maria Bàdenas Nicolás</strong> (NIF: <strong>47703980W</strong>), con domicilio en 08150 Parets del Vallès, Barcelona.
               </p>
               <p>
                 El nombre de dominio principal es <strong>SoyBienestar.es</strong>, y el punto de contacto a efectos legales y generales es el correo electrónico <a href="mailto:info@soybienestar.es" className="text-secondary font-medium hover:underline">info@soybienestar.es</a> y el teléfono <strong>622 85 27 99</strong>.

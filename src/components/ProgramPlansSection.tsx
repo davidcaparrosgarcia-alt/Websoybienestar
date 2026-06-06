@@ -138,8 +138,8 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             </div>
             <button 
               onClick={() => navigate('/sesion-validacion?plan=completo')}
-              className="w-full py-4 rounded-xl bg-primary/10 transition-colors font-label font-bold mt-auto relative z-10 text-[17.72px] text-white hover:text-black hover:bg-white"
-              style={{ background: 'linear-gradient(135deg, var(--color-primary, #162839) 0%, var(--color-primary-container, #2c3e50) 100%)' }}
+              className="w-full py-4 rounded-xl text-white transition-all duration-300 font-label font-bold mt-auto relative z-10 text-[17.72px] shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg, #162839 0%, #31566f 45%, #b39150 100%)' }}
             >
               Agendar y pagar reserva
             </button>
