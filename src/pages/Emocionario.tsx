@@ -182,22 +182,25 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
       setSlots(newSlots);
       setSelectedPiece(null);
       if (newSlots.every(s => s !== null)) {
-        setFeedback("¡Cimientos listos! Has conseguido las dos últimas piezas del puzle. Ahora ordénalo en el panel derecho o deslizando hacia abajo.");
-        setShowContinue(true);
+        setFeedback("¡Cimientos listos! Has conseguido las dos últimas piezas del puzle. Ahora ordénalo en el panel derecho.");
+        setShowContinue(false);
         const currentPieces = (progress.puzzlePieces && progress.puzzlePieces["modulo-0"]) ? progress.puzzlePieces["modulo-0"] : [];
         const newPieces = [...currentPieces];
         [4, 5].forEach((pId) => {
           if (!newPieces.includes(pId)) newPieces.push(pId);
         });
-        if (newPieces.length > currentPieces.length) {
-            updateProgress({
-             puzzlePieces: {
-               ...progress.puzzlePieces,
-               "modulo-0": newPieces
-             }
-            });
-            if (onPieceEarned) onPieceEarned();
-        }
+        
+        updateProgress({
+          pantallaActual: progress.pantallaActual + 1,
+          ejercicioActual: 0,
+          intentosActuales: 0,
+          puzzlePieces: {
+            ...progress.puzzlePieces,
+            "modulo-0": newPieces
+          }
+        });
+        
+        if (onPieceEarned) onPieceEarned();
       }
     } else {
       setErrorSlot(slotIdx);
@@ -507,7 +510,7 @@ const PuzzlePieceSvg = ({
   pieceId: number,
   puzzleImage: string,
   layoutPieces: PuzzlePieceDef[],
-  size: "reward" | "pool" | "slot",
+  size: "reward" | "pool",
   className?: string,
   onClick?: () => void,
   selected?: boolean
@@ -521,52 +524,6 @@ const PuzzlePieceSvg = ({
      wrapperClass = "w-[120px] md:w-[160px] aspect-[2/3]";
   } else if (size === "pool") {
      wrapperClass = "w-[80px] md:w-[100px] aspect-[2/3]";
-  } else if (size === "slot") {
-     wrapperClass = "w-full h-full absolute top-0 left-0";
-  }
-
-  if (size === "slot") {
-    const padX = piece.w * 0.22;
-    const padY = piece.h * 0.22;
-    
-    const viewX = Math.max(0, piece.x - padX);
-    const viewY = Math.max(0, piece.y - padY);
-    const viewW = Math.min(200 - viewX, piece.w + padX * 2);
-    const viewH = Math.min(300 - viewY, piece.h + padY * 2);
-
-    return (
-      <div 
-        className={`relative transition-all duration-300 ${wrapperClass} ${className} ${onClick ? 'cursor-pointer' : ''} ${selected ? 'z-20' : ''}`}
-        onClick={onClick}
-      >
-        <svg
-          viewBox={`${viewX} ${viewY} ${viewW} ${viewH}`}
-          className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <defs>
-            <clipPath id={uniqueClipId}>
-              <path d={piece.path} />
-            </clipPath>
-          </defs>
-          <image
-            href={puzzleImage}
-            x="0"
-            y="0"
-            width="200"
-            height="300"
-            preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#${uniqueClipId})`}
-          />
-          <path
-            d={piece.path}
-            fill="transparent"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth="1.5"
-          />
-        </svg>
-      </div>
-    );
   }
 
   return (
@@ -759,57 +716,88 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
                
                <div className="w-full max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-8 md:mb-12">
-                   {layoutPieces.map((piece, i) => {
-                       const pieceIdInSlot = puzzleSlots[i];
-                       const hasAnyPiece = pieceIdInSlot !== null;
-                       const BOARD_W = 200;
-                       const BOARD_H = 300;
-                       
+                   <svg
+                     viewBox="0 0 200 300"
+                     preserveAspectRatio="none"
+                     className="absolute inset-0 w-full h-full pointer-events-none"
+                   >
+                     <defs>
+                       {layoutPieces.map((piece) => (
+                         <clipPath id={`placed-clip-${moduleId}-${piece.id}`} key={`clip-${piece.id}`}>
+                           <path d={piece.path} />
+                         </clipPath>
+                       ))}
+                     </defs>
+
+                     {/* Huecos vacíos */}
+                     {layoutPieces.map((slotPiece, slotIndex) => {
+                       const hasPiece = puzzleSlots[slotIndex] !== null;
+                       if (hasPiece) return null;
+
                        return (
-                           <div 
-                             key={`slot-${i}`}
-                             onClick={() => handlePuzzleSlotClick(i)}
-                             className="absolute group z-10"
-                             style={{
-                                left: `${(piece.x / BOARD_W) * 100}%`,
-                                top: `${(piece.y / BOARD_H) * 100}%`,
-                                width: `${(piece.w / BOARD_W) * 100}%`,
-                                height: `${(piece.h / BOARD_H) * 100}%`,
-                             }}
-                           >
-                               {!hasAnyPiece && (
-                                 <svg
-                                   viewBox={`${piece.x} ${piece.y} ${piece.w} ${piece.h}`}
-                                   className={`w-full h-full overflow-visible transition-all ${selectedPuzzlePiece !== null ? 'opacity-100 cursor-pointer pointer-events-auto' : 'opacity-60'}`}
-                                   preserveAspectRatio="xMidYMid meet"
-                                 >
-                                   <path
-                                     d={piece.path}
-                                     fill={selectedPuzzlePiece !== null ? "rgba(var(--color-primary), 0.05)" : "transparent"}
-                                     stroke="rgba(var(--color-outline-variant), 0.3)"
-                                     strokeWidth="2"
-                                     strokeDasharray="4 4"
-                                     className="group-hover:fill-primary/20 transition-colors"
-                                   />
-                                 </svg>
-                               )}
-                               {hasAnyPiece && (
-                                   <div 
-                                     className={`w-full h-full absolute inset-0 transition-all duration-[900ms] ease-out ${puzzleSlots.every((s,idx) => s === idx) ? "scale-100 !translate-y-0 drop-shadow-md" : "scale-[1.08] drop-shadow-2xl -translate-y-2"}`}
-                                     style={puzzleSlots.every((s,idx) => s === idx) ? { transitionDelay: `${i * 100}ms` } : {}}
-                                   >
-                                       <PuzzlePieceSvg 
-                                          pieceId={pieceIdInSlot!} 
-                                          puzzleImage={puzzleImage} 
-                                          layoutPieces={layoutPieces}
-                                          size="slot" 
-                                          className="animate-in zoom-in"
-                                       />
-                                   </div>
-                               )}
-                           </div>
+                         <path
+                           key={`empty-slot-shape-${slotIndex}`}
+                           d={slotPiece.path}
+                           fill={selectedPuzzlePiece !== null ? "rgba(var(--color-primary), 0.05)" : "transparent"}
+                           stroke="rgba(var(--color-outline-variant), 0.35)"
+                           strokeWidth="1.5"
+                           strokeDasharray="4 4"
+                         />
                        );
-                   })}
+                     })}
+
+                     {/* Piezas colocadas */}
+                     {puzzleSlots.map((placedPieceId, slotIndex) => {
+                       if (placedPieceId === null) return null;
+
+                       const placedPiece = layoutPieces.find(p => p.id === placedPieceId);
+                       if (!placedPiece) return null;
+                       
+                       const isComplete = puzzleSlots.every((s, idx) => s === idx);
+                       const styleStr = isComplete ? { transitionDelay: `${slotIndex * 100}ms` } : {};
+
+                       return (
+                         <g 
+                           key={`placed-piece-${slotIndex}-${placedPieceId}`}
+                           className={`transition-all duration-[900ms] ease-out origin-center ${isComplete ? "scale-100 !translate-y-0" : "scale-[1.03] -translate-y-0.5"}`}
+                           style={styleStr}
+                         >
+                           <image
+                             href={puzzleImage}
+                             x="0"
+                             y="0"
+                             width="200"
+                             height="300"
+                             preserveAspectRatio="xMidYMid slice"
+                             clipPath={`url(#placed-clip-${moduleId}-${placedPiece.id})`}
+                           />
+                           <path
+                             d={placedPiece.path}
+                             fill="transparent"
+                             stroke="rgba(255,255,255,0.35)"
+                             strokeWidth="1.2"
+                           />
+                         </g>
+                       );
+                     })}
+                   </svg>
+                   
+                   {/* Capa de clicks encima, sin renderizar piezas */}
+                   {layoutPieces.map((piece, slotIndex) => (
+                     <button
+                       key={`slot-click-${slotIndex}`}
+                       type="button"
+                       onClick={() => handlePuzzleSlotClick(slotIndex)}
+                       aria-label={`Posición ${slotIndex + 1}`}
+                       className="absolute z-20 bg-transparent cursor-pointer"
+                       style={{
+                         left: `${(piece.x / 200) * 100}%`,
+                         top: `${(piece.y / 300) * 100}%`,
+                         width: `${(piece.w / 200) * 100}%`,
+                         height: `${(piece.h / 300) * 100}%`
+                       }}
+                     />
+                   ))}
                </div>
                
                <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
