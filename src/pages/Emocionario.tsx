@@ -623,6 +623,16 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
   const [selectedPuzzlePiece, setSelectedPuzzlePiece] = useState<number | null>(null);
 
   const completedPuzzleRef = useRef<HTMLDivElement | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
+
+  const [draggingPiece, setDraggingPiece] = useState<{
+    pieceId: number;
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+    hasMoved: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (puzzleCompleted && window.matchMedia('(hover: none)').matches) {
@@ -647,26 +657,19 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
   useEffect(() => {
     setPuzzleSlots(Array(totalPieces).fill(null));
     setSelectedPuzzlePiece(null);
+    setDraggingPiece(null);
   }, [selectedModule, totalPieces]);
 
-  const handlePuzzleSlotClick = (slotIdx: number) => {
-    if (selectedPuzzlePiece === null) {
-        if (puzzleSlots[slotIdx] !== null) {
-            setSelectedPuzzlePiece(puzzleSlots[slotIdx]);
-            const newSlots = [...puzzleSlots];
-            newSlots[slotIdx] = null;
-            setPuzzleSlots(newSlots);
-        }
-        return;
-    }
-    
+  const placePuzzlePiece = (pieceId: number, slotIdx: number) => {
+    if (puzzleSlots[slotIdx] !== null) return;
+
     const newSlots = [...puzzleSlots];
-    const prevIdx = newSlots.findIndex(p => p === selectedPuzzlePiece);
+    const prevIdx = newSlots.findIndex(p => p === pieceId);
     if (prevIdx !== -1) {
         newSlots[prevIdx] = null;
     }
     
-    newSlots[slotIdx] = selectedPuzzlePiece;
+    newSlots[slotIdx] = pieceId;
     setPuzzleSlots(newSlots);
     setSelectedPuzzlePiece(null);
 
@@ -682,6 +685,102 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
         });
         setInResolution(false);
       }, 1200);
+    }
+  };
+
+  const handlePuzzleSlotClick = (slotIdx: number) => {
+    if (selectedPuzzlePiece === null) {
+        if (puzzleSlots[slotIdx] !== null) {
+            setSelectedPuzzlePiece(puzzleSlots[slotIdx]);
+            const newSlots = [...puzzleSlots];
+            newSlots[slotIdx] = null;
+            setPuzzleSlots(newSlots);
+        }
+        return;
+    }
+    
+    placePuzzlePiece(selectedPuzzlePiece, slotIdx);
+  };
+
+  const getSlotIndexFromPoint = (clientX: number, clientY: number) => {
+    if (!boardRef.current) return null;
+
+    const rect = boardRef.current.getBoundingClientRect();
+    if (
+      clientX < rect.left ||
+      clientX > rect.right ||
+      clientY < rect.top ||
+      clientY > rect.bottom
+    ) {
+      return null;
+    }
+
+    const relativeX = ((clientX - rect.left) / rect.width) * 200;
+    const relativeY = ((clientY - rect.top) / rect.height) * 300;
+
+    const slotIndex = layoutPieces.findIndex(piece =>
+      relativeX >= piece.x &&
+      relativeX <= piece.x + piece.w &&
+      relativeY >= piece.y &&
+      relativeY <= piece.y + piece.h
+    );
+
+    return slotIndex >= 0 ? slotIndex : null;
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, pieceId: number) => {
+    if (e.button !== 0) return;
+    
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDraggingPiece({
+      pieceId,
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+      hasMoved: false,
+    });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>, pieceId: number) => {
+    if (!draggingPiece || draggingPiece.pieceId !== pieceId) return;
+
+    const dx = e.clientX - draggingPiece.startX;
+    const dy = e.clientY - draggingPiece.startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    setDraggingPiece(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        currentX: e.clientX,
+        currentY: e.clientY,
+        hasMoved: prev.hasMoved || distance > 6,
+      };
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>, pieceId: number) => {
+    if (!draggingPiece || draggingPiece.pieceId !== pieceId) return;
+
+    e.currentTarget.releasePointerCapture(e.pointerId);
+
+    if (draggingPiece.hasMoved) {
+      const slotIndex = getSlotIndexFromPoint(e.clientX, e.clientY);
+      if (slotIndex !== null) {
+        placePuzzlePiece(pieceId, slotIndex);
+      }
+    } else {
+      setSelectedPuzzlePiece(prev => (prev === pieceId ? null : pieceId));
+    }
+
+    setDraggingPiece(null);
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>, pieceId: number) => {
+    if (draggingPiece && draggingPiece.pieceId === pieceId) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+      setDraggingPiece(null);
     }
   };
 
@@ -715,7 +814,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
                <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
                
-               <div className="w-full max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-8 md:mb-12">
+               <div ref={boardRef} className="w-full max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-8 md:mb-12">
                    <svg
                      viewBox="0 0 200 300"
                      preserveAspectRatio="none"
@@ -801,19 +900,34 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                </div>
                
                <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
-                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-6 text-on-surface-variant/70">Piezas Disponibles</p>
+                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-1 text-on-surface-variant/70">Piezas Disponibles</p>
+                    <p className="text-center text-[10px] md:text-xs text-on-surface-variant/50 font-light mb-4 leading-normal">
+                      Puedes tocar una pieza y luego un hueco, o arrastrarla directamente al tablero.
+                    </p>
                    <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 min-h-[80px]">
-                       {getShuffledPieceOrder(piecesCollected.filter(p => !puzzleSlots.includes(p)), moduleId).map(p => (
-                           <PuzzlePieceSvg 
-                              key={`pool-${p}`}
-                              pieceId={p}
-                              puzzleImage={puzzleImage}
-                              layoutPieces={layoutPieces}
-                              size="pool"
-                              selected={selectedPuzzlePiece === p}
-                              onClick={() => setSelectedPuzzlePiece(p === selectedPuzzlePiece ? null : p)}
-                           />
-                       ))}
+                       {getShuffledPieceOrder(piecesCollected.filter(p => !puzzleSlots.includes(p)), moduleId).map(p => {
+                            const isBeingDragged = draggingPiece?.pieceId === p;
+                            return (
+                                <div
+                                   key={`pool-wrapper-${p}`}
+                                   onPointerDown={(e) => handlePointerDown(e, p)}
+                                   onPointerMove={(e) => handlePointerMove(e, p)}
+                                   onPointerUp={(e) => handlePointerUp(e, p)}
+                                   onPointerCancel={(e) => handlePointerCancel(e, p)}
+                                   className={`relative touch-none select-none transition-all duration-300 ${
+                                     isBeingDragged ? "opacity-40 scale-95" : "hover:scale-105"
+                                   }`}
+                                >
+                                    <PuzzlePieceSvg 
+                                       pieceId={p}
+                                       puzzleImage={puzzleImage}
+                                       layoutPieces={layoutPieces}
+                                       size="pool"
+                                       selected={selectedPuzzlePiece === p}
+                                    />
+                                </div>
+                            );
+                        })}
                        {piecesCollected.filter(p => !puzzleSlots.includes(p)).length === 0 && (
                            <span className="text-sm text-on-surface-variant/50 font-light py-4 flex items-center gap-2">
                                <span className="material-symbols-outlined">done_all</span> Has colocado todas las piezas.
@@ -898,6 +1012,26 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
            </div>
         )}
       </div>
+
+       {/* Floating preview for dragged piece */}
+       {draggingPiece !== null && draggingPiece.hasMoved && (
+         <div
+           className="fixed pointer-events-none z-[9999] drop-shadow-2xl scale-105 w-[80px] md:w-[100px] aspect-[2/3]"
+           style={{
+             left: draggingPiece.currentX + 'px',
+             top: draggingPiece.currentY + 'px',
+             transform: 'translate(-50%, -50%)',
+           }}
+         >
+           <PuzzlePieceSvg 
+             pieceId={draggingPiece.pieceId}
+             puzzleImage={puzzleImage}
+             layoutPieces={layoutPieces}
+             size="pool"
+             selected={false}
+           />
+         </div>
+       )}
     </div>
   );
 };
