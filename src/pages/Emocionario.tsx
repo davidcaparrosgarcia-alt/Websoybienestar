@@ -15,8 +15,11 @@ interface EmocionarioProgress {
   puzzleCompleted: Record<string, boolean>;
 }
 
+export const OLD_MODULE_0_TITLE = "Módulo 0 — El Despertar del Arquitecto";
+export const MODULE_0_TITLE = "Módulo 0 --   El Despertar de las Emociones.";
+
 const defaultProgress: EmocionarioProgress = {
-  moduloActual: "Módulo 0 — El Despertar del Arquitecto",
+  moduloActual: MODULE_0_TITLE,
   pantallaActual: 0,
   ejercicioActual: 0,
   intentosActuales: 0,
@@ -95,13 +98,17 @@ const MODULO_0_CONTENT = [
   {
     titulo: "Tu Mapa de Ruta",
     nivel: "0.3",
-    texto: "El viaje que vas a empezar ocurre tanto en tu cuerpo como en tu mente. Vas a ser el arquitecto de tu propia recuperación. Vamos a seguir un orden claro, desde los cimientos hasta el tejado.",
+    texto: `Solemos pensar que primero razonamos las cosas en la cabeza y luego el cuerpo obedece. En una situación normal, es así. Pero cuando una emoción intensa nos secuestra, las reglas cambian y el orden se invierte.
+
+Tu sistema nervioso actúa como una alarma de supervivencia y dispara una respuesta física (somatización) fracciones de segundo antes de que tu parte racional procese lo que pasa. Por ejemplo: en una discusión acalorada, antes de que tu mente piense "estoy perdiendo el control", tu cuerpo ya ha apretado la mandíbula, tensado los puños y acelerado tu corazón.
+
+Ese "chivatazo" físico es tu radar. Si aprendes a detectarlo a tiempo, te adelantas a la mente y evitas reaccionar en piloto automático.`,
     ejercicios: []
   },
   {
     titulo: "El Puzle Final",
     nivel: "0.4",
-    texto: "Has reunido todas las piezas. Dirígete al panel de puzle de la derecha para ordenarlas y completar el módulo.",
+    texto: "",
     ejercicios: []
   }
 ];
@@ -131,7 +138,7 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
     return (
       <div ref={panelRef} className="mt-4 p-8 bg-surface-container-lowest rounded-[2rem] border border-primary/20 shadow-sm animate-in fade-in slide-in-from-top-4 text-center">
         <span className="material-symbols-outlined text-4xl text-primary mb-4">task_alt</span>
-        <h4 className="font-headline text-2xl md:text-3xl text-primary mb-4">El Despertar del Arquitecto Completado</h4>
+        <h4 className="font-headline text-2xl md:text-3xl text-primary mb-4">El Despertar de las Emociones Completado</h4>
         <p className="text-on-surface-variant text-lg md:text-xl font-light leading-relaxed">
           ¡Cimientos listos! Recuerda siempre esta regla de oro: el cuerpo siempre nota la emoción mucho antes de que la mente la entienda.
         </p>
@@ -244,9 +251,14 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
 
       {isSort ? (
         <div className="animate-in fade-in duration-500 delay-150">
-          <p className="text-xl md:text-2xl text-primary mb-8 font-light">
-            Instrucción: Ordena los 3 pasos fundamentales que vamos a entrenar. Toca las piezas para ponerlas en el orden correcto. Si aciertas la posición, la casilla se pondrá en verde. Si la posición es incorrecta, se pondrá en rojo. No podrás avanzar hasta que todo esté en verde.
-          </p>
+          <div className="space-y-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <p className="text-xl md:text-2xl text-primary font-medium leading-relaxed">
+              Sabiendo esto, ¿cuál debe ser el orden exacto de nuestro entrenamiento para recuperar el control? Toca y ordena las 3 piezas.
+            </p>
+            <p className="text-base md:text-lg text-on-surface-variant font-light leading-relaxed">
+              Si aciertas la posición, la casilla se pondrá en color VERDE. Si es incorrecta, en ROJO. No podrás avanzar hasta que todo esté en verde.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
             <div className="space-y-4">
               <h5 className="font-bold tracking-widest uppercase text-xs text-on-surface-variant/50 mb-4">Piezas por clasificar</h5>
@@ -295,8 +307,8 @@ const Modulo0Panel = ({ progress, updateProgress, onPieceEarned, onAdvanceReques
       ) : p.titulo === "El Puzle Final" ? (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500 text-center py-10">
            <span className="material-symbols-outlined text-5xl text-primary mb-6 animate-pulse">extension</span>
-           <p className="text-xl md:text-2xl text-on-surface-variant font-light">
-             Resuelve el puzle en el panel de la derecha para completar este nivel.
+           <p className="text-xl md:text-2xl text-on-surface-variant font-light leading-relaxed">
+             ¡Cimientos listos! Esa es la regla de oro: tu cuerpo es tu sistema de alerta temprana. Si cazas la somatización a tiempo, le quitas el volante al impulso y vuelves a dirigir tú. ¡Completa el puzle para desbloquear el Módulo I!
            </p>
         </div>
       ) : (
@@ -349,7 +361,14 @@ export interface PuzzlePieceDef {
 }
 
 export const MODULE_PUZZLE_CONFIG: Record<string, { moduleId: string, title: string, image: string, totalPieces: number, layoutKey: "5-special" | "6-grid" | "8-grid" | "10-grid" | "12-grid" }> = {
-  "Módulo 0 — El Despertar del Arquitecto": {
+  [MODULE_0_TITLE]: {
+    moduleId: "modulo-0",
+    title: "Módulo 0",
+    image: "/images/puzle_modulo_0.jpg",
+    totalPieces: 6,
+    layoutKey: "6-grid"
+  },
+  [OLD_MODULE_0_TITLE]: {
     moduleId: "modulo-0",
     title: "Módulo 0",
     image: "/images/puzle_modulo_0.jpg",
@@ -813,8 +832,9 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
         ) : inResolution ? (
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
                <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
+                <div className="w-full flex flex-col xl:flex-row gap-6 xl:gap-8 items-center xl:items-start justify-center">
                
-               <div ref={boardRef} className="w-full max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-8 md:mb-12">
+               <div ref={boardRef} className="order-1 xl:order-2 w-full xl:w-[58%] max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto xl:mx-0 relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-4 xl:mb-0">
                    <svg
                      viewBox="0 0 200 300"
                      preserveAspectRatio="none"
@@ -899,7 +919,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                    ))}
                </div>
                
-               <div className="w-full max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10 mt-auto">
+               <div className="order-2 xl:order-1 w-full xl:w-[42%] max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10">
                    <p className="text-xs uppercase tracking-widest font-bold text-center mb-1 text-on-surface-variant/70">Piezas Disponibles</p>
                     <p className="text-center text-[10px] md:text-xs text-on-surface-variant/50 font-light mb-4 leading-normal">
                       Puedes tocar una pieza y luego un hueco, o arrastrarla directamente al tablero.
@@ -935,20 +955,21 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                        )}
                    </div>
                </div>
+               </div>
            </div>
         ) : (
-           <div className="w-full flex-grow flex flex-col items-center justify-start pt-4">
-             <div className="text-center mb-10 md:mb-12">
+           <div className="w-full flex-grow flex flex-col items-center justify-start pt-2">
+             <div className="text-center mb-4 md:mb-6">
                <span className="text-sm font-bold tracking-widest uppercase bg-surface-container-high px-6 py-3 rounded-full text-primary shadow-sm border border-outline-variant/10">
                  Piezas reunidas: {currentPiecesCount} / {totalPieces}
                </span>
              </div>
              
              {currentPiecesCount > 0 ? (
-                 <div className="w-full flex flex-col items-center justify-center flex-grow relative pb-10">
-                     <p className="text-lg md:text-xl font-headline text-primary mb-12 animate-in fade-in slide-in-from-top-4">¡Pieza conseguida!</p>
+                 <div className="w-full flex flex-col items-center justify-start flex-grow relative pb-4 md:pb-6">
+                     <p className="text-lg md:text-xl font-headline text-primary mb-4 animate-in fade-in slide-in-from-top-4">¡Pieza conseguida!</p>
                      
-                     <div className="relative flex items-center justify-center w-full max-w-[400px] min-h-[350px] md:min-h-[450px]">
+                     <div className="relative flex items-center justify-center w-full max-w-[400px] min-h-[220px] md:min-h-[280px]">
                          {/* Pila de piezas anteriores (fondo) */}
                          {piecesCollected.slice(0, currentPiecesCount - 1).map((p, idx) => {
                              // Calcular posiciones de pila (apariencia de fotos desordenadas)
@@ -1061,6 +1082,9 @@ export default function Emocionario() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          if (parsed.moduloActual === OLD_MODULE_0_TITLE) {
+            parsed.moduloActual = MODULE_0_TITLE;
+          }
           setProgress({
             ...defaultProgress,
             ...parsed,
@@ -1080,6 +1104,9 @@ export default function Emocionario() {
           const docSnap = await getDoc(doc(db, "users", user.uid, "emocionarioProgress", "data"));
           if (docSnap.exists()) {
             const data = docSnap.data();
+            if (data.moduloActual === OLD_MODULE_0_TITLE) {
+              data.moduloActual = MODULE_0_TITLE;
+            }
             const loaded = {
               ...defaultProgress,
               ...data,
@@ -1538,10 +1565,10 @@ export default function Emocionario() {
               <div className="mb-10">
                 <div className="flex items-center gap-4">
                   <button 
-                    onClick={() => setSelectedModule("Módulo 0 — El Despertar del Arquitecto")}
-                    className={`flex-grow text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === "Módulo 0 — El Despertar del Arquitecto" ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
+                    onClick={() => setSelectedModule(MODULE_0_TITLE)}
+                    className={`flex-grow text-left px-6 py-4 rounded-2xl border transition-all ${selectedModule === MODULE_0_TITLE || selectedModule === OLD_MODULE_0_TITLE ? 'bg-white text-[#162839] border-primary shadow-lg scale-[1.02] dark:bg-white dark:text-[#162839] dark:border-white' : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/10 text-on-surface-variant hover:border-primary/30'} font-light text-lg`}
                   >
-                    Módulo 0 — El Despertar del Arquitecto
+                    {MODULE_0_TITLE}
                   </button>
                   {isTester && (
                     <button
@@ -1566,7 +1593,7 @@ export default function Emocionario() {
                     </button>
                   )}
                 </div>
-                {selectedModule === "Módulo 0 — El Despertar del Arquitecto" && (
+                {(selectedModule === MODULE_0_TITLE || selectedModule === OLD_MODULE_0_TITLE) && (
                   <Modulo0Panel progress={progress} updateProgress={updateProgress} onPieceEarned={triggerMobilePuzzleScroll} panelRef={questionPanelRef} exerciseRef={exerciseContentRef} />
                 )}
               </div>
@@ -1598,7 +1625,7 @@ export default function Emocionario() {
                               <div className="text-center text-on-surface-variant flex flex-col items-center">
                                 <span className="material-symbols-outlined text-3xl mb-3">lock</span>
                                 <p className="font-light text-lg">
-                                  Completa primero El Despertar del Arquitecto para desbloquear el viaje interior.
+                                  Completa primero El Despertar de las Emociones para desbloquear el viaje interior.
                                 </p>
                               </div>
                             ) : (

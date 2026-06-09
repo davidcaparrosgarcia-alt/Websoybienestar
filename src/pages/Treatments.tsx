@@ -367,7 +367,7 @@ export default function Treatments() {
                 onClick={handleShare}
                 className="w-full py-6 bg-white dark:bg-[#1a252f] text-primary dark:text-white rounded-full font-headline italic tracking-wide text-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-[0.98]"
               >
-                Compartir este Santuario
+                Compartir Soybienestar
               </button>
 
               <p className="text-[11px] text-white/60 uppercase tracking-[0.4em] font-medium">

@@ -864,7 +864,7 @@ export default function Report() {
               className="bg-[#162839] dark:bg-[#1a252f] text-white px-10 py-4 rounded-full font-label font-semibold flex items-center gap-3 mx-auto hover:scale-105 transition-transform"
             >
               <span className="material-symbols-outlined">share</span>
-              Compartir la Luz
+              Comparte nuestro espacio
             </button>
           </div>
           {/* Decorative element */}

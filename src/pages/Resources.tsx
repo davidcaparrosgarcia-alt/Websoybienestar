@@ -847,7 +847,7 @@ export default function Resources() {
               <span className="material-symbols-outlined text-on-surface-variant">close</span>
             </button>
             <div className="p-8 pb-6 border-b border-outline-variant/10 bg-surface">
-              <h3 className="font-headline text-3xl text-primary mb-2">Meditaciones Guiadas</h3>
+              <h3 className="font-headline text-3xl text-primary mb-2">Meditaciones Multimodales</h3>
               <p className="text-on-surface-variant text-sm">Selecciona una meditación para comenzar tu práctica hoy.</p>
             </div>
             <div className="p-6 space-y-4">

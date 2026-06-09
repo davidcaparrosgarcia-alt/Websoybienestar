@@ -2475,7 +2475,7 @@ const PROGRAM_PLANS: Record<string, { label: string; full: number; reservation: 
 const BANK_TRANSFER_CONFIG = {
   accountHolder: "Maria Bàdenas Nicolás",
   accountHolderRole: "Gestora responsable del acompañamiento terapéutico SoyBienestar",
-  iban: "ES00 0000 0000 0000 0000 0000"
+  iban: "ES83 0182 3463 6502 0165 7238"
 };
 
 function normalizeBankConceptPart(value: string) {
