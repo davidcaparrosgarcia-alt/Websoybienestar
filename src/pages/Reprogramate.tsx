@@ -165,19 +165,6 @@ export default function Reprogramate() {
       <StructuredData id="breadcrumb-schema-reprogramate" data={breadcrumbSchema} />
       <StructuredData id="reprogramate-service-schema" data={treatmentsServiceSchema} />
 
-      {/* Header Back Link to Treatments */}
-      <section className="bg-surface-container-lowest border-b border-outline-variant/10 py-6 px-8 select-none">
-        <div className="max-w-screen-2xl mx-auto flex items-center justify-between text-xs text-on-surface-variant/75 font-light">
-          <div className="flex items-center gap-2">
-            <Link to="/" className="hover:text-primary transition-colors">Inicio</Link>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <Link to="/tratamientos-online" className="hover:text-primary transition-colors">Tratamientos</Link>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-on-surface-variant font-medium">ReprogrÁmate</span>
-          </div>
-        </div>
-      </section>
-
       {/* Hero Section: The Bridge Metaphor */}
       <section className="relative flex items-center pt-16 pb-12 px-6 md:px-12 mx-auto max-w-screen-2xl overflow-hidden w-full">
         <div className="w-full">

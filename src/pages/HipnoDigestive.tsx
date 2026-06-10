@@ -53,19 +53,6 @@ export default function HipnoDigestive() {
       <StructuredData id="breadcrumb-schema-hipnodigestive" data={breadcrumbSchema} />
       <StructuredData id="hipnodigestive-service-schema" data={serviceSchema} />
 
-      {/* Header Breadcrumbs / Navigation */}
-      <section className="bg-surface-container-lowest border-b border-outline-variant/10 py-6 px-8 select-none">
-        <div className="max-w-screen-2xl mx-auto flex items-center justify-between text-xs text-on-surface-variant/75 font-light">
-          <div className="flex items-center gap-2">
-            <Link to="/" className="hover:text-primary transition-colors">Inicio</Link>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <Link to="/tratamientos-online" className="hover:text-primary transition-colors">Tratamientos</Link>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-on-surface-variant font-medium">HipnoDigestive</span>
-          </div>
-        </div>
-      </section>
-
       {/* Main Content Area */}
       <section className="px-6 md:px-12 py-16 max-w-4xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
         <div className="space-y-8 text-center md:text-left">

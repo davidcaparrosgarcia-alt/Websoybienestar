@@ -126,10 +126,10 @@ export default function MethodDetails() {
       </section>
 
       {/* Founders Section */}
-      <section className="px-8 md:px-24 py-8 max-w-screen-2xl mx-auto animate-in fade-in duration-500">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
+      <section className="px-8 md:px-24 pt-8 pb-12 max-w-screen-2xl mx-auto animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
           {/* Left Column: Text */}
-          <div className="space-y-6 text-on-surface-variant text-base md:text-lg font-light leading-relaxed text-left">
+          <div className="space-y-10 md:space-y-12 text-on-surface-variant text-[22.4px] font-light leading-relaxed text-justify max-w-xl lg:max-w-none">
             <p>
               SoyBienestar.es nace para acercar el acompañamiento terapéutico a personas que necesitan claridad, calma y una guía cercana.
             </p>
@@ -139,7 +139,7 @@ export default function MethodDetails() {
             <p>
               No creemos en procesos fríos ni impersonales. Creemos en escuchar mejor, comprender mejor y acompañar de forma más clara.
             </p>
-            <p className="font-medium text-primary">
+            <p className="font-headline text-[25.08px] text-primary leading-snug pt-4 md:pt-6 text-left">
               Tu viaje de regreso a la calma comienza aquí.
             </p>
           </div>
@@ -211,7 +211,7 @@ export default function MethodDetails() {
       </section>
 
       {/* Moved Narrative Section */}
-      <section className="px-8 md:px-24 py-12 max-w-5xl mx-auto text-center animate-in fade-in duration-500">
+      <section className="px-8 md:px-24 pt-4 md:pt-6 pb-16 md:pb-20 max-w-5xl mx-auto text-center animate-in fade-in duration-500">
         <p className="text-on-surface-variant leading-relaxed text-base md:text-lg font-light max-w-3xl mx-auto">
           SoyBienestar.es es un acompañamiento terapéutico, escucha humana y herramientas digitales para ayudarte a ordenar lo que sientes y recuperar dirección. Cada persona del equipo aporta una mirada distinta, pero todas comparten el mismo objetivo: acompañarte con seriedad, sensibilidad y coherencia.
         </p>

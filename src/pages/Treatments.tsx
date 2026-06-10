@@ -75,18 +75,18 @@ export default function Treatments() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="flex flex-col rounded-[2.5rem] bg-surface-container-low border border-outline-variant/10 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <div className="h-64 sm:h-80 overflow-hidden relative">
+            <Link to="/reprogramate" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa ReprogrÁmate">
               <img 
                 src="/images/fondo_modulo_5.jpg" 
                 alt="Programa ReprogrÁmate" 
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover/image:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 md:p-8">
                 <span className="inline-flex items-center rounded-full bg-[#162839]/50 text-white/85 backdrop-blur-md border border-white/20 px-4 py-2 text-xs md:text-sm font-label font-medium tracking-wide shadow-lg">
                   Tu viaje de regreso a la calma comienza aquí.
                 </span>
               </div>
-            </div>
+            </Link>
             <div className="p-8 sm:p-10 flex-grow flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Bienestar Integral</div>
@@ -118,18 +118,18 @@ export default function Treatments() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="flex flex-col rounded-[2.5rem] bg-surface-container-low border border-outline-variant/10 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <div className="h-64 sm:h-80 overflow-hidden relative">
+            <Link to="/hipnodigestive" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa HipnoDigestive">
               <img 
                 src="/images/fondo_privacidad.jpg" 
                 alt="Programa HipnoDigestive" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-8">
                 <span className="px-4 py-1.5 rounded-full bg-secondary/90 text-white text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
                   Próximamente
                 </span>
               </div>
-            </div>
+            </Link>
             <div className="p-8 sm:p-10 flex-grow flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Cuerpo y Mente</div>
