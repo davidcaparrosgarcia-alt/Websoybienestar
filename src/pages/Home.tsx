@@ -407,8 +407,8 @@ export default function Home() {
       <StructuredData id="home-service-schema" data={homeServiceSchema} />
       <StructuredData id="home-guides-itemlist-schema" data={homeGuidesItemListSchema} />
       {/* Hero Section */}
-      <section className="relative w-full mb-20 md:mb-32">
-        <div className="relative w-full">
+      <section className="w-full px-6 md:px-12 lg:px-16 xl:px-20 mb-20 md:mb-32">
+        <div className="max-w-6xl 2xl:max-w-7xl mx-auto relative overflow-hidden rounded-[2rem] shadow-xl border border-outline-variant/10 bg-surface-container-low">
           {/* Desktop/Horizontal Image */}
           <img 
             alt="Soy Bienestar - Hero Desktop" 
