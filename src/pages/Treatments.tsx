@@ -82,7 +82,7 @@ export default function Treatments() {
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 md:p-8">
-                <span className="inline-flex items-center rounded-full bg-[#162839]/75 text-white backdrop-blur-md border border-white/20 px-4 py-2 text-xs md:text-sm font-label font-bold tracking-wide shadow-lg">
+                <span className="inline-flex items-center rounded-full bg-[#162839]/50 text-white/85 backdrop-blur-md border border-white/20 px-4 py-2 text-xs md:text-sm font-label font-medium tracking-wide shadow-lg">
                   Tu viaje de regreso a la calma comienza aquí.
                 </span>
               </div>
