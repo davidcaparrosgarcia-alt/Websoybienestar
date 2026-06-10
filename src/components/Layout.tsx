@@ -90,7 +90,7 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      <header className="sticky top-0 z-50 w-full bg-[#2c3e50] border-b border-white/10">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-[#2c3e50] border-b border-white/10">
         {/* Luxury Leather Texture Overlay - Menú */}
         <div className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.3] overflow-hidden">
           <svg
@@ -117,7 +117,7 @@ export default function Layout() {
           </svg>
         </div>
 
-        <nav className="flex justify-between lg:grid lg:grid-cols-[220px_1fr_220px] items-center w-full px-4 md:px-8 py-4 max-w-7xl mx-auto relative z-10 gap-2 lg:gap-8">
+        <nav className="flex justify-between lg:grid lg:grid-cols-[220px_1fr_220px] items-center w-full px-4 md:px-8 py-2.5 md:py-3 max-w-7xl mx-auto relative z-10 gap-2 lg:gap-8">
           <div 
             className="flex items-center justify-start cursor-pointer"
             onClick={(e) => {
@@ -163,7 +163,7 @@ export default function Layout() {
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col w-full overflow-x-hidden">
+      <main className="flex-1 flex flex-col w-full overflow-x-hidden pt-[72px] md:pt-[78px]">
         <Outlet />
       </main>
 

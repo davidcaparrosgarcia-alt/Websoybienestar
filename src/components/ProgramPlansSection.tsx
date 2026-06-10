@@ -57,9 +57,9 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                     <p className="text-xs text-on-surface-variant/70">1 sesión al mes</p>
                   </div>
                 </div>
-                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
-                  <p>+ 1 sesión adicional de gestión emocional</p>
-                  <p>+ Acceso al curso Gestión de Emociones</p>
+                <div className="pl-9 space-y-2 text-on-surface-variant">
+                  <p className="font-label text-[15px] font-medium">+ 1 sesión adicional de gestión emocional</p>
+                  <p className="font-label text-[15px] font-medium">+ Acceso al curso Gestión de Emociones</p>
                 </div>
                 <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
                   <p className="font-headline text-2xl text-primary leading-snug font-medium">
@@ -112,9 +112,9 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                     <p className="text-xs text-on-surface-variant/70">1 sesión cada 15 días</p>
                   </div>
                 </div>
-                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
-                  <p>+ 3 sesiones adicionales de gestión emocional</p>
-                  <p>+ Acceso al curso Gestión de Emociones</p>
+                <div className="pl-9 space-y-2 text-on-surface-variant">
+                  <p className="font-label text-[15px] font-medium">+ 3 sesiones adicionales de gestión emocional</p>
+                  <p className="font-label text-[15px] font-medium">+ Acceso al curso Gestión de Emociones</p>
                 </div>
                 <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
                   <p className="font-headline text-2xl text-primary leading-snug font-medium">
@@ -166,9 +166,9 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                     <p className="text-xs text-on-surface-variant/70">1 sesión semanal</p>
                   </div>
                 </div>
-                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
-                  <p>+ 4 sesiones adicionales de gestión emocional</p>
-                  <p>+ Acceso completo al Método Gestión de Emociones</p>
+                <div className="pl-9 space-y-2 text-on-surface-variant">
+                  <p className="font-label text-[15px] font-medium">+ 4 sesiones adicionales de gestión emocional</p>
+                  <p className="font-label text-[15px] font-medium">+ Acceso completo al Método Gestión de Emociones</p>
                 </div>
                 <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
                   <p className="font-headline text-2xl text-primary leading-snug font-medium">
