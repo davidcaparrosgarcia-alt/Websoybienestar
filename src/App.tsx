@@ -16,6 +16,8 @@ import ReservarPrograma from "./pages/ReservarPrograma";
 import Method from "./pages/Method";
 import Treatments from "./pages/Treatments";
 import MethodDetails from "./pages/MethodDetails";
+import Reprogramate from "./pages/Reprogramate";
+import HipnoDigestive from "./pages/HipnoDigestive";
 import AnxietyManagement from "./pages/AnxietyManagement";
 import Ansiedad from "./pages/Ansiedad";
 import Estres from "./pages/Estres";
@@ -48,10 +50,13 @@ export default function App() {
           <Route path="emocionario" element={<Emocionario />} />
           <Route path="treatments" element={<Treatments />} />
           <Route path="tratamientos-online" element={<Treatments />} />
+          <Route path="reprogramate" element={<Reprogramate />} />
+          <Route path="hipnodigestive" element={<HipnoDigestive />} />
           <Route path="method" element={<Method />} />
           <Route path="como-trabajamos" element={<Method />} />
           <Route path="method-details" element={<MethodDetails />} />
           <Route path="como-trabajamos/detalles" element={<MethodDetails />} />
+          <Route path="quienes-somos" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />
           <Route path="ansiedad" element={<Ansiedad />} />
           <Route path="estres" element={<Estres />} />

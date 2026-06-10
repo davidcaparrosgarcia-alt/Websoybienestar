@@ -31,8 +31,9 @@ export default function Layout() {
 
   const getLinkClass = (path: string) => {
     const activeGroups: Record<string, string[]> = {
-      "/tratamientos-online": ["/tratamientos-online", "/treatments"],
-      "/como-trabajamos": ["/como-trabajamos", "/method", "/method-details", "/como-trabajamos/detalles"],
+      "/tratamientos-online": ["/tratamientos-online", "/treatments", "/reprogramate", "/hipnodigestive"],
+      "/como-trabajamos": ["/como-trabajamos", "/method", "/method-details"],
+      "/quienes-somos": ["/quienes-somos", "/como-trabajamos/detalles"],
       "/herramientas": ["/herramientas", "/resources"],
     };
 
@@ -82,14 +83,14 @@ export default function Layout() {
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/report")} to="/report">Informe</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/quienes-somos")} to="/quienes-somos">Quiénes somos</Link>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      <header className="w-full top-0 sticky z-50 bg-[#2c3e50] border-b border-white/10 relative">
+      <header className="fixed top-0 left-0 right-0 w-full z-50 bg-[#2c3e50] border-b border-white/10">
         {/* Luxury Leather Texture Overlay - Menú */}
         <div className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.3] overflow-hidden">
           <svg
@@ -142,7 +143,9 @@ export default function Layout() {
             <Link className={getLinkClass("/report")} to="/report">Informe</Link>
             <Link className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
             <Link className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
-            <Link className={getLinkClass("/privacy")} to="/privacy">Privacidad</Link>
+            <Link className={`${getLinkClass("/quienes-somos")} text-center leading-[1.1]`} to="/quienes-somos">
+              Quiénes<br className="hidden lg:block xl:hidden" /> somos
+            </Link>
           </div>
           <div className="flex items-center justify-end gap-2 md:gap-4 pl-0 lg:pl-8 shrink-0">
             <button
@@ -160,7 +163,7 @@ export default function Layout() {
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col w-full overflow-x-hidden">
+      <main className="flex-1 flex flex-col w-full overflow-x-hidden pt-[88px] md:pt-[96px]">
         <Outlet />
       </main>
 
@@ -191,7 +194,7 @@ export default function Layout() {
             <div className="space-y-4 flex flex-col">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 mb-2">Compañía</span>
               <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/">Inicio</Link>
-              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/como-trabajamos/detalles">Método</Link>
+              <Link className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors" to="/quienes-somos">Quiénes somos</Link>
               <a 
                 className="font-body text-sm font-light tracking-wide text-white/80 hover:text-white transition-colors cursor-pointer" 
                 onClick={(e) => {

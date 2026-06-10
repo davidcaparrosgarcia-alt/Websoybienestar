@@ -1,18 +1,56 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
-import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { motion, AnimatePresence } from "motion/react";
+
+interface Profile {
+  id: string;
+  name: string;
+  role: string;
+  portrait: string;
+  sheet: string;
+  portraitAlt: string;
+  sheetAlt: string;
+  description: string;
+}
+
+const teamProfiles: Profile[] = [
+  {
+    id: "maria",
+    name: "María Iris",
+    role: "Terapeuta y directora de los programas de SoyBienestar.es",
+    portrait: "/images/equipo-maria-iris.jpg",
+    sheet: "/images/ficha-maria-iris.jpg",
+    portraitAlt: "Retrato de María Iris, terapeuta y directora de los programas de SoyBienestar.es",
+    sheetAlt: "Ficha profesional de María Iris, terapeuta psicosomática, hipnoterapeuta y directora de los programas de SoyBienestar.es",
+    description: "María Iris es terapeuta psicosomática, hipnoterapeuta, profesora de kundalini yoga y meditación, con experiencia acompañando procesos de transformación emocional, corporal y mental."
+  },
+  {
+    id: "david",
+    name: "David Caparrós",
+    role: "Creador del proyecto y desarrollo de contenidos terapéuticos digitales",
+    portrait: "/images/equipo-david-caparros.jpg",
+    sheet: "/images/ficha-david-caparros.jpg",
+    portraitAlt: "Retrato de David Caparrós, creador del proyecto SoyBienestar.es",
+    sheetAlt: "Ficha profesional de David Caparrós, creador del proyecto y desarrollo de contenidos terapéuticos digitales de SoyBienestar.es",
+    description: "David Caparrós participa en la creación, estructura y desarrollo de contenidos del proyecto, integrando comunicación, experiencia de usuario y herramientas digitales orientadas al bienestar emocional."
+  },
+  {
+    id: "diego",
+    name: "Diego Arnold",
+    role: "Asesor y coach nutricional especializado en Kinesiología Bioenergética",
+    portrait: "/images/equipo-diego-arnold.jpg",
+    sheet: "/images/ficha-diego-arnold.jpg",
+    portraitAlt: "Retrato de Diego Arnold, asesor y coach nutricional especializado en Kinesiología Bioenergética",
+    sheetAlt: "Ficha profesional de Diego Arnold, asesor y coach nutricional especializado en Kinesiología Bioenergética",
+    description: "Diego Arnold acompaña el área nutricional desde una mirada integradora, ayudando a cuidar el cuerpo, equilibrar hábitos y favorecer una transformación más completa."
+  }
+];
 
 export default function MethodDetails() {
   const navigate = useNavigate();
-  const [progressStep, setProgressStep] = useState(1);
-  const [user] = useAuthState(auth);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -27,58 +65,30 @@ export default function MethodDetails() {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Cómo trabajamos",
-        "item": "https://soybienestar.es/como-trabajamos"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Detalles del método",
-        "item": "https://soybienestar.es/como-trabajamos/detalles"
+        "name": "Quiénes somos",
+        "item": "https://soybienestar.es/quienes-somos"
       }
     ]
   };
 
   useEffect(() => {
-    const fetchProgress = async () => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            // Step 1 is default (Consultation)
-            // If they did consultation, Step is 2 (Cuestionario)
-            // Assume we add 'hasDoneCuestionario' in the future
-            if (data.hasDoneCuestionario) {
-              setProgressStep(3);
-            } else if (data.hasDoneConsultation) {
-              setProgressStep(2);
-            } else {
-              setProgressStep(1);
-            }
-          }
-        } catch (e) {
-           console.error("Error fetching user progress", e);
-        }
-      } else {
-         setProgressStep(1);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedProfile(null);
       }
     };
-    fetchProgress();
-  }, [user]);
-
-  const handleConsultaClick = () => {
-    navigate('/session');
-  };
-
-  const handleCuestionarioClick = () => {
-    setIsNextStepsModalOpen(true);
-  };
+    if (selectedProfile) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedProfile]);
 
   const handleShare = async () => {
     const shareData = {
-      title: 'ReprogrÁmate - Nuestro Método',
-      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía de IA, con una orientación gratuita y máxima privacidad.',
+      title: 'ReprogrÁmate - Quiénes somos',
+      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía, con una orientación gratuita y máxima privacidad.',
       url: window.location.origin,
     };
 
@@ -86,7 +96,6 @@ export default function MethodDetails() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback for browsers that don't support Web Share API
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " ¡Pruébalo aquí: " + shareData.url)}`;
         window.open(whatsappUrl, '_blank');
       }
@@ -98,124 +107,70 @@ export default function MethodDetails() {
   return (
     <div className="flex-1 flex flex-col">
       <SEO
-        title="PNL, hipnosis consciente y reprogramación emocional | SoyBienestar"
-        description="Página de detalle metodológico para entender con más profundidad el enfoque de SoyBienestar, el Cuestionario Espejo y el Dossier Espejo."
-        canonicalPath="/como-trabajamos/detalles"
+        title="Quiénes somos | Equipo SoyBienestar.es"
+        description="Conoce al equipo humano de SoyBienestar.es: María Iris, David Caparrós y Diego Arnold, perfiles complementarios para acompañarte en tu proceso de bienestar emocional, terapéutico y corporal."
+        canonicalPath="/quienes-somos"
         noIndex={false}
       />
-      <StructuredData id="breadcrumb-schema-como-trabajamos-detalles" data={breadcrumbSchema} />
-      {/* Hero: Professional Presentation with Large Logo Integration */}
-      <section className="relative w-full aspect-[21/9] min-h-[600px] overflow-hidden group">
-        <h1 className="sr-only">PNL, hipnosis consciente y reprogramación emocional</h1>
-        <div className="absolute inset-0 z-0">
-          <picture>
-            <source media="(min-width: 768px)" srcSet="/images/metodo-intro.jpg" />
-            <img alt="Viaje Transformación" className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" src="/images/metodo-intro.jpg"/>
-          </picture>
-        </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-8 text-center">
-          <div 
-            onClick={() => setIsVideoModalOpen(true)}
-            className="mt-12 w-20 h-20 rounded-full border border-white/40 backdrop-blur-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white/5"
-          >
-            <span className="material-symbols-outlined text-white text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-          </div>
-        </div>
-      </section>
+      <StructuredData id="breadcrumb-schema-quienes-somos" data={breadcrumbSchema} />
 
-      {/* Intro Content */}
-      <section className="px-8 md:px-24 py-24 flex flex-col lg:flex-row items-center gap-20 max-w-screen-2xl mx-auto">
-        <div className="lg:w-1/2 flex justify-center lg:justify-start">
-          <div className="relative group w-96 h-96 flex items-center justify-center overflow-hidden p-8">
-            <img 
-              alt="Logo Integrado" 
-              className="relative w-full h-full object-cover" 
-              src="/images/logo-integrado.jpg"
-            />
-          </div>
-        </div>
-        <div className="lg:w-1/2 space-y-8">
-          <div className="font-label text-secondary font-semibold tracking-widest uppercase text-xs block mb-4">Método ReprogrÁmate: consulta, cuestionario y dossier personal</div>
-          <h2 className="font-headline text-4xl md:text-5xl text-primary italic leading-tight">Un espacio para ordenar lo que sientes y recuperar claridad.</h2>
-          <p className="text-on-surface-variant leading-relaxed text-xl font-light">
-            <span className="font-bold text-primary">SoyBienestar.es ReprogrÁmate</span> combina una consulta gratuita guiada, el Cuestionario Espejo y la revisión de un equipo humano para ayudarte a expresar lo que te ocurre, ordenar tu malestar emocional y recibir una primera orientación personalizada sin sentir que empiezas desde cero.
+      {/* Header Section */}
+      <section className="px-8 md:px-24 pt-8 md:pt-12 pb-12 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h1 className="font-headline text-4.5xl md:text-5.5.xl lg:text-6xl text-primary leading-tight font-medium">Quiénes somos</h1>
+          <p className="font-headline text-lg md:text-xl text-primary max-w-2xl mx-auto font-light leading-relaxed">
+            Un equipo humano para acompañarte desde la cercanía, la claridad y el respeto por tu proceso.
           </p>
-          <div className="h-px w-24 bg-secondary/30"></div>
+          <div className="h-px w-24 bg-secondary/30 mx-auto my-8 font-light"></div>
+          <p className="text-on-surface-variant leading-relaxed text-base md:text-lg font-light max-w-3xl mx-auto">
+            SoyBienestar.es une acompañamiento terapéutico, escucha humana y herramientas digitales para ayudarte a ordenar lo que sientes y recuperar dirección. Cada persona del equipo aporta una mirada distinta, pero todas comparten el mismo objetivo: acompañarte con seriedad, sensibilidad y coherencia.
+          </p>
         </div>
       </section>
 
-      {/* The Method: Puente Section */}
-      <section className="w-full px-8 mb-24">
-        <div 
-          className="w-full max-w-screen-2xl mx-auto px-8 md:px-24 py-12 bg-surface-container-low rounded-[3rem] relative overflow-hidden bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
-        >
-          <div className="absolute inset-0 bg-white/65 dark:bg-[#11181f]/45 pointer-events-none"></div>
-          <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
-            <div className="relative w-full flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-              <h2 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center bg-transparent">El Puente Digital</h2>
-            </div>
-            
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+      {/* Team Section */}
+      <section className="px-8 md:px-24 py-12 max-w-screen-2xl mx-auto mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          {teamProfiles.map((profile) => (
+            <motion.div 
+              key={profile.id} 
+              layoutId={`team-card-${profile.id}`}
+              whileHover={{ y: -10, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="bg-surface-container-low border border-outline-variant/10 rounded-[2rem] p-8 flex flex-col items-center text-center cursor-default"
+            >
               <button
-                onClick={progressStep === 1 ? handleConsultaClick : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep > 1 
-                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
-                    : progressStep === 1 
-                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer' 
-                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
-                }`}
+                type="button"
+                onClick={() => setSelectedProfile(profile)}
+                className="group/avatar mx-auto block rounded-full focus:outline-none focus:ring-2 focus:ring-secondary/60 shrink-0 mb-6"
+                aria-label={`Conocer a ${profile.name}`}
               >
-                Consulta Gratuita
+                <div className="relative w-44 h-44 rounded-full overflow-hidden border-2 border-primary/20 bg-surface-container-high shrink-0 shadow-sm transition-transform duration-300 group-hover/avatar:scale-105">
+                  <img 
+                    src={profile.portrait} 
+                    alt={profile.portraitAlt} 
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </button>
-              <button
-                disabled={progressStep !== 2}
-                onClick={progressStep === 2 ? handleCuestionarioClick : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep > 2 
-                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
-                    : progressStep === 2
-                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
-                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-                }`}
+              <h3 className="font-headline text-2xl text-primary mb-2 font-medium">{profile.name}</h3>
+              <p className="text-sm text-secondary font-medium tracking-wide mb-6 uppercase h-12 flex items-center justify-center">
+                {profile.role}
+              </p>
+              <p className="text-sm text-on-surface-variant/85 font-light leading-relaxed mb-8 flex-grow">
+                {profile.description}
+              </p>
+              <button 
+                onClick={() => setSelectedProfile(profile)}
+                className="mt-auto px-6 py-3 bg-[#2c3e50] dark:bg-white text-white dark:text-[#2c3e50] rounded-xl font-label text-sm font-medium tracking-wide hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2"
               >
-                Cuestionario Espejo
+                <span className="material-symbols-outlined text-lg">badge</span>
+                {profile.id === "maria" ? "Conoce a María" : profile.id === "david" ? "Conoce a David" : "Conoce a Diego"}
               </button>
-              <button
-                disabled={progressStep !== 3}
-                onClick={progressStep === 3 ? () => navigate('/report') : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep === 3
-                    ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
-                    : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-                }`}
-              >
-                Dosier Personalizado
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Next Steps Modal */}
-      <NextStepsModal 
-        isOpen={isNextStepsModalOpen}
-        onClose={() => setIsNextStepsModalOpen(false)}
-        user={user}
-        hasDoneConsultation={progressStep >= 2}
-        emailValue={user?.email || ""}
-        phoneValue=""
-      />
-
-      {/* Infografía: Puente Digital */}
-      <section className="mx-8 xl:mx-auto mb-32 max-w-screen-2xl">
-        <div className="w-full rounded-[3rem] overflow-hidden shadow-sm border border-outline-variant/10 bg-surface-container-low">
-          <picture>
-            <source media="(min-width: 768px)" srcSet="/images/puente-digital.jpg" />
-            <img alt="Infografía Puente Digital" className="w-full h-auto block" src="/images/puente-digital-vertical.jpg" />
-          </picture>
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -290,27 +245,47 @@ export default function MethodDetails() {
         </div>
       </section>
 
-      {/* Video Modal */}
-      {isVideoModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md animate-in fade-in">
-          <div className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl">
-            <button 
-              onClick={() => setIsVideoModalOpen(false)}
-              className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors backdrop-blur-md"
+      {/* Profile Sheet Modal */}
+      <AnimatePresence>
+        {selectedProfile && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            onClick={() => setSelectedProfile(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm cursor-pointer"
+          >
+            <motion.div 
+              layoutId={`team-card-${selectedProfile.id}`}
+              initial={{ scale: 0.82, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.88, opacity: 0, y: 20 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md md:max-w-2xl bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default"
             >
-              <span className="material-symbols-outlined text-2xl">close</span>
-            </button>
-            <video 
-              controls 
-              autoPlay 
-              className="w-full h-full"
-              src="/images/metodo-intro.mp4"
-            >
-              Tu navegador no soporta el video.
-            </video>
-          </div>
-        </div>
-      )}
+              <button 
+                onClick={() => setSelectedProfile(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors backdrop-blur-md"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+              <div className="relative p-2 md:p-4 max-h-[85vh] overflow-y-auto">
+                <img 
+                  src={selectedProfile.sheet} 
+                  alt={selectedProfile.sheetAlt} 
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto rounded-2xl shadow-xl border border-outline-variant/5"
+                />
+                {/* sr-only description for SEO and screen readers */}
+                <p className="sr-only">{selectedProfile.description}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
