@@ -77,13 +77,13 @@ export default function Treatments() {
           >
             <div className="h-64 sm:h-80 overflow-hidden relative">
               <img 
-                src="/images/tratamientos_reprogramate.jpg" 
+                src="/images/fondo_modulo_5.jpg" 
                 alt="Programa ReprogrÁmate" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-8">
-                <span className="px-4 py-1.5 rounded-full bg-white text-primary text-xs font-semibold uppercase tracking-wider">
-                  Programa de 3 Meses
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 md:p-8">
+                <span className="inline-flex items-center rounded-full bg-[#162839]/75 text-white backdrop-blur-md border border-white/20 px-4 py-2 text-xs md:text-sm font-label font-bold tracking-wide shadow-lg">
+                  Tu viaje de regreso a la calma comienza aquí.
                 </span>
               </div>
             </div>

@@ -49,18 +49,25 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
               <p className="font-body text-on-surface-variant text-[14px] h-12">Práctico para empezar a ordenar tu malestar y aplicar herramientas en el día a día.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="space-y-3 text-on-surface">
+              <div className="space-y-4 text-on-surface">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[32px] text-[#5fab5f] shrink-0">calendar_month</span>
+                  <span className="material-symbols-outlined text-[24px] text-[#5fab5f] shrink-0 mt-0.5">calendar_month</span>
                   <div>
-                    <p className="font-label text-[15.72px]">3 sesiones terapéuticas personales</p>
-                    <p className="text-sm text-on-surface-variant/80">1 sesión al mes</p>
+                    <p className="font-label text-[15px] text-on-surface-variant font-medium">3 sesiones terapéuticas personales</p>
+                    <p className="text-xs text-on-surface-variant/70">1 sesión al mes</p>
                   </div>
                 </div>
-                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
                   <p>+ 1 sesión adicional de gestión emocional</p>
-                  <p>+ Acceso al Método Gestión de Emociones</p>
-                  <p className="font-bold text-primary">Total: 4 sesiones + recursos prácticos y personalizados</p>
+                  <p>+ Acceso al curso Gestión de Emociones</p>
+                </div>
+                <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
+                  <p className="font-headline text-2xl text-primary leading-snug font-medium">
+                    Total: 4 sesiones
+                  </p>
+                  <p className="text-xs md:text-sm text-on-surface-variant">
+                    + recursos prácticos y personalizados
+                  </p>
                 </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">
@@ -97,18 +104,25 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
               <p className="font-body text-on-surface-variant text-[14px] h-12">Un acompañamiento más constante para sostener el proceso, integrar avances y entrenar nuevas respuestas emocionales.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="space-y-3 text-on-surface">
+              <div className="space-y-4 text-on-surface">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[32px] text-[#6bad6b] shrink-0">calendar_month</span>
+                  <span className="material-symbols-outlined text-[24px] text-[#6bad6b] shrink-0 mt-0.5">calendar_month</span>
                   <div>
-                    <p className="font-label text-[15.72px]">6 sesiones terapéuticas personales</p>
-                    <p className="text-sm text-on-surface-variant/80">1 sesión cada 15 días</p>
+                    <p className="font-label text-[15px] text-on-surface-variant font-medium">6 sesiones terapéuticas personales</p>
+                    <p className="text-xs text-on-surface-variant/70">1 sesión cada 15 días</p>
                   </div>
                 </div>
-                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
                   <p>+ 3 sesiones adicionales de gestión emocional</p>
-                  <p>+ Acceso al Método Gestión de Emociones</p>
-                  <p className="font-bold text-primary">Total: 9 sesiones + recursos prácticos y personalizados</p>
+                  <p>+ Acceso al curso Gestión de Emociones</p>
+                </div>
+                <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
+                  <p className="font-headline text-2xl text-primary leading-snug font-medium">
+                    Total: 9 sesiones
+                  </p>
+                  <p className="text-xs md:text-sm text-on-surface-variant">
+                    + recursos prácticos y personalizados
+                  </p>
                 </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">
@@ -144,18 +158,25 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
               <p className="font-body text-on-surface-variant text-[15px] h-12">El proceso más profundo e intensivo, pensado para trabajar desde la raíz y consolidar cambios duraderos.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="space-y-3 text-on-surface">
+              <div className="space-y-4 text-on-surface">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[32px] text-[#6db560] shrink-0">calendar_month</span>
+                  <span className="material-symbols-outlined text-[24px] text-[#6db560] shrink-0 mt-0.5">calendar_month</span>
                   <div>
-                    <p className="font-label text-[15.72px]">12 sesiones terapéuticas personales</p>
-                    <p className="text-sm text-on-surface-variant/80">1 sesión semanal</p>
+                    <p className="font-label text-[15px] text-on-surface-variant font-medium">12 sesiones terapéuticas personales</p>
+                    <p className="text-xs text-on-surface-variant/70">1 sesión semanal</p>
                   </div>
                 </div>
-                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                <div className="pl-9 space-y-1 text-xs text-on-surface-variant/80">
                   <p>+ 4 sesiones adicionales de gestión emocional</p>
                   <p>+ Acceso completo al Método Gestión de Emociones</p>
-                  <p className="font-bold text-primary">Total: 16 sesiones + recursos prácticos y personalizados</p>
+                </div>
+                <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3">
+                  <p className="font-headline text-2xl text-primary leading-snug font-medium">
+                    Total: 16 sesiones
+                  </p>
+                  <p className="text-xs md:text-sm text-on-surface-variant">
+                    + recursos prácticos y personalizados
+                  </p>
                 </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">

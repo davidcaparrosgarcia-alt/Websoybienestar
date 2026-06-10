@@ -248,54 +248,58 @@ export default function MethodDetails() {
       {/* Profile Sheet Modal */}
       <AnimatePresence>
         {selectedProfile && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={() => setSelectedProfile(null)}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm cursor-pointer"
-          >
+          <>
             <motion.div 
-              initial={{ opacity: 0, scale: 0.72, y: 28, filter: "blur(8px)" }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.88, y: 20, filter: "blur(4px)" }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformOrigin: "center center" }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-[min(96vw,1200px)] max-h-[94vh] bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default flex flex-col"
-            >
-              <div className="absolute top-4 right-4 z-30 flex items-center gap-3">
-                <a
-                  href={selectedProfile.sheet}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group"
-                  title="Abrir en pantalla completa / Descargar"
-                >
-                  <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
-                </a>
-                <button 
-                  onClick={() => setSelectedProfile(null)}
-                  className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group"
-                  title="Cerrar"
-                >
-                  <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
-                </button>
-              </div>
-              <div className="relative w-full flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
-                <img 
-                  src={selectedProfile.sheet} 
-                  alt={selectedProfile.sheetAlt} 
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
-                />
-                {/* sr-only description for SEO and screen readers */}
-                <p className="sr-only">{selectedProfile.description}</p>
-              </div>
-            </motion.div>
-          </motion.div>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setSelectedProfile(null)}
+              className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm cursor-pointer"
+            />
+            
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 pointer-events-none">
+              <motion.div 
+                layoutId={`team-card-${selectedProfile.id}`}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-[min(96vw,1200px)] max-h-[94vh] bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default flex flex-col pointer-events-auto"
+              >
+                <div className="absolute top-4 right-4 z-30 flex items-center gap-3">
+                  <a
+                    href={selectedProfile.sheet}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    title="Abrir en pantalla completa / Descargar"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
+                  </a>
+                  <button 
+                    onClick={() => setSelectedProfile(null)}
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    title="Cerrar"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
+                  </button>
+                </div>
+                <div className="relative w-full flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
+                  <motion.img 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1, duration: 0.25 }}
+                    src={selectedProfile.sheet} 
+                    alt={selectedProfile.sheetAlt} 
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
+                  />
+                  {/* sr-only description for SEO and screen readers */}
+                  <p className="sr-only">{selectedProfile.description}</p>
+                </div>
+              </motion.div>
+            </div>
+          </>
         )}
       </AnimatePresence>
     </div>
