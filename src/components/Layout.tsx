@@ -90,7 +90,7 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      <header className="fixed top-0 left-0 right-0 w-full z-50 bg-[#2c3e50] border-b border-white/10">
+      <header className="sticky top-0 z-50 w-full bg-[#2c3e50] border-b border-white/10">
         {/* Luxury Leather Texture Overlay - Menú */}
         <div className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.3] overflow-hidden">
           <svg
@@ -163,7 +163,7 @@ export default function Layout() {
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col w-full overflow-x-hidden pt-[88px] md:pt-[96px]">
+      <main className="flex-1 flex flex-col w-full overflow-x-hidden">
         <Outlet />
       </main>
 

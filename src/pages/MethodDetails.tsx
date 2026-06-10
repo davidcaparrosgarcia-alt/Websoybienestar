@@ -252,32 +252,44 @@ export default function MethodDetails() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 0.25 }}
             onClick={() => setSelectedProfile(null)}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm cursor-pointer"
           >
             <motion.div 
-              layoutId={`team-card-${selectedProfile.id}`}
-              initial={{ scale: 0.82, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.88, opacity: 0, y: 20 }}
+              initial={{ opacity: 0, scale: 0.72, y: 28, filter: "blur(8px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.88, y: 20, filter: "blur(4px)" }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              style={{ transformOrigin: "center center" }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md md:max-w-2xl bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default"
+              className="relative w-full max-w-[min(96vw,1200px)] max-h-[94vh] bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default flex flex-col"
             >
-              <button 
-                onClick={() => setSelectedProfile(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors backdrop-blur-md"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
-              <div className="relative p-2 md:p-4 max-h-[85vh] overflow-y-auto">
+              <div className="absolute top-4 right-4 z-30 flex items-center gap-3">
+                <a
+                  href={selectedProfile.sheet}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group"
+                  title="Abrir en pantalla completa / Descargar"
+                >
+                  <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
+                </a>
+                <button 
+                  onClick={() => setSelectedProfile(null)}
+                  className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group"
+                  title="Cerrar"
+                >
+                  <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
+                </button>
+              </div>
+              <div className="relative w-full flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
                 <img 
                   src={selectedProfile.sheet} 
                   alt={selectedProfile.sheetAlt} 
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto rounded-2xl shadow-xl border border-outline-variant/5"
+                  className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
                 />
                 {/* sr-only description for SEO and screen readers */}
                 <p className="sr-only">{selectedProfile.description}</p>

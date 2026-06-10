@@ -38,7 +38,24 @@ export default function Home() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   const [loginError, setLoginError] = useState("");
-  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string } | null>(null);
+  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, slug?: string, src: string } | null>(null);
+
+  const symptomInfographicImages = [
+    "/images/info-ansiedad.jpg",
+    "/images/info-estres.jpg",
+    "/images/info-insomnio.jpg",
+    "/images/info-procrastinacion.jpg",
+    "/images/info-rumiacion.jpg",
+    "/images/info-emociones.jpg",
+    "/images/info-alimentacion.jpg",
+  ];
+
+  useEffect(() => {
+    symptomInfographicImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   // States for the new logged-in panel
   const [phone, setPhone] = useState("");
@@ -72,8 +89,8 @@ export default function Home() {
       (overlayId === 'insomnio' && window.location.pathname === '/insomnio') ||
       (overlayId === 'procrastinacion' && window.location.pathname === '/procrastinacion') ||
       (overlayId === 'rumiacion' && window.location.pathname === '/pensar-demasiado-rumiacion') ||
-      (overlayId === 'gestion-emocional' && window.location.pathname === '/gestion-emocional') ||
-      (overlayId === 'alimentacion-emocional' && window.location.pathname === '/alimentacion-emocional');
+      ((overlayId === 'gestion-emocional' || overlayId === 'emociones') && window.location.pathname === '/gestion-emocional') ||
+      ((overlayId === 'alimentacion-emocional' || overlayId === 'alimentacion') && window.location.pathname === '/alimentacion-emocional');
 
     setSelectedInfographic(null);
     setOpenAnsiedadFaqIndex(null);
@@ -132,7 +149,7 @@ export default function Home() {
       }
 
       if (
-        selectedInfographic?.id === 'gestion-emocional' &&
+        (selectedInfographic?.id === 'gestion-emocional' || selectedInfographic?.id === 'emociones') &&
         window.location.pathname !== '/gestion-emocional'
       ) {
         setSelectedInfographic(null);
@@ -140,7 +157,7 @@ export default function Home() {
       }
 
       if (
-        selectedInfographic?.id === 'alimentacion-emocional' &&
+        (selectedInfographic?.id === 'alimentacion-emocional' || selectedInfographic?.id === 'alimentacion') &&
         window.location.pathname !== '/alimentacion-emocional'
       ) {
         setSelectedInfographic(null);
@@ -508,7 +525,7 @@ export default function Home() {
               colSpanClass="md:col-span-4"
               bgColorClass="zen-stone"
               onClick={() => {
-                setSelectedInfographic({ id: 'gestion-emocional', src: '/images/info-emociones.jpg' });
+                setSelectedInfographic({ id: 'emociones', slug: 'gestion-emocional', src: '/images/info-emociones.jpg' });
                 window.history.pushState({ symptomOverlay: 'gestion-emocional' }, '', '/gestion-emocional');
               }}
             />
@@ -523,7 +540,7 @@ export default function Home() {
               bgColorClass="zen-light-gray"
               isDarkText={true}
               onClick={() => {
-                setSelectedInfographic({ id: 'alimentacion-emocional', src: '/images/info-alimentacion.jpg' });
+                setSelectedInfographic({ id: 'alimentacion', slug: 'alimentacion-emocional', src: '/images/info-alimentacion.jpg' });
                 window.history.pushState({ symptomOverlay: 'alimentacion-emocional' }, '', '/alimentacion-emocional');
               }}
             />
@@ -965,7 +982,7 @@ export default function Home() {
                 {/* Elegant Action Buttons */}
                 <div className="p-4 pb-0 flex flex-wrap justify-center sm:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
                   <Link 
-                    to={`/${selectedInfographic.id === 'rumiacion' ? 'pensar-demasiado-rumiacion' : selectedInfographic.id}`}
+                    to={`/${selectedInfographic.slug ?? (selectedInfographic.id === 'rumiacion' ? 'pensar-demasiado-rumiacion' : selectedInfographic.id)}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       closeInfographicModal();
@@ -1218,7 +1235,7 @@ export default function Home() {
                     </div>
                   )}
 
-                  {selectedInfographic?.id === 'gestion-emocional' && (
+                  {(selectedInfographic?.id === 'gestion-emocional' || selectedInfographic?.id === 'emociones') && (
                     <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
                       <div className="p-6 md:p-8 border-b border-white/10">
                         <h2 className="font-headline text-2xl md:text-3xl italic">
@@ -1260,7 +1277,7 @@ export default function Home() {
                     </div>
                   )}
 
-                  {selectedInfographic?.id === 'alimentacion-emocional' && (
+                  {(selectedInfographic?.id === 'alimentacion-emocional' || selectedInfographic?.id === 'alimentacion') && (
                     <div className="mt-10 rounded-[2rem] bg-black/25 text-white shadow-2xl overflow-hidden border border-white/10">
                       <div className="p-6 md:p-8 border-b border-white/10">
                         <h2 className="font-headline text-2xl md:text-3xl italic">

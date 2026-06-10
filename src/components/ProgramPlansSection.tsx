@@ -46,12 +46,22 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                   <span className="material-symbols-outlined text-[14px] ml-1 group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
               </button>
               <h3 className="font-headline text-[33.6px] text-primary mb-2">Plan Básico</h3>
-              <p className="font-body text-on-surface-variant text-[14px] h-12">Estrés práctico del día a día.</p>
+              <p className="font-body text-on-surface-variant text-[14px] h-12">Práctico para empezar a ordenar tu malestar y aplicar herramientas en el día a día.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="flex items-center space-x-3 text-on-surface">
-                <span className="material-symbols-outlined text-[38px] text-[#5fab5f]">calendar_month</span>
-                <span className="font-label text-[15.72px]">1 sesión al mes (3 total)</span>
+              <div className="space-y-3 text-on-surface">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[32px] text-[#5fab5f] shrink-0">calendar_month</span>
+                  <div>
+                    <p className="font-label text-[15.72px]">3 sesiones terapéuticas personales</p>
+                    <p className="text-sm text-on-surface-variant/80">1 sesión al mes</p>
+                  </div>
+                </div>
+                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                  <p>+ 1 sesión adicional de gestión emocional</p>
+                  <p>+ Acceso al Método Gestión de Emociones</p>
+                  <p className="font-bold text-primary">Total: 4 sesiones + recursos prácticos y personalizados</p>
+                </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">
                 <div className="flex justify-between items-end mb-2">
@@ -84,12 +94,22 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                   <span className="material-symbols-outlined text-[14px] ml-1 group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
               </button>
               <h3 className="font-headline text-[33.6px] text-primary mb-2">Plan Intermedio</h3>
-              <p className="font-body text-on-surface-variant text-[14px] h-12">Pensamientos circulares, procrastinación.</p>
+              <p className="font-body text-on-surface-variant text-[14px] h-12">Un acompañamiento más constante para sostener el proceso, integrar avances y entrenar nuevas respuestas emocionales.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="flex items-center space-x-3 text-on-surface">
-                <span className="material-symbols-outlined text-[38px] text-[#6bad6b]">calendar_month</span>
-                <span className="font-label text-[15.72px]">1 sesión/15 días (6 total)</span>
+              <div className="space-y-3 text-on-surface">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[32px] text-[#6bad6b] shrink-0">calendar_month</span>
+                  <div>
+                    <p className="font-label text-[15.72px]">6 sesiones terapéuticas personales</p>
+                    <p className="text-sm text-on-surface-variant/80">1 sesión cada 15 días</p>
+                  </div>
+                </div>
+                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                  <p>+ 3 sesiones adicionales de gestión emocional</p>
+                  <p>+ Acceso al Método Gestión de Emociones</p>
+                  <p className="font-bold text-primary">Total: 9 sesiones + recursos prácticos y personalizados</p>
+                </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">
                 <div className="flex justify-between items-end mb-2">
@@ -121,12 +141,22 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                   <span className="material-symbols-outlined text-[14px] ml-1 group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
               </button>
               <h3 className="font-headline text-[34.6px] text-primary mb-2">Plan Completo</h3>
-              <p className="font-body text-on-surface-variant text-[15px] h-12">Ansiedad profunda, heridas del pasado.</p>
+              <p className="font-body text-on-surface-variant text-[15px] h-12">El proceso más profundo e intensivo, pensado para trabajar desde la raíz y consolidar cambios duraderos.</p>
             </div>
             <div className="flex-grow space-y-6 mb-8 relative z-10">
-              <div className="flex items-center space-x-3 text-on-surface">
-                <span className="material-symbols-outlined text-[38px] text-[#6db560]">calendar_month</span>
-                <span className="font-label text-[16.72px]">1 sesión/semana (12 total)</span>
+              <div className="space-y-3 text-on-surface">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[32px] text-[#6db560] shrink-0">calendar_month</span>
+                  <div>
+                    <p className="font-label text-[15.72px]">12 sesiones terapéuticas personales</p>
+                    <p className="text-sm text-on-surface-variant/80">1 sesión semanal</p>
+                  </div>
+                </div>
+                <div className="pl-11 space-y-2 text-sm text-on-surface-variant">
+                  <p>+ 4 sesiones adicionales de gestión emocional</p>
+                  <p>+ Acceso completo al Método Gestión de Emociones</p>
+                  <p className="font-bold text-primary">Total: 16 sesiones + recursos prácticos y personalizados</p>
+                </div>
               </div>
               <div className="border-t border-outline-variant/15 pt-6">
                 <div className="flex justify-between items-end mb-2">
