@@ -115,21 +115,57 @@ export default function MethodDetails() {
       <StructuredData id="breadcrumb-schema-quienes-somos" data={breadcrumbSchema} />
 
       {/* Header Section */}
-      <section className="px-8 md:px-24 pt-8 md:pt-12 pb-12 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">
+      <section className="px-8 md:px-24 pt-8 md:pt-12 pb-6 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">
         <div className="max-w-4xl mx-auto space-y-6">
-          <h1 className="font-headline text-4.5xl md:text-5.5.xl lg:text-6xl text-primary leading-tight font-medium">Quiénes somos</h1>
+          <h1 className="font-headline text-[63.2px] text-primary leading-tight font-medium">¿Quiénes Somos?</h1>
           <p className="font-headline text-lg md:text-xl text-primary max-w-2xl mx-auto font-light leading-relaxed">
-            Un equipo humano para acompañarte desde la cercanía, la claridad y el respeto por tu proceso.
+            Somos David y María, fundadores de SoyBienestar.es.
           </p>
-          <div className="h-px w-24 bg-secondary/30 mx-auto my-8 font-light"></div>
-          <p className="text-on-surface-variant leading-relaxed text-base md:text-lg font-light max-w-3xl mx-auto">
-            SoyBienestar.es une acompañamiento terapéutico, escucha humana y herramientas digitales para ayudarte a ordenar lo que sientes y recuperar dirección. Cada persona del equipo aporta una mirada distinta, pero todas comparten el mismo objetivo: acompañarte con seriedad, sensibilidad y coherencia.
-          </p>
+          <div className="h-px w-24 bg-secondary/30 mx-auto my-6 font-light"></div>
         </div>
       </section>
 
+      {/* Founders Section */}
+      <section className="px-8 md:px-24 py-8 max-w-screen-2xl mx-auto animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
+          {/* Left Column: Text */}
+          <div className="space-y-6 text-on-surface-variant text-base md:text-lg font-light leading-relaxed text-left">
+            <p>
+              SoyBienestar.es nace para acercar el acompañamiento terapéutico a personas que necesitan claridad, calma y una guía cercana.
+            </p>
+            <p>
+              Somos David y María. Hemos unido experiencia terapéutica, sensibilidad humana y herramientas digitales para crear un espacio donde empezar a ordenar lo que duele, lo que pesa o lo que se repite.
+            </p>
+            <p>
+              No creemos en procesos fríos ni impersonales. Creemos en escuchar mejor, comprender mejor y acompañar de forma más clara.
+            </p>
+            <p className="font-medium text-primary">
+              Tu viaje de regreso a la calma comienza aquí.
+            </p>
+          </div>
+          {/* Right Column: Image */}
+          <div className="relative overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl border border-outline-variant/10">
+            <img
+              src="/images/fundadores-david-maria.webp"
+              alt="David y María, fundadores de SoyBienestar.es"
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover object-center rounded-[2rem] shadow-2xl border border-outline-variant/10"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Introduction to Team */}
+      <section className="px-8 md:px-24 pt-16 pb-4 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">
+        <p className="font-headline text-lg md:text-xl lg:text-xl text-primary max-w-3xl mx-auto font-light leading-relaxed">
+          Un equipo humano para acompañarte desde la cercanía, la empatía y el respeto por tu proceso.
+        </p>
+        <div className="h-px w-24 bg-secondary/20 mx-auto mt-8 font-light"></div>
+      </section>
+
       {/* Team Section */}
-      <section className="px-8 md:px-24 py-12 max-w-screen-2xl mx-auto mb-20">
+      <section className="px-8 md:px-24 py-8 max-w-screen-2xl mx-auto mb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {teamProfiles.map((profile) => (
             <motion.div 
@@ -172,6 +208,13 @@ export default function MethodDetails() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* Moved Narrative Section */}
+      <section className="px-8 md:px-24 py-12 max-w-5xl mx-auto text-center animate-in fade-in duration-500">
+        <p className="text-on-surface-variant leading-relaxed text-base md:text-lg font-light max-w-3xl mx-auto">
+          SoyBienestar.es es un acompañamiento terapéutico, escucha humana y herramientas digitales para ayudarte a ordenar lo que sientes y recuperar dirección. Cada persona del equipo aporta una mirada distinta, pero todas comparten el mismo objetivo: acompañarte con seriedad, sensibilidad y coherencia.
+        </p>
       </section>
 
       {/* Channels & Action */}
