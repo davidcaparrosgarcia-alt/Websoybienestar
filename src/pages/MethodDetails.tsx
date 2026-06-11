@@ -150,7 +150,7 @@ export default function MethodDetails() {
               alt="David y María, fundadores de SoyBienestar.es"
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover object-center rounded-[2rem] shadow-2xl border border-outline-variant/10"
+              className="block w-full h-full object-cover object-center"
             />
           </div>
         </div>

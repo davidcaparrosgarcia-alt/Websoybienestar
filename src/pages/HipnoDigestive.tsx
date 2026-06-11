@@ -23,8 +23,8 @@ export default function HipnoDigestive() {
       {
         "@type": "ListItem",
         "position": 3,
-        "name": "HipnoDigestive",
-        "item": "https://soybienestar.es/hipnodigestive"
+        "name": "HipnoDigest",
+        "item": "https://soybienestar.es/hipnodisgest"
       }
     ]
   };
@@ -32,26 +32,26 @@ export default function HipnoDigestive() {
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": "https://soybienestar.es/hipnodigestive#service",
-    "name": "Programa HipnoDigestive",
+    "@id": "https://soybienestar.es/hipnodisgest#service",
+    "name": "Programa HipnoDigest",
     "serviceType": "Acompañamiento en bienestar digestivo y hábitos",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
     },
-    "url": "https://soybienestar.es/hipnodigestive",
+    "url": "https://soybienestar.es/hipnodisgest",
     "description": "Acompañamiento complementario que une hipnosis digestiva y asesoramiento nutricional para favorecer una mejor relación cuerpo-mente y digestión."
   };
 
   return (
     <div className="flex-1 w-full bg-surface-container-lowest text-on-surface flex flex-col min-h-screen">
       <SEO
-        title="HipnoDigestive | Hipnosis digestiva y acompañamiento nutricional | SoyBienestar"
+        title="HipnoDigest | Hipnosis digestiva y acompañamiento nutricional | SoyBienestar"
         description="Programa online en preparación que combina hipnosis digestiva de María Iris y acompañamiento nutricional personalizado de Diego Arnold para cuidar digestión, hábitos y bienestar emocional."
-        canonicalPath="/hipnodigestive"
+        canonicalPath="/hipnodisgest"
         noIndex={false}
       />
-      <StructuredData id="breadcrumb-schema-hipnodigestive" data={breadcrumbSchema} />
-      <StructuredData id="hipnodigestive-service-schema" data={serviceSchema} />
+      <StructuredData id="breadcrumb-schema-hipnodisgest" data={breadcrumbSchema} />
+      <StructuredData id="hipnodisgest-service-schema" data={serviceSchema} />
 
       {/* Main Content Area */}
       <section className="px-6 md:px-12 py-16 max-w-4xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
@@ -64,7 +64,7 @@ export default function HipnoDigestive() {
           {/* Title & Creators */}
           <div className="space-y-4">
             <h1 className="font-headline text-5xl md:text-6xl text-primary font-medium tracking-tight">
-              HipnoDigestive
+              HipnoDigest
             </h1>
             <p className="font-headline text-xl md:text-2xl text-secondary italic font-light leading-relaxed max-w-3xl">
               Hipnosis digestiva creada por María Iris y acompañamiento nutricional personalizado de Diego Arnold.
@@ -76,7 +76,7 @@ export default function HipnoDigestive() {
           {/* Main Description */}
           <div className="space-y-6 text-on-surface-variant/90 leading-relaxed text-base md:text-lg font-light">
             <p>
-              HipnoDigestive nace como un programa de acompañamiento online para trabajar la relación entre digestión, sistema nervioso, hábitos y bienestar emocional. Combina recursos de hipnosis digestiva con una de mirada nutricional personalizada para ayudar a la persona a cuidarse con más claridad, calma y coherencia.
+              HipnoDigest nace como un programa de acompañamiento online para trabajar la relación entre digestión, sistema nervioso, hábitos y bienestar emocional. Combina recursos de hipnosis digestiva con una de mirada nutricional personalizada para ayudar a la persona a cuidarse con más claridad, calma y coherencia.
             </p>
           </div>
 
