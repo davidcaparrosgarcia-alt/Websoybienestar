@@ -120,7 +120,7 @@ export default function Treatments() {
           >
             <Link to="/hipnodigestive" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa HipnoDigestive">
               <img 
-                src="/images/fondo_privacidad.jpg" 
+                src="/images/fondo_hipnodigestive.jpg" 
                 alt="Programa HipnoDigestive" 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105"
               />

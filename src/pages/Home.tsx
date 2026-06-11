@@ -407,7 +407,7 @@ export default function Home() {
       <StructuredData id="home-service-schema" data={homeServiceSchema} />
       <StructuredData id="home-guides-itemlist-schema" data={homeGuidesItemListSchema} />
       {/* Hero Section */}
-      <section className="w-full px-6 md:px-12 lg:px-16 xl:px-20 mb-20 md:mb-32">
+      <section className="w-full px-6 md:px-12 lg:px-16 xl:px-20 mb-8 md:mb-12">
         <div className="max-w-6xl 2xl:max-w-7xl mx-auto relative overflow-hidden rounded-[2rem] shadow-xl border border-outline-variant/10 bg-surface-container-low">
           {/* Desktop/Horizontal Image */}
           <img 
@@ -438,7 +438,7 @@ export default function Home() {
       </section>
 
       {/* Symptoms Section: Reconociendo tus batallas */}
-      <section className="py-32 px-8">
+      <section className="pt-12 md:pt-16 pb-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>
