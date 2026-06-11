@@ -37,14 +37,14 @@ export default function Treatments() {
       "name": "España"
     },
     "url": "https://soybienestar.es/tratamientos-online",
-    "description": "Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDigestive, hipnosis digestiva acompañada con nutrición personalizada."
+    "description": "Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDisgest, hipnosis digestiva acompañada con nutrición personalizada."
   };
 
   return (
     <div className="flex-1 w-full bg-surface-container-lowest text-on-surface flex flex-col min-h-screen">
       <SEO
-        title="Tratamientos online | ReprogrÁmate e HipnoDigestive | SoyBienestar"
-        description="Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDigestive, hipnosis digestiva acompañada con nutrición personalizada."
+        title="Tratamientos online | ReprogrÁmate e HipnoDisgest | SoyBienestar"
+        description="Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDisgest, hipnosis digestiva acompañada con nutrición personalizada."
         canonicalPath="/tratamientos-online"
         noIndex={false}
       />
@@ -112,16 +112,16 @@ export default function Treatments() {
             </div>
           </motion.div>
 
-          {/* Card 2: HipnoDigestive */}
+          {/* Card 2: HipnoDisgest */}
           <motion.div 
             whileHover={{ y: -8 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="flex flex-col rounded-[2.5rem] bg-surface-container-low border border-outline-variant/10 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <Link to="/hipnodigestive" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa HipnoDigestive">
+            <Link to="/hipnodisgest" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa HipnoDisgest">
               <img 
                 src="/images/fondo_hipnodigestive.jpg" 
-                alt="Programa HipnoDigestive" 
+                alt="Programa HipnoDisgest" 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-8">
@@ -133,7 +133,7 @@ export default function Treatments() {
             <div className="p-8 sm:p-10 flex-grow flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Cuerpo y Mente</div>
-                <h2 className="font-headline text-3xl text-primary font-medium">HipnoDigestive</h2>
+                <h2 className="font-headline text-3xl text-primary font-medium">HipnoDisgest</h2>
                 <p className="text-secondary italic text-sm font-light">Hipnosis digestiva acompañada y nutrición personalizada</p>
                 <p className="text-sm sm:text-base text-on-surface-variant/90 leading-relaxed font-light">
                   Un programa que combina hipnosis digestiva creada por María Iris con acompañamiento nutricional personalizado desarrollado por Diego Arnold, para cuidar la relación entre cuerpo, digestión, hábitos y equilibrio emocional.
@@ -147,10 +147,10 @@ export default function Treatments() {
                   </span>
                 </div>
                 <Link 
-                  to="/hipnodigestive" 
+                  to="/hipnodisgest" 
                   className="w-full sm:w-auto px-6 py-3 bg-surface-container-high text-primary hover:bg-surface-container-highest rounded-xl font-label text-xs font-medium tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 border border-outline-variant/20"
                 >
-                  Ver HipnoDigestive
+                  Ver HipnoDisgest
                   <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </Link>
               </div>
