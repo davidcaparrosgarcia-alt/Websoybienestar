@@ -1,9 +1,97 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
 import { motion } from "motion/react";
 
 export default function HipnoDigestive() {
+  const [openProgramMonth, setOpenProgramMonth] = useState<string | null>("valoracion");
+
+  const toggleProgramMonth = (month: string) => {
+    setOpenProgramMonth((current) => current === month ? null : month);
+  };
+
+  const programTimeline = [
+    {
+      id: "valoracion",
+      title: "Sesión inicial de valoración",
+      content: (
+        <>
+          <p>
+            Antes de comenzar el acompañamiento de cuatro meses, tendremos una primera entrevista de entre 30 y 60 minutos para comprender tu punto de partida con calma y precisión.
+          </p>
+          <p>
+            En esta fase realizamos una valoración nutricional y psicosomática para recoger información sobre tus síntomas, hábitos, historia digestiva y objetivos. A partir de ahí, definimos un plan de intervención adaptado a ti.
+          </p>
+        </>
+      )
+    },
+    {
+      id: "mes-1",
+      title: "Mes 1 — Puesta en marcha y seguridad",
+      content: (
+        <>
+          <p>
+            Durante el primer mes empezamos a activar cambios sin forzar el proceso. El objetivo es que tu cuerpo empiece a sentirse acompañado, comprendido y más seguro.
+          </p>
+          <ul>
+            <li><strong>Nutrición:</strong> introducimos un ajuste nutricional semanal adaptado a tu evolución, con dos videollamadas de seguimiento por semana con el coach nutricional.</li>
+            <li><strong>Psicosomática:</strong> realizamos la primera sesión de hipnosis digestiva y creamos el primer anclaje psicosomático para ayudarte a conectar con un estado corporal más regulado.</li>
+            <li><strong>Práctica en casa:</strong> recibirás secuencias de respiración y meditación para reforzar el trabajo entre sesiones.</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      id: "mes-2",
+      title: "Mes 2 — Profundización digestivo-emocional",
+      content: (
+        <>
+          <p>
+            En el segundo mes empezamos a mirar más allá del síntoma superficial, observando cómo tu sistema digestivo puede estar relacionado con tensiones, patrones emocionales o respuestas somáticas aprendidas.
+          </p>
+          <ul>
+            <li><strong>Nutrición:</strong> el seguimiento pasa a una videollamada semanal con el coach nutricional, manteniendo ajustes personalizados según tu respuesta.</li>
+            <li><strong>Psicosomática:</strong> realizamos la segunda sesión de hipnosis digestiva, orientada a trabajar de forma más profunda memorias, bloqueos o tensiones digestivo-emocionales.</li>
+            <li><strong>Práctica en casa:</strong> reforzamos el proceso con un nuevo anclaje y nuevas secuencias de regulación, respiración y presencia corporal.</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      id: "mes-3",
+      title: "Mes 3 — Integración y consolidación",
+      content: (
+        <>
+          <p>
+            En esta etapa el foco se desplaza hacia integrar lo aprendido. Queremos que empieces a reconocer mejor tus señales corporales y a responder a ellas con más claridad, en lugar de vivirlas solo como una molestia o una amenaza.
+          </p>
+          <ul>
+            <li><strong>Nutrición:</strong> continúa el seguimiento semanal, con ajustes personalizados según la respuesta real de tu cuerpo.</li>
+            <li><strong>Psicosomática:</strong> reforzamos los anclajes, la respiración y las herramientas de regulación que ya has ido incorporando.</li>
+            <li><strong>Autonomía:</strong> iniciamos un trabajo de integración para que puedas empezar a utilizar tus propios recursos internos en la vida diaria sin depender exclusivamente de las sesiones.</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      id: "mes-4",
+      title: "Mes 4 — Autonomía y cierre",
+      content: (
+        <>
+          <p>
+            El cuarto mes está dedicado a cerrar el proceso de forma progresiva, ayudándote a sostener lo aprendido y a retirar poco a poco los apoyos externos.
+          </p>
+          <ul>
+            <li><strong>Nutrición:</strong> realizamos una revisión final de hábitos y los últimos ajustes para que el plan pueda mantenerse de forma realista fuera del programa.</li>
+            <li><strong>Psicosomática:</strong> durante los últimos 10 días, el acompañamiento se orienta específicamente a soltar los anclajes externos e integrar tu propia capacidad de regulación.</li>
+            <li><strong>Cierre:</strong> concluimos con una orientación clara de mantenimiento y prevención de recaídas, para que reconozcas tu capacidad de gestión digestiva autónoma.</li>
+          </ul>
+        </>
+      )
+    }
+  ];
+
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -97,6 +185,50 @@ export default function HipnoDigestive() {
                 <h3 className="font-headline text-lg font-medium text-primary">Nutrición Personalizada</h3>
                 <p className="text-sm text-on-surface-variant/80 font-light mt-1">Asesorada por Diego Arnold, cuidando la alimentación sintónica con tus biorritmos y cuerpo.</p>
               </div>
+            </div>
+          </div>
+
+          <div className="my-12 rounded-[2rem] bg-surface-container-low border border-outline-variant/10 overflow-hidden shadow-sm text-left">
+            <div className="p-6 md:p-8 border-b border-outline-variant/10">
+              <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
+                Evolución del programa
+              </span>
+              <h2 className="font-headline text-2xl md:text-3xl text-primary mt-3 font-medium">
+                Cuatro meses para pasar del ajuste inicial a la autonomía digestiva
+              </h2>
+              <p className="text-on-surface-variant/85 font-light leading-relaxed mt-4 text-base md:text-lg">
+                HipnoDigest está estructurado como un acompañamiento progresivo de cuatro meses, precedido por una sesión inicial de valoración. La idea es que no camines este proceso de golpe, sino paso a paso: primero creando seguridad, después profundizando, integrando lo aprendido y finalmente ganando autonomía en tu salud digestiva.
+              </p>
+            </div>
+            <div className="divide-y divide-outline-variant/10">
+              {programTimeline.map((item) => {
+                const isOpen = openProgramMonth === item.id;
+                return (
+                  <div key={item.id}>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      onClick={() => toggleProgramMonth(item.id)}
+                      className="w-full px-6 md:px-8 py-5 flex items-center justify-between gap-6 text-left hover:bg-surface-container-high/60 transition-colors"
+                    >
+                      <span className="font-headline text-lg md:text-xl text-primary">
+                        {item.title}
+                      </span>
+                      <span className={`material-symbols-outlined text-primary/75 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                        keyboard_arrow_down
+                      </span>
+                    </button>
+
+                    {isOpen && (
+                      <div className="px-6 md:px-8 pb-8 text-on-surface-variant/90 font-body leading-relaxed space-y-4 text-base md:text-lg">
+                        <div className="[&_ul]:space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:text-primary [&_strong]:font-medium">
+                          {item.content}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

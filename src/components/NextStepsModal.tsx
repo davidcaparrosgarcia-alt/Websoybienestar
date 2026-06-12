@@ -340,24 +340,21 @@ export default function NextStepsModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-md animate-in fade-in text-left">
-      <div className="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative">
+      <div className="bg-surface-container-lowest w-full max-w-[min(94vw,620px)] max-h-[92dvh] rounded-3xl shadow-2xl overflow-hidden relative flex flex-col">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors z-10"
         >
           <span className="material-symbols-outlined text-on-surface-variant">close</span>
         </button>
-        <div className="p-8 pb-6 border-b border-outline-variant/10 bg-primary-container text-on-primary">
-          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-4">
-            <span className="material-symbols-outlined text-2xl">how_to_reg</span>
-          </div>
+        <div className="px-6 pt-6 pb-4 md:px-8 md:pt-7 md:pb-5 border-b border-outline-variant/10 bg-primary-container text-on-primary pr-16">
           <h3 className="font-headline text-3xl mb-2">Ya estás registrado</h3>
           <p className="text-on-primary-container text-sm font-body">Continúa tu proceso seleccionando uno de tus siguientes pasos de bienestar.</p>
         </div>
         
-        <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+        <div className="px-5 py-5 md:p-8 space-y-5 md:space-y-6 overflow-y-auto flex-1 min-h-0">
           {/* Option 1 */}
-          <div className="bg-surface p-5 rounded-2xl border border-outline-variant/20 flex flex-col gap-3">
+          <div className="bg-surface p-4 md:p-5 rounded-2xl border border-outline-variant/20 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">psychology</span>
@@ -365,8 +362,8 @@ export default function NextStepsModal({
               </div>
               {effectivelyHasDoneConsultation ? (
                 <div className="flex flex-col items-end gap-2">
-                  <span className="flex items-center gap-1 text-secondary bg-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    <span className="material-symbols-outlined text-sm">check_circle</span>
+                  <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/35 border border-emerald-300/70 dark:border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                    <span className="material-symbols-outlined text-sm text-emerald-600 dark:text-emerald-200">check_circle</span>
                     Realizado
                   </span>
                   <button onClick={() => navigate('/session')} className="text-primary text-xs font-bold underline hover:text-primary/80 transition-colors">
@@ -382,7 +379,7 @@ export default function NextStepsModal({
           </div>
 
           {/* Option 2 */}
-          <div className="bg-surface p-5 rounded-2xl border border-primary/20">
+          <div className="bg-surface p-4 md:p-5 rounded-2xl border border-primary/20">
             <div className="flex flex-col gap-3 mb-3">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">assignment</span>

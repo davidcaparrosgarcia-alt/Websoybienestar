@@ -1,22 +1,45 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, logOut } from "../firebase";
+import { auth, logOut, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import ScrollArrows from "./ScrollArrows";
 import { runLazyDataRetentionAndCleanup } from "../services/dataRetention";
 import { motion, AnimatePresence } from "motion/react";
 import ThemeToggle from "./ThemeToggle";
+import NextStepsModal from "./NextStepsModal";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  const [phoneValue, setPhoneValue] = useState("");
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       // Trigger lazy cleanup non-blockingly without awaiting
       runLazyDataRetentionAndCleanup(user.uid);
+      
+      const loadUserData = async () => {
+        try {
+          const udRef = doc(db, "users", user.uid);
+          const snap = await getDoc(udRef);
+          if (snap.exists()) {
+            const d = snap.data();
+            setHasDoneConsultation(!!d.hasDoneConsultation);
+            setPhoneValue(d.contactPhone || d.phone || "");
+          }
+        } catch (error) {
+          console.error("Error cargando userData en Layout:", error);
+        }
+      };
+      loadUserData();
+    } else {
+      setHasDoneConsultation(false);
+      setPhoneValue("");
     }
   }, [user]);
 
@@ -27,6 +50,12 @@ export default function Layout() {
     } else {
       navigate("/login");
     }
+  };
+
+  const handleMobilePrimaryCta = () => {
+    if (!user) navigate('/session');
+    else if (hasDoneConsultation) setIsNextStepsModalOpen(true);
+    else navigate('/session');
   };
 
   const getLinkClass = (path: string) => {
@@ -129,9 +158,14 @@ export default function Layout() {
               }
             }}
           >
-            <div className="text-lg md:text-xl font-headline font-bold text-white flex flex-col items-start leading-tight text-left">
-              <span>ReprogrÁmate</span>
-              <span className="italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
+            <div className="text-white flex flex-col items-start leading-tight text-left">
+              <span className="font-headline font-bold text-xl md:text-2xl lg:hidden">SoyBienestar</span>
+              <span className="lg:hidden italic font-light text-secondary text-sm flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm leading-none">keyboard_arrow_down</span>
+                Menú
+              </span>
+              <span className="hidden lg:block font-headline font-bold text-lg md:text-xl">ReprogrÁmate</span>
+              <span className="hidden lg:block italic font-light text-secondary text-sm md:text-lg">SoyBienestar.es</span>
             </div>
           </div>
           <div className="hidden lg:flex items-center justify-center lg:gap-5 xl:gap-7">
@@ -156,8 +190,16 @@ export default function Layout() {
               <span className="material-symbols-outlined font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>arrow_back</span>
             </button>
             <ThemeToggle />
-            <button onClick={handleAuthAction} className="bg-white text-[#11181f] px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap">
+            {/* Desktop Auth Button */}
+            <button onClick={handleAuthAction} className="hidden lg:block bg-white text-[#11181f] px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap">
               {user ? "Cerrar Sesión" : "Iniciar Sesión"}
+            </button>
+            {/* Mobile CTA Button */}
+            <button 
+              onClick={handleMobilePrimaryCta} 
+              className="lg:hidden bg-white text-[#162839] px-4 py-2.5 rounded-lg font-label font-bold text-sm duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap shadow-sm"
+            >
+              {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Iniciar consulta gratuita"}
             </button>
           </div>
         </nav>
@@ -226,6 +268,15 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+
+      <NextStepsModal
+        isOpen={isNextStepsModalOpen}
+        onClose={() => setIsNextStepsModalOpen(false)}
+        user={user}
+        hasDoneConsultation={hasDoneConsultation}
+        emailValue={user?.email || ""}
+        phoneValue={phoneValue}
+      />
     </div>
   );
 }

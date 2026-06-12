@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type MouseEvent, type PointerEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ProcessStepsPanel from "../components/ProcessStepsPanel";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
@@ -280,59 +281,13 @@ export default function Method() {
       </section>
 
       {/* The Method: Puente Section */}
-      <section className="w-full px-8 mb-24 mt-24">
-        <div 
-          className="w-full max-w-screen-2xl mx-auto px-8 md:px-24 py-12 bg-surface-container-low rounded-[3rem] relative overflow-hidden bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
-        >
-          <div className="absolute inset-0 bg-white/65 dark:bg-[#11181f]/45 pointer-events-none"></div>
-          <div className="relative z-10 py-8 flex flex-col items-center justify-center space-y-10 w-full">
-            <div className="relative w-full flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline-variant/20"></div></div>
-              <h2 className="relative px-8 font-headline italic text-primary text-xl tracking-widest uppercase text-center">Cómo trabajamos en SoyBienestar</h2>
-            </div>
-            
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-              <button
-                onClick={progressStep === 1 ? handleConsultaClick : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep > 1 
-                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed' 
-                    : progressStep === 1 
-                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer' 
-                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed'
-                }`}
-              >
-                Consulta Gratuita
-              </button>
-              <button
-                disabled={progressStep !== 2}
-                onClick={progressStep === 2 ? handleCuestionarioClick : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep > 2 
-                    ? 'opacity-20 bg-surface-container text-on-surface-variant cursor-not-allowed'
-                    : progressStep === 2
-                      ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
-                      : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-                }`}
-              >
-                Cuestionario Espejo
-              </button>
-              <button
-                disabled={progressStep !== 3}
-                onClick={progressStep === 3 ? () => navigate('/report') : undefined}
-                className={`w-full py-4 rounded-xl font-label font-medium transition-all ${
-                  progressStep === 3
-                    ? 'bg-primary dark:bg-[#d1e7e4] text-white dark:text-[#2c3e50] shadow-md hover:opacity-90 cursor-pointer'
-                    : 'opacity-50 bg-surface-container text-on-surface-variant cursor-not-allowed hover:bg-transparent border border-outline-variant/20'
-                }`}
-              >
-                Dosier Personalizado
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ProcessStepsPanel
+        progressStep={progressStep}
+        onConsultaClick={handleConsultaClick}
+        onCuestionarioClick={handleCuestionarioClick}
+        onDossierClick={() => navigate('/report')}
+        className="mb-24 mt-24"
+      />
 
       {/* Infografía: Puente Digital */}
       <section className="mx-8 xl:mx-auto mb-32 max-w-screen-2xl">

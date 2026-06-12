@@ -10,6 +10,7 @@ import SymptomCard from "../components/SymptomCard";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import ProcessStepsPanel from "../components/ProcessStepsPanel";
 import {
   ANSIEDAD_FAQS,
   ESTRES_FAQS,
@@ -72,6 +73,7 @@ export default function Home() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+  const [progressStep, setProgressStep] = useState(1);
   
   const [openAnsiedadFaqIndex, setOpenAnsiedadFaqIndex] = useState<number | null>(null);
   const [openEstresFaqIndex, setOpenEstresFaqIndex] = useState<number | null>(null);
@@ -176,7 +178,10 @@ export default function Home() {
     let isMounted = true;
     async function loadUserData() {
       if (!user) {
-        if (isMounted) setIsLoadingProfile(false);
+        if (isMounted) {
+          setIsLoadingProfile(false);
+          setProgressStep(1);
+        }
         return;
       }
       if (isMounted) setIsLoadingProfile(true);
@@ -187,6 +192,14 @@ export default function Home() {
           if (data.hasDoneConsultation) {
             setHasDoneConsultation(true);
           }
+          if (data.hasDoneCuestionario === true || ["completed", "concluded", "finalized"].includes(data.questionnaireStatus)) {
+            setProgressStep(3);
+          } else if (data.hasDoneConsultation === true) {
+            setProgressStep(2);
+          } else {
+            setProgressStep(1);
+          }
+
           if (data.contactPreferencesSaved) {
             setPhone(data.contactPhone || "");
             setContactEmail(data.contactEmail || user.email || "");
@@ -393,6 +406,29 @@ export default function Home() {
     ]
   };
 
+  const getProcessCtaLabel = () => {
+    if (progressStep === 3) return "Ir al dosier";
+    if (progressStep === 2) return "Solicitar cuestionario";
+    return "Consulta gratuita";
+  };
+
+  const handleProcessCtaClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    closeInfographicModal();
+
+    if (progressStep === 3) {
+      navigate('/report');
+      return;
+    }
+
+    if (progressStep === 2) {
+      setIsNextStepsModalOpen(true);
+      return;
+    }
+
+    navigate('/session');
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <SEO
@@ -407,7 +443,7 @@ export default function Home() {
       <StructuredData id="home-service-schema" data={homeServiceSchema} />
       <StructuredData id="home-guides-itemlist-schema" data={homeGuidesItemListSchema} />
       {/* Hero Section */}
-      <section className="w-full px-6 md:px-12 lg:px-16 xl:px-20 mb-8 md:mb-12">
+      <section className="w-full px-6 md:px-12 lg:px-16 xl:px-20 mb-2 md:mb-12">
         <div className="max-w-6xl 2xl:max-w-7xl mx-auto relative overflow-hidden rounded-[2rem] shadow-xl border border-outline-variant/10 bg-surface-container-low">
           {/* Desktop/Horizontal Image */}
           <img 
@@ -437,8 +473,18 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="lg:hidden px-4 pt-2 pb-4">
+        <ProcessStepsPanel
+          progressStep={progressStep}
+          onConsultaClick={() => navigate('/session')}
+          onCuestionarioClick={() => setIsNextStepsModalOpen(true)}
+          onDossierClick={() => navigate('/report')}
+          className="mt-0 mb-0"
+        />
+      </section>
+
       {/* Symptoms Section: Reconociendo tus batallas */}
-      <section className="pt-12 md:pt-16 pb-32 px-8">
+      <section className="pt-8 md:pt-16 pb-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>
@@ -981,16 +1027,13 @@ export default function Home() {
               >
                 {/* Elegant Action Buttons */}
                 <div className="p-4 pb-0 flex flex-wrap justify-center sm:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
-                  <Link 
-                    to={`/${selectedInfographic.slug ?? (selectedInfographic.id === 'rumiacion' ? 'pensar-demasiado-rumiacion' : selectedInfographic.id)}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      closeInfographicModal();
-                    }}
-                    className="h-12 px-6 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group font-medium"
+                  <button
+                    type="button"
+                    onClick={handleProcessCtaClick}
+                    className="h-12 px-4 sm:px-6 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group font-medium whitespace-nowrap text-sm sm:text-base"
                   >
-                    Ver guía completa
-                  </Link>
+                    {getProcessCtaLabel()}
+                  </button>
                   <a 
                     href={selectedInfographic.src} 
                     target="_blank" 
