@@ -473,14 +473,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 md:px-8 lg:px-16 xl:px-20 pt-2 md:pt-4 pb-6 md:pb-8">
-        <ProcessStepsPanel
-          progressStep={progressStep}
-          onConsultaClick={() => navigate('/session')}
-          onCuestionarioClick={() => setIsNextStepsModalOpen(true)}
-          onDossierClick={() => navigate('/report')}
-          className="mt-0 mb-0"
-        />
+      <section className="px-6 md:px-12 lg:px-16 xl:px-20 pt-2 md:pt-4 pb-6 md:pb-8">
+        <div className="max-w-7xl mx-auto">
+          <ProcessStepsPanel
+            progressStep={progressStep}
+            onConsultaClick={() => navigate('/session')}
+            onCuestionarioClick={() => setIsNextStepsModalOpen(true)}
+            onDossierClick={() => navigate('/report')}
+            className="mt-0 mb-0"
+          />
+        </div>
       </section>
 
       {/* Symptoms Section: Reconociendo tus batallas */}

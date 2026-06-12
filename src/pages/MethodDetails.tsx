@@ -144,13 +144,13 @@ export default function MethodDetails() {
             </p>
           </div>
           {/* Right Column: Image */}
-          <div className="relative overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl dark:shadow-[0_24px_60px_rgba(0,0,0,0.55)] border border-outline-variant/10 dark:border-transparent">
+          <div className="relative overflow-hidden rounded-[2rem] bg-surface-container-low dark:bg-[#0b1118] shadow-2xl dark:shadow-none border border-outline-variant/10 dark:border-[#0b1118] p-0 leading-none after:hidden dark:after:block after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-[#0b1118] after:z-10">
             <img
               src="/images/fundadores-david-maria.webp"
               alt="David y María, fundadores de SoyBienestar.es"
               loading="lazy"
               decoding="async"
-              className="block w-full h-full object-cover object-center"
+              className="block w-full h-auto object-cover object-center transform-gpu scale-[1.004] origin-center"
             />
           </div>
         </div>

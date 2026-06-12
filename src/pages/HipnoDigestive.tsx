@@ -2,10 +2,11 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function HipnoDigestive() {
   const [openProgramMonth, setOpenProgramMonth] = useState<string | null>("valoracion");
+  const [isProgramImageOpen, setIsProgramImageOpen] = useState(false);
   const programMonthRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const scrollToProgramMonth = (month: string) => {
@@ -171,11 +172,11 @@ export default function HipnoDigestive() {
       <StructuredData id="hipnodisgest-service-schema" data={serviceSchema} />
 
       {/* Main Content Area */}
-      <section className="px-6 md:px-12 py-16 max-w-4xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
+      <section className="px-6 md:px-12 py-16 max-w-4xl lg:max-w-screen-2xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
         <div className="space-y-8 text-center md:text-left">
           {/* Enmarcar con imagen de fondo */}
           <div
-            className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl bg-cover bg-center min-h-[360px] md:min-h-[420px] flex items-center"
+            className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl bg-cover bg-center min-h-[360px] md:min-h-[420px] lg:min-h-[520px] flex items-center"
             style={{ backgroundImage: "url('/images/fondo_hipnodigestive.jpg')" }}
           >
             <div className="relative z-10 w-full p-8 md:p-12 lg:p-14 text-center md:text-left">
@@ -184,10 +185,10 @@ export default function HipnoDigestive() {
               </div>
 
               <div className="space-y-4 mt-6">
-                <h1 className="font-headline text-5xl md:text-6xl text-white font-medium tracking-tight">
+                <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl text-white font-medium tracking-tight">
                   HipnoDigest
                 </h1>
-                <p className="font-headline text-xl md:text-2xl text-[#d1e7e4] italic font-light leading-relaxed max-w-3xl">
+                <p className="font-headline text-xl md:text-2xl lg:text-3xl text-[#d1e7e4] italic font-light leading-relaxed max-w-4xl">
                   Hipnosis digestiva creada por María Iris y acompañamiento nutricional personalizado de Diego Arnold.
                 </p>
               </div>
@@ -197,28 +198,28 @@ export default function HipnoDigestive() {
           </div>
 
           {/* Main Description */}
-          <div className="space-y-6 text-on-surface-variant/90 leading-relaxed text-base md:text-lg font-light">
+          <div className="space-y-6 text-on-surface-variant/90 leading-relaxed text-base md:text-lg lg:text-xl font-light max-w-6xl">
             <p>
               HipnoDigest nace como un programa de acompañamiento online para trabajar la relación entre digestión, sistema nervioso, hábitos y bienestar emocional. Combina recursos de hipnosis digestiva con una de mirada nutricional personalizada para ayudar a la persona a cuidarse con más claridad, calma y coherencia.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 my-12">
             {/* Card Creator 1 */}
-            <div className="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
+            <div className="p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
               <span className="material-symbols-outlined text-secondary text-2xl shrink-0">psychology</span>
               <div>
-                <h3 className="font-headline text-lg font-medium text-primary">Hipnosis Digestiva</h3>
-                <p className="text-sm text-on-surface-variant/80 font-light mt-1">Concebida y guiada por María Iris para favorecer el reequilibrio y la autorregulación somática.</p>
+                <h3 className="font-headline text-lg lg:text-2xl font-medium text-primary">Hipnosis Digestiva</h3>
+                <p className="text-sm lg:text-base text-on-surface-variant/80 font-light mt-2 leading-relaxed">Concebida y guiada por María Iris para favorecer el reequilibrio y la autorregulación somática.</p>
               </div>
             </div>
 
             {/* Card Creator 2 */}
-            <div className="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
+            <div className="p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
               <span className="material-symbols-outlined text-secondary text-2xl shrink-0">nutrition</span>
               <div>
-                <h3 className="font-headline text-lg font-medium text-primary">Nutrición Personalizada</h3>
-                <p className="text-sm text-on-surface-variant/80 font-light mt-1">Asesorada por Diego Arnold, cuidando la alimentación sintónica con tus biorritmos y cuerpo.</p>
+                <h3 className="font-headline text-lg lg:text-2xl font-medium text-primary">Nutrición Personalizada</h3>
+                <p className="text-sm lg:text-base text-on-surface-variant/80 font-light mt-2 leading-relaxed">Asesorada por Diego Arnold, cuidando la alimentación sintónica con tus biorritmos y cuerpo.</p>
               </div>
             </div>
           </div>
@@ -228,10 +229,10 @@ export default function HipnoDigestive() {
               <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
                 Evolución del programa
               </span>
-              <h2 className="font-headline text-2xl md:text-3xl text-primary mt-3 font-medium">
+              <h2 className="font-headline text-2xl md:text-3xl lg:text-4xl text-primary mt-3 font-medium">
                 Cuatro meses para pasar del ajuste inicial a la autonomía digestiva
               </h2>
-              <p className="text-on-surface-variant/85 font-light leading-relaxed mt-4 text-base md:text-lg">
+              <p className="text-on-surface-variant/85 font-light leading-relaxed mt-4 text-base md:text-lg lg:text-xl max-w-6xl">
                 HipnoDigest está estructurado como un acompañamiento progresivo de cuatro meses, precedido por una sesión inicial de valoración. La idea es que no camines este proceso de golpe, sino paso a paso: primero creando seguridad, después profundizando, integrando lo aprendido y finalmente ganando autonomía en tu salud digestiva.
               </p>
             </div>
@@ -252,7 +253,7 @@ export default function HipnoDigestive() {
                       onClick={() => toggleProgramMonth(item.id)}
                       className="w-full px-6 md:px-8 py-5 flex items-center justify-between gap-6 text-left hover:bg-surface-container-high/60 transition-colors"
                     >
-                      <span className="font-headline text-lg md:text-xl text-primary">
+                      <span className="font-headline text-lg md:text-xl lg:text-2xl text-primary">
                         {item.title}
                       </span>
                       <span className={`material-symbols-outlined text-primary/75 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
@@ -261,7 +262,7 @@ export default function HipnoDigestive() {
                     </button>
 
                     {isOpen && (
-                      <div className="px-6 md:px-8 pb-8 text-on-surface-variant/90 font-body leading-relaxed space-y-4 text-base md:text-lg">
+                      <div className="px-6 md:px-8 lg:px-10 pb-8 lg:pb-10 text-on-surface-variant/90 font-body leading-relaxed space-y-4 text-base md:text-lg lg:text-xl">
                         <div className="[&_ul]:space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:text-primary [&_strong]:font-medium">
                           {item.content}
                         </div>
@@ -274,15 +275,23 @@ export default function HipnoDigestive() {
           </div>
 
           {/* Program Overview Image */}
-          <div className="my-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-xl">
+          <motion.button
+            type="button"
+            layoutId="hipnodigest-program-image"
+            onClick={() => setIsProgramImageOpen(true)}
+            whileHover={{ y: -8, scale: 1.01, boxShadow: "0 24px 60px rgba(0,0,0,0.18)" }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="group my-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-xl w-full text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary/50"
+            aria-label="Ampliar resumen visual del programa HipnoDigest"
+          >
             <img
               src="/images/programa_hipnodigest.jpg"
               alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
               loading="lazy"
               decoding="async"
-              className="block w-full h-auto object-contain"
+              className="block w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.015]"
             />
-          </div>
+          </motion.button>
 
           {/* HipnoDigest Reservation Card */}
           <div className="rounded-[2rem] bg-surface-container-lowest border border-outline-variant/10 shadow-xl overflow-hidden my-12">
@@ -291,41 +300,41 @@ export default function HipnoDigestive() {
                 <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
                   Recorrido del programa
                 </span>
-                <h2 className="font-headline text-2xl md:text-3xl text-primary font-medium">
+                <h2 className="font-headline text-2xl md:text-3xl lg:text-4xl text-primary font-medium">
                   Reserva tu plaza para HipnoDigest
                 </h2>
-                <p className="text-on-surface-variant/85 font-light leading-relaxed text-base md:text-lg max-w-2xl mx-auto">
+                <p className="text-on-surface-variant/85 font-light leading-relaxed text-base md:text-lg lg:text-xl max-w-4xl mx-auto">
                   Un acompañamiento digestivo-emocional de cuatro meses con valoración inicial, intervención coordinada e integración progresiva.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 lg:p-7 text-center md:text-left">
                   <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
                     1
                   </div>
-                  <h3 className="font-headline text-lg text-primary mb-2">Evaluación integral</h3>
-                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                  <h3 className="font-headline text-lg lg:text-2xl text-primary mb-2">Evaluación integral</h3>
+                  <p className="text-sm md:text-base lg:text-lg text-on-surface-variant/85 font-light leading-relaxed">
                     Valoración nutricional + entrevista psicosomática inicial.
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 lg:p-7 text-center md:text-left">
                   <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
                     2
                   </div>
-                  <h3 className="font-headline text-lg text-primary mb-2">Intervención coordinada</h3>
-                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                  <h3 className="font-headline text-lg lg:text-2xl text-primary mb-2">Intervención coordinada</h3>
+                  <p className="text-sm md:text-base lg:text-lg text-on-surface-variant/85 font-light leading-relaxed">
                     Dieta personalizada, seguimiento nutricional, hipnosis digestiva, anclajes y prácticas de respiración y meditación.
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 lg:p-7 text-center md:text-left">
                   <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
                     3
                   </div>
-                  <h3 className="font-headline text-lg text-primary mb-2">Integración y autonomía</h3>
-                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                  <h3 className="font-headline text-lg lg:text-2xl text-primary mb-2">Integración y autonomía</h3>
+                  <p className="text-sm md:text-base lg:text-lg text-on-surface-variant/85 font-light leading-relaxed">
                     Consolidación de hábitos, regulación del eje intestino-cerebro y recursos para sostener el bienestar en el tiempo.
                   </p>
                 </div>
@@ -375,6 +384,68 @@ export default function HipnoDigestive() {
           </div>
         </div>
       </section>
+
+      {/* Program Image Modal */}
+      <AnimatePresence>
+        {isProgramImageOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setIsProgramImageOpen(false)}
+              className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm cursor-pointer"
+            />
+
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 pointer-events-none">
+              <motion.div
+                layoutId="hipnodigest-program-image"
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-[min(96vw,1200px)] max-h-[94vh] bg-white dark:bg-[#1a252f] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/10 cursor-default flex flex-col pointer-events-auto"
+              >
+                <div className="absolute top-4 right-4 z-30 flex items-center gap-3">
+                  <a
+                    href="/images/programa_hipnodigest.jpg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    title="Abrir en pantalla completa / Descargar"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">
+                      open_in_new
+                    </span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setIsProgramImageOpen(false)}
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    title="Cerrar"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">
+                      close
+                    </span>
+                  </button>
+                </div>
+
+                <div className="relative w-full flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
+                  <motion.img
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1, duration: 0.25 }}
+                    src="/images/programa_hipnodigest.jpg"
+                    alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
