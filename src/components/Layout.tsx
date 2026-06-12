@@ -15,32 +15,70 @@ export default function Layout() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
+  const [dossierAvailable, setDossierAvailable] = useState(false);
   const [phoneValue, setPhoneValue] = useState("");
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (user) {
       // Trigger lazy cleanup non-blockingly without awaiting
       runLazyDataRetentionAndCleanup(user.uid);
       
-      const loadUserData = async () => {
+      const loadUserProcessState = async () => {
         try {
           const udRef = doc(db, "users", user.uid);
           const snap = await getDoc(udRef);
-          if (snap.exists()) {
-            const d = snap.data();
-            setHasDoneConsultation(!!d.hasDoneConsultation);
-            setPhoneValue(d.contactPhone || d.phone || "");
+          if (snap.exists() && !cancelled) {
+            const data = snap.data();
+            
+            const consultationDone =
+              data?.hasDoneConsultation === true ||
+              data?.consultationCompleted === true ||
+              data?.sessionCompleted === true;
+
+            const questionnaireCompleted =
+              data?.hasDoneCuestionario === true ||
+              data?.questionnaireStatus === "completed" ||
+              data?.questionnaireStatus === "concluded" ||
+              data?.questionnaireStatus === "finalized" ||
+              data?.questionnaireStatus === "dossier_available";
+
+            const dossierReady =
+              !!data?.dossierAvailableAt ||
+              !!data?.latestDossier ||
+              !!data?.dossierViewedAt ||
+              questionnaireCompleted;
+
+            const contactPhone =
+              data?.contactPhone ||
+              data?.phone ||
+              data?.whatsappPhone ||
+              data?.smsPhone ||
+              data?.telefono ||
+              "";
+
+            setHasDoneConsultation(consultationDone);
+            setDossierAvailable(dossierReady);
+            setPhoneValue(contactPhone ? String(contactPhone) : "");
           }
         } catch (error) {
-          console.error("Error cargando userData en Layout:", error);
+          console.error("Error loading mobile process CTA state", error);
         }
       };
-      loadUserData();
+      loadUserProcessState();
     } else {
-      setHasDoneConsultation(false);
-      setPhoneValue("");
+      if (!cancelled) {
+        setHasDoneConsultation(false);
+        setDossierAvailable(false);
+        setPhoneValue("");
+      }
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const handleAuthAction = () => {
@@ -52,15 +90,34 @@ export default function Layout() {
     }
   };
 
+  const getMobilePrimaryCtaLabel = () => {
+    if (dossierAvailable) return "Ir al dosier";
+    if (hasDoneConsultation) return "Solicitar cuestionario";
+    return "Consulta gratuita";
+  };
+
   const handleMobilePrimaryCta = () => {
-    if (!user) navigate('/session');
-    else if (hasDoneConsultation) setIsNextStepsModalOpen(true);
-    else navigate('/session');
+    if (dossierAvailable) {
+      navigate("/report");
+      return;
+    }
+
+    if (!user) {
+      navigate("/session");
+      return;
+    }
+
+    if (hasDoneConsultation) {
+      setIsNextStepsModalOpen(true);
+      return;
+    }
+
+    navigate("/session");
   };
 
   const getLinkClass = (path: string) => {
     const activeGroups: Record<string, string[]> = {
-      "/tratamientos-online": ["/tratamientos-online", "/treatments", "/reprogramate", "/hipnodigestive"],
+      "/tratamientos-online": ["/tratamientos-online", "/treatments", "/reprogramate", "/hipnodigestive", "/hipnodisgest"],
       "/como-trabajamos": ["/como-trabajamos", "/method", "/method-details"],
       "/quienes-somos": ["/quienes-somos", "/como-trabajamos/detalles"],
       "/herramientas": ["/herramientas", "/resources"],
@@ -113,6 +170,17 @@ export default function Layout() {
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/quienes-somos")} to="/quienes-somos">Quiénes somos</Link>
+                <div className="h-px bg-white/10 my-2" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleAuthAction();
+                  }}
+                  className="text-[#e5e2de] opacity-80 hover:text-white hover:opacity-100 transition-all font-headline text-lg text-left"
+                >
+                  {user ? "Cerrar sesión" : "Iniciar sesión"}
+                </button>
               </div>
             </motion.div>
           </>
@@ -189,17 +257,17 @@ export default function Layout() {
             >
               <span className="material-symbols-outlined font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>arrow_back</span>
             </button>
+            <button
+              type="button"
+              onClick={handleMobilePrimaryCta}
+              className="lg:hidden h-10 px-3 sm:px-4 rounded-full bg-transparent border border-[#e5e2de]/70 text-[#e5e2de] hover:text-white hover:border-white/90 font-label text-[11px] sm:text-xs font-medium tracking-wide transition-all duration-300 whitespace-nowrap flex items-center justify-center"
+            >
+              {getMobilePrimaryCtaLabel()}
+            </button>
             <ThemeToggle />
             {/* Desktop Auth Button */}
             <button onClick={handleAuthAction} className="hidden lg:block bg-white text-[#11181f] px-3 md:px-5 py-2.5 rounded-lg font-label text-xs md:text-sm md:scale-95 duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap">
               {user ? "Cerrar Sesión" : "Iniciar Sesión"}
-            </button>
-            {/* Mobile CTA Button */}
-            <button 
-              onClick={handleMobilePrimaryCta} 
-              className="lg:hidden bg-white text-[#162839] px-4 py-2.5 rounded-lg font-label font-bold text-sm duration-200 ease-in-out hover:bg-gray-200 whitespace-nowrap shadow-sm"
-            >
-              {hasDoneConsultation ? "Solicitar Cuestionario Espejo" : "Iniciar consulta gratuita"}
             </button>
           </div>
         </nav>
