@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
@@ -6,9 +6,38 @@ import { motion } from "motion/react";
 
 export default function HipnoDigestive() {
   const [openProgramMonth, setOpenProgramMonth] = useState<string | null>("valoracion");
+  const programMonthRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const scrollToProgramMonth = (month: string) => {
+    if (typeof window === "undefined") return;
+
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    window.setTimeout(() => {
+      const target = programMonthRefs.current[month];
+      if (!target) return;
+
+      const headerOffset = 88;
+      const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: Math.max(targetTop, 0),
+        behavior: "smooth"
+      });
+    }, 80);
+  };
 
   const toggleProgramMonth = (month: string) => {
-    setOpenProgramMonth((current) => current === month ? null : month);
+    setOpenProgramMonth((current) => {
+      const next = current === month ? null : month;
+
+      if (next) {
+        scrollToProgramMonth(month);
+      }
+
+      return next;
+    });
   };
 
   const programTimeline = [
@@ -204,7 +233,13 @@ export default function HipnoDigestive() {
               {programTimeline.map((item) => {
                 const isOpen = openProgramMonth === item.id;
                 return (
-                  <div key={item.id}>
+                  <div
+                    key={item.id}
+                    ref={(el) => {
+                      programMonthRefs.current[item.id] = el;
+                    }}
+                    className="scroll-mt-24"
+                  >
                     <button
                       type="button"
                       aria-expanded={isOpen}

@@ -166,9 +166,9 @@ export default function Layout() {
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/")} to="/">Inicio</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/tratamientos-online")} to="/tratamientos-online">Tratamientos</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/session")} to="/session">Consulta Gratuita</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/report")} to="/report">Informe</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/report")} to="/report">Tu Dosier Personal</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/herramientas")} to="/herramientas">Herramientas</Link>
-                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Método</Link>
+                <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/como-trabajamos")} to="/como-trabajamos">Nuestro Método</Link>
                 <Link onClick={() => setIsMobileMenuOpen(false)} className={getLinkClass("/quienes-somos")} to="/quienes-somos">Quiénes somos</Link>
                 <div className="h-px bg-white/10 my-2" />
                 <button

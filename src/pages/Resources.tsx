@@ -569,6 +569,14 @@ export default function Resources() {
           >
             <div className="relative w-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px] aspect-auto md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl bg-surface-container-lowest border border-surface-container-highest shadow-sm">
               <img alt="Gestión Emocional" className="dynamic-color-img absolute inset-0 w-full h-full object-cover grayscale contrast-110 opacity-90 transition-all duration-1000 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 active:grayscale-0 active:contrast-100 active:opacity-100 z-0" src="/images/fondo-gestion-emocional.jpg" />
+              <div
+                className={`md:hidden absolute inset-0 z-[5] flex items-center justify-center p-10 pointer-events-none transition-opacity duration-500 ${showGestionsTextBg ? 'opacity-0' : 'opacity-100'}`}
+                aria-hidden="true"
+              >
+                <h2 className="font-headline text-4xl text-primary leading-tight text-center drop-shadow-sm">
+                  Gestión <br/><span className="italic">Emocional</span>
+                </h2>
+              </div>
               <div className="relative z-10 flex w-full h-full min-h-[520px] md:min-h-[460px] lg:min-h-[440px]">
                 <div className="hidden md:block md:w-2/5 lg:w-[45%]"></div>
                 <div className={`w-full md:w-3/5 lg:w-[55%] p-10 md:p-10 lg:p-12 flex flex-col justify-center ml-auto h-full transition-all duration-500 ${showGestionsTextBg ? 'bg-surface-container-lowest/80 backdrop-blur-md border-l border-white/20 shadow-xl' : 'bg-transparent border-transparent shadow-none'} md:bg-transparent md:backdrop-blur-none md:border-transparent md:shadow-none md:group-hover:bg-surface-container-lowest/80 md:group-hover:backdrop-blur-md md:group-hover:border-white/20 md:group-hover:shadow-xl`}>
