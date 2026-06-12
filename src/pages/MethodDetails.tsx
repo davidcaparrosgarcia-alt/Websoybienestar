@@ -144,7 +144,7 @@ export default function MethodDetails() {
             </p>
           </div>
           {/* Right Column: Image */}
-          <div className="relative overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl border border-outline-variant/10">
+          <div className="relative overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl dark:shadow-[0_24px_60px_rgba(0,0,0,0.55)] border border-outline-variant/10 dark:border-transparent">
             <img
               src="/images/fundadores-david-maria.webp"
               alt="David y María, fundadores de SoyBienestar.es"

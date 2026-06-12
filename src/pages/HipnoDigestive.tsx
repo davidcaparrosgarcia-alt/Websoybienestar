@@ -173,22 +173,28 @@ export default function HipnoDigestive() {
       {/* Main Content Area */}
       <section className="px-6 md:px-12 py-16 max-w-4xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
         <div className="space-y-8 text-center md:text-left">
-          {/* Eyebrow */}
-          <div className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
-            Hipnosis digestiva acompañada • SoyBienestar.es
-          </div>
+          {/* Enmarcar con imagen de fondo */}
+          <div
+            className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl bg-cover bg-center min-h-[360px] md:min-h-[420px] flex items-center"
+            style={{ backgroundImage: "url('/images/fondo_hipnodigestive.jpg')" }}
+          >
+            <div className="relative z-10 w-full p-8 md:p-12 lg:p-14 text-center md:text-left">
+              <div className="font-label text-[#d1e7e4] font-semibold tracking-widest uppercase text-xs">
+                Hipnosis digestiva acompañada • SoyBienestar.es
+              </div>
 
-          {/* Title & Creators */}
-          <div className="space-y-4">
-            <h1 className="font-headline text-5xl md:text-6xl text-primary font-medium tracking-tight">
-              HipnoDigest
-            </h1>
-            <p className="font-headline text-xl md:text-2xl text-secondary italic font-light leading-relaxed max-w-3xl">
-              Hipnosis digestiva creada por María Iris y acompañamiento nutricional personalizado de Diego Arnold.
-            </p>
-          </div>
+              <div className="space-y-4 mt-6">
+                <h1 className="font-headline text-5xl md:text-6xl text-white font-medium tracking-tight">
+                  HipnoDigest
+                </h1>
+                <p className="font-headline text-xl md:text-2xl text-[#d1e7e4] italic font-light leading-relaxed max-w-3xl">
+                  Hipnosis digestiva creada por María Iris y acompañamiento nutricional personalizado de Diego Arnold.
+                </p>
+              </div>
 
-          <div className="h-px w-24 bg-secondary/30 my-8 hidden md:block"></div>
+              <div className="h-px w-24 bg-[#d1e7e4]/40 my-8 hidden md:block"></div>
+            </div>
+          </div>
 
           {/* Main Description */}
           <div className="space-y-6 text-on-surface-variant/90 leading-relaxed text-base md:text-lg font-light">
@@ -267,22 +273,87 @@ export default function HipnoDigestive() {
             </div>
           </div>
 
-          {/* Development Status banner */}
-          <div className="p-8 rounded-[2rem] bg-secondary/5 border border-secondary/20 space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs uppercase tracking-wider font-semibold">
-              <span className="material-symbols-outlined text-sm">construction</span>
-              Programa en desarrollo
-            </div>
-            <h3 className="font-headline text-xl text-primary font-medium">Próximamente disponible</h3>
-            <p className="text-sm text-on-surface-variant max-w-xl mx-auto font-light">
-              Estamos preparando esta página con más información sobre estructura, sesiones, objetivos y forma de acompañamiento.
-            </p>
+          {/* Program Overview Image */}
+          <div className="my-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-xl">
+            <img
+              src="/images/programa_hipnodigest.jpg"
+              alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
+              loading="lazy"
+              decoding="async"
+              className="block w-full h-auto object-contain"
+            />
           </div>
 
-          {/* Cautionary Note */}
-          <div className="p-6 rounded-xl bg-surface-container-high/40 border border-outline-variant/10 text-xs text-on-surface-variant/75 font-light leading-relaxed">
-            <strong className="text-secondary block mb-1">Nota importante de claridad:</strong>
-            Este programa no sustituye una valoración médica ni un tratamiento sanitario. Está pensado como acompañamiento complementario de bienestar, hábitos y regulación emocional.
+          {/* HipnoDigest Reservation Card */}
+          <div className="rounded-[2rem] bg-surface-container-lowest border border-outline-variant/10 shadow-xl overflow-hidden my-12">
+            <div className="p-6 md:p-8 space-y-8">
+              <div className="text-center space-y-3">
+                <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
+                  Recorrido del programa
+                </span>
+                <h2 className="font-headline text-2xl md:text-3xl text-primary font-medium">
+                  Reserva tu plaza para HipnoDigest
+                </h2>
+                <p className="text-on-surface-variant/85 font-light leading-relaxed text-base md:text-lg max-w-2xl mx-auto">
+                  Un acompañamiento digestivo-emocional de cuatro meses con valoración inicial, intervención coordinada e integración progresiva.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                  <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
+                    1
+                  </div>
+                  <h3 className="font-headline text-lg text-primary mb-2">Evaluación integral</h3>
+                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                    Valoración nutricional + entrevista psicosomática inicial.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                  <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
+                    2
+                  </div>
+                  <h3 className="font-headline text-lg text-primary mb-2">Intervención coordinada</h3>
+                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                    Dieta personalizada, seguimiento nutricional, hipnosis digestiva, anclajes y prácticas de respiración y meditación.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/10 p-5 text-center md:text-left">
+                  <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline text-xl mx-auto md:mx-0 mb-4">
+                    3
+                  </div>
+                  <h3 className="font-headline text-lg text-primary mb-2">Integración y autonomía</h3>
+                  <p className="text-sm md:text-base text-on-surface-variant/85 font-light leading-relaxed">
+                    Consolidación de hábitos, regulación del eje intestino-cerebro y recursos para sostener el bienestar en el tiempo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                <div>
+                  <p className="font-label text-sm uppercase tracking-widest text-secondary font-semibold">
+                    Precio del programa
+                  </p>
+                  <p className="font-headline text-4xl md:text-5xl text-primary mt-1">
+                    1.300 €
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-stretch md:items-end gap-3">
+                  <Link
+                    to="/sesion-validacion?plan=hipnodigest"
+                    className="px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 transition-opacity font-label font-bold text-center shadow-md"
+                  >
+                    Agendar y pagar reserva
+                  </Link>
+                  <p className="text-xs md:text-sm text-on-surface-variant/75 font-light text-center md:text-right max-w-xs">
+                    Accederás a una página segura para confirmar tus datos y seleccionar la modalidad de abono.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Buttons */}

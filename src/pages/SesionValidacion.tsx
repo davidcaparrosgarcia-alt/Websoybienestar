@@ -15,7 +15,7 @@ export default function SesionValidacion() {
   const planParam = queryParams.get("plan") || "intermedio";
   
   // Normalizar planParam por seguridad
-  const planId = ["basico", "intermedio", "completo"].includes(planParam) ? planParam : "intermedio";
+  const planId = ["basico", "intermedio", "completo", "hipnodigest"].includes(planParam) ? planParam : "intermedio";
   
   const modeParam = queryParams.get("mode");
   const initialMode = modeParam === "reservation" ? "reserva" : (modeParam === "full" ? "unico" : "unico");
@@ -43,10 +43,16 @@ export default function SesionValidacion() {
       name: "Plan Completo",
       duration: "3 meses de acompañamiento intensivo.",
       prices: { unico: 2200, reserva: 400, cuotas: 700 }
+    },
+    "hipnodigest": {
+      name: "HipnoDigest",
+      duration: "4 meses de acompañamiento digestivo-emocional con valoración inicial.",
+      prices: { unico: 1300, reserva: 1300, cuotas: 0 }
     }
   };
 
   const plan = planDetails[planId];
+  const isHipnoDigestPlan = planId === "hipnodigest";
   const [paymentMode, setPaymentMode] = useState<"unico" | "reserva">(initialMode);
   const [paymentMethod, setPaymentMethod] = useState<"tarjeta" | "transferencia" | "paypal">("tarjeta");
   const [loading, setLoading] = useState(false);
@@ -403,14 +409,18 @@ export default function SesionValidacion() {
                 />
                 <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-md transition-all duration-300 ring-2 ring-transparent peer-checked:ring-primary peer-checked:bg-surface-container-low hover:bg-surface-container-low h-full flex flex-col justify-start">
                   <div className="flex justify-between items-start mb-4">
-                    <span className="font-headline text-xl text-primary">Reserva + 3 cuotas</span>
+                    <span className="font-headline text-xl text-primary">
+                      {isHipnoDigestPlan ? "Reserva del programa" : "Reserva + 3 cuotas"}
+                    </span>
                     <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
                   </div>
                   <p className="text-4xl font-headline text-primary mb-2">
                     {plan.prices.reserva} € <span className="text-base font-body text-on-surface-variant">de reserva hoy</span>
                   </p>
                   <p className="text-sm font-body text-on-surface-variant leading-relaxed">
-                    Abona ahora la reserva de espacio. Las 3 mensualidades de {plan.prices.cuotas} € se gestionarán a posteriori.
+                    {isHipnoDigestPlan
+                      ? "Reserva tu plaza para iniciar el proceso HipnoDigest. El equipo confirmará contigo los siguientes pasos del acompañamiento."
+                      : `Abona ahora la reserva de espacio. Las 3 mensualidades de ${plan.prices.cuotas} € se gestionarán a posteriori.`}
                   </p>
                 </div>
               </label>

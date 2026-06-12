@@ -473,7 +473,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="lg:hidden px-4 pt-2 pb-4">
+      <section className="px-4 md:px-8 lg:px-16 xl:px-20 pt-2 md:pt-4 pb-6 md:pb-8">
         <ProcessStepsPanel
           progressStep={progressStep}
           onConsultaClick={() => navigate('/session')}
@@ -484,7 +484,7 @@ export default function Home() {
       </section>
 
       {/* Symptoms Section: Reconociendo tus batallas */}
-      <section className="pt-8 md:pt-16 pb-32 px-8">
+      <section className="pt-6 md:pt-10 lg:pt-12 pb-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="font-headline text-5xl md:text-6xl text-primary mb-8">Reconociendo tus batallas</h2>
