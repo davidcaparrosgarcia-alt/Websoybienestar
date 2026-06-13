@@ -1040,7 +1040,7 @@ export default function Home() {
                     href={selectedInfographic.src} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="hidden md:flex w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white items-center justify-center transition-all duration-300 shadow-sm group"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>

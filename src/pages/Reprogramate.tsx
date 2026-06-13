@@ -155,7 +155,7 @@ export default function Reprogramate() {
   }, [user]);
 
   return (
-    <div className="flex-1 w-full bg-surface-container-lowest text-on-surface">
+    <div className="flex-1 w-full bg-transparent text-on-surface">
       <SEO
         title="ReprogrÁmate | Programa terapéutico online de 3 meses | SoyBienestar"
         description="Programa terapéutico online de 3 meses para trabajar el malestar emocional desde la mente, el cuerpo y la emoción, con acompañamiento cercano y personalizado."

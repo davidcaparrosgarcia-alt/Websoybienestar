@@ -1033,7 +1033,7 @@ export default function Resources() {
                     href={selectedBreathingInfographic.src} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    className="hidden md:flex w-12 h-12 rounded-full bg-surface/80 backdrop-blur border border-outline-variant/30 hover:bg-surface text-primary items-center justify-center transition-all duration-300 shadow-sm group"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>

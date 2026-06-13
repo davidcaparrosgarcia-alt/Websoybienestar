@@ -161,7 +161,7 @@ export default function HipnoDigestive() {
   };
 
   return (
-    <div className="flex-1 w-full bg-surface-container-lowest text-on-surface flex flex-col min-h-screen">
+    <div className="flex-1 w-full bg-transparent text-on-surface flex flex-col min-h-screen">
       <SEO
         title="HipnoDigest | Hipnosis digestiva y acompañamiento nutricional | SoyBienestar"
         description="Programa online en preparación que combina hipnosis digestiva de María Iris y acompañamiento nutricional personalizado de Diego Arnold para cuidar digestión, hábitos y bienestar emocional."
@@ -206,21 +206,27 @@ export default function HipnoDigestive() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 my-12">
             {/* Card Creator 1 */}
-            <div className="p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
+            <div className="group relative p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:scale-[1.015] hover:shadow-2xl hover:border-secondary/30">
               <span className="material-symbols-outlined text-secondary text-2xl shrink-0">psychology</span>
               <div>
                 <h3 className="font-headline text-lg lg:text-2xl font-medium text-primary">Hipnosis Digestiva</h3>
                 <p className="text-sm lg:text-base text-on-surface-variant/80 font-light mt-2 leading-relaxed">Concebida y guiada por María Iris para favorecer el reequilibrio y la autorregulación somática.</p>
               </div>
+              <span className="material-symbols-outlined absolute top-5 right-5 text-secondary/0 group-hover:text-secondary/60 transition-all duration-500 group-hover:scale-110 pointer-events-none">
+                zoom_in
+              </span>
             </div>
 
             {/* Card Creator 2 */}
-            <div className="p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4">
+            <div className="group relative p-6 lg:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-start gap-4 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:scale-[1.015] hover:shadow-2xl hover:border-secondary/30">
               <span className="material-symbols-outlined text-secondary text-2xl shrink-0">nutrition</span>
               <div>
                 <h3 className="font-headline text-lg lg:text-2xl font-medium text-primary">Nutrición Personalizada</h3>
                 <p className="text-sm lg:text-base text-on-surface-variant/80 font-light mt-2 leading-relaxed">Asesorada por Diego Arnold, cuidando la alimentación sintónica con tus biorritmos y cuerpo.</p>
               </div>
+              <span className="material-symbols-outlined absolute top-5 right-5 text-secondary/0 group-hover:text-secondary/60 transition-all duration-500 group-hover:scale-110 pointer-events-none">
+                zoom_in
+              </span>
             </div>
           </div>
 
@@ -294,8 +300,11 @@ export default function HipnoDigestive() {
           </motion.button>
 
           {/* HipnoDigest Reservation Card */}
-          <div className="rounded-[2rem] bg-surface-container-lowest border border-outline-variant/10 shadow-xl overflow-hidden my-12">
-            <div className="p-6 md:p-8 space-y-8">
+          <div
+            className="relative rounded-[2rem] border border-outline-variant/10 shadow-xl overflow-hidden my-12 bg-cover bg-top bg-no-repeat before:absolute before:inset-0 before:content-[''] before:bg-surface-container-lowest/70 dark:before:bg-[#11181f]/65 before:z-0"
+            style={{ backgroundImage: "url('/images/fondo_privacidad.jpg')" }}
+          >
+            <div className="relative z-10 p-6 md:p-8 space-y-8">
               <div className="text-center space-y-3">
                 <span className="font-label text-secondary font-semibold tracking-widest uppercase text-xs">
                   Recorrido del programa
@@ -410,7 +419,7 @@ export default function HipnoDigestive() {
                     href="/images/programa_hipnodigest.jpg"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    className="hidden md:flex w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">

@@ -41,7 +41,7 @@ export default function Treatments() {
   };
 
   return (
-    <div className="flex-1 w-full bg-surface-container-lowest text-on-surface flex flex-col min-h-screen">
+    <div className="flex-1 w-full bg-transparent text-on-surface flex flex-col min-h-screen">
       <SEO
         title="Tratamientos online | ReprogrÁmate e HipnoDisgest | SoyBienestar"
         description="Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDisgest, hipnosis digestiva acompañada con nutrición personalizada."

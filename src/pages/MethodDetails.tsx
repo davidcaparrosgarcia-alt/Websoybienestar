@@ -313,7 +313,7 @@ export default function MethodDetails() {
                     href={selectedProfile.sheet}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
+                    className="hidden md:flex w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/80 items-center justify-center transition-all backdrop-blur-md group pointer-events-auto"
                     title="Abrir en pantalla completa / Descargar"
                   >
                     <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>

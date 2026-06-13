@@ -247,7 +247,7 @@ export default function SesionValidacion() {
 
       
 
-    <div className="flex-grow pt-32 pb-24 px-6 lg:px-12 max-w-[1280px] mx-auto w-full">
+    <div className="flex-grow pt-20 md:pt-24 lg:pt-28 pb-20 md:pb-24 px-6 lg:px-12 max-w-[1280px] mx-auto w-full">
       {successMessage && (
         <div className="mb-8 p-4 bg-green-50 text-green-800 rounded-xl border border-green-200 shadow-sm">
           <p className="font-body flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> {successMessage}</p>
@@ -258,7 +258,7 @@ export default function SesionValidacion() {
           <p className="font-body flex items-center gap-2"><span className="material-symbols-outlined">error</span> {errorMessage}</p>
         </div>
       )}
-      <header className="mb-16 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+      <header className="hidden md:flex mb-10 lg:mb-12 flex-col md:flex-row md:items-start md:justify-between gap-6">
         <div className="md:w-2/3">
           <h1 className="font-headline text-4xl md:text-5xl lg:text-[3.5rem] leading-tight text-primary mb-6">
             Confirma tu espacio de serenidad

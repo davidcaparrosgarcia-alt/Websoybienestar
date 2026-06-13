@@ -20,7 +20,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
   return (
     <>
       <section className="w-full space-y-16">
-        <div className="text-center max-w-2xl mx-auto space-y-6">
+        <div className="hidden md:block text-center max-w-2xl mx-auto space-y-6">
           <h2 className="font-headline text-3xl md:text-4xl text-primary">El camino hacia la transformación</h2>
           <p className="font-body tracking-wide text-lg text-on-surface-variant">
             Selecciona la estructura que mejor se adapte a tu necesidad de profundidad y acompañamiento en este proceso.
@@ -217,7 +217,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
                 href={selectedPlanImage} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
+                className="hidden md:flex w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white items-center justify-center transition-all duration-300 shadow-sm group"
                 title="Abrir en pantalla completa / Descargar"
               >
                 <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
