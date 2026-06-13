@@ -643,6 +643,7 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
 
   const completedPuzzleRef = useRef<HTMLDivElement | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const resolutionTitleRef = useRef<HTMLParagraphElement | null>(null);
 
   const [draggingPiece, setDraggingPiece] = useState<{
     pieceId: number;
@@ -671,6 +672,18 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
       setInResolution(false);
     }
   }, [currentPiecesCount, puzzleCompleted, totalPieces]);
+
+  useEffect(() => {
+    if (inResolution && window.matchMedia('(hover: none)').matches) {
+      setTimeout(() => {
+        if (resolutionTitleRef.current) {
+          const mobileHeaderOffset = 96;
+          const y = resolutionTitleRef.current.getBoundingClientRect().top + window.scrollY - mobileHeaderOffset;
+          window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" });
+        }
+      }, 180);
+    }
+  }, [inResolution]);
 
   // Reset slots when changing module
   useEffect(() => {
@@ -830,7 +843,9 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
            </div>
         ) : inResolution ? (
            <div className="w-full flex-grow flex flex-col items-center animate-in fade-in duration-500">
-               <p className="font-medium text-center text-primary mb-6 md:mb-8 text-lg md:text-xl">Ordena el puzle para completar el módulo.</p>
+               <p ref={resolutionTitleRef} className="font-medium text-center text-primary mb-3 md:mb-6 text-base sm:text-lg md:text-xl whitespace-nowrap">
+                 Completa el puzzle para avanzar
+               </p>
                 <div className="w-full flex flex-col xl:flex-row gap-6 xl:gap-8 items-center xl:items-start justify-center">
                
                <div ref={boardRef} className="order-1 xl:order-2 w-full xl:w-[58%] max-w-[420px] md:max-w-[480px] aspect-[2/3] mx-auto xl:mx-0 relative shadow-2xl bg-surface-container-highest/30 border border-outline-variant/10 rounded-[2rem] overflow-hidden mb-4 xl:mb-0">
@@ -918,12 +933,9 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                    ))}
                </div>
                
-               <div className="order-2 xl:order-1 w-full xl:w-[42%] max-w-[500px] bg-surface-container-high/50 rounded-3xl p-6 md:p-8 shadow-inner border border-outline-variant/10">
-                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-1 text-on-surface-variant/70">Piezas Disponibles</p>
-                    <p className="text-center text-[10px] md:text-xs text-on-surface-variant/50 font-light mb-4 leading-normal">
-                      Puedes tocar una pieza y luego un hueco, o arrastrarla directamente al tablero.
-                    </p>
-                   <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 min-h-[80px]">
+               <div className="order-2 xl:order-1 w-full xl:w-[42%] max-w-[500px] bg-surface-container-high/50 rounded-3xl p-4 md:p-8 shadow-inner border border-outline-variant/10">
+                   <p className="text-xs uppercase tracking-widest font-bold text-center mb-3 text-on-surface-variant/70">Piezas Disponibles</p>
+                   <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 min-h-[80px]">
                        {getShuffledPieceOrder(piecesCollected.filter(p => !puzzleSlots.includes(p)), moduleId).map(p => {
                             const isBeingDragged = draggingPiece?.pieceId === p;
                             return (
@@ -953,6 +965,9 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
                            </span>
                        )}
                    </div>
+                   <p className="text-center text-[10px] md:text-xs text-on-surface-variant/50 font-light mt-3 leading-normal">
+                      Puedes tocar una pieza y luego un hueco, o arrastrarla directamente al tablero.
+                   </p>
                </div>
                </div>
            </div>
@@ -1180,13 +1195,16 @@ export default function Emocionario() {
     setMobilePendingContinue(false);
     advanceLevel();
     setTimeout(() => {
+      const mobileHeaderOffset = 96;
+
       if (exerciseContentRef.current) {
-         const y = exerciseContentRef.current.getBoundingClientRect().top + window.scrollY - 24;
-         window.scrollTo({ top: y, behavior: "smooth" });
-      } else {
-         questionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+         const y = exerciseContentRef.current.getBoundingClientRect().top + window.scrollY - mobileHeaderOffset;
+         window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" });
+      } else if (questionPanelRef.current) {
+         const y = questionPanelRef.current.getBoundingClientRect().top + window.scrollY - mobileHeaderOffset;
+         window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" });
       }
-    }, 100);
+    }, 120);
   };
 
   const getCardOverlayClasses = (id: string) => {

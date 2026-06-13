@@ -348,8 +348,8 @@ export default function NextStepsModal({
           <span className="material-symbols-outlined text-on-surface-variant">close</span>
         </button>
         <div className="px-6 pt-6 pb-4 md:px-8 md:pt-7 md:pb-5 border-b border-outline-variant/10 bg-primary-container text-on-primary pr-16">
-          <h3 className="font-headline text-3xl mb-2">Ya estás registrado</h3>
-          <p className="text-on-primary-container text-sm font-body">Continúa tu proceso seleccionando uno de tus siguientes pasos de bienestar.</p>
+          <h3 className="font-headline text-3xl mb-2 text-white">Registro Realizado</h3>
+          <p className="text-white/85 text-sm font-body">Continúa tu proceso seleccionando uno de tus siguientes pasos de bienestar.</p>
         </div>
         
         <div className="px-5 py-5 md:p-8 space-y-5 md:space-y-6 overflow-y-auto flex-1 min-h-0">
