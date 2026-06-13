@@ -305,11 +305,11 @@ export default function EmotionDiary() {
   return (
     <>
       <SEO title="Diario emocional privado | SoyBienestar" description="Herramienta privada de diario emocional dentro de SoyBienestar.es." canonicalPath="/emotion-diary" noIndex={true} />
-    <div className="flex-1 bg-transparent dark:bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-32 pb-20 px-8 max-w-7xl mx-auto w-full">
+    <div className="flex-1 bg-transparent dark:bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-20 md:pt-32 pb-20 px-6 md:px-8 max-w-7xl mx-auto w-full">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Image & Title Section */}
         <div className="lg:col-span-5 relative">
-          <div className="sticky top-32">
+          <div className="md:sticky md:top-32">
             <div className="mb-12 overflow-hidden rounded-xl">
               <img 
                 alt="Serene morning interior" 

@@ -206,11 +206,16 @@ export default function WeeklyGoals() {
 
   const deleteGoal = async (id: string) => {
     if (!user) return;
+
+    const confirmed = window.confirm("¿Seguro que quieres eliminar esta meta semanal?");
+    if (!confirmed) return;
+
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'weeklyGoals', id));
       setGoals(prev => prev.filter(g => g.id !== id));
     } catch(e) {
       console.error(e);
+      alert("No se ha podido eliminar la meta. Inténtalo de nuevo.");
     }
   };
 
@@ -455,7 +460,7 @@ export default function WeeklyGoals() {
                       )}
 
                       {!goal.isHistorical && (
-                        <div className="flex gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                        <div className="flex gap-1 sm:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-auto">
                           <button onClick={() => startEditing(goal)} className="p-2 hover:bg-surface-container rounded-full text-secondary transition-colors" title="Editar">
                             <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
@@ -467,12 +472,18 @@ export default function WeeklyGoals() {
                     </div>
                     
                     {goal.isHistorical && (
-                      <div className="pt-4 mt-2 border-t border-outline-variant/10">
+                      <div className="pt-4 mt-2 border-t border-outline-variant/10 flex flex-wrap gap-2">
                         <button 
                           onClick={() => repeatGoal(goal)}
                           className="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-label uppercase tracking-widest font-bold hover:bg-primary-container transition-colors"
                         >
-                          Repetir Objetivo
+                          Repetir esta meta
+                        </button>
+                        <button
+                          onClick={() => deleteGoal(goal.id)}
+                          className="bg-surface-container text-secondary hover:bg-error-container hover:text-error px-4 py-2 rounded-lg text-xs font-label uppercase tracking-widest font-bold transition-colors border border-outline-variant/20"
+                        >
+                          Eliminar
                         </button>
                       </div>
                     )}
@@ -518,7 +529,7 @@ export default function WeeklyGoals() {
                   <h4 className="font-headline text-xl !text-[#162839]">Lógica de Continuidad</h4>
                 </div>
                 <p className="font-body text-sm !text-[#334155] leading-relaxed">
-                  En nuestra filosofía, el tiempo no es un juez. Las metas marcadas como "pendientes" al finalizar el domingo se trasladarán automáticamente a tu plan de la siguiente semana.
+                  En nuestra filosofía, el tiempo no es un juez. Las metas pendientes pueden seguir visibles la semana siguiente para que puedas retomarlas sin presión. La opción de repetir una meta es siempre manual y no debe crear copias automáticamente.
                 </p>
                 <div className="pt-4 border-t border-[#162839]/10">
                   <span className="font-label text-xs uppercase tracking-wider block mb-2 !text-[#64748b]">Próximo Reinicio</span>

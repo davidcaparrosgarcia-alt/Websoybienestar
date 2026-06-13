@@ -815,7 +815,6 @@ const PuzzleProgressPanel = ({ selectedModule, progress, updateProgress, mobileP
               <h4 className="font-headline text-2xl md:text-3xl text-center mb-2">
                  <AnimatedTitle text={`${title} Completado`} />
               </h4>
-              <p className="text-on-surface-variant font-light mb-6 text-center text-lg">Has reconstruido la imagen del módulo.</p>
               
               <div className="w-full max-w-[520px] mx-auto aspect-[2/3] rounded-[2rem] overflow-hidden shadow-2xl border border-outline-variant/20 relative bg-surface-container-lowest">
                  <img src={puzzleImage} alt="Puzzle completed" className="w-full h-full object-contain relative z-10" />
