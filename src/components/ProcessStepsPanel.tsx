@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 type ProcessStepsPanelProps = {
@@ -7,10 +7,30 @@ type ProcessStepsPanelProps = {
   onCuestionarioClick: () => void;
   onDossierClick: () => void;
   className?: string;
+  videoSrc?: string;
 };
 
-export default function ProcessStepsPanel({ progressStep, onConsultaClick, onCuestionarioClick, onDossierClick, className = "" }: ProcessStepsPanelProps) {
+export default function ProcessStepsPanel({
+  progressStep,
+  onConsultaClick,
+  onCuestionarioClick,
+  onDossierClick,
+  className = "",
+  videoSrc = "/videos/video-metodo-2.mp4"
+}: ProcessStepsPanelProps) {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const toggleVideoPlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  };
 
   return (
     <>
@@ -100,16 +120,21 @@ export default function ProcessStepsPanel({ progressStep, onConsultaClick, onCue
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className="relative w-full overflow-hidden rounded-2xl aspect-[9/16] max-h-[86vh] max-w-sm mx-auto"
+              className="relative w-full max-w-[min(94vw,980px)] max-h-[90dvh] overflow-hidden rounded-2xl bg-black mx-auto aspect-video md:aspect-video"
               onClick={(e) => e.stopPropagation()}
             >
               <video 
+                ref={videoRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleVideoPlayback();
+                }}
                 className="w-full h-full object-contain bg-black"
                 controls 
                 playsInline
                 controlsList="nodownload"
               >
-                <source src="/videos/conoce-la-respuesta.mp4" type="video/mp4" />
+                <source src={videoSrc} type="video/mp4" />
                 Tu navegador no soporta la etiqueta de vídeo.
               </video>
             </motion.div>

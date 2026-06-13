@@ -481,6 +481,7 @@ export default function Home() {
             onCuestionarioClick={() => setIsNextStepsModalOpen(true)}
             onDossierClick={() => navigate('/report')}
             className="mt-0 mb-0"
+            videoSrc="/videos/video-corto.mp4"
           />
         </div>
       </section>

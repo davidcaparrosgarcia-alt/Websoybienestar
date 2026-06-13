@@ -290,13 +290,16 @@ export default function HipnoDigestive() {
             className="group my-12 rounded-[2rem] overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-xl w-full text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary/50"
             aria-label="Ampliar resumen visual del programa HipnoDigest"
           >
-            <img
-              src="/images/programa_hipnodigest.jpg"
-              alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
-              loading="lazy"
-              decoding="async"
-              className="block w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.015]"
-            />
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/programa_hipnodigest_vertical.jpg" />
+              <img
+                src="/images/programa_hipnodigest.jpg"
+                alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
+                loading="lazy"
+                decoding="async"
+                className="block w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.015]"
+              />
+            </picture>
           </motion.button>
 
           {/* HipnoDigest Reservation Card */}
@@ -439,16 +442,19 @@ export default function HipnoDigestive() {
                 </div>
 
                 <div className="relative w-full flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
-                  <motion.img
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1, duration: 0.25 }}
-                    src="/images/programa_hipnodigest.jpg"
-                    alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
-                  />
+                  <picture>
+                    <source media="(max-width: 767px)" srcSet="/images/programa_hipnodigest_vertical.jpg" />
+                    <motion.img
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.25 }}
+                      src="/images/programa_hipnodigest.jpg"
+                      alt="Resumen visual del programa HipnoDigest: características, objetivos y contenido general de la terapia"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
+                    />
+                  </picture>
                 </div>
               </motion.div>
             </div>

@@ -30,6 +30,19 @@ export default function Method() {
   const [phoneValue, setPhoneValue] = useState("+34");
   const [progressStep, setProgressStep] = useState(1);
 
+  const bridgeVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const toggleBridgeVideoPlayback = () => {
+    const video = bridgeVideoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  };
+
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -287,6 +300,7 @@ export default function Method() {
         onCuestionarioClick={handleCuestionarioClick}
         onDossierClick={() => navigate('/report')}
         className="mb-24 mt-24"
+        videoSrc="/videos/video-metodo-2.mp4"
       />
 
       {/* Infografía: Puente Digital */}
@@ -467,6 +481,11 @@ export default function Method() {
                 
                 {/* Video Player */}
                 <video 
+                  ref={bridgeVideoRef}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleBridgeVideoPlayback();
+                  }}
                   className="w-full h-full object-contain bg-black"
                   controls
                   autoPlay
