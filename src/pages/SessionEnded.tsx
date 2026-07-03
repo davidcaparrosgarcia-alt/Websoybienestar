@@ -51,18 +51,18 @@ export default function SessionEnded() {
 
   const meditations = [
     {
-      id: "breve",
-      title: "La Niebla Mental",
-      type: "Meditación Breve",
-      duration: "Aprox 5 min",
-      src: "/audios/meditacion_guiada_breve/meditacion_guiada_breve.m4a"
+      id: "somatica",
+      title: "Meditación Somática",
+      type: "Meditación Standard",
+      duration: "Aprox 12 min",
+      src: "/audios/meditacion_somatica.mp3"
     },
     {
-      id: "standard",
-      title: "Ducha de lluvia",
+      id: "orilla",
+      title: "Orilla en Calma",
       type: "Meditación Standard",
       duration: "Aprox 15 min",
-      src: "/audios/meditacion_guiada_standard/meditacion_guiada_standard.m4a"
+      src: "/audios/orilla_en_calma.mp3"
     }
   ];
 

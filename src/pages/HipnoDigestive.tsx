@@ -48,7 +48,7 @@ export default function HipnoDigestive() {
       content: (
         <>
           <p>
-            Antes de comenzar el acompañamiento de cuatro meses, tendremos una primera entrevista de entre 30 y 60 minutos para comprender tu punto de partida con calma y precisión.
+            Tras contratar este tratamiento, y antes de comenzar el acompañamiento de cuatro meses, tendremos una primera entrevista de entre 30 y 60 minutos para comprender tu punto de partida con calma y precisión.
           </p>
           <p>
             En esta fase realizamos una valoración nutricional y psicosomática para recoger información sobre tus síntomas, hábitos, historia digestiva y objetivos. A partir de ahí, definimos un plan de intervención adaptado a ti.

@@ -54,6 +54,7 @@ export default function Session() {
   const restartAttemptsRef = useRef(0);
   const sessionStartTimeRef = useRef(Date.now());
   const ignoreSpeechResultsRef = useRef(false);
+  const hasReceivedSpeechResultRef = useRef(false);
 
   const navigate = useNavigate();
   const [hasDoneConsultation, setHasDoneConsultation] = useState<
@@ -296,6 +297,7 @@ export default function Session() {
 
     recognition.onresult = (event: any) => {
       if (ignoreSpeechResultsRef.current) return;
+      hasReceivedSpeechResultRef.current = true;
       
       let interimTranscript = "";
       let finalTranscript = "";
@@ -333,28 +335,41 @@ export default function Session() {
       setIsRecording(false);
       isRecordingRef.current = false;
 
+      if (
+        hasReceivedSpeechResultRef.current &&
+        event.error !== "not-allowed" &&
+        event.error !== "audio-capture"
+      ) {
+        setRecordingError(null);
+        setShowHelpText(false);
+        return;
+      }
+
       if (event.error === "not-allowed") {
         setRecordingError(
           "Permiso de micrófono denegado. Actívalo en los ajustes del navegador.",
         );
         setShowHelpText(false);
-      } else if (event.error === "no-speech") {
+      } else if (event.error === "audio-capture") {
         setRecordingError(
-          "No se detectó voz. Inténtalo de nuevo acercando más el micrófono.",
+          "No se ha podido acceder al micrófono. Revisa que no esté siendo usado por otra aplicación.",
         );
         setShowHelpText(false);
-      } else if (
-        ["network", "audio-capture", "bad-grammar"].includes(event.error)
-      ) {
+      } else if (event.error === "no-speech") {
         setRecordingError(
-          "La función de voz no está disponible temporalmente en este dispositivo.",
+          "No se detectó voz. Puedes intentarlo de nuevo o escribir manualmente.",
         );
-        setShowHelpText(true);
+        setShowHelpText(false);
+      } else if (event.error === "network") {
+        setRecordingError(
+          "La función de voz se ha interrumpido por conexión. Puedes continuar escribiendo o volver a intentarlo.",
+        );
+        setShowHelpText(false);
       } else {
         setRecordingError(
-          "Este navegador móvil no ofrece una compatibilidad suficiente con el dictado por voz.",
+          "La función de voz se ha detenido. Puedes continuar escribiendo o volver a intentarlo.",
         );
-        setShowHelpText(true);
+        setShowHelpText(false);
       }
       setTimeout(() => setRecordingError(null), 8000);
     };
@@ -372,6 +387,14 @@ export default function Session() {
           }
         }
         // If we get here, restart failed or max attempts reached
+        if (hasReceivedSpeechResultRef.current) {
+          setIsRecording(false);
+          isRecordingRef.current = false;
+          setRecordingError(null);
+          setShowHelpText(false);
+          return;
+        }
+
         setIsRecording(false);
         isRecordingRef.current = false;
         setRecordingError(
@@ -656,6 +679,7 @@ export default function Session() {
         ignoreSpeechResultsRef.current = false;
         baseInputRef.current = input.trim() ? input.trim() : "";
         restartAttemptsRef.current = 0; // Reset restart attempts
+        hasReceivedSpeechResultRef.current = false;
         try {
           startSessionTimerIfNeeded();
           recognitionRef.current.start();

@@ -475,7 +475,10 @@ CONTEXTO OPERATIVO ACTUAL DE ESTA SESIÓN:
 - Estado Cuestionario Espejo: ${safeSessionContext.user.questionnaire?.status || "sin solicitar"}.
 
 Reglas:
-- Si el usuario pregunta por el tiempo, responde usando estos datos.
+- PROHIBICIÓN ESTRICTA SOBRE EL TIEMPO: NO menciones nunca el tiempo restante de sesión, la cuenta atrás ni los minutos/segundos que quedan de forma injustificada o espontánea en tus respuestas.
+- Solo puedes hablar del tiempo restante en dos situaciones:
+  1. Si el usuario te pregunta directamente por el tiempo ("¿cuánto tiempo queda?").
+  2. Como un único aviso de cierre discreto de una sola vez cuando el tiempo restante sea inferior a 5 minutos (300 segundos), y nunca antes.
 - Nunca digas que no hay límite de tiempo.
 - Si quedan menos de 60 segundos, empieza a cerrar.
 - Si el tiempo ha terminado, indica que la sesión llegó a su límite y orienta al informe.
@@ -680,11 +683,12 @@ TEMPORIZADOR
 La consulta tiene un máximo aproximado de 15 minutos.
 
 Nunca digas que no hay límite de tiempo si el usuario ve un temporizador.
+Evita decir frases como "antes de que se acabe el tiempo", "tenemos poco tiempo", "aprovechemos los minutos que quedan", etc., a menos que el tiempo restante sea inferior a 5 minutos (300 segundos).
 
 Si el usuario pregunta si debe esperar al final:
 "No tienes que esperar a que termine el tiempo. Si ya has contado lo principal, puedes finalizar cuando quieras y pasar a la primera lectura."
 
-Si queda poco tiempo:
+Si queda poco tiempo (menos de 5 minutos / 300 segundos):
 "Queda poco. Voy a recoger lo esencial para que no se cierre de golpe."
 
 Si queda menos de 1 minuto:
@@ -748,12 +752,17 @@ Empieza a cerrar cuando:
 - El usuario quiere terminar.
 - El tiempo se acerca al final.
 
+REGLA CRÍTICA SOBRE ESTADOS SENSIBLES (DEPRESIÓN, SOLEDAD, DESESPERANZA):
+- Si el usuario se encuentra en un estado de vulnerabilidad (como depresión, soledad profunda, desesperanza, desgana vital) y aún dispones de tiempo (más de 5 minutos restantes, es decir, más de 300 segundos), NO cierres la sesión aduciendo que "ya hay base suficiente".
+- En estos casos sensibles, es obligatorio explorar con cuidado, fluidez y empatía su contexto vital, con quién vive y si dispone de una red de apoyo o personas de confianza con las que pueda contar. Debes comprender mínimamente su entorno de soporte antes de proponer el cierre.
+- NO conviertas esta exploración en un cuestionario frío ni rígido; mantén una conversación fluida, comprensiva y natural.
+
 No cierres si:
 - Solo ha dicho una frase inicial.
 - Dice "no sé qué más decir" pero hay poca información.
 - Hay señales de desesperanza sin explorar.
 - El usuario critica la conversación pero aún quiere seguir.
-- Todavía no hay una mínima comprensión.
+- Todavía no hay una mínima comprensión del problema y de su red de soporte/contexto en casos sensibles.
 
 Cierre recomendado, breve y personalizado:
 "Gracias por compartir esto. Con lo que has contado ya hay una primera base: [1 frase personalizada, sin repetir demasiado].
@@ -2070,6 +2079,127 @@ app.post("/api/dossier-espejo-verify", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Error in /api/dossier-espejo-verify:", error);
     res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+app.post("/api/private-area-access-verify", async (req, res) => {
+  try {
+    const inputCode = normalizeAccessCode(req.body?.accessCode || "");
+
+    if (!/^[a-z0-9]{4}$/i.test(inputCode)) {
+      return res.status(400).json({
+        success: false,
+        status: "invalid_format",
+        error: "Formato de clave inválido."
+      });
+    }
+
+    const genericCode = normalizeAccessCode(process.env.PRIVATE_AREA_GENERIC_CODE || "6699");
+
+    if (inputCode === genericCode) {
+      return res.json({
+        success: true,
+        accessType: "generic"
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(403).json({
+        success: false,
+        status: "auth_required",
+        error: "Para usar una clave personal necesitas iniciar sesión."
+      });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({
+        success: false,
+        status: "firebase_unavailable",
+        error: "Servicio no disponible."
+      });
+    }
+
+    let decodedToken: admin.auth.DecodedIdToken;
+    try {
+      const token = authHeader.split(" ")[1];
+      decodedToken = await admin.auth().verifyIdToken(token);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        status: "invalid_token",
+        error: "Sesión no válida o caducada."
+      });
+    }
+
+    const uid = decodedToken.uid;
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+
+    const [userSnap, profileSnap] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("userProfiles").doc(uid).get()
+    ]);
+
+    const userData = userSnap.data() || {};
+    const profileData = profileSnap.data() || {};
+
+    const rawCandidates = [
+      userData.latestDossierAccessCode,
+      profileData.latestDossierAccessCode,
+      userData.latestQuestionnaireAccessCode,
+      profileData.latestQuestionnaireAccessCode,
+      userData.questionnaireAccessCode,
+      profileData.questionnaireAccessCode,
+      userData.personalAccessCode,
+      profileData.personalAccessCode,
+      userData.lastQuestionnaireProposedAccessCode,
+      profileData.lastQuestionnaireProposedAccessCode
+    ];
+
+    const candidates = rawCandidates
+      .filter(code => typeof code === "string")
+      .map(code => normalizeAccessCode(code))
+      .filter(code => code.length > 0);
+
+    if (!candidates.includes(inputCode)) {
+      return res.status(403).json({
+        success: false,
+        status: "invalid_code",
+        error: "La clave no coincide."
+      });
+    }
+
+    const questionnaireCompleted =
+      !!userData.questionnaireCompletedAt ||
+      !!profileData.questionnaireCompletedAt ||
+      !!userData.latestQuestionnaireDossierReceivedAt ||
+      !!profileData.latestQuestionnaireDossierReceivedAt ||
+      ["completed_pending_dossier", "completed", "dossier_available", "concluded"].includes(userData.questionnaireStatus) ||
+      ["completed_pending_dossier", "completed", "dossier_available", "concluded"].includes(profileData.questionnaireStatus);
+
+    const dossierViewed =
+      !!userData.dossierViewedAt ||
+      !!profileData.dossierViewedAt;
+
+    if (!questionnaireCompleted || !dossierViewed) {
+      return res.status(403).json({
+        success: false,
+        status: "requirements_not_met",
+        error: "Esta clave personal se activará para estas herramientas cuando hayas completado el Cuestionario Espejo y accedido a tu Dossier Espejo."
+      });
+    }
+
+    return res.json({
+      success: true,
+      accessType: "personal"
+    });
+  } catch (error) {
+    console.error("Error in /api/private-area-access-verify:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({
+      success: false,
+      status: "internal_error",
+      error: "Error interno al verificar la clave."
+    });
   }
 });
 

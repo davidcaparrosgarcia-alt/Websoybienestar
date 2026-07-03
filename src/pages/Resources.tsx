@@ -283,18 +283,18 @@ export default function Resources() {
   
   const meditations = [
     {
-      id: "breve",
-      title: "La Niebla Mental",
-      type: "Meditación Breve",
-      duration: "Aprox 5 min",
-      src: "/audios/meditacion_guiada_breve/meditacion_guiada_breve.m4a"
+      id: "somatica",
+      title: "Meditación Somática",
+      type: "Meditación Standard",
+      duration: "Aprox 12 min",
+      src: "/audios/meditacion_somatica.mp3"
     },
     {
-      id: "standard",
-      title: "Ducha de lluvia",
+      id: "orilla",
+      title: "Orilla en Calma",
       type: "Meditación Standard",
       duration: "Aprox 15 min",
-      src: "/audios/meditacion_guiada_standard/meditacion_guiada_standard.m4a"
+      src: "/audios/orilla_en_calma.mp3"
     }
   ];
 
@@ -333,17 +333,35 @@ export default function Resources() {
     }
   };
 
-  const ALLOW_TEST_CODES = true;
-
   const validatePrivateAccessCode = async (code: string): Promise<boolean> => {
-    // TODO: Conectar a la validación real compartida via backend.
-    // Reutilizar la verificación como en DossierEspejo requeriría auth en esta página, formaremos a futuro.
-    if (ALLOW_TEST_CODES) {
-      if (code === "1234" || code === "0000" || code === "TEST" || code === "DEMO") {
-        return true;
-      }
+    const normalizedCode = code.trim().toUpperCase();
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json"
+    };
+
+    if (user) {
+      const token = await user.getIdToken();
+      headers.Authorization = `Bearer ${token}`;
     }
-    return false;
+
+    const response = await fetch("/api/private-area-access-verify", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ accessCode: normalizedCode })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.success) {
+      const message =
+        data.error ||
+        "Código incorrecto o todavía no habilitado para este acceso.";
+      alert(message);
+      return false;
+    }
+
+    return true;
   };
 
   const handleCodeSubmit = async () => {
@@ -365,7 +383,6 @@ export default function Resources() {
         }
         setPendingAction(null);
       } else {
-        alert("Código incorrecto. Por favor, inténtelo de nuevo.");
         setAccessCode(["", "", "", ""]);
       }
     }
@@ -924,7 +941,7 @@ export default function Resources() {
                 <span className="material-symbols-outlined text-[#cca969] text-3xl">key</span>
               </div>
               <h3 className="font-headline text-2xl text-white mb-2 italic tracking-wide">Acceso Privado</h3>
-              <p className="text-white/50 text-sm font-light mb-8">Introduzca su código de acceso de 4 dígitos proporcionado en consulta.</p>
+              <p className="text-white/50 text-sm font-light mb-8">Introduce tu clave de acceso de 4 caracteres.</p>
               
               <div className="flex justify-center gap-3 mb-8">
                 {[0, 1, 2, 3].map((index) => (
