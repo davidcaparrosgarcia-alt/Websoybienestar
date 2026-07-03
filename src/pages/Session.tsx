@@ -398,9 +398,9 @@ export default function Session() {
         setIsRecording(false);
         isRecordingRef.current = false;
         setRecordingError(
-          "La grabación por voz se ha detenido en este dispositivo. Puedes volver a intentarlo o escribir manualmente.",
+          "La grabación por voz se ha detenido. Puedes volver a intentarlo o escribir manualmente.",
         );
-        setShowHelpText(true);
+        setShowHelpText(false);
         setTimeout(() => setRecordingError(null), 8000);
       } else {
         // Intended normal manual stop
@@ -690,9 +690,9 @@ export default function Session() {
         } catch (err) {
           console.error("Start error:", err);
           setRecordingError(
-            "La función de voz no está disponible temporalmente en este dispositivo.",
+            "La función de voz no está disponible temporalmente. Puedes escribir manualmente o volver a intentarlo.",
           );
-          setShowHelpText(true);
+          setShowHelpText(false);
           setTimeout(() => setRecordingError(null), 8000);
         }
       }

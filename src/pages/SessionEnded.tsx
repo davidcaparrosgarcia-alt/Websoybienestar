@@ -4,6 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import SEO from "../components/SEO";
+import NextStepsModal from "../components/NextStepsModal";
 
 export default function SessionEnded() {
   const location = useLocation();
@@ -13,6 +14,7 @@ export default function SessionEnded() {
   const [user, loading] = useAuthState(auth);
   
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -165,24 +167,40 @@ export default function SessionEnded() {
             </p>
           </div>
           <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl border border-outline-variant/10">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsNextStepsModalOpen(true)}
+              className="w-full flex items-start gap-4 mb-6 text-left rounded-2xl p-3 -m-3 transition-all hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-secondary/40 group"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-primary">mail</span>
               </div>
               <div>
-                <h4 className="font-semibold text-primary mb-1">Cuestionario Espejo</h4>
+                <h4 className="font-semibold text-primary mb-1 flex items-center gap-2">
+                  Cuestionario Espejo
+                  <span className="material-symbols-outlined text-sm opacity-60 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </h4>
                 <p className="text-sm text-on-surface-variant">Recibirás un enlace para profundizar en tu realidad cotidiana.</p>
               </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-primary">psychology</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/report", { state: { messages, reportData } })}
+              className="w-full flex items-start gap-4 text-left rounded-2xl p-3 -m-3 transition-all hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-secondary/40 group"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                <span className="material-symbols-outlined text-primary">description</span>
               </div>
               <div>
-                <h4 className="font-semibold text-primary mb-1">Alineación Colaborativa</h4>
-                <p className="text-sm text-on-surface-variant">Tus respuestas construirán una orientación detallada con nuestros especialistas.</p>
+                <h4 className="font-semibold text-primary mb-1 flex items-center gap-2">
+                  Conclusión sesión gratuita
+                  <span className="material-symbols-outlined text-sm opacity-60 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </h4>
+                <p className="text-sm text-on-surface-variant">
+                  Accede a tu informe de tu sesión gratuita para validar si es correcta.
+                </p>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -196,7 +214,11 @@ export default function SessionEnded() {
             {/* Card 1 */}
             <div className="group bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/20 transition-all hover:shadow-lg hover:shadow-primary/5">
               <div className="h-48 overflow-hidden">
-                <img alt="Meditaciones" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGnbeBF5RxwwXbeBMx6b7GBso36ljns-OQbul2RlhitOIxvd4wltjGHLtKDgaHQtE0OVTEsHWR9if6Gmu7THucto0YwjL4xsVGPsvgb8N17GzEstHx4iKkhS2jwDJRTQ-fxkAongY9C8Dkd355E-ER0poImQ8JbsnvfKQgAQiBECO2sZwxOrP-_08KxUTwdL5LENtFetBHZ6nqlVxF8d0mphhlBMBhRUWvDM1CDbVwiR5UjpLrb53YcqIifjK7-OSq-Ahyl5XkfuRd"/>
+                <img
+                  alt="Meditaciones guiadas"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  src="/images/fondo_modulo_2.jpg"
+                />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
@@ -214,7 +236,11 @@ export default function SessionEnded() {
             {/* Card 2 */}
             <div className="group bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/20 transition-all hover:shadow-lg hover:shadow-primary/5">
               <div className="h-48 overflow-hidden">
-                <img alt="Ejercicios" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVGzkzRKrBjebS5objlCcFmQZdfeI5FJqJb9fVGJRkOiu_eX0dwkJ-jrnmdt091I1xChI21TzyKq26my2PoJ1vPH5irvoPjBFpVJG1so3VlPGhURsGRsvJjhKrRX1QplYI8jwWPvYa17xzh3spWYh1iCI1qoe35KylfeR-heXrYRYbm3F4NiNlGgZD-_0WK8HHv3o-oYI1-5ZzxJj9mtL5h7A3Tk5n5DLKW0LBpEKhtfwYfG-5iqgC8_iM68ZoemZRLmwiV7kVHNJz"/>
+                <img
+                  alt="Herramientas de claridad y recursos personales"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  src="/images/fondo_legal.jpg"
+                />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
@@ -223,8 +249,8 @@ export default function SessionEnded() {
                 </div>
                 <h4 className="font-headline text-xl text-primary mb-2">Ejercicios de Claridad</h4>
                 <p className="text-on-surface-variant text-sm leading-relaxed mb-4">Prácticas para integrar tus descubrimientos.</p>
-                <button onClick={() => navigate("/report", { state: { messages, reportData } })} className="text-primary text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
-                  Ver mi Informe <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                <button onClick={() => navigate("/herramientas")} className="text-primary text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Acceder a herramientas <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
               </div>
             </div>
@@ -301,6 +327,14 @@ export default function SessionEnded() {
           </div>
         </div>
       )}
+      <NextStepsModal
+        isOpen={isNextStepsModalOpen}
+        onClose={() => setIsNextStepsModalOpen(false)}
+        user={user}
+        hasDoneConsultation={true}
+        emailValue={user?.email || ""}
+        phoneValue=""
+      />
     </div>
     </>
   );
