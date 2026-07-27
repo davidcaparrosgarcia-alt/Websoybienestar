@@ -13,7 +13,10 @@ export default function Login() {
   const location = useLocation();
   const [errorMsg, setErrorMsg] = useState("");
 
-  const from = location.state?.from?.pathname || "/";
+  const fromLocation = location.state?.from;
+  const from = fromLocation
+    ? `${fromLocation.pathname || "/"}${fromLocation.search || ""}${fromLocation.hash || ""}`
+    : "/";
 
   useEffect(() => {
     if (user) {

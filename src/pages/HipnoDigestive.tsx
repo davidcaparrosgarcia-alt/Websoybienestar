@@ -48,7 +48,7 @@ export default function HipnoDigestive() {
       content: (
         <>
           <p>
-            Tras contratar este tratamiento, y antes de comenzar el acompañamiento de cuatro meses, tendremos una primera entrevista de entre 30 y 60 minutos para comprender tu punto de partida con calma y precisión.
+            Tras contratar este tratamiento, y antes de comenzar el acompañamiento de cuatro meses, tendremos una primera entrevista de entre 20 y 30 minutos con nuestros dos terapeutas para comprender tu punto de partida con calma y precisión.
           </p>
           <p>
             En esta fase realizamos una valoración nutricional y psicosomática para recoger información sobre tus síntomas, hábitos, historia digestiva y objetivos. A partir de ahí, definimos un plan de intervención adaptado a ti.
@@ -114,7 +114,7 @@ export default function HipnoDigestive() {
           </p>
           <ul>
             <li><strong>Nutrición:</strong> realizamos una revisión final de hábitos y los últimos ajustes para que el plan pueda mantenerse de forma realista fuera del programa.</li>
-            <li><strong>Psicosomática:</strong> durante los últimos 10 días, el acompañamiento se orienta específicamente a soltar los anclajes externos e integrar tu propia capacidad de regulación.</li>
+            <li><strong>Psicosomática:</strong> Realizaremos la última sesión de hipnosis y durante los últimos 10 días, el acompañamiento se orienta específicamente a soltar los anclajes externos e integrar tu propia capacidad de regulación.</li>
             <li><strong>Cierre:</strong> concluimos con una orientación clara de mantenimiento y prevención de recaídas, para que reconozcas tu capacidad de gestión digestiva autónoma.</li>
           </ul>
         </>
@@ -174,6 +174,49 @@ export default function HipnoDigestive() {
       {/* Main Content Area */}
       <section className="px-6 md:px-12 py-16 max-w-4xl lg:max-w-screen-2xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
         <div className="space-y-8 text-center md:text-left">
+          {/* IDEAL PARA section */}
+          <div 
+            className="rounded-[2rem] bg-surface-container-low border border-outline-variant/10 shadow-sm p-6 md:p-8 lg:p-10 text-left"
+            style={{ marginBottom: "21.44px", height: "128.188px" }}
+          >
+            <span 
+              className="font-label tracking-widest block"
+              style={{ 
+                fontWeight: "normal", 
+                fontSize: "22.04px", 
+                fontFamily: "'Noto Serif', serif", 
+                color: "#2c3e50",
+                marginLeft: "-2px",
+                marginTop: "-36px",
+                marginBottom: "0px",
+                marginRight: "0px",
+                paddingLeft: "2px",
+                paddingTop: "10px",
+                paddingBottom: "1px",
+                paddingRight: "2px",
+                height: "45.0625px"
+              }}
+            >
+              Ideal Para
+            </span>
+            <p 
+              className="text-on-surface-variant/90 leading-relaxed text-base md:text-lg lg:text-xl font-light"
+              style={{
+                marginBottom: "0px",
+                height: "60.8125px",
+                width: "100%",
+                maxWidth: "1238.2px",
+                paddingLeft: "2px",
+                paddingTop: "1px",
+                marginRight: "0px",
+                marginLeft: "-2px",
+                marginTop: "-0.28px"
+              }}
+            >
+              Molestias digestivas vinculadas al estrés, la tensión emocional y los bloqueos psicosomáticos, que pueden manifestarse como inflamación, digestiones pesadas, estreñimiento, cansancio, irritabilidad, apatía o incluso falta de pasión por la vida.
+            </p>
+          </div>
+
           {/* Enmarcar con imagen de fondo */}
           <div
             className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl bg-cover bg-center min-h-[360px] md:min-h-[420px] lg:min-h-[520px] flex items-center"
