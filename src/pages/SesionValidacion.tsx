@@ -55,6 +55,7 @@ export default function SesionValidacion() {
 
   const plan = planId ? planDetails[planId] : null;
   const isHipnoDigestPlan = planId === "hipnodigest";
+  const SHOW_PAYPAL_METHOD = false;
   const [paymentMode, setPaymentMode] = useState<"unico" | "reserva">(initialMode);
   const [paymentMethod, setPaymentMethod] = useState<"tarjeta" | "transferencia" | "paypal">("tarjeta");
   const [loading, setLoading] = useState(false);
@@ -626,12 +627,14 @@ export default function SesionValidacion() {
               >
                 <span className="material-symbols-outlined text-lg">account_balance</span> Transferencia
               </button>
-              <button 
-                onClick={() => setPaymentMethod("paypal")}
-                className={`font-label font-bold pb-2 flex items-center gap-2 transition-colors ${paymentMethod === "paypal" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-primary"}`}
-              >
-                <span className="material-symbols-outlined text-lg">payments</span> PayPal
-              </button>
+              {SHOW_PAYPAL_METHOD && (
+                <button 
+                  onClick={() => setPaymentMethod("paypal")}
+                  className={`font-label font-bold pb-2 flex items-center gap-2 transition-colors ${paymentMethod === "paypal" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-primary"}`}
+                >
+                  <span className="material-symbols-outlined text-lg">payments</span> PayPal
+                </button>
+              )}
             </div>
 
             {/* Tab Contents Component */}
@@ -639,7 +642,12 @@ export default function SesionValidacion() {
               {paymentMethod === "tarjeta" && (
                 <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/20 flex flex-col items-center justify-center text-center space-y-4">
                   <span className="material-symbols-outlined text-4xl text-primary/40">lock</span>
-                  <p className="font-body text-on-surface-variant">Para pagos con tarjeta, selecciona Realizar pago con tarjeta y confirma operación desde una plataforma segura.</p>
+                  <p className="font-body text-on-surface-variant leading-relaxed max-w-lg">
+                    Después del pago, recibirás una confirmación y nuestro equipo se pondrá en contacto contigo usando los datos indicados en esta página para coordinar el inicio del programa.
+                  </p>
+                  <p className="text-xs text-on-surface-variant/80 font-body max-w-lg">
+                    El pago se realiza en una plataforma segura. Si la confirmación no aparece de inmediato al volver a la web, no repitas el pago; revisaremos la operación de forma segura.
+                  </p>
                 </div>
               )}
 
@@ -648,8 +656,8 @@ export default function SesionValidacion() {
                   {bankTransferState === "form" && (
                     <>
                       <h4 className="font-label font-bold text-primary">Confirma tus datos antes de continuar</h4>
-                      <p className="text-sm text-on-surface-variant font-body">
-                        Necesitamos asociar correctamente tu pago manual a tu ficha de usuario y reserva.
+                      <p className="text-sm text-on-surface-variant font-body leading-relaxed">
+                        Necesitamos asociar correctamente tu pago manual a tu ficha de usuario y reserva. Al avisarnos de que has realizado la transferencia, registraremos tu solicitud. La plaza quedará confirmada cuando el equipo verifique manualmente el ingreso.
                       </p>
                       <div className="grid gap-4 mt-4">
                         <div>
@@ -715,19 +723,18 @@ export default function SesionValidacion() {
                   )}
                   
                   {bankTransferState === "done" && (
-                    <div className="p-8 bg-green-50/50 dark:bg-green-900/10 rounded-2xl border border-green-200 dark:border-green-800/30 text-center">
-                      <span className="material-symbols-outlined text-4xl text-green-500 mb-4 block">task_alt</span>
-                      <h4 className="font-label font-bold text-green-800 dark:text-green-400 mb-2">Aviso de transferencia registrado</h4>
-                      <p className="text-sm text-green-700 dark:text-green-500">
-                        Gracias. Hemos registrado tu aviso. El equipo revisará el ingreso en la cuenta bancaria manualmente. 
-                        Te contactaremos una vez confirmado para avanzar a tu sesión.
+                    <div className="p-8 bg-green-50/50 dark:bg-green-900/10 rounded-2xl border border-green-200 dark:border-green-800/30 text-center space-y-3">
+                      <span className="material-symbols-outlined text-4xl text-green-500 block">task_alt</span>
+                      <h4 className="font-label font-bold text-green-800 dark:text-green-400">Aviso de transferencia registrado</h4>
+                      <p className="text-sm text-green-700 dark:text-green-500 font-body leading-relaxed max-w-md mx-auto">
+                        Gracias. Hemos registrado tu aviso de transferencia. El equipo revisará manualmente el ingreso y se pondrá en contacto contigo usando los datos indicados en esta página para confirmar los siguientes pasos.
                       </p>
                     </div>
                   )}
                 </div>
               )}
 
-              {paymentMethod === "paypal" && (
+              {SHOW_PAYPAL_METHOD && paymentMethod === "paypal" && (
                 <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/20 flex flex-col items-center justify-center text-center space-y-4">
                    <span className="material-symbols-outlined text-4xl text-primary/40">payments</span>
                    <p className="font-body text-on-surface-variant">PayPal se activará próximamente.</p>
@@ -784,7 +791,7 @@ export default function SesionValidacion() {
                 </button>
               )}
 
-              {paymentMethod === "paypal" && (
+              {SHOW_PAYPAL_METHOD && paymentMethod === "paypal" && (
                 <button 
                   disabled
                   className="w-full md:w-auto bg-surface-container-high text-on-surface-variant/50 rounded-xl py-4 px-10 font-bold font-label text-sm flex items-center justify-center gap-2 cursor-not-allowed"
@@ -822,10 +829,15 @@ export default function SesionValidacion() {
             }}
           />
           <div className="relative z-10 w-full max-w-lg bg-surface-container-lowest rounded-[2rem] shadow-2xl border border-outline-variant/20 p-6 md:p-8 space-y-5">
-            <h3 className="font-headline text-2xl text-primary">¿Quieres guardar estos datos en tu perfil?</h3>
-            <p className="font-body text-on-surface-variant leading-relaxed">
-              Has modificado los datos de contacto de esta reserva. Podemos usarlos solo para este pago o guardarlos también en tu perfil para futuras reservas y comunicaciones.
-            </p>
+            <h3 className="font-headline text-2xl text-primary">¿Quieres actualizar tus datos de contacto?</h3>
+            <div className="space-y-3 font-body text-on-surface-variant leading-relaxed text-sm md:text-base">
+              <p>
+                Has modificado los datos de contacto que usaremos para esta reserva. Puedes guardar estos cambios en tu perfil para futuras comunicaciones o usarlos solo para gestionar este pago concreto.
+              </p>
+              <p className="text-xs md:text-sm text-on-surface-variant/80">
+                Si eliges usarlos solo para esta reserva, tus datos guardados en el perfil no se modificarán.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2">
               <button
                 type="button"
@@ -842,7 +854,7 @@ export default function SesionValidacion() {
                 onClick={() => proceedWithPendingAction(false)}
                 className="px-5 py-2.5 rounded-xl bg-surface-container-high text-primary border border-outline-variant/20 font-label font-bold text-sm hover:bg-surface-container-highest transition-colors"
               >
-                Usar solo en esta reserva
+                Solo para esta reserva
               </button>
               <button
                 type="button"

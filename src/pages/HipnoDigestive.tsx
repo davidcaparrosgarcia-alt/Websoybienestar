@@ -507,7 +507,7 @@ export default function HipnoDigestive() {
             <button
               type="button"
               onClick={() => setIsDoubtsModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-3 bg-[#25D366] text-white hover:bg-[#1ebe5d] rounded-xl font-label text-sm font-bold tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 shadow-md"
+              className="bg-[#1F9E5A] text-white px-8 py-3 rounded-full font-label font-semibold inline-flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100 w-full sm:w-auto"
             >
               <span className="material-symbols-outlined text-lg">chat_bubble</span>
               Resuelve tus dudas
