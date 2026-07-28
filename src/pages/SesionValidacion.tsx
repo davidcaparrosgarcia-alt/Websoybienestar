@@ -357,7 +357,7 @@ export default function SesionValidacion() {
       const data = await response.json();
       if (data.ok) {
         setBankTransferState("done");
-        setSuccessMessage("Gracias. Hemos registrado el aviso de transferencia. El equipo revisará el ingreso manualmente antes de confirmar la reserva.");
+        setSuccessMessage("Gracias. Tu aviso de transferencia ha quedado registrado. Revisaremos el ingreso y nos pondremos en contacto contigo usando los datos de esta página para confirmar los siguientes pasos.");
       } else {
         setErrorMessage(data.error || "Error al actualizar el estado de la transferencia.");
       }
@@ -502,7 +502,7 @@ export default function SesionValidacion() {
 
                 {hasContactChanges && (
                   <p className="text-xs text-primary font-body">
-                    Has modificado tus datos de contacto. Al continuar podrás decidir si quieres guardarlos también en tu perfil.
+                    Has cambiado los datos de contacto. Al continuar te preguntaremos si quieres usarlos solo para esta reserva o guardarlos también en tu perfil.
                   </p>
                 )}
               </div>
@@ -655,9 +655,9 @@ export default function SesionValidacion() {
                 <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/20 space-y-6">
                   {bankTransferState === "form" && (
                     <>
-                      <h4 className="font-label font-bold text-primary">Confirma tus datos antes de continuar</h4>
+                      <h4 className="font-label font-bold text-primary">Transferencia guiada paso a paso</h4>
                       <p className="text-sm text-on-surface-variant font-body leading-relaxed">
-                        Necesitamos asociar correctamente tu pago manual a tu ficha de usuario y reserva. Al avisarnos de que has realizado la transferencia, registraremos tu solicitud. La plaza quedará confirmada cuando el equipo verifique manualmente el ingreso.
+                        Primero comprobaremos tus datos y generaremos un concepto de transferencia único para esta reserva. En el siguiente paso verás el IBAN, el importe exacto y el concepto que deberás copiar en tu transferencia. Cuando la hayas realizado, vuelve a esta pantalla y pulsa “Avisar de que he realizado la transferencia” para dejarla vinculada a tu cuenta.
                       </p>
                       <div className="grid gap-4 mt-4">
                         <div>
@@ -696,7 +696,7 @@ export default function SesionValidacion() {
                     <>
                       <h4 className="font-label font-bold text-primary">Datos para la transferencia</h4>
                       <p className="text-base text-on-surface-variant font-body">
-                        Realiza la transferencia usando los siguientes datos. Es <strong>muy importante</strong> que incluyas el concepto indicado para que podamos asociarla correctamente.
+                        Realiza la transferencia con los datos que aparecen aquí. Copia el concepto exactamente como se muestra para que el pago quede vinculado a tu reserva. Cuando termines, pulsa “Avisar de que he realizado la transferencia”.
                       </p>
                       <div className="grid gap-4 mt-6">
                         <div className="bg-surface-container-low p-4 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center">
@@ -727,7 +727,7 @@ export default function SesionValidacion() {
                       <span className="material-symbols-outlined text-4xl text-green-500 block">task_alt</span>
                       <h4 className="font-label font-bold text-green-800 dark:text-green-400">Aviso de transferencia registrado</h4>
                       <p className="text-sm text-green-700 dark:text-green-500 font-body leading-relaxed max-w-md mx-auto">
-                        Gracias. Hemos registrado tu aviso de transferencia. El equipo revisará manualmente el ingreso y se pondrá en contacto contigo usando los datos indicados en esta página para confirmar los siguientes pasos.
+                        Gracias. Tu aviso de transferencia ha quedado registrado. Revisaremos el ingreso y nos pondremos en contacto contigo usando los datos de esta página para confirmar los siguientes pasos.
                       </p>
                     </div>
                   )}
@@ -768,7 +768,7 @@ export default function SesionValidacion() {
                   disabled={loading}
                   className="w-full md:w-auto bg-primary text-on-primary rounded-xl py-4 px-10 font-bold font-label text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? "Registrando..." : "Guardar datos y continuar"} <span className="material-symbols-outlined">arrow_forward</span>
+                  {loading ? "Registrando..." : "Continuar y ver datos de transferencia"} <span className="material-symbols-outlined">arrow_forward</span>
                 </button>
               )}
               
@@ -829,13 +829,13 @@ export default function SesionValidacion() {
             }}
           />
           <div className="relative z-10 w-full max-w-lg bg-surface-container-lowest rounded-[2rem] shadow-2xl border border-outline-variant/20 p-6 md:p-8 space-y-5">
-            <h3 className="font-headline text-2xl text-primary">¿Quieres actualizar tus datos de contacto?</h3>
+            <h3 className="font-headline text-2xl text-primary">¿Cómo quieres usar estos datos?</h3>
             <div className="space-y-3 font-body text-on-surface-variant leading-relaxed text-sm md:text-base">
               <p>
-                Has modificado los datos de contacto que usaremos para esta reserva. Puedes guardar estos cambios en tu perfil para futuras comunicaciones o usarlos solo para gestionar este pago concreto.
+                Has cambiado los datos de contacto antes de continuar con la reserva. Elige si quieres usarlos solo para este pago o guardarlos también como tus datos habituales de contacto.
               </p>
               <p className="text-xs md:text-sm text-on-surface-variant/80">
-                Si eliges usarlos solo para esta reserva, tus datos guardados en el perfil no se modificarán.
+                Si eliges usarlos solo para este pago, tu perfil conservará los datos anteriores.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2">
@@ -854,14 +854,14 @@ export default function SesionValidacion() {
                 onClick={() => proceedWithPendingAction(false)}
                 className="px-5 py-2.5 rounded-xl bg-surface-container-high text-primary border border-outline-variant/20 font-label font-bold text-sm hover:bg-surface-container-highest transition-colors"
               >
-                Solo para esta reserva
+                Usar solo para este pago
               </button>
               <button
                 type="button"
                 onClick={() => proceedWithPendingAction(true)}
                 className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label font-bold text-sm hover:opacity-90 transition-opacity"
               >
-                Guardar en mi perfil y continuar
+                Guardar en mi perfil
               </button>
             </div>
           </div>
