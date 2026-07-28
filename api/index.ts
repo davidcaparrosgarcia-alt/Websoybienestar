@@ -5,6 +5,7 @@ import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
+import nodemailer from "nodemailer";
 
 const app = express();
 
@@ -2591,6 +2592,68 @@ const stripe = process.env.STRIPE_SECRET_KEY
 
 const APP_URL = process.env.VITE_APP_URL || process.env.APP_URL || "https://soybienestar.es";
 
+const INTERNAL_PAYMENT_NOTIFICATION_EMAIL =
+  process.env.INTERNAL_PAYMENT_NOTIFICATION_EMAIL ||
+  process.env.PAYMENT_NOTIFICATION_TO ||
+  "contacto@soybienestar.es";
+
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
+
+async function sendInternalPaymentNotification(params: {
+  subject: string;
+  text: string;
+  html?: string;
+}) {
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
+    console.warn("Internal payment email skipped: SMTP not configured");
+    return { sent: false, skipped: true, error: "SMTP_NOT_CONFIGURED" };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_PORT === 465,
+      auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: SMTP_FROM,
+      to: INTERNAL_PAYMENT_NOTIFICATION_EMAIL,
+      subject: params.subject,
+      text: params.text,
+      html: params.html
+    });
+
+    return { sent: true, skipped: false, error: null };
+  } catch (err: any) {
+    console.error("Internal payment email failed:", err?.message || err);
+    return { sent: false, skipped: false, error: err?.message || "EMAIL_SEND_FAILED" };
+  }
+}
+
+function cleanPaymentText(value: unknown, max = 300) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function formatEuros(amount: number | null | undefined) {
+  if (typeof amount !== "number") return "";
+  return `${amount.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} €`;
+}
+
+function buildPaymentNotificationText(data: Record<string, any>) {
+  return Object.entries(data)
+    .map(([key, value]) => `${key}: ${value ?? ""}`)
+    .join("\n");
+}
+
 const PLAN_DETAILS: Record<string, { name: string; oneTimeAmount: number; reservationAmount: number; currency: string }> = {
   "basico": { name: "Plan Básico", oneTimeAmount: 55000, reservationAmount: 9000, currency: "eur" },
   "intermedio": { name: "Plan Intermedio", oneTimeAmount: 170000, reservationAmount: 29000, currency: "eur" },
@@ -2600,9 +2663,9 @@ const PLAN_DETAILS: Record<string, { name: string; oneTimeAmount: number; reserv
 
 app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
   try {
-    const { planId, paymentMode } = req.body;
+    const { planId, paymentMode, contactSnapshot, contactUsage } = req.body;
     const uid = req.user?.uid;
-    const email = req.user?.email || "";
+    const authEmail = req.user?.email || "";
 
     if (!uid) {
       return res.status(401).json({ error: "Usuario no autenticado." });
@@ -2619,6 +2682,17 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
     if (paymentMode !== "full" && paymentMode !== "reservation") {
       return res.status(400).json({ error: "Modo de pago inválido." });
     }
+
+    const safeContactSnapshot = {
+      fullName: cleanPaymentText(contactSnapshot?.fullName),
+      contactEmail: cleanPaymentText(contactSnapshot?.contactEmail || authEmail),
+      phone: cleanPaymentText(contactSnapshot?.phone)
+    };
+
+    const safeContactUsage =
+      contactUsage === "reservation_only" || contactUsage === "profile_saved" || contactUsage === "unchanged"
+        ? contactUsage
+        : "unchanged";
 
     const plan = PLAN_DETAILS[planId];
     const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
@@ -2637,10 +2711,14 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
           quantity: 1,
         },
       ],
-      customer_email: email || undefined,
+      customer_email: safeContactSnapshot.contactEmail || authEmail || undefined,
       metadata: {
         uid,
-        email,
+        authEmail,
+        contactEmail: safeContactSnapshot.contactEmail,
+        contactFullName: safeContactSnapshot.fullName,
+        contactPhone: safeContactSnapshot.phone,
+        contactUsage: safeContactUsage,
         planId,
         planName: plan.name,
         paymentMode,
@@ -2671,7 +2749,12 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       paymentMethod: "card",
       paymentStatus: "checkout_created",
       stripeSessionId: session.id,
-      email,
+      authEmail,
+      email: safeContactSnapshot.contactEmail || authEmail,
+      contactEmail: safeContactSnapshot.contactEmail || authEmail,
+      contactSnapshot: safeContactSnapshot,
+      contactUsage: safeContactUsage,
+      internalNotificationStatus: "pending",
       uid,
       createdAt: now,
       updatedAt: now
@@ -2686,6 +2769,11 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       selectedProgramAmountDueToday: amount / 100,
       selectedProgramStripeSessionId: session.id,
       selectedProgramPaymentIntentId: session.id,
+      selectedProgramContactSnapshot: safeContactSnapshot,
+      selectedProgramContactEmail: safeContactSnapshot.contactEmail || authEmail,
+      selectedProgramContactPhone: safeContactSnapshot.phone,
+      selectedProgramContactFullName: safeContactSnapshot.fullName,
+      selectedProgramContactUsage: safeContactUsage,
       selectedProgramUpdatedAt: now
     };
 
@@ -2742,9 +2830,9 @@ function buildBankTransferConcept(planLabel: string, fullName: string, phone: st
 
 app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => {
   try {
-    const { planId, paymentMode, fullName, phone, age, sex } = req.body;
+    const { planId, paymentMode, fullName, contactEmail, phone, age, sex, contactSnapshot, contactUsage } = req.body;
     const uid = req.user?.uid;
-    const email = req.user?.email || "";
+    const authEmail = req.user?.email || "";
 
     if (!uid) {
       return res.status(401).json({ error: "Usuario no autenticado." });
@@ -2757,19 +2845,30 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
     if (paymentMode !== "full" && paymentMode !== "reservation") {
       return res.status(400).json({ error: "Modo de pago inválido." });
     }
+
+    const safeContactSnapshot = {
+      fullName: cleanPaymentText(contactSnapshot?.fullName || fullName),
+      contactEmail: cleanPaymentText(contactSnapshot?.contactEmail || contactEmail || authEmail),
+      phone: cleanPaymentText(contactSnapshot?.phone || phone)
+    };
+
+    const safeContactUsage =
+      contactUsage === "reservation_only" || contactUsage === "profile_saved" || contactUsage === "unchanged"
+        ? contactUsage
+        : "unchanged";
     
-    if (!fullName || fullName.trim().split(/\s+/).length < 2) {
+    if (!safeContactSnapshot.fullName || safeContactSnapshot.fullName.trim().split(/\s+/).length < 2) {
       return res.status(400).json({ error: "El nombre completo debe tener al menos nombre y primer apellido." });
     }
     
-    const numericPhone = (phone || "").replace(/\D/g, "");
+    const numericPhone = safeContactSnapshot.phone.replace(/\D/g, "");
     if (numericPhone.length < 4) {
       return res.status(400).json({ error: "El teléfono debe tener al menos 4 dígitos para generar el concepto bancario." });
     }
 
     const plan = PROGRAM_PLANS[planId];
     const amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
-    const bankConcept = buildBankTransferConcept(plan.label, fullName, numericPhone);
+    const bankConcept = buildBankTransferConcept(plan.label, safeContactSnapshot.fullName, numericPhone);
 
     if (!admin.apps.length) {
       return res.status(500).json({ error: "Firebase Admin no está configurado." });
@@ -2795,25 +2894,21 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
       accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
       iban: BANK_TRANSFER_CONFIG.iban,
-      fullName,
-      phone,
+      fullName: safeContactSnapshot.fullName,
+      phone: safeContactSnapshot.phone,
       age,
       sex,
-      email,
+      authEmail,
+      email: safeContactSnapshot.contactEmail || authEmail,
+      contactEmail: safeContactSnapshot.contactEmail || authEmail,
+      contactSnapshot: safeContactSnapshot,
+      contactUsage: safeContactUsage,
       uid,
       createdAt: now,
       updatedAt: now
     };
 
     const userPayload = {
-      nombre: fullName,
-      fullName,
-      telefono: phone,
-      contactPhone: phone,
-      edad: age,
-      profileAge: age,
-      sexo: sex,
-      gender: sex,
       selectedProgram: planId,
       selectedProgramLabel: plan.label,
       selectedProgramPaymentMode: paymentMode,
@@ -2821,8 +2916,20 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       selectedProgramBankConcept: bankConcept,
       selectedProgramAmountDueToday: amountDueToday,
       selectedProgramPaymentIntentId: intentId,
-      selectedProgramUpdatedAt: now,
-      paymentProfileUpdatedAt: now
+      selectedProgramContactSnapshot: {
+        fullName: safeContactSnapshot.fullName,
+        contactEmail: safeContactSnapshot.contactEmail || authEmail,
+        phone: safeContactSnapshot.phone,
+        age,
+        sex
+      },
+      selectedProgramContactEmail: safeContactSnapshot.contactEmail || authEmail,
+      selectedProgramContactPhone: safeContactSnapshot.phone,
+      selectedProgramContactFullName: safeContactSnapshot.fullName,
+      selectedProgramAge: age,
+      selectedProgramSex: sex,
+      selectedProgramContactUsage: safeContactUsage,
+      selectedProgramUpdatedAt: now
     };
 
     const batch = db.batch();
@@ -2835,6 +2942,54 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
     batch.set(profileRef, userPayload, { merge: true });
     
     await batch.commit();
+
+    // Internal Email Notification
+    try {
+      const emailSubject = `Nueva intención de transferencia - ${plan.label} - ${amountDueToday} €`;
+      const emailBody = [
+        `Evento: Nueva intención de transferencia`,
+        `Estado: bank_details_shown`,
+        `Plan: ${plan.label}`,
+        `Modalidad: ${paymentMode}`,
+        `Importe: ${amountDueToday} €`,
+        `Concepto bancario: ${bankConcept}`,
+        `Nombre: ${safeContactSnapshot.fullName}`,
+        `Email de contacto: ${safeContactSnapshot.contactEmail || authEmail}`,
+        `Email de acceso/Auth: ${authEmail}`,
+        `Teléfono: ${safeContactSnapshot.phone}`,
+        `Edad: ${age || ""}`,
+        `Sexo: ${sex || ""}`,
+        `UID: ${uid}`,
+        `PaymentIntentId: ${intentId}`,
+        `Fecha: ${new Date(now).toLocaleString("es-ES")}`
+      ].join("\n");
+
+      const mailRes = await sendInternalPaymentNotification({
+        subject: emailSubject,
+        text: emailBody
+      });
+
+      if (mailRes.sent) {
+        await intentRef.update({
+          internalIntentEmailStatus: "sent",
+          internalIntentEmailSentAt: Date.now()
+        });
+      } else if (mailRes.skipped) {
+        await intentRef.update({
+          internalIntentEmailStatus: "skipped",
+          internalIntentEmailSkippedAt: Date.now(),
+          internalIntentEmailError: "SMTP_NOT_CONFIGURED"
+        });
+      } else {
+        await intentRef.update({
+          internalIntentEmailStatus: "error",
+          internalIntentEmailError: String(mailRes.error).slice(0, 200),
+          internalIntentEmailErrorAt: Date.now()
+        });
+      }
+    } catch (emailErr) {
+      console.error("Error sending internal intent email:", emailErr);
+    }
 
     res.json({
       ok: true,
@@ -2881,6 +3036,8 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Intención de pago no encontrada." });
     }
     
+    const intentData = intentDoc.data() || {};
+
     const batch = db.batch();
     
     batch.update(intentRef, {
@@ -2899,6 +3056,56 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
     batch.set(profileRef, userUpdate, { merge: true });
     
     await batch.commit();
+
+    // Send internal email notification if not already sent
+    if (!intentData.transferMarkedDoneEmailSentAt) {
+      try {
+        const planLabel = intentData.planLabel || intentData.planId || "Programa";
+        const amount = intentData.amountDueToday || "";
+        const emailSubject = `Transferencia marcada como realizada - ${planLabel} - ${amount} €`;
+        const emailBody = [
+          `Evento: Usuario ha avisado de transferencia realizada`,
+          `Estado: pending_bank_review`,
+          `Plan: ${planLabel}`,
+          `Modalidad: ${intentData.paymentMode || ""}`,
+          `Importe: ${amount} €`,
+          `Concepto bancario: ${intentData.bankConcept || ""}`,
+          `Nombre: ${intentData.contactSnapshot?.fullName || intentData.fullName || ""}`,
+          `Email de contacto: ${intentData.contactSnapshot?.contactEmail || intentData.contactEmail || intentData.email || ""}`,
+          `Email de acceso/Auth: ${intentData.authEmail || ""}`,
+          `Teléfono: ${intentData.contactSnapshot?.phone || intentData.phone || ""}`,
+          `UID: ${uid}`,
+          `PaymentIntentId: ${paymentIntentId}`,
+          `Fecha aviso: ${new Date(now).toLocaleString("es-ES")}`
+        ].join("\n");
+
+        const mailRes = await sendInternalPaymentNotification({
+          subject: emailSubject,
+          text: emailBody
+        });
+
+        if (mailRes.sent) {
+          await intentRef.update({
+            transferMarkedDoneEmailStatus: "sent",
+            transferMarkedDoneEmailSentAt: Date.now()
+          });
+        } else if (mailRes.skipped) {
+          await intentRef.update({
+            transferMarkedDoneEmailStatus: "skipped",
+            transferMarkedDoneEmailSkippedAt: Date.now(),
+            transferMarkedDoneEmailError: "SMTP_NOT_CONFIGURED"
+          });
+        } else {
+          await intentRef.update({
+            transferMarkedDoneEmailStatus: "error",
+            transferMarkedDoneEmailError: String(mailRes.error).slice(0, 200),
+            transferMarkedDoneEmailErrorAt: Date.now()
+          });
+        }
+      } catch (emailErr) {
+        console.error("Error sending transfer marked done email:", emailErr);
+      }
+    }
 
     res.json({
       ok: true,
@@ -2937,6 +3144,9 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
 
       const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
       const metadata = session.metadata || {};
+
+      const existingPaymentSessionSnap = await db.collection("paymentSessions").doc(session.id).get();
+      const alreadyNotified = !!existingPaymentSessionSnap.data()?.internalPaymentEmailSentAt;
 
       const batch = db.batch();
 
@@ -2997,6 +3207,49 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
       }
 
       await batch.commit();
+
+      if (!alreadyNotified) {
+        try {
+          const planName = metadata.planName || metadata.planId || "Programa";
+          const amount = (session.amount_total || 0) / 100;
+          const emailSubject = `Pago con tarjeta confirmado - ${planName} - ${amount} €`;
+          const emailBody = [
+            `Evento: Pago con tarjeta confirmado por Stripe`,
+            `Estado: confirmed`,
+            `Stripe payment_status: ${session.payment_status}`,
+            `Plan: ${planName}`,
+            `Modalidad: ${metadata.paymentMode || ""}`,
+            `Importe: ${amount} €`,
+            `Moneda: ${(session.currency || "").toUpperCase()}`,
+            `Nombre: ${metadata.contactFullName || ""}`,
+            `Email de contacto: ${metadata.contactEmail || session.customer_details?.email || metadata.email || ""}`,
+            `Email de acceso/Auth: ${metadata.authEmail || metadata.email || ""}`,
+            `Teléfono: ${metadata.contactPhone || ""}`,
+            `UID: ${metadata.uid || ""}`,
+            `StripeSessionId: ${session.id}`,
+            `Fecha: ${new Date(Date.now()).toLocaleString("es-ES")}`
+          ].join("\n");
+
+          const mailRes = await sendInternalPaymentNotification({
+            subject: emailSubject,
+            text: emailBody
+          });
+
+          const updateData = mailRes.sent
+            ? { internalPaymentEmailStatus: "sent", internalPaymentEmailSentAt: Date.now() }
+            : mailRes.skipped
+            ? { internalPaymentEmailStatus: "skipped", internalPaymentEmailSkippedAt: Date.now(), internalPaymentEmailError: "SMTP_NOT_CONFIGURED" }
+            : { internalPaymentEmailStatus: "error", internalPaymentEmailError: String(mailRes.error).slice(0, 200), internalPaymentEmailErrorAt: Date.now() };
+
+          await sessionRef.set(updateData, { merge: true });
+          if (uid) {
+            const intentRef = db.collection("users").doc(uid).collection("paymentIntents").doc(session.id);
+            await intentRef.set(updateData, { merge: true });
+          }
+        } catch (emailErr) {
+          console.error("Error sending Stripe payment confirmed email:", emailErr);
+        }
+      }
     }
 
     res.json({ received: true });
