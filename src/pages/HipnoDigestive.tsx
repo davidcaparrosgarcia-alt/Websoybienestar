@@ -168,9 +168,34 @@ export default function HipnoDigestive() {
     },
     {
       question: "¿Puedo resolver mis dudas antes de tomar la decisión final?",
-      answer: "Sí. Esta ventana está pensada precisamente para aclarar las dudas principales antes de reservar. Si necesitas confirmar algo concreto, puedes revisar la información del programa y valorar con calma si encaja con tu momento actual. Si aún tienes alguna duda sin resolver puedes consultarnos en contacto@SoyBienestar.es y si es necesario nosotros te llamaremos para aclararte todas tus dudas."
+      answer: "Sí. Esta ventana está pensada precisamente para aclarar las dudas principales antes de reservar. Si necesitas confirmar algo concreto antes de tomar la decisión final, puedes escribirnos a contacto@soybienestar.es y revisaremos tu consulta con calma. Después de la reserva también nos pondremos en contacto contigo por email, teléfono o la vía que nos hayas dejado para explicarte los siguientes pasos."
     }
   ];
+
+  const renderFaqAnswer = (answer: string) => {
+    const email = "contacto@soybienestar.es";
+    const lowerAnswer = answer.toLowerCase();
+    if (!lowerAnswer.includes(email)) return answer;
+
+    const matchIndex = lowerAnswer.indexOf(email);
+    const before = answer.slice(0, matchIndex);
+    const matchedEmail = answer.slice(matchIndex, matchIndex + email.length);
+    const after = answer.slice(matchIndex + email.length);
+
+    return (
+      <>
+        {before}
+        <a
+          href={`mailto:${email}`}
+          className="font-bold text-white underline decoration-white/50 hover:decoration-white transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {matchedEmail}
+        </a>
+        {after}
+      </>
+    );
+  };
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -482,7 +507,7 @@ export default function HipnoDigestive() {
             <button
               type="button"
               onClick={() => setIsDoubtsModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-3 bg-surface-container-high text-primary hover:bg-surface-container-highest rounded-xl font-label text-sm font-medium tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 border border-outline-variant/20"
+              className="w-full sm:w-auto px-8 py-3 bg-[#25D366] text-white hover:bg-[#1ebe5d] rounded-xl font-label text-sm font-bold tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 shadow-md"
             >
               <span className="material-symbols-outlined text-lg">chat_bubble</span>
               Resuelve tus dudas
@@ -626,8 +651,8 @@ export default function HipnoDigestive() {
                         </button>
 
                         {openDoubtIndex === index && (
-                          <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
-                            {item.answer}
+                          <div className="px-6 md:px-8 pt-5 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                            {renderFaqAnswer(item.answer)}
                           </div>
                         )}
                       </div>
