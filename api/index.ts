@@ -3158,6 +3158,14 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
         amountTotal: session.amount_total,
         currency: session.currency,
         customerEmail: session.customer_details?.email || metadata.email || null,
+        authEmail: metadata.authEmail || metadata.email || null,
+        contactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || null,
+        contactSnapshot: {
+          fullName: metadata.contactFullName || "",
+          contactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || "",
+          phone: metadata.contactPhone || ""
+        },
+        contactUsage: metadata.contactUsage || "unchanged",
         uid: metadata.uid || null,
         planId: metadata.planId || null,
         planName: metadata.planName || null,
@@ -3185,7 +3193,15 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           stripePaymentStatus: session.payment_status,
           stripeSessionId: session.id,
           uid,
-          email: metadata.email || session.customer_details?.email || null,
+          authEmail: metadata.authEmail || metadata.email || null,
+          email: metadata.contactEmail || session.customer_details?.email || metadata.email || null,
+          contactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || null,
+          contactSnapshot: {
+            fullName: metadata.contactFullName || "",
+            contactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || "",
+            phone: metadata.contactPhone || ""
+          },
+          contactUsage: metadata.contactUsage || "unchanged",
           paidAt: now,
           updatedAt: now,
           stripeCustomerEmail: session.customer_details?.email || metadata.email || null,
@@ -3199,7 +3215,16 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           selectedProgramPaymentMethod: "card",
           selectedProgramPaidAt: now,
           selectedProgramStripeSessionId: session.id,
-          selectedProgramUpdatedAt: now
+          selectedProgramUpdatedAt: now,
+          selectedProgramContactSnapshot: {
+            fullName: metadata.contactFullName || "",
+            contactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || "",
+            phone: metadata.contactPhone || ""
+          },
+          selectedProgramContactEmail: metadata.contactEmail || session.customer_details?.email || metadata.email || null,
+          selectedProgramContactPhone: metadata.contactPhone || null,
+          selectedProgramContactFullName: metadata.contactFullName || null,
+          selectedProgramContactUsage: metadata.contactUsage || "unchanged"
         };
 
         batch.set(userRef, userUpdate, { merge: true });

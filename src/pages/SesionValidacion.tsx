@@ -340,11 +340,8 @@ export default function SesionValidacion() {
       setContactConfirmOpen(true);
       return;
     }
-    if (hasContactChanges && confirmedContactUsage) {
-      await handleCheckoutInternal(confirmedContactUsage);
-      return;
-    }
-    await handleCheckoutInternal("unchanged");
+
+    await handleCheckoutInternal(confirmedContactUsage || "unchanged");
   };
 
   const handleRegisterIntention = async () => {
@@ -353,11 +350,8 @@ export default function SesionValidacion() {
       setContactConfirmOpen(true);
       return;
     }
-    if (hasContactChanges && confirmedContactUsage) {
-      await handleRegisterIntentionInternal(confirmedContactUsage);
-      return;
-    }
-    await handleRegisterIntentionInternal("unchanged");
+
+    await handleRegisterIntentionInternal(confirmedContactUsage || "unchanged");
   };
 
   const handleMarkTransferDone = async () => {
@@ -732,17 +726,16 @@ export default function SesionValidacion() {
                         Primero comprobaremos tus datos y generaremos un concepto de transferencia único para esta reserva. En el siguiente paso verás el IBAN, el importe exacto y el concepto que deberás copiar en tu transferencia. Cuando la hayas realizado, vuelve a esta pantalla y pulsa “Avisar de que he realizado la transferencia” para dejarla vinculada a tu cuenta.
                       </p>
                       <div className="grid gap-4 mt-4">
-                        <div>
-                          <label className="block text-sm font-label font-bold mb-1">Email <span className="text-red-500">*</span></label>
-                          <input type="email" readOnly value={user?.email || ""} className="w-full p-3 rounded-lg border border-outline-variant/30 bg-surface-container-highest cursor-not-allowed opacity-70" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-label font-bold mb-1">Nombre completo <span className="text-red-500">*</span></label>
-                          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ej: María López García" className="w-full p-3 rounded-lg border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-label font-bold mb-1">Teléfono móvil (con prefijo) <span className="text-red-500">*</span></label>
-                          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Ej: +34 600 000 000" className="w-full p-3 rounded-lg border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+                        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
+                          <p className="font-label font-bold text-sm text-primary">Datos que usaremos para vincular la transferencia</p>
+                          <div className="space-y-1 text-sm font-body text-on-surface-variant">
+                            <p><strong className="text-on-surface">Nombre:</strong> {fullName || "Pendiente"}</p>
+                            <p><strong className="text-on-surface">Email de contacto:</strong> {contactEmail || user?.email || "Pendiente"}</p>
+                            <p><strong className="text-on-surface">Teléfono:</strong> {phone || "Pendiente"}</p>
+                          </div>
+                          <p className="text-xs text-on-surface-variant/80">
+                            Si necesitas cambiar estos datos, hazlo en el bloque “Datos de contacto de la reserva” antes de continuar.
+                          </p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
