@@ -7,7 +7,14 @@ import { motion, AnimatePresence } from "motion/react";
 export default function HipnoDigestive() {
   const [openProgramMonth, setOpenProgramMonth] = useState<string | null>("valoracion");
   const [isProgramImageOpen, setIsProgramImageOpen] = useState(false);
+  const [isDoubtsModalOpen, setIsDoubtsModalOpen] = useState(false);
+  const [openDoubtIndex, setOpenDoubtIndex] = useState<number | null>(null);
   const programMonthRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const closeDoubtsModal = () => {
+    setIsDoubtsModalOpen(false);
+    setOpenDoubtIndex(null);
+  };
 
   const scrollToProgramMonth = (month: string) => {
     if (typeof window === "undefined") return;
@@ -119,6 +126,49 @@ export default function HipnoDigestive() {
           </ul>
         </>
       )
+    }
+  ];
+
+  const hipnoDigestFaqs = [
+    {
+      question: "¿Este programa es para mí si mis molestias digestivas empeoran con el estrés?",
+      answer: "Puede tener sentido si notas que tu digestión cambia cuando estás bajo tensión, preocupación o bloqueo emocional. HipnoDigest está pensado para acompañar molestias digestivas vinculadas al estrés, la tensión emocional y  hábitos u otros sintomas que parecen no estar relacionados con el sistema digestivo directamente pero sí pueden estarlo. En la primera sesión se hace una valoración completa y conjunta con la terapeuta y el nutricionista para evaluar tu caso personalmente."
+    },
+    {
+      question: "¿Qué incluye exactamente el programa?",
+      answer: "Incluye una sesión inicial de valoración, acompañamiento nutricional constante y muy personalizado, varias sesiones de hipnosis digestiva, prácticas de respiración y meditación, anclajes psicosomáticos y seguimiento progresivo durante cuatro meses."
+    },
+    {
+      question: "¿Tengo que tener experiencia previa con hipnosis?",
+      answer: "No. El proceso se guía de forma sencilla y progresiva. No se trata de perder el control ni de forzarte a nada, sino de ayudarte a entrar en un estado de atención, calma y conexión corporal para trabajar la relación entre sistema nervioso, digestión y hábitos."
+    },
+    {
+      question: "¿Qué papel tiene la nutrición en el programa?",
+      answer: "La parte nutricional ayuda a ordenar hábitos, observar respuestas digestivas y adaptar cambios de forma realista a tu cuerpo y a tu día a día. No se plantea como una dieta genérica, sino como un acompañamiento personalizado y específico en cada caso particular, adaptado para obtener resultados y que no se abandone con el tiempo."
+    },
+    {
+      question: "¿Y si mi problema digestivo tiene una causa médica?",
+      answer: "Si existe dolor intenso, pérdida de peso inexplicada, sangrado, vómitos persistentes, fiebre, síntomas nuevos o cualquier señal de alarma, lo adecuado es consultar con un profesional sanitario. HipnoDigest puede acompañar la parte emocional y de hábitos, pero no debe utilizarse para retrasar una valoración médica. La solución ideal para estos casos nunca suele ser elegir una de las dos opciones, abordar tu problema como un equipo, acompañando y potenciando tu tratamiento médico agiliza y mejora los resultados que todos buscamos."
+    },
+    {
+      question: "¿Cuánto dura el acompañamiento?",
+      answer: "El programa está diseñado para cuatro meses, con una valoración inicial y una evolución por fases: puesta en marcha, profundización, integración y autonomía. La intención es que el proceso no dependa solo de una sesión aislada, sino de una transformación progresiva. Tienes toda la información detallada en la página de hipnodigest."
+    },
+    {
+      question: "¿Por qué tiene este precio?",
+      answer: "Porque no es una sesión suelta ni un material grabado genérico o una dieta cualquiera. Es un proceso de cuatro meses que combina valoración, seguimiento, nutrición personalizada, hipnosis digestiva, prácticas guiadas y adaptación progresiva a tu caso concreto con dos profesionales de experiencia probada. El importe también incluye iva e impuestos de obligado cumplimiento."
+    },
+    {
+      question: "¿Qué pasa después de reservar?",
+      answer: "Después de reservar, el equipo revisará tus datos y se pondrá en contacto contigo para organizar la primera valoración y explicarte los siguientes pasos del acompañamiento."
+    },
+    {
+      question: "¿Cómo se realiza el tratamiento si es online?",
+      answer: "El programa está preparado para realizarse online de forma sencilla. En la mayoría de casos, un teléfono móvil con cámara, micrófono y altavoz es suficiente para poder hacer las sesiones, siempre que tenga una conexión estable y puedas colocarte en un lugar tranquilo. Después de la reserva, nos pondremos en contacto contigo por email, teléfono o la vía que nos hayas dejado para explicarte cómo preparar el espacio, si necesitas algo concreto para las sesiones y cómo recibirás toda la información necesaria antes de empezar."
+    },
+    {
+      question: "¿Puedo resolver mis dudas antes de tomar la decisión final?",
+      answer: "Sí. Esta ventana está pensada precisamente para aclarar las dudas principales antes de reservar. Si necesitas confirmar algo concreto, puedes revisar la información del programa y valorar con calma si encaja con tu momento actual. Si aún tienes alguna duda sin resolver puedes consultarnos en contacto@SoyBienestar.es y si es necesario nosotros te llamaremos para aclararte todas tus dudas."
     }
   ];
 
@@ -429,13 +479,14 @@ export default function HipnoDigestive() {
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               Volver a tratamientos
             </Link>
-            <Link
-              to="/session"
+            <button
+              type="button"
+              onClick={() => setIsDoubtsModalOpen(true)}
               className="w-full sm:w-auto px-8 py-3 bg-surface-container-high text-primary hover:bg-surface-container-highest rounded-xl font-label text-sm font-medium tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 border border-outline-variant/20"
             >
               <span className="material-symbols-outlined text-lg">chat_bubble</span>
-              Consulta gratuita
-            </Link>
+              Resuelve tus dudas
+            </button>
           </div>
         </div>
       </section>
@@ -498,6 +549,111 @@ export default function HipnoDigestive() {
                       className="w-full h-auto max-h-none rounded-2xl shadow-xl border border-outline-variant/5 object-contain"
                     />
                   </picture>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Doubts / FAQ Modal */}
+      <AnimatePresence>
+        {isDoubtsModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={closeDoubtsModal}
+              className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm cursor-pointer"
+            />
+
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-8 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-5xl max-h-[90vh] bg-[#0b1221] text-white rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col z-50 border border-white/10"
+              >
+                {/* Close Button */}
+                <div className="p-4 pb-0 flex justify-end md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
+                  <button
+                    type="button"
+                    onClick={closeDoubtsModal}
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
+                    aria-label="Cerrar modal de dudas"
+                  >
+                    <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">
+                      close
+                    </span>
+                  </button>
+                </div>
+
+                {/* Scrollable Area */}
+                <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
+                  {/* Header */}
+                  <div className="rounded-[2rem] bg-black/25 text-white border border-white/10 p-6 md:p-8">
+                    <h2 className="font-headline text-2xl md:text-3xl italic">
+                      Preguntas frecuentes sobre HipnoDigest
+                    </h2>
+                    <p className="text-white/60 mt-2 font-light">
+                      Respuestas claras para decidir con calma si este acompañamiento digestivo-emocional encaja con lo que necesitas.
+                    </p>
+                  </div>
+
+                  {/* FAQs Accordion */}
+                  <div className="mt-8 rounded-[2rem] bg-black/25 text-white border border-white/10 overflow-hidden divide-y divide-white/10">
+                    {hipnoDigestFaqs.map((item, index) => (
+                      <div key={item.question}>
+                        <button
+                          type="button"
+                          aria-expanded={openDoubtIndex === index}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDoubtIndex(openDoubtIndex === index ? null : index);
+                          }}
+                          className="w-full text-left px-6 md:px-8 py-5 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
+                        >
+                          <h3 className="font-headline text-lg md:text-xl text-white">
+                            {item.question}
+                          </h3>
+                          <span className="material-symbols-outlined text-white/70">
+                            {openDoubtIndex === index ? "remove" : "add"}
+                          </span>
+                        </button>
+
+                        {openDoubtIndex === index && (
+                          <div className="px-6 md:px-8 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
+                            {item.answer}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Final Conversion Card */}
+                  <div className="mt-8 rounded-2xl bg-white/10 border border-white/15 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                    <div>
+                      <p className="font-label text-sm uppercase tracking-widest text-white/60 font-semibold">
+                        Precio del programa
+                      </p>
+                      <p className="font-headline text-4xl md:text-5xl text-white mt-1">
+                        1.300 €
+                      </p>
+                      <p className="text-white/65 font-body mt-3 max-w-2xl">
+                        Reserva tu plaza para iniciar el proceso HipnoDigest. Accederás a una página segura para confirmar tus datos y seleccionar la modalidad de abono.
+                      </p>
+                    </div>
+                    <Link
+                      to="/sesion-validacion?plan=hipnodigest"
+                      className="px-8 py-4 rounded-xl bg-white text-primary hover:bg-white/90 transition-opacity font-label font-bold text-center shadow-md whitespace-nowrap"
+                    >
+                      Agendar y pagar reserva
+                    </Link>
+                  </div>
                 </div>
               </motion.div>
             </div>
