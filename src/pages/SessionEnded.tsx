@@ -75,7 +75,7 @@ export default function SessionEnded() {
       setCurrentAudio(src);
       setTimeout(() => {
         if (audioRef.current) {
-          audioRef.current.play();
+          audioRef.current.play().catch(() => {});
         }
       }, 50);
     }

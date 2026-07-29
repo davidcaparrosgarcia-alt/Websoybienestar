@@ -275,8 +275,11 @@ export default function DossierEspejo() {
       audioRef.current.pause();
       setIsAudioPlaying(false);
     } else {
-      audioRef.current.play();
-      setIsAudioPlaying(true);
+      audioRef.current.play().then(() => {
+        setIsAudioPlaying(true);
+      }).catch(() => {
+        setIsAudioPlaying(false);
+      });
     }
   };
 

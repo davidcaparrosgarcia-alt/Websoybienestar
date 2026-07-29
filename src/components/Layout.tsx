@@ -297,7 +297,7 @@ export default function Layout() {
             </div>
             <p className="font-body text-xs font-light uppercase tracking-[0.2em] text-white/80 max-w-xs leading-loose">
               ReprogrÁmate SoyBienestar.es <br/>
-              © 2024. Tu espacio de claridad.
+              © 2026. Tu espacio de claridad.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-16 gap-y-6">

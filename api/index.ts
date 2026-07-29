@@ -2658,7 +2658,7 @@ const PLAN_DETAILS: Record<string, { name: string; oneTimeAmount: number; reserv
   "basico": { name: "Plan Básico", oneTimeAmount: 55000, reservationAmount: 9000, currency: "eur" },
   "intermedio": { name: "Plan Intermedio", oneTimeAmount: 170000, reservationAmount: 29000, currency: "eur" },
   "completo": { name: "Plan Completo", oneTimeAmount: 220000, reservationAmount: 40000, currency: "eur" },
-  "hipnodigest": { name: "HipnoDigest", oneTimeAmount: 130000, reservationAmount: 130000, currency: "eur" }
+  "hipnodigest": { name: "HipnoDigest", oneTimeAmount: 130000, reservationAmount: 30000, currency: "eur" }
 };
 
 app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
@@ -2799,7 +2799,7 @@ const PROGRAM_PLANS: Record<string, { label: string; full: number; reservation: 
   "basico": { label: "BASICO", full: 550, reservation: 90 },
   "intermedio": { label: "INTERMEDIO", full: 1700, reservation: 290 },
   "completo": { label: "COMPLETO", full: 2200, reservation: 400 },
-  "hipnodigest": { label: "HIPNODIGEST", full: 1300, reservation: 1300 }
+  "hipnodigest": { label: "HIPNODIGEST", full: 1300, reservation: 300 }
 };
 
 const BANK_TRANSFER_CONFIG = {

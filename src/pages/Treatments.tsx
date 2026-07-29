@@ -55,7 +55,7 @@ export default function Treatments() {
       <section className="px-8 md:px-24 pt-16 pb-12 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="font-label text-secondary font-semibold tracking-widest uppercase text-xs block">Tratamientos online • SoyBienestar.es</div>
-          <h1 className="font-headline text-4.5xl md:text-5.5.xl lg:text-6xl text-primary leading-tight font-medium">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-5xl lg:text-6xl text-[#162839] dark:text-white leading-tight font-medium">
             Elige el acompañamiento que mejor encaja contigo
           </h1>
           <p className="font-headline text-lg md:text-xl text-primary max-w-2xl mx-auto font-light leading-relaxed">

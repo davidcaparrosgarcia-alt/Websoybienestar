@@ -250,44 +250,11 @@ export default function HipnoDigestive() {
       <section className="px-6 md:px-12 py-16 max-w-4xl lg:max-w-screen-2xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">
         <div className="space-y-8 text-center md:text-left">
           {/* IDEAL PARA section */}
-          <div 
-            className="rounded-[2rem] bg-surface-container-low border border-outline-variant/10 shadow-sm p-6 md:p-8 lg:p-10 text-left"
-            style={{ marginBottom: "21.44px", height: "128.188px" }}
-          >
-            <span 
-              className="font-label tracking-widest block"
-              style={{ 
-                fontWeight: "normal", 
-                fontSize: "22.04px", 
-                fontFamily: "'Noto Serif', serif", 
-                color: "#2c3e50",
-                marginLeft: "-2px",
-                marginTop: "-36px",
-                marginBottom: "0px",
-                marginRight: "0px",
-                paddingLeft: "2px",
-                paddingTop: "10px",
-                paddingBottom: "1px",
-                paddingRight: "2px",
-                height: "45.0625px"
-              }}
-            >
+          <div className="rounded-[2rem] bg-surface-container-low border border-outline-variant/10 shadow-sm p-6 md:p-8 lg:p-10 text-left mb-8 md:mb-10">
+            <span className="font-headline block text-[#162839] dark:text-white text-2xl md:text-3xl lg:text-4xl leading-tight mb-4">
               Ideal Para
             </span>
-            <p 
-              className="text-on-surface-variant/90 leading-relaxed text-base md:text-lg lg:text-xl font-light"
-              style={{
-                marginBottom: "0px",
-                height: "60.8125px",
-                width: "100%",
-                maxWidth: "1238.2px",
-                paddingLeft: "2px",
-                paddingTop: "1px",
-                marginRight: "0px",
-                marginLeft: "-2px",
-                marginTop: "-0.28px"
-              }}
-            >
+            <p className="text-on-surface-variant/90 leading-relaxed text-base md:text-lg lg:text-xl font-light">
               Molestias digestivas vinculadas al estrés, la tensión emocional y los bloqueos psicosomáticos, que pueden manifestarse como inflamación, digestiones pesadas, estreñimiento, cansancio, irritabilidad, apatía o incluso falta de pasión por la vida.
             </p>
           </div>

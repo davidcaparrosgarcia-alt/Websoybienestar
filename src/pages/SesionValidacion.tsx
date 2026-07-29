@@ -51,7 +51,7 @@ export default function SesionValidacion() {
     "hipnodigest": {
       name: "HipnoDigest",
       duration: "4 meses de acompañamiento digestivo-emocional con valoración inicial.",
-      prices: { unico: 1300, reserva: 1300, cuotas: 0 }
+      prices: { unico: 1300, reserva: 300, cuotas: 0 }
     }
   };
 
