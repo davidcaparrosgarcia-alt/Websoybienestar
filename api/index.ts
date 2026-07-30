@@ -14,7 +14,7 @@ app.use((req, res, next) => {
   if (req.path === '/stripe-webhook' || req.originalUrl === '/api/stripe-webhook') {
     next();
   } else {
-    express.json({ limit: "2mb" })(req, res, next);
+    express.json({ limit: "8mb" })(req, res, next);
   }
 });
 
@@ -991,6 +991,92 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
     res.status(503).json({
       error:
         "En este momento estamos recibiendo muchas consultas y nuestro sistema está algo saturado. Te agradecemos mucho la paciencia. Por favor, toma un respiro e intenta enviar tu mensaje nuevamente.",
+    });
+  }
+});
+
+app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
+  try {
+    const { audioBase64, mimeType } = req.body;
+    if (!audioBase64 || typeof audioBase64 !== "string" || !audioBase64.trim()) {
+      res.status(400).json({ error: "Audio no recibido o en formato incorrecto." });
+      return;
+    }
+    if (!mimeType || typeof mimeType !== "string" || !mimeType.toLowerCase().startsWith("audio/")) {
+      res.status(400).json({ error: "Tipo de archivo de audio no soportado." });
+      return;
+    }
+    if (audioBase64.length > 12 * 1024 * 1024) {
+      res.status(413).json({ error: "El audio enviado supera el tamaño máximo permitido." });
+      return;
+    }
+
+    const cleanBase64 = audioBase64.replace(/^data:audio\/[a-zA-Z0-9.+_-]+;base64,/, "").trim();
+    const safeMimeType = mimeType.split(";")[0].trim().toLowerCase();
+
+    let textResult = "";
+    let lastError: any = null;
+
+    for (const modelCandidate of AI_MODEL_CANDIDATES) {
+      try {
+        const response = await ai!.models.generateContent({
+          model: modelCandidate,
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: "Transcribe el audio en español de forma fiel. Devuelve solo el texto transcrito, sin comentarios, sin resumen y sin formato markdown."
+                },
+                {
+                  inlineData: {
+                    mimeType: safeMimeType,
+                    data: cleanBase64
+                  }
+                }
+              ]
+            }
+          ],
+          config: {
+            maxOutputTokens: 1500
+          }
+        });
+
+        const text = (response.text || "").trim();
+        if (text) {
+          textResult = text;
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        console.error(`Transcribe audio error with model ${modelCandidate}:`, getGeminiErrorInfo(err));
+      }
+    }
+
+    if (!textResult) {
+      if (lastError) {
+        res.status(503).json({
+          error: "No se pudo procesar la transcripción del audio. Por favor intenta de nuevo o escribe manualmente."
+        });
+        return;
+      }
+      res.status(422).json({
+        error: "No se detectó texto comprensible en el audio."
+      });
+      return;
+    }
+
+    res.json({ text: textResult });
+  } catch (error) {
+    const info = getGeminiErrorInfo(error);
+    console.error("AI endpoint failed", {
+      endpoint: "/api/transcribe-audio",
+      uid: req.user?.uid,
+      email: req.user?.email,
+      ...info
+    });
+    res.status(503).json({
+      error: "Ocurrió un error al transcribir el audio. Puedes continuar escribiendo manualmente."
     });
   }
 });

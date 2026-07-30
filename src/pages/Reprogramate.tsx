@@ -194,7 +194,7 @@ export default function Reprogramate() {
           <div className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             <div className="md:col-span-2 flex flex-col justify-center">
               <h2 className="text-4xl font-headline text-primary mb-4 italic">Elige uno de nuestros programas</h2>
-              <p className="text-lg text-on-surface-variant max-w-2xl">
+              <p className="text-lg text-on-surface-variant max-w-4xl">
                 Un enfoque integral para navegar los diferentes estados de la niebla emocional. Todos los programas desbloquean en distinta medida algunas de las funciones y/o herramientas disponibles en esta web, además del curso de gestión de emociones.
               </p>
             </div>

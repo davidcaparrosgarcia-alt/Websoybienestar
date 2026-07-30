@@ -56,5 +56,9 @@ export const api = {
 
   async weeklyGoal(category: string, accumulatedSummary: string) {
     return fetchAPI("/api/weekly-goal", { category, accumulatedSummary });
+  },
+
+  async transcribeAudio(audioBase64: string, mimeType: string) {
+    return fetchAPI("/api/transcribe-audio", { audioBase64, mimeType });
   }
 };

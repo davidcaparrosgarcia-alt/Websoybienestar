@@ -30,6 +30,8 @@ export default function Session() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isFallbackRecording, setIsFallbackRecording] = useState(false);
+  const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [showHelpText, setShowHelpText] = useState(false);
   const [hasStartedGuidedSession, setHasStartedGuidedSession] = useState(false);
@@ -48,6 +50,26 @@ export default function Session() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const baseInputRef = useRef("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const fallbackStreamRef = useRef<MediaStream | null>(null);
+  const autoStopTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const isIOSDevice = () => {
+    if (typeof navigator === "undefined") return false;
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    );
+  };
+
+  const supportsMediaRecorderAudio = () => {
+    return (
+      typeof navigator !== "undefined" &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== "undefined"
+    );
+  };
 
   // Custom refs for robust state handling independently of closure states
   const isRecordingRef = useRef(false);
@@ -452,6 +474,18 @@ export default function Session() {
       return;
     }
 
+    if (isFallbackRecording) {
+      if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        try { mediaRecorderRef.current.stop(); } catch (e) {}
+      }
+      if (fallbackStreamRef.current) {
+        fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
+        fallbackStreamRef.current = null;
+      }
+      setIsFallbackRecording(false);
+    }
+
     if (isRecordingRef.current) {
       isRecordingRef.current = false;
       setIsRecording(false);
@@ -629,8 +663,156 @@ export default function Session() {
     }
   };
 
+  const startFallbackAudioRecording = async () => {
+    if (!supportsMediaRecorderAudio()) {
+      setRecordingError(
+        "No hemos podido iniciar la grabación de voz en este navegador. Puedes escribir manualmente o revisar los permisos del micrófono.",
+      );
+      setShowHelpText(false);
+      setTimeout(() => setRecordingError(null), 8000);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      fallbackStreamRef.current = stream;
+
+      let mimeType = "audio/webm";
+      if (typeof MediaRecorder.isTypeSupported === "function") {
+        if (MediaRecorder.isTypeSupported("audio/webm")) {
+          mimeType = "audio/webm";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeType = "audio/mp4";
+        } else if (MediaRecorder.isTypeSupported("audio/aac")) {
+          mimeType = "audio/aac";
+        } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+          mimeType = "audio/ogg";
+        } else {
+          mimeType = "";
+        }
+      }
+
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(stream, options);
+
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start(250);
+      mediaRecorderRef.current = mediaRecorder;
+
+      setIsFallbackRecording(true);
+      setRecordingError(null);
+      setShowHelpText(false);
+      startSessionTimerIfNeeded();
+
+      if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
+      autoStopTimerRef.current = setTimeout(() => {
+        stopFallbackAudioRecording();
+      }, 60000);
+    } catch (e: any) {
+      console.error("Could not start fallback microphone", e);
+      setRecordingError(
+        "No hemos podido iniciar la grabación de voz en este navegador. Puedes escribir manualmente o revisar los permisos del micrófono.",
+      );
+      setShowHelpText(false);
+      setTimeout(() => setRecordingError(null), 8000);
+    }
+  };
+
+  const stopFallbackAudioRecording = async () => {
+    if (autoStopTimerRef.current) {
+      clearTimeout(autoStopTimerRef.current);
+      autoStopTimerRef.current = null;
+    }
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") {
+      setIsFallbackRecording(false);
+      if (fallbackStreamRef.current) {
+        fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
+        fallbackStreamRef.current = null;
+      }
+      return;
+    }
+
+    setIsFallbackRecording(false);
+    setIsTranscribingAudio(true);
+
+    const mimeType = recorder.mimeType || "audio/webm";
+
+    const stopPromise = new Promise<Blob>((resolve) => {
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        resolve(audioBlob);
+      };
+    });
+
+    try {
+      recorder.stop();
+    } catch (e) {
+      console.error("Error stopping MediaRecorder", e);
+    }
+
+    if (fallbackStreamRef.current) {
+      fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
+      fallbackStreamRef.current = null;
+    }
+
+    try {
+      const blob = await stopPromise;
+      if (blob.size === 0) {
+        setIsTranscribingAudio(false);
+        return;
+      }
+
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const base64Data = result.split(",")[1] || "";
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(blob);
+
+      const base64Data = await base64Promise;
+      const res = await api.transcribeAudio(base64Data, mimeType);
+
+      if (res && res.text) {
+        const transcribed = res.text.trim();
+        if (transcribed) {
+          setInput((prev) => {
+            const space = prev && !prev.endsWith(" ") ? " " : "";
+            return prev + space + transcribed;
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error("Audio transcription error", err);
+      setRecordingError(
+        "Se ha podido grabar el audio, pero no transcribirlo. Puedes intentarlo de nuevo o escribir manualmente.",
+      );
+      setTimeout(() => setRecordingError(null), 8000);
+    } finally {
+      setIsTranscribingAudio(false);
+      mediaRecorderRef.current = null;
+      audioChunksRef.current = [];
+    }
+  };
+
   const toggleRecording = async () => {
-    if (isSessionExpired) return;
+    if (isSessionExpired || isTranscribingAudio) return;
+
+    if (isFallbackRecording) {
+      await stopFallbackAudioRecording();
+      return;
+    }
 
     if (isRecordingRef.current) {
       // Manual stop
@@ -639,23 +821,19 @@ export default function Session() {
       try {
         recognitionRef.current?.stop();
       } catch (err) {}
-    } else {
-      // First, check basic support
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        setRecordingError(
-          "Tu navegador no ofrece compatibilidad suficiente con el dictado por voz en esta función. Puedes seguir escribiendo manualmente.",
-        );
-        setShowHelpText(true);
-        setTimeout(() => setRecordingError(null), 10000);
-        return;
-      }
+      return;
+    }
 
-      // Then verify media devices / request permissions
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    const isIOS = isIOSDevice();
+
+    if (SpeechRecognition && !isIOS) {
+      let permissionStream: MediaStream | null = null;
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (e: any) {
         console.error("Could not start microphone", e);
         setRecordingError(
@@ -664,9 +842,12 @@ export default function Session() {
         setShowHelpText(false);
         setTimeout(() => setRecordingError(null), 8000);
         return;
+      } finally {
+        if (permissionStream) {
+          permissionStream.getTracks().forEach((track) => track.stop());
+        }
       }
 
-      // Always initialize fresh to avoid accumulating past dictations
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -674,11 +855,10 @@ export default function Session() {
       }
       recognitionRef.current = initSpeechRecognition();
 
-      // Attempt start
       if (recognitionRef.current) {
         ignoreSpeechResultsRef.current = false;
         baseInputRef.current = input.trim() ? input.trim() : "";
-        restartAttemptsRef.current = 0; // Reset restart attempts
+        restartAttemptsRef.current = 0;
         hasReceivedSpeechResultRef.current = false;
         try {
           startSessionTimerIfNeeded();
@@ -687,16 +867,14 @@ export default function Session() {
           setIsRecording(true);
           setRecordingError(null);
           setShowHelpText(false);
+          return;
         } catch (err) {
-          console.error("Start error:", err);
-          setRecordingError(
-            "La función de voz no está disponible temporalmente. Puedes escribir manualmente o volver a intentarlo.",
-          );
-          setShowHelpText(false);
-          setTimeout(() => setRecordingError(null), 8000);
+          console.error("SpeechRecognition start error, using MediaRecorder fallback:", err);
         }
       }
     }
+
+    await startFallbackAudioRecording();
   };
 
   const [isFinishing, setIsFinishing] = useState(false);
@@ -1112,15 +1290,23 @@ export default function Session() {
             <button
               type="button"
               onClick={toggleRecording}
-              disabled={timeLeft <= 0}
+              disabled={timeLeft <= 0 || isTranscribingAudio}
               className={`p-4 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
-                isRecording
+                isRecording || isFallbackRecording
                   ? "bg-error/10 text-error hover:bg-error/20"
                   : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <span className="material-symbols-outlined">
-                {isRecording ? "stop" : "mic"}
+              <span
+                className={`material-symbols-outlined ${
+                  isTranscribingAudio ? "animate-spin" : ""
+                }`}
+              >
+                {isTranscribingAudio
+                  ? "progress_activity"
+                  : isRecording || isFallbackRecording
+                  ? "stop"
+                  : "mic"}
               </span>
             </button>
             <div className="flex-1 relative">
