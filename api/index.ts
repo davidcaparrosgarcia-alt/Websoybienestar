@@ -6,6 +6,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 const app = express();
 
@@ -254,7 +255,31 @@ async function checkAILimit(
   }
 }
 
-async function checkGratitudeLimits(
+function getMadridDateStr() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
+
+function normalizeGratitudeText(value: string) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .slice(0, 1200);
+}
+
+function hashGratitudeText(value: string) {
+  return crypto
+    .createHash("sha256")
+    .update(normalizeGratitudeText(value))
+    .digest("hex");
+}
+
+async function checkGratitudeAllowance(
   req: any,
   uid: string,
   entry1: string,
@@ -263,36 +288,96 @@ async function checkGratitudeLimits(
   if (isTestUser(req)) return true;
   if (!admin.apps.length) return true;
   const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
-  const dateStr = new Date().toISOString().split("T")[0];
+  const dateStr = getMadridDateStr();
   const limitRef = db
     .collection("users")
     .doc(uid)
     .collection("aiLimits")
     .doc(`gratitude_${dateStr}`);
 
+  const normalized1 = normalizeGratitudeText(entry1);
+  const normalized2 = normalizeGratitudeText(entry2);
+
+  const key1 = normalized1 ? hashGratitudeText(normalized1) : "";
+  const key2 = normalized2 ? hashGratitudeText(normalized2) : "";
+
   try {
     return await db.runTransaction(async (t) => {
       const doc = await t.get(limitRef);
-      let data = doc.data() || { count: 0, validatedTexts: [] };
+      const data = doc.data() || { count: 0, validatedTextHashes: [] };
 
-      let increment1 = !!entry1 && !data.validatedTexts.includes(entry1);
-      let increment2 = !!entry2 && !data.validatedTexts.includes(entry2);
-      let newCount = (increment1 ? 1 : 0) + (increment2 ? 1 : 0);
+      const validatedTextHashes = Array.isArray(data.validatedTextHashes)
+        ? data.validatedTextHashes
+        : [];
 
-      if (newCount === 0 && (entry1 || entry2)) return false;
-      if (data.count + newCount > 2) return false;
+      const increment1 = !!key1 && !validatedTextHashes.includes(key1);
+      const increment2 = !!key2 && key2 !== key1 && !validatedTextHashes.includes(key2);
+      const newCount = (increment1 ? 1 : 0) + (increment2 ? 1 : 0);
 
-      if (increment1) data.validatedTexts.push(entry1);
-      if (increment2) data.validatedTexts.push(entry2);
-      data.count += newCount;
+      if (newCount === 0 && (normalized1 || normalized2)) return true;
 
-      t.set(limitRef, data, { merge: true });
-      return true;
+      return (data.count || 0) + newCount <= 2;
     });
   } catch (e) {
-    console.error("Gratitude limit transaction failed", e);
+    console.error("Gratitude allowance check transaction failed", e);
     return true;
   }
+}
+
+async function recordGratitudeUsage(
+  req: any,
+  uid: string,
+  entry1: string,
+  entry2: string,
+): Promise<void> {
+  if (isTestUser(req)) return;
+  if (!admin.apps.length) return;
+
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const dateStr = getMadridDateStr();
+  const limitRef = db
+    .collection("users")
+    .doc(uid)
+    .collection("aiLimits")
+    .doc(`gratitude_${dateStr}`);
+
+  const normalized1 = normalizeGratitudeText(entry1);
+  const normalized2 = normalizeGratitudeText(entry2);
+
+  const key1 = normalized1 ? hashGratitudeText(normalized1) : "";
+  const key2 = normalized2 ? hashGratitudeText(normalized2) : "";
+
+  await db.runTransaction(async (t) => {
+    const doc = await t.get(limitRef);
+    const data = doc.data() || { count: 0, validatedTextHashes: [] };
+
+    const validatedTextHashes = Array.isArray(data.validatedTextHashes)
+      ? [...data.validatedTextHashes]
+      : [];
+
+    let newCount = 0;
+
+    if (key1 && !validatedTextHashes.includes(key1)) {
+      validatedTextHashes.push(key1);
+      newCount += 1;
+    }
+
+    if (key2 && key2 !== key1 && !validatedTextHashes.includes(key2)) {
+      validatedTextHashes.push(key2);
+      newCount += 1;
+    }
+
+    t.set(
+      limitRef,
+      {
+        count: Math.min((data.count || 0) + newCount, 2),
+        validatedTextHashes,
+        updatedAt: Date.now(),
+        date: dateStr,
+      },
+      { merge: true },
+    );
+  });
 }
 
 app.get("/api/health", (req, res) => {
@@ -1082,7 +1167,7 @@ app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
       return;
     }
 
-    const allowed = await checkGratitudeLimits(
+    const allowed = await checkGratitudeAllowance(
       req,
       req.user!.uid,
       entry1,
@@ -1090,7 +1175,8 @@ app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
     );
     if (!allowed) {
       res.status(429).json({
-        error: "Límite de agradecimientos diarios alcanzado o ya validados.",
+        error:
+          "Ya has validado los dos agradecimientos disponibles para hoy. Mañana podrás volver a registrar nuevos destellos.",
       });
       return;
     }
@@ -1126,6 +1212,16 @@ Responde EXCLUSIVAMENTE con un JSON:
     });
 
     const parsed = parseGeminiJSON(response.text || "{}");
+
+    try {
+      await recordGratitudeUsage(req, req.user!.uid, entry1, entry2);
+    } catch (limitRecordError) {
+      console.error(
+        "Could not record gratitude usage after successful AI validation",
+        limitRecordError,
+      );
+    }
+
     res.json(parsed);
   } catch (error) {
     const info = getGeminiErrorInfo(error);
