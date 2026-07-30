@@ -15,6 +15,9 @@ interface Message {
   errorMessage?: string;
 }
 
+const FALLBACK_RECORDING_MAX_MS = 3 * 60 * 1000;
+type FallbackStopReason = "manual" | "limit" | null;
+
 export default function Session() {
   const seo = (
     <SEO title="Consulta inicial online | SoyBienestar" description="Espacio privado de consulta inicial online para ordenar tu situación emocional dentro de SoyBienestar.es." canonicalPath="/session" noIndex={true} />
@@ -32,6 +35,8 @@ export default function Session() {
   const [isRecording, setIsRecording] = useState(false);
   const [isFallbackRecording, setIsFallbackRecording] = useState(false);
   const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
+  const [fallbackStopReason, setFallbackStopReason] =
+    useState<FallbackStopReason>(null);
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [showHelpText, setShowHelpText] = useState(false);
   const [hasStartedGuidedSession, setHasStartedGuidedSession] = useState(false);
@@ -702,14 +707,15 @@ export default function Session() {
       mediaRecorderRef.current = mediaRecorder;
 
       setIsFallbackRecording(true);
+      setFallbackStopReason(null);
       setRecordingError(null);
       setShowHelpText(false);
       startSessionTimerIfNeeded();
 
       if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
       autoStopTimerRef.current = setTimeout(() => {
-        stopFallbackAudioRecording();
-      }, 60000);
+        void stopFallbackAudioRecording("limit");
+      }, FALLBACK_RECORDING_MAX_MS);
     } catch (e: any) {
       console.error("Could not start fallback microphone", e);
       if (fallbackStreamRef.current) {
@@ -727,9 +733,12 @@ export default function Session() {
     }
   };
 
-  const stopFallbackAudioRecording = async () => {
+  const stopFallbackAudioRecording = async (
+    reason: Exclude<FallbackStopReason, null> = "manual",
+  ) => {
     if (isStoppingFallbackRef.current) return;
     isStoppingFallbackRef.current = true;
+    setFallbackStopReason(reason);
 
     try {
       if (autoStopTimerRef.current) {
@@ -815,6 +824,7 @@ export default function Session() {
         setIsTranscribingAudio(false);
         mediaRecorderRef.current = null;
         audioChunksRef.current = [];
+        setFallbackStopReason(null);
       }
     } finally {
       isStoppingFallbackRef.current = false;
@@ -825,7 +835,7 @@ export default function Session() {
     if (isSessionExpired || isTranscribingAudio) return;
 
     if (isFallbackRecording) {
-      await stopFallbackAudioRecording();
+      await stopFallbackAudioRecording("manual");
       return;
     }
 
@@ -1303,13 +1313,27 @@ export default function Session() {
 
           <form
             onSubmit={handleSubmit}
-            className="flex items-end gap-3 md:gap-4"
+            className="flex items-center gap-3 md:gap-4"
           >
             <button
               type="button"
               onClick={toggleRecording}
               disabled={timeLeft <= 0 || isTranscribingAudio}
-              className={`p-4 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
+              aria-label={
+                isTranscribingAudio
+                  ? "Transcribiendo audio"
+                  : isRecording || isFallbackRecording
+                  ? "Detener grabación"
+                  : "Iniciar grabación de voz"
+              }
+              title={
+                isTranscribingAudio
+                  ? "Transcribiendo audio"
+                  : isRecording || isFallbackRecording
+                  ? "Detener y transcribir"
+                  : "Hablar en lugar de escribir"
+              }
+              className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
                 isRecording || isFallbackRecording
                   ? "bg-error/10 text-error hover:bg-error/20"
                   : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -1342,9 +1366,13 @@ export default function Session() {
                 placeholder={
                   timeLeft <= 0
                     ? "Tiempo finalizado"
+                    : isFallbackRecording
+                    ? "Pulsa detener para convertir tu grabación en texto."
+                    : isTranscribingAudio
+                    ? "Transcribiendo tu audio…"
                     : "Escribe tu mensaje aquí..."
                 }
-                className="w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-4 resize-none min-h-[56px] max-h-[200px] transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-16 min-h-16 max-h-16 bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
                 rows={1}
               />
             </div>
@@ -1358,7 +1386,7 @@ export default function Session() {
                 isFallbackRecording ||
                 isTranscribingAudio
               }
-              className="p-4 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
+              className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
             >
               <span className="material-symbols-outlined">send</span>
             </button>
@@ -1367,7 +1395,7 @@ export default function Session() {
               onClick={finishSession}
               disabled={isFinishing}
               title="Finalizar consulta ahora"
-              className="p-4 flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
+              className="h-16 w-16 p-0 hidden md:flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
             >
               <span
                 className={`material-symbols-outlined ${isFinishing ? "animate-spin" : ""}`}
@@ -1376,7 +1404,49 @@ export default function Session() {
               </span>
             </button>
           </form>
-          <div className="mt-4 flex justify-between items-center text-xs font-label">
+          <div className="mt-3 flex items-center justify-between gap-2 md:hidden">
+            <div className="min-h-7 flex min-w-0 items-center">
+              {isFallbackRecording && (
+                <div
+                  className="inline-flex items-center gap-2 rounded-full border border-error/30 bg-error/10 px-3 py-1 text-error"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    mic
+                  </span>
+                  <span className="whitespace-nowrap font-label text-[11px] font-bold">
+                    Grabando tu voz
+                  </span>
+                </div>
+              )}
+
+              {!isFallbackRecording &&
+                isTranscribingAudio &&
+                fallbackStopReason === "limit" && (
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full border border-error/30 bg-error/10 px-3 py-1 text-error"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      timer_off
+                    </span>
+                    <span className="whitespace-nowrap font-label text-[11px] font-bold">
+                      Límite de audio alcanzado
+                    </span>
+                  </div>
+                )}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 rounded-full border border-outline-variant/10 bg-surface-container px-3 py-1 font-label text-xs text-on-surface-variant shadow-sm">
+              <span className="material-symbols-outlined text-[14px]">
+                timer
+              </span>
+              <span>Tiempo restante: {formatTime(timeLeft)}</span>
+            </div>
+          </div>
+          <div className="mt-4 hidden md:flex justify-between items-center text-xs font-label">
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant shadow-sm border border-outline-variant/10">
               <span className="material-symbols-outlined text-[14px]">
                 timer
