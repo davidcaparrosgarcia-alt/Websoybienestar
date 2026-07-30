@@ -11,11 +11,21 @@ import crypto from "crypto";
 const app = express();
 
 app.use((req, res, next) => {
-  if (req.path === '/stripe-webhook' || req.originalUrl === '/api/stripe-webhook') {
+  if (
+    req.path === "/stripe-webhook" ||
+    req.originalUrl === "/api/stripe-webhook"
+  ) {
     next();
-  } else {
-    express.json({ limit: "8mb" })(req, res, next);
+    return;
   }
+
+  const isAudioTranscription =
+    req.path === "/transcribe-audio" ||
+    req.originalUrl === "/api/transcribe-audio";
+
+  express.json({
+    limit: isAudioTranscription ? "8mb" : "2mb",
+  })(req, res, next);
 });
 
 let SERVER_FIRESTORE_DATABASE_ID = "(default)";
@@ -997,22 +1007,54 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 
 app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
   try {
+    const allowed = await checkAILimit(
+      req,
+      req.user!.uid,
+      "audioTranscription",
+      "daily",
+      30
+    );
+
+    if (!allowed) {
+      res.status(429).json({
+        error:
+          "Has alcanzado temporalmente el límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente."
+      });
+      return;
+    }
+
     const { audioBase64, mimeType } = req.body;
     if (!audioBase64 || typeof audioBase64 !== "string" || !audioBase64.trim()) {
       res.status(400).json({ error: "Audio no recibido o en formato incorrecto." });
       return;
     }
-    if (!mimeType || typeof mimeType !== "string" || !mimeType.toLowerCase().startsWith("audio/")) {
+    if (!mimeType || typeof mimeType !== "string") {
       res.status(400).json({ error: "Tipo de archivo de audio no soportado." });
       return;
     }
-    if (audioBase64.length > 12 * 1024 * 1024) {
-      res.status(413).json({ error: "El audio enviado supera el tamaño máximo permitido." });
+
+    const safeMimeType = mimeType.split(";")[0].trim().toLowerCase();
+    const ALLOWED_AUDIO_MIME_TYPES = new Set([
+      "audio/webm",
+      "audio/mp4",
+      "audio/aac",
+      "audio/ogg",
+      "audio/mpeg",
+      "audio/wav"
+    ]);
+
+    if (!ALLOWED_AUDIO_MIME_TYPES.has(safeMimeType)) {
+      res.status(400).json({
+        error: "Formato de audio no admitido."
+      });
       return;
     }
 
     const cleanBase64 = audioBase64.replace(/^data:audio\/[a-zA-Z0-9.+_-]+;base64,/, "").trim();
-    const safeMimeType = mimeType.split(";")[0].trim().toLowerCase();
+    if (cleanBase64.length > 6 * 1024 * 1024) {
+      res.status(413).json({ error: "El audio enviado supera el tamaño máximo permitido." });
+      return;
+    }
 
     let textResult = "";
     let lastError: any = null;

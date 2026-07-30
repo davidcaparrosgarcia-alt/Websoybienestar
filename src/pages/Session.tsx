@@ -54,12 +54,15 @@ export default function Session() {
   const audioChunksRef = useRef<Blob[]>([]);
   const fallbackStreamRef = useRef<MediaStream | null>(null);
   const autoStopTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isStoppingFallbackRef = useRef(false);
 
-  const isIOSDevice = () => {
-    if (typeof navigator === "undefined") return false;
+  const isMobileLikeDevice = () => {
+    if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+
     return (
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ||
+      window.matchMedia("(pointer: coarse)").matches
     );
   };
 
@@ -276,6 +279,33 @@ export default function Session() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    return () => {
+      if (autoStopTimerRef.current) {
+        clearTimeout(autoStopTimerRef.current);
+        autoStopTimerRef.current = null;
+      }
+
+      try {
+        if (
+          mediaRecorderRef.current &&
+          mediaRecorderRef.current.state !== "inactive"
+        ) {
+          mediaRecorderRef.current.stop();
+        }
+      } catch {}
+
+      fallbackStreamRef.current?.getTracks().forEach((track) => track.stop());
+      fallbackStreamRef.current = null;
+
+      try {
+        recognitionRef.current?.abort();
+      } catch {}
+
+      recognitionRef.current = null;
+    };
+  }, []);
+
   const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
   const isSessionExpired = timeLeft <= 0;
   const isTypingPauseRef = useRef(false);
@@ -450,7 +480,7 @@ export default function Session() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSessionExpired) return;
+    if (isSessionExpired || isRecording || isFallbackRecording || isTranscribingAudio) return;
     
     const submittedText = input.trim();
     if (!submittedText || isLoading) return;
@@ -472,40 +502,6 @@ export default function Session() {
         `Por favor, acorta tu mensaje. El máximo permitido es de ${maxChars} caracteres.`,
       );
       return;
-    }
-
-    if (isFallbackRecording) {
-      if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        try { mediaRecorderRef.current.stop(); } catch (e) {}
-      }
-      if (fallbackStreamRef.current) {
-        fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
-        fallbackStreamRef.current = null;
-      }
-      setIsFallbackRecording(false);
-    }
-
-    if (isRecordingRef.current) {
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      ignoreSpeechResultsRef.current = true;
-      baseInputRef.current = "";
-      setInput("");
-      try {
-        if (
-          recognitionRef.current &&
-          typeof recognitionRef.current.abort === "function"
-        ) {
-          recognitionRef.current.abort();
-        } else if (recognitionRef.current) {
-          recognitionRef.current.stop();
-        }
-      } catch (err) {}
-      
-      setTimeout(() => {
-        ignoreSpeechResultsRef.current = false;
-      }, 300);
     }
 
     const userMessage: Message = {
@@ -716,6 +712,13 @@ export default function Session() {
       }, 60000);
     } catch (e: any) {
       console.error("Could not start fallback microphone", e);
+      if (fallbackStreamRef.current) {
+        fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
+        fallbackStreamRef.current = null;
+      }
+      mediaRecorderRef.current = null;
+      audioChunksRef.current = [];
+      setIsFallbackRecording(false);
       setRecordingError(
         "No hemos podido iniciar la grabación de voz en este navegador. Puedes escribir manualmente o revisar los permisos del micrófono.",
       );
@@ -725,84 +728,96 @@ export default function Session() {
   };
 
   const stopFallbackAudioRecording = async () => {
-    if (autoStopTimerRef.current) {
-      clearTimeout(autoStopTimerRef.current);
-      autoStopTimerRef.current = null;
-    }
+    if (isStoppingFallbackRef.current) return;
+    isStoppingFallbackRef.current = true;
 
-    const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === "inactive") {
+    try {
+      if (autoStopTimerRef.current) {
+        clearTimeout(autoStopTimerRef.current);
+        autoStopTimerRef.current = null;
+      }
+
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || recorder.state === "inactive") {
+        setIsFallbackRecording(false);
+        if (fallbackStreamRef.current) {
+          fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
+          fallbackStreamRef.current = null;
+        }
+        return;
+      }
+
       setIsFallbackRecording(false);
+      setIsTranscribingAudio(true);
+
+      const mimeType = recorder.mimeType || "audio/webm";
+
+      const stopPromise = new Promise<Blob>((resolve) => {
+        let resolved = false;
+        const done = () => {
+          if (!resolved) {
+            resolved = true;
+            resolve(new Blob(audioChunksRef.current, { type: mimeType }));
+          }
+        };
+        recorder.onstop = done;
+        setTimeout(done, 1000);
+      });
+
+      try {
+        recorder.stop();
+      } catch (e) {
+        console.error("Error stopping MediaRecorder", e);
+      }
+
       if (fallbackStreamRef.current) {
         fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
         fallbackStreamRef.current = null;
       }
-      return;
-    }
 
-    setIsFallbackRecording(false);
-    setIsTranscribingAudio(true);
-
-    const mimeType = recorder.mimeType || "audio/webm";
-
-    const stopPromise = new Promise<Blob>((resolve) => {
-      recorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        resolve(audioBlob);
-      };
-    });
-
-    try {
-      recorder.stop();
-    } catch (e) {
-      console.error("Error stopping MediaRecorder", e);
-    }
-
-    if (fallbackStreamRef.current) {
-      fallbackStreamRef.current.getTracks().forEach((track) => track.stop());
-      fallbackStreamRef.current = null;
-    }
-
-    try {
-      const blob = await stopPromise;
-      if (blob.size === 0) {
-        setIsTranscribingAudio(false);
-        return;
-      }
-
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          const base64Data = result.split(",")[1] || "";
-          resolve(base64Data);
-        };
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(blob);
-
-      const base64Data = await base64Promise;
-      const res = await api.transcribeAudio(base64Data, mimeType);
-
-      if (res && res.text) {
-        const transcribed = res.text.trim();
-        if (transcribed) {
-          setInput((prev) => {
-            const space = prev && !prev.endsWith(" ") ? " " : "";
-            return prev + space + transcribed;
-          });
+      try {
+        const blob = await stopPromise;
+        if (blob.size === 0) {
+          setIsTranscribingAudio(false);
+          return;
         }
+
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            const base64Data = result.split(",")[1] || "";
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(blob);
+
+        const base64Data = await base64Promise;
+        const res = await api.transcribeAudio(base64Data, mimeType);
+
+        if (res && res.text) {
+          const transcribed = res.text.trim();
+          if (transcribed) {
+            setInput((prev) => {
+              const space = prev && !prev.endsWith(" ") ? " " : "";
+              return prev + space + transcribed;
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error("Audio transcription error", err);
+        setRecordingError(
+          "Se ha podido grabar el audio, pero no transcribirlo. Puedes intentarlo de nuevo o escribir manualmente.",
+        );
+        setTimeout(() => setRecordingError(null), 8000);
+      } finally {
+        setIsTranscribingAudio(false);
+        mediaRecorderRef.current = null;
+        audioChunksRef.current = [];
       }
-    } catch (err: any) {
-      console.error("Audio transcription error", err);
-      setRecordingError(
-        "Se ha podido grabar el audio, pero no transcribirlo. Puedes intentarlo de nuevo o escribir manualmente.",
-      );
-      setTimeout(() => setRecordingError(null), 8000);
     } finally {
-      setIsTranscribingAudio(false);
-      mediaRecorderRef.current = null;
-      audioChunksRef.current = [];
+      isStoppingFallbackRef.current = false;
     }
   };
 
@@ -824,13 +839,16 @@ export default function Session() {
       return;
     }
 
+    if (isMobileLikeDevice()) {
+      await startFallbackAudioRecording();
+      return;
+    }
+
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
 
-    const isIOS = isIOSDevice();
-
-    if (SpeechRecognition && !isIOS) {
+    if (SpeechRecognition) {
       let permissionStream: MediaStream | null = null;
       try {
         permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1332,7 +1350,14 @@ export default function Session() {
             </div>
             <button
               type="submit"
-              disabled={!input.trim() || isLoading || timeLeft <= 0}
+              disabled={
+                !input.trim() ||
+                isLoading ||
+                timeLeft <= 0 ||
+                isRecording ||
+                isFallbackRecording ||
+                isTranscribingAudio
+              }
               className="p-4 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
             >
               <span className="material-symbols-outlined">send</span>

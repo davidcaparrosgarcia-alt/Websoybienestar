@@ -191,10 +191,10 @@ export default function Reprogramate() {
       {/* Treatments Bento Grid */}
       <section className="py-24 px-12">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-            <div className="md:col-span-2 flex flex-col justify-center">
+          <div className="mb-16 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-stretch">
+            <div className="flex flex-col justify-center">
               <h2 className="text-4xl font-headline text-primary mb-4 italic">Elige uno de nuestros programas</h2>
-              <p className="text-lg text-on-surface-variant max-w-4xl">
+              <p className="text-lg text-on-surface-variant max-w-none">
                 Un enfoque integral para navegar los diferentes estados de la niebla emocional. Todos los programas desbloquean en distinta medida algunas de las funciones y/o herramientas disponibles en esta web, además del curso de gestión de emociones.
               </p>
             </div>
