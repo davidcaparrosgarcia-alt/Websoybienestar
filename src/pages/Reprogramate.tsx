@@ -7,17 +7,28 @@ import { doc, getDoc } from "firebase/firestore";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import {
+  ReprogramateDetailId,
+  ReprogramateGeneralDetail,
+  ReprogramateBasicDetail,
+} from "../data/reprogramateDetails";
 
 export default function Reprogramate() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string, mobileSrc?: string, plan?: "basico" | "intermedio" | "completo" } | null>(null);
+  const [selectedInfographic, setSelectedInfographic] = useState<{ id: string, src: string, mobileSrc?: string, plan?: "basico" | "intermedio" | "completo", alt?: string } | null>(null);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   const [hasDoneCuestionario, setHasDoneCuestionario] = useState(false);
   const [dossierAvailable, setDossierAvailable] = useState(false);
   const [dossierViewed, setDossierViewed] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [showReservationState, setShowReservationState] = useState(false);
+
+  const [openDetail, setOpenDetail] = useState<ReprogramateDetailId>(null);
+
+  const toggleDetail = (id: Exclude<ReprogramateDetailId, null>) => {
+    setOpenDetail((current) => (current === id ? null : id));
+  };
 
   const handleReservationClick = () => {
     if (dossierViewed) {
@@ -182,10 +193,27 @@ export default function Reprogramate() {
         <div className="w-full rounded-[2rem] overflow-hidden bg-surface-container-low shadow-xl border border-outline-variant/10">
           <img
             src="/images/tratamientos_reprogramate.jpg"
-            alt="Infografía de tratamientos ReprogrÁmate"
+            alt="Infografía general del programa ReprogrÁmate con sus áreas de reprogramación mental, trabajo emocional, regulación del sistema nervioso y herramientas de crecimiento personal."
             className="w-full h-auto object-contain block"
           />
         </div>
+
+        <button
+          type="button"
+          aria-expanded={openDetail === "general"}
+          aria-controls="reprogramate-general-detail"
+          onClick={() => toggleDetail("general")}
+          className="w-full min-h-[64px] mt-5 md:mt-6 px-6 md:px-8 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl md:text-2xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+        >
+          <span className="shrink-0 font-bold" aria-hidden="true">
+            {openDetail === "general" ? "－" : "＋"}
+          </span>
+          <span className="text-left font-semibold">
+            {openDetail === "general" ? "Cerrar explicación" : "Leer cómo funciona ReprogrÁmate"}
+          </span>
+        </button>
+
+        {openDetail === "general" && <ReprogramateGeneralDetail />}
       </div>
 
       {/* Treatments Bento Grid */}
@@ -208,70 +236,126 @@ export default function Reprogramate() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
-            <div 
-              onClick={() => setSelectedInfographic({ 
-                id: 'programa_basico', 
-                src: '/images/infografia_basico.jpg', 
-                mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
-                plan: 'basico' 
-              })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-            >
-              <picture>
-                <source
-                  media="(max-width: 1024px) and (orientation: portrait)"
-                  srcSet="/images/programa_basico_vertical.jpg"
-                />
-                <img
-                  src="/images/programa_basico.jpg"
-                  alt="Programa básico"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </picture>
+            <div className="flex flex-col">
+              <div 
+                onClick={() => setSelectedInfographic({ 
+                  id: 'programa_basico', 
+                  src: '/images/infografia_basico.jpg', 
+                  mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
+                  plan: 'basico',
+                  alt: 'Infografía detallada del Programa Básico ReprogrÁmate con indicaciones, herramientas y sesiones incluidas.'
+                })}
+                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              >
+                <picture>
+                  <source
+                    media="(max-width: 1024px) and (orientation: portrait)"
+                    srcSet="/images/programa_basico_vertical.jpg"
+                  />
+                  <img
+                    src="/images/programa_basico.jpg"
+                    alt="Programa Básico ReprogrÁmate para estrés, insomnio, sobrecarga laboral, recuperación de calma, claridad y foco."
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </picture>
+              </div>
+
+              <button
+                type="button"
+                aria-expanded={openDetail === "basico"}
+                aria-controls="reprogramate-basic-detail"
+                onClick={() => toggleDetail("basico")}
+                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+              >
+                <span className="shrink-0 font-bold" aria-hidden="true">
+                  {openDetail === "basico" ? "－" : "＋"}
+                </span>
+                <span className="text-left font-semibold">
+                  {openDetail === "basico" ? "Cerrar explicación" : "Conocer en detalle el Programa Básico"}
+                </span>
+              </button>
+
+              {/* Mobile basic details */}
+              <div className="block md:hidden">
+                {openDetail === "basico" && <ReprogramateBasicDetail />}
+              </div>
             </div>
+
             {/* Card 2 */}
-            <div 
-              onClick={() => setSelectedInfographic({ 
-                id: 'programa_intermedio', 
-                src: '/images/infografia_intermedio.jpg', 
-                mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
-                plan: 'intermedio' 
-              })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-            >
-              <picture>
-                <source
-                  media="(max-width: 1024px) and (orientation: portrait)"
-                  srcSet="/images/programa_intermedio_vertical.jpg"
-                />
-                <img
-                  src="/images/programa_intermedio.jpg"
-                  alt="Programa intermedio"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </picture>
+            <div className="flex flex-col">
+              <div 
+                onClick={() => setSelectedInfographic({ 
+                  id: 'programa_intermedio', 
+                  src: '/images/infografia_intermedio.jpg', 
+                  mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
+                  plan: 'intermedio',
+                  alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate'
+                })}
+                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              >
+                <picture>
+                  <source
+                    media="(max-width: 1024px) and (orientation: portrait)"
+                    srcSet="/images/programa_intermedio_vertical.jpg"
+                  />
+                  <img
+                    src="/images/programa_intermedio.jpg"
+                    alt="Programa intermedio"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </picture>
+              </div>
+
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+              >
+                <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
+                <span className="text-left font-semibold">Conocer en detalle el Programa Intermedio</span>
+              </button>
             </div>
+
             {/* Card 3 */}
-            <div 
-              onClick={() => setSelectedInfographic({ 
-                id: 'programa_completo', 
-                src: '/images/infografia_completo.jpg', 
-                mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
-                plan: 'completo' 
-              })}
-              className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-            >
-              <picture>
-                <source
-                  media="(max-width: 1024px) and (orientation: portrait)"
-                  srcSet="/images/programa_completo_vertical.jpg"
-                />
-                <img
-                  src="/images/programa_completo.jpg"
-                  alt="Programa completo"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </picture>
+            <div className="flex flex-col">
+              <div 
+                onClick={() => setSelectedInfographic({ 
+                  id: 'programa_completo', 
+                  src: '/images/infografia_completo.jpg', 
+                  mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
+                  plan: 'completo',
+                  alt: 'Infografía detallada del Programa Completo ReprogrÁmate'
+                })}
+                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+              >
+                <picture>
+                  <source
+                    media="(max-width: 1024px) and (orientation: portrait)"
+                    srcSet="/images/programa_completo_vertical.jpg"
+                  />
+                  <img
+                    src="/images/programa_completo.jpg"
+                    alt="Programa completo"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </picture>
+              </div>
+
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+              >
+                <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
+                <span className="text-left font-semibold">Conocer en detalle el Programa Completo</span>
+              </button>
+            </div>
+
+            {/* Desktop basic details spanning full width under the cards */}
+            <div className="hidden md:block md:col-span-3">
+              {openDetail === "basico" && <ReprogramateBasicDetail />}
             </div>
           </div>
         </div>
@@ -442,7 +526,7 @@ export default function Reprogramate() {
                       />
                       <img 
                         src={selectedInfographic.src} 
-                        alt="Infografía Detalle" 
+                        alt={selectedInfographic.alt || "Infografía Detalle"} 
                         className="w-full h-auto rounded-xl shadow-sm"
                       />
                     </motion.picture>
@@ -453,7 +537,7 @@ export default function Reprogramate() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: 0.1, duration: 0.3 }}
                       src={selectedInfographic.src} 
-                      alt="Infografía Detalle" 
+                      alt={selectedInfographic.alt || "Infografía Detalle"} 
                       className="w-full h-auto rounded-xl shadow-sm"
                     />
                   )}

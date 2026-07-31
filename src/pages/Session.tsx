@@ -16,7 +16,11 @@ interface Message {
 }
 
 const FALLBACK_RECORDING_MAX_MS = 3 * 60 * 1000;
-type FallbackStopReason = "manual" | "limit" | null;
+type FallbackStopReason =
+  | "manual"
+  | "audio_limit"
+  | "session_limit"
+  | null;
 
 export default function Session() {
   const seo = (
@@ -85,6 +89,11 @@ export default function Session() {
   const sessionStartTimeRef = useRef(Date.now());
   const ignoreSpeechResultsRef = useRef(false);
   const hasReceivedSpeechResultRef = useRef(false);
+  const inputRef = useRef("");
+  const timeLeftRef = useRef(15 * 60);
+  const pendingSessionLimitAutoSendRef = useRef(false);
+  const sessionLimitHandledRef = useRef(false);
+  const sessionLimitMessageSentRef = useRef(false);
 
   const navigate = useNavigate();
   const [hasDoneConsultation, setHasDoneConsultation] = useState<
@@ -318,6 +327,51 @@ export default function Session() {
   const [isTypingPause, setIsTypingPause] = useState(false);
 
   useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      sessionLimitHandledRef.current = false;
+      return;
+    }
+
+    if (sessionLimitHandledRef.current) return;
+
+    const hasActiveVoiceProcess =
+      isFallbackRecording ||
+      isTranscribingAudio ||
+      isRecordingRef.current;
+
+    if (!hasActiveVoiceProcess) return;
+
+    sessionLimitHandledRef.current = true;
+    pendingSessionLimitAutoSendRef.current = true;
+
+    if (isFallbackRecording) {
+      void stopFallbackAudioRecording("session_limit");
+      return;
+    }
+
+    if (isRecordingRef.current) {
+      isRecordingRef.current = false;
+      setIsRecording(false);
+
+      try {
+        recognitionRef.current?.stop();
+      } catch {
+        try {
+          recognitionRef.current?.abort();
+        } catch {}
+      }
+    }
+  }, [timeLeft, isFallbackRecording, isTranscribingAudio]);
+
+  useEffect(() => {
     if (!hasStartedGuidedSession || !hasUserStartedResponding) return;
     const interval = setInterval(() => {
       if (isTypingPauseRef.current) {
@@ -392,6 +446,12 @@ export default function Session() {
       setIsRecording(false);
       isRecordingRef.current = false;
 
+      if (pendingSessionLimitAutoSendRef.current) {
+        setRecordingError(null);
+        setShowHelpText(false);
+        return;
+      }
+
       if (
         hasReceivedSpeechResultRef.current &&
         event.error !== "not-allowed" &&
@@ -432,6 +492,27 @@ export default function Session() {
     };
 
     recognition.onend = () => {
+      if (pendingSessionLimitAutoSendRef.current) {
+        window.setTimeout(() => {
+          const finalText = inputRef.current.trim();
+
+          if (
+            finalText &&
+            !sessionLimitMessageSentRef.current
+          ) {
+            sessionLimitMessageSentRef.current = true;
+            pendingSessionLimitAutoSendRef.current = false;
+
+            void submitMessageText(finalText, {
+              allowExpired: true,
+              timeLeftOverride: 0,
+            });
+          }
+        }, 200);
+
+        return;
+      }
+
       if (isRecordingRef.current) {
         // Unintended stop, try to restart once
         if (restartAttemptsRef.current < 1) {
@@ -483,14 +564,19 @@ export default function Session() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSessionExpired || isRecording || isFallbackRecording || isTranscribingAudio) return;
-    
-    const submittedText = input.trim();
+  const submitMessageText = async (
+    rawText: string,
+    options?: {
+      allowExpired?: boolean;
+      timeLeftOverride?: number;
+    },
+  ) => {
+    const submittedText = rawText.trim();
     if (!submittedText || isLoading) return;
 
-    if (Date.now() - sessionStartTimeRef.current > 15 * 60 * 1000) {
+    if (!options?.allowExpired && isSessionExpired) return;
+
+    if (Date.now() - sessionStartTimeRef.current > 15 * 60 * 1000 && !options?.allowExpired) {
       alert("La consulta ha llegado a su límite de 15 minutos.");
       return;
     }
@@ -517,18 +603,27 @@ export default function Session() {
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     if (!isRecordingRef.current) {
-        setInput("");
-        baseInputRef.current = "";
+      setInput("");
+      baseInputRef.current = "";
+      inputRef.current = "";
     }
     setIsLoading(true);
 
-    await processMessage(newMessages, submittedText, userMessage.id);
+    await processMessage(newMessages, submittedText, userMessage.id, options?.timeLeftOverride);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSessionExpired || isRecording || isFallbackRecording || isTranscribingAudio) return;
+
+    await submitMessageText(input);
   };
 
   const processMessage = async (
     currentMessages: Message[],
     inputContent: string,
     messageId: string,
+    timeLeftOverride?: number,
   ) => {
     setIsLoading(true);
     setMessages((prev) =>
@@ -545,17 +640,25 @@ export default function Session() {
         parts: [{ text: msg.content }],
       }));
 
+      const effectiveTimeLeft =
+        typeof timeLeftOverride === "number"
+          ? timeLeftOverride
+          : timeLeft;
+
       const getSessionPhase = () => {
-        if (timeLeft > 10 * 60) return "inicio";
-        if (timeLeft > 4 * 60) return "desarrollo";
+        if (effectiveTimeLeft > 10 * 60) return "inicio";
+        if (effectiveTimeLeft > 4 * 60) return "desarrollo";
         return "cierre";
       };
 
       const buildSessionContextForAI = () => ({
         time: {
-          timeLeftSeconds: timeLeft,
-          elapsedSeconds: 15 * 60 - timeLeft,
-          sessionPhase: getSessionPhase(),
+          timeLeftSeconds: effectiveTimeLeft,
+          elapsedSeconds: 15 * 60 - effectiveTimeLeft,
+          sessionPhase:
+            effectiveTimeLeft <= 0
+              ? "cierre"
+              : getSessionPhase(),
           hasTimerStarted: hasStartedGuidedSession,
         },
         user: sessionUserContext || null,
@@ -714,7 +817,11 @@ export default function Session() {
 
       if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
       autoStopTimerRef.current = setTimeout(() => {
-        void stopFallbackAudioRecording("limit");
+        const stopReason =
+          timeLeftRef.current <= 0
+            ? "session_limit"
+            : "audio_limit";
+        void stopFallbackAudioRecording(stopReason);
       }, FALLBACK_RECORDING_MAX_MS);
     } catch (e: any) {
       console.error("Could not start fallback microphone", e);
@@ -808,10 +915,30 @@ export default function Session() {
         if (res && res.text) {
           const transcribed = res.text.trim();
           if (transcribed) {
-            setInput((prev) => {
-              const space = prev && !prev.endsWith(" ") ? " " : "";
-              return prev + space + transcribed;
-            });
+            const previousText = inputRef.current.trim();
+            const finalText = previousText
+              ? `${previousText} ${transcribed}`
+              : transcribed;
+
+            inputRef.current = finalText;
+            setInput(finalText);
+
+            const mustAutoSendBecauseSessionEnded =
+              reason === "session_limit" ||
+              pendingSessionLimitAutoSendRef.current;
+
+            if (
+              mustAutoSendBecauseSessionEnded &&
+              !sessionLimitMessageSentRef.current
+            ) {
+              sessionLimitMessageSentRef.current = true;
+              pendingSessionLimitAutoSendRef.current = false;
+
+              await submitMessageText(finalText, {
+                allowExpired: true,
+                timeLeftOverride: 0,
+              });
+            }
           }
         }
       } catch (err: any) {
@@ -1364,12 +1491,12 @@ export default function Session() {
                 }}
                 disabled={timeLeft <= 0}
                 placeholder={
-                  timeLeft <= 0
+                  isTranscribingAudio
+                    ? "Transcribiendo tu audio…"
+                    : timeLeft <= 0
                     ? "Tiempo finalizado"
                     : isFallbackRecording
                     ? "Pulsa detener para convertir tu grabación en texto."
-                    : isTranscribingAudio
-                    ? "Transcribiendo tu audio…"
                     : "Escribe tu mensaje aquí..."
                 }
                 className="w-full h-16 min-h-16 max-h-16 bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1423,7 +1550,7 @@ export default function Session() {
 
               {!isFallbackRecording &&
                 isTranscribingAudio &&
-                fallbackStopReason === "limit" && (
+                fallbackStopReason === "audio_limit" && (
                   <div
                     className="inline-flex items-center gap-2 rounded-full border border-error/30 bg-error/10 px-3 py-1 text-error"
                     role="status"
@@ -1434,6 +1561,23 @@ export default function Session() {
                     </span>
                     <span className="whitespace-nowrap font-label text-[11px] font-bold">
                       Límite de audio alcanzado
+                    </span>
+                  </div>
+                )}
+
+              {!isFallbackRecording &&
+                isTranscribingAudio &&
+                fallbackStopReason === "session_limit" && (
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full border border-error/30 bg-error/10 px-3 py-1 text-error"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      timer_off
+                    </span>
+                    <span className="whitespace-nowrap font-label text-[11px] font-bold">
+                      Tiempo de consulta finalizado
                     </span>
                   </div>
                 )}
