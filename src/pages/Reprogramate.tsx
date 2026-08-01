@@ -367,10 +367,10 @@ export default function Reprogramate() {
             {/* Card 1: Básico */}
             <div className="flex flex-col md:contents">
               <div className="flex flex-col md:row-start-1 md:col-start-1">
-                <div 
-                  onClick={() => setSelectedInfographic({ 
-                    id: 'programa_basico', 
-                    src: '/images/infografia_basico.jpg', 
+                <div
+                  onClick={() => setSelectedInfographic({
+                    id: 'programa_basico',
+                    src: '/images/infografia_basico.jpg',
                     mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
                     plan: 'basico',
                     alt: 'Infografía detallada del Programa Básico ReprogrÁmate con indicaciones, herramientas y sesiones incluidas.'
@@ -433,10 +433,10 @@ export default function Reprogramate() {
             {/* Card 2: Intermedio */}
             <div className="flex flex-col md:contents">
               <div className="flex flex-col md:row-start-1 md:col-start-2">
-                <div 
-                  onClick={() => setSelectedInfographic({ 
-                    id: 'programa_intermedio', 
-                    src: '/images/infografia_intermedio.jpg', 
+                <div
+                  onClick={() => setSelectedInfographic({
+                    id: 'programa_intermedio',
+                    src: '/images/infografia_intermedio.jpg',
                     mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
                     plan: 'intermedio',
                     alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate con sesiones, herramientas y acompañamiento incluidos.'
@@ -513,10 +513,10 @@ export default function Reprogramate() {
             {/* Card 3: Completo */}
             <div className="flex flex-col md:contents">
               <div className="flex flex-col md:row-start-1 md:col-start-3">
-                <div 
-                  onClick={() => setSelectedInfographic({ 
-                    id: 'programa_completo', 
-                    src: '/images/infografia_completo.jpg', 
+                <div
+                  onClick={() => setSelectedInfographic({
+                    id: 'programa_completo',
+                    src: '/images/infografia_completo.jpg',
                     mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
                     plan: 'completo',
                     alt: 'Infografía detallada del Programa Completo ReprogrÁmate con sesiones, herramientas y acompañamiento intensivo incluidos.'

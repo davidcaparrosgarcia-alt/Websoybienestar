@@ -103,8 +103,8 @@ export default function Treatments() {
                   <span className="material-symbols-outlined text-secondary text-xl">person</span>
                   <span className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">Dirigido por María Iris</span>
                 </div>
-                <Link 
-                  to="/reprogramate" 
+                <Link
+                  to="/reprogramate"
                   className="w-full sm:w-auto px-6 py-3 bg-[#2c3e50] dark:bg-white text-white dark:text-[#2c3e50] rounded-xl font-label text-xs font-medium tracking-wide hover:opacity-95 transition-all text-center flex items-center justify-center gap-2"
                 >
                   Ver ReprogrÁmate
@@ -121,9 +121,9 @@ export default function Treatments() {
             className="flex flex-col rounded-[2.5rem] bg-surface-container-low border border-outline-variant/10 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
           >
             <Link to="/hipnodigest" className="block h-64 sm:h-80 overflow-hidden relative group/image" aria-label="Ver programa HipnoDigest">
-              <img 
-                src="/images/fondo_hipnodigestive.jpg" 
-                alt="Programa HipnoDigest" 
+              <img
+                src="/images/fondo_hipnodigestive.jpg"
+                alt="Programa HipnoDigest"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 md:p-8">
@@ -148,8 +148,8 @@ export default function Treatments() {
                     María Iris y Diego Arnold
                   </span>
                 </div>
-                <Link 
-                  to="/hipnodigest" 
+                <Link
+                  to="/hipnodigest"
                   className="w-full sm:w-auto px-6 py-3 bg-surface-container-high text-primary hover:bg-surface-container-highest rounded-xl font-label text-xs font-medium tracking-wide active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 border border-outline-variant/20"
                 >
                   Ver HipnoDigest
