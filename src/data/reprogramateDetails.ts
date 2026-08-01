@@ -236,7 +236,7 @@ export function ReprogramateGeneralDetail() {
             "li",
             null,
             e("strong", null, "Regulación del sistema nervioso: "),
-            "respiraciones y prácticas dirigidas a reducir la activation y recuperar un estado de mayor calma reactivando el nervio vago.",
+            "respiraciones y prácticas dirigidas a reducir la activación y recuperar un estado de mayor calma reactivando el nervio vago.",
           ),
           e(
             "li",

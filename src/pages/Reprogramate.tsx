@@ -213,7 +213,20 @@ export default function Reprogramate() {
           </span>
         </button>
 
-        {openDetail === "general" && <ReprogramateGeneralDetail />}
+        {openDetail === "general" && (
+          <div className="[overflow-anchor:none]">
+            <ReprogramateGeneralDetail />
+            <button
+              type="button"
+              onClick={() => setOpenDetail(null)}
+              aria-label="Cerrar explicación de ReprogrÁmate"
+              className="w-full min-h-[64px] mt-5 md:mt-6 px-6 md:px-8 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl md:text-2xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+            >
+              <span className="shrink-0 font-bold" aria-hidden="true">－</span>
+              <span className="text-left font-semibold">Cerrar explicación</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Treatments Bento Grid */}
@@ -265,7 +278,7 @@ export default function Reprogramate() {
                 aria-expanded={openDetail === "basico"}
                 aria-controls="reprogramate-basic-detail"
                 onClick={() => toggleDetail("basico")}
-                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
               >
                 <span className="shrink-0 font-bold" aria-hidden="true">
                   {openDetail === "basico" ? "－" : "＋"}
@@ -277,7 +290,20 @@ export default function Reprogramate() {
 
               {/* Mobile basic details */}
               <div className="block md:hidden">
-                {openDetail === "basico" && <ReprogramateBasicDetail />}
+                {openDetail === "basico" && (
+                  <div className="[overflow-anchor:none]">
+                    <ReprogramateBasicDetail />
+                    <button
+                      type="button"
+                      onClick={() => setOpenDetail(null)}
+                      aria-label="Cerrar explicación de Programa Básico"
+                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                    >
+                      <span className="shrink-0 font-bold" aria-hidden="true">－</span>
+                      <span className="text-left font-semibold">Cerrar explicación</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -310,7 +336,7 @@ export default function Reprogramate() {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
               >
                 <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
                 <span className="text-left font-semibold">Conocer en detalle el Programa Intermedio</span>
@@ -346,7 +372,7 @@ export default function Reprogramate() {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="w-full min-h-[64px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
               >
                 <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
                 <span className="text-left font-semibold">Conocer en detalle el Programa Completo</span>
@@ -355,7 +381,20 @@ export default function Reprogramate() {
 
             {/* Desktop basic details spanning full width under the cards */}
             <div className="hidden md:block md:col-span-3">
-              {openDetail === "basico" && <ReprogramateBasicDetail />}
+              {openDetail === "basico" && (
+                <div className="[overflow-anchor:none]">
+                  <ReprogramateBasicDetail />
+                  <button
+                    type="button"
+                    onClick={() => setOpenDetail(null)}
+                    aria-label="Cerrar explicación de Programa Básico"
+                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  >
+                    <span className="shrink-0 font-bold" aria-hidden="true">－</span>
+                    <span className="text-left font-semibold">Cerrar explicación</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
