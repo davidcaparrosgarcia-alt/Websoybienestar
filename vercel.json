@@ -1,4 +1,45 @@
 {
+  "redirects": [
+    {
+      "source": "/hipnodisgest",
+      "destination": "/hipnodigest",
+      "permanent": true
+    },
+    {
+      "source": "/hipnodigestive",
+      "destination": "/hipnodigest",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(index.html|sitemap.xml|robots.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

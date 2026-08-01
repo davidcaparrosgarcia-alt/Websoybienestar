@@ -189,7 +189,55 @@ export default function Reprogramate() {
       "name": "España"
     },
     "url": "https://soybienestar.es/reprogramate",
-    "description": "Programa online de 3 meses de acompañamiento emocional y corporal personalizado, con metodología holística y flexible."
+    "description": "Programa online de tres meses con acompañamiento terapéutico, sesiones de gestión emocional, curso de gestión de emociones, ejercicios, meditaciones y recursos personalizados adaptados a cada modalidad.",
+    "image": "https://soybienestar.es/images/tratamientos_reprogramate.jpg",
+    "availableChannel": {
+      "@type": "ServiceChannel",
+      "serviceUrl": "https://soybienestar.es/reprogramate",
+      "availableLanguage": {
+        "@type": "Language",
+        "name": "Español"
+      }
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Programas ReprogrÁmate",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "name": "Programa Básico",
+          "url": "https://soybienestar.es/reprogramate#reprogramate-basic-detail",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Programa Básico ReprogrÁmate",
+            "serviceType": "Acompañamiento emocional online",
+            "description": "Tres sesiones terapéuticas durante tres meses, una sesión personal de gestión emocional, acceso a los cinco módulos básicos del curso de gestión de emociones, ejercicios guiados, recursos personalizados y acompañamiento puntual mediante WhatsApp."
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Programa Intermedio",
+          "url": "https://soybienestar.es/reprogramate#reprogramate-intermediate-detail",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Programa Intermedio ReprogrÁmate",
+            "serviceType": "Acompañamiento emocional online",
+            "description": "Seis sesiones terapéuticas durante tres meses, aproximadamente una cada quince días, tres sesiones personales de gestión emocional, acceso a los cinco módulos básicos y a un módulo especial, materiales personalizados y acompañamiento puntual mediante WhatsApp."
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Programa Completo",
+          "url": "https://soybienestar.es/reprogramate#reprogramate-complete-detail",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Programa Completo ReprogrÁmate",
+            "serviceType": "Acompañamiento emocional online intensivo",
+            "description": "Doce sesiones terapéuticas durante tres meses, una sesión semanal, cuatro sesiones personales de gestión emocional, acceso a los cinco módulos básicos y los tres módulos especiales, múltiples recursos personalizados y acompañamiento puntual mediante WhatsApp."
+          }
+        }
+      ]
+    }
   };
 
   const handleShare = () => {
@@ -234,6 +282,8 @@ export default function Reprogramate() {
         description="Programa terapéutico online de 3 meses para trabajar el malestar emocional desde la mente, el cuerpo y la emoción, con acompañamiento cercano y personalizado."
         canonicalPath="/reprogramate"
         noIndex={false}
+        imagePath="/images/tratamientos_reprogramate.jpg"
+        imageAlt="Infografía general del programa ReprogrÁmate y sus áreas de trabajo emocional, mental y corporal"
       />
       <StructuredData id="breadcrumb-schema-reprogramate" data={breadcrumbSchema} />
       <StructuredData id="reprogramate-service-schema" data={treatmentsServiceSchema} />
@@ -276,22 +326,23 @@ export default function Reprogramate() {
           </span>
         </button>
 
-        {openDetail === "general" && (
-          <div>
-            <ReprogramateGeneralDetail />
-            <button
-              type="button"
-              onClick={(event) =>
-                closeDetailFromBottom("general", event.currentTarget)
-              }
-              aria-label="Cerrar explicación de ReprogrÁmate"
-              className="w-full min-h-[64px] mt-5 md:mt-6 px-6 md:px-8 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl md:text-2xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-            >
-              <span className="shrink-0 font-bold" aria-hidden="true">－</span>
-              <span className="text-left font-semibold">Cerrar explicación</span>
-            </button>
-          </div>
-        )}
+        <div
+          className={openDetail === "general" ? "block" : "hidden"}
+          aria-hidden={openDetail !== "general"}
+        >
+          <ReprogramateGeneralDetail />
+          <button
+            type="button"
+            onClick={(event) =>
+              closeDetailFromBottom("general", event.currentTarget)
+            }
+            aria-label="Cerrar explicación de ReprogrÁmate"
+            className="w-full min-h-[64px] mt-5 md:mt-6 px-6 md:px-8 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl md:text-2xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+          >
+            <span className="shrink-0 font-bold" aria-hidden="true">－</span>
+            <span className="text-left font-semibold">Cerrar explicación</span>
+          </button>
+        </div>
       </div>
 
       {/* Treatments Bento Grid */}
@@ -313,294 +364,230 @@ export default function Reprogramate() {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <div className="flex flex-col">
-              <div 
-                onClick={() => setSelectedInfographic({ 
-                  id: 'programa_basico', 
-                  src: '/images/infografia_basico.jpg', 
-                  mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
-                  plan: 'basico',
-                  alt: 'Infografía detallada del Programa Básico ReprogrÁmate con indicaciones, herramientas y sesiones incluidas.'
-                })}
-                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-              >
-                <picture>
-                  <source
-                    media="(max-width: 1024px) and (orientation: portrait)"
-                    srcSet="/images/programa_basico_vertical.jpg"
-                  />
-                  <img
-                    src="/images/programa_basico.jpg"
-                    alt="Programa Básico ReprogrÁmate para estrés, insomnio, sobrecarga laboral, recuperación de calma, claridad y foco."
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </picture>
+            {/* Card 1: Básico */}
+            <div className="flex flex-col md:contents">
+              <div className="flex flex-col md:row-start-1 md:col-start-1">
+                <div 
+                  onClick={() => setSelectedInfographic({ 
+                    id: 'programa_basico', 
+                    src: '/images/infografia_basico.jpg', 
+                    mobileSrc: '/images/infografia_basico_vertical_movil.jpg',
+                    plan: 'basico',
+                    alt: 'Infografía detallada del Programa Básico ReprogrÁmate con indicaciones, herramientas y sesiones incluidas.'
+                  })}
+                  className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+                >
+                  <picture>
+                    <source
+                      media="(max-width: 1024px) and (orientation: portrait)"
+                      srcSet="/images/programa_basico_vertical.jpg"
+                    />
+                    <img
+                      src="/images/programa_basico.jpg"
+                      alt="Programa Básico ReprogrÁmate para estrés, insomnio, sobrecarga laboral, recuperación de calma, claridad y foco."
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </picture>
+                </div>
+
+                <button
+                  ref={basicDetailButtonRef}
+                  type="button"
+                  aria-expanded={openDetail === "basico"}
+                  aria-controls="reprogramate-basic-detail"
+                  onClick={() => toggleDetail("basico")}
+                  className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span className="shrink-0 font-bold" aria-hidden="true">
+                    {openDetail === "basico" ? "－" : "＋"}
+                  </span>
+                  <span className="text-left font-semibold">
+                    {openDetail === "basico" ? "Cerrar explicación" : "Conocer en detalle el Programa Básico"}
+                  </span>
+                </button>
               </div>
 
-              <button
-                ref={basicDetailButtonRef}
-                type="button"
-                aria-expanded={openDetail === "basico"}
-                aria-controls="reprogramate-basic-detail"
-                onClick={() => toggleDetail("basico")}
-                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+              <div
+                className={
+                  openDetail === "basico"
+                    ? "block md:row-start-2 md:col-start-1 md:col-span-3"
+                    : "hidden md:row-start-2 md:col-start-1 md:col-span-3"
+                }
+                aria-hidden={openDetail !== "basico"}
               >
-                <span className="shrink-0 font-bold" aria-hidden="true">
-                  {openDetail === "basico" ? "－" : "＋"}
-                </span>
-                <span className="text-left font-semibold">
-                  {openDetail === "basico" ? "Cerrar explicación" : "Conocer en detalle el Programa Básico"}
-                </span>
-              </button>
-
-              {/* Mobile basic details */}
-              <div className="block md:hidden">
-                {openDetail === "basico" && (
-                  <div>
-                    <ReprogramateBasicDetail />
-                    <button
-                      type="button"
-                      onClick={(event) =>
-                        closeDetailFromBottom("basico", event.currentTarget)
-                      }
-                      aria-label="Cerrar explicación de Programa Básico"
-                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                    >
-                      <span className="shrink-0 font-bold" aria-hidden="true">－</span>
-                      <span className="text-left font-semibold">Cerrar explicación</span>
-                    </button>
-                  </div>
-                )}
+                <ReprogramateBasicDetail />
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    closeDetailFromBottom("basico", event.currentTarget)
+                  }
+                  aria-label="Cerrar explicación de Programa Básico"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span className="shrink-0 font-bold" aria-hidden="true">－</span>
+                  <span className="text-left font-semibold">Cerrar explicación</span>
+                </button>
               </div>
             </div>
 
-            {/* Card 2 */}
-            <div className="flex flex-col">
-              <div 
-                onClick={() => setSelectedInfographic({ 
-                  id: 'programa_intermedio', 
-                  src: '/images/infografia_intermedio.jpg', 
-                  mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
-                  plan: 'intermedio',
-                  alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate con sesiones, herramientas y acompañamiento incluidos.'
-                })}
-                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-              >
-                <picture>
-                  <source
-                    media="(max-width: 1024px) and (orientation: portrait)"
-                    srcSet="/images/programa_intermedio_vertical.jpg"
-                  />
-                  <img
-                    src="/images/programa_intermedio.jpg"
-                    alt="Programa Intermedio ReprogrÁmate para ansiedad recurrente, pensamientos en bucle, procrastinación, insomnio grave, conflictos relacionales y estrés persistente."
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </picture>
+            {/* Card 2: Intermedio */}
+            <div className="flex flex-col md:contents">
+              <div className="flex flex-col md:row-start-1 md:col-start-2">
+                <div 
+                  onClick={() => setSelectedInfographic({ 
+                    id: 'programa_intermedio', 
+                    src: '/images/infografia_intermedio.jpg', 
+                    mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
+                    plan: 'intermedio',
+                    alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate con sesiones, herramientas y acompañamiento incluidos.'
+                  })}
+                  className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+                >
+                  <picture>
+                    <source
+                      media="(max-width: 1024px) and (orientation: portrait)"
+                      srcSet="/images/programa_intermedio_vertical.jpg"
+                    />
+                    <img
+                      src="/images/programa_intermedio.jpg"
+                      alt="Programa Intermedio ReprogrÁmate para ansiedad recurrente, pensamientos en bucle, procrastinación, insomnio grave, conflictos relacionales y estrés persistente."
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </picture>
+                </div>
+
+                <button
+                  ref={intermediateDetailButtonRef}
+                  type="button"
+                  aria-expanded={openDetail === "intermedio"}
+                  aria-controls="reprogramate-intermediate-detail"
+                  onClick={() => toggleDetail("intermedio")}
+                  className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span className="shrink-0 font-bold" aria-hidden="true">
+                    {openDetail === "intermedio" ? "－" : "＋"}
+                  </span>
+                  <span className="text-left font-semibold">
+                    {openDetail === "intermedio"
+                      ? "Cerrar explicación"
+                      : "Conocer en detalle el Programa Intermedio"}
+                  </span>
+                </button>
               </div>
 
-              <button
-                ref={intermediateDetailButtonRef}
-                type="button"
-                aria-expanded={openDetail === "intermedio"}
-                aria-controls="reprogramate-intermediate-detail"
-                onClick={() => toggleDetail("intermedio")}
-                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+              <div
+                className={
+                  openDetail === "intermedio"
+                    ? "block md:row-start-2 md:col-start-1 md:col-span-3"
+                    : "hidden md:row-start-2 md:col-start-1 md:col-span-3"
+                }
+                aria-hidden={openDetail !== "intermedio"}
               >
-                <span className="shrink-0 font-bold" aria-hidden="true">
-                  {openDetail === "intermedio" ? "－" : "＋"}
-                </span>
-                <span className="text-left font-semibold">
-                  {openDetail === "intermedio"
-                    ? "Cerrar explicación"
-                    : "Conocer en detalle el Programa Intermedio"}
-                </span>
-              </button>
+                <ReprogramateIntermediateDetail />
 
-              <div className="block md:hidden">
-                {openDetail === "intermedio" && (
-                  <div>
-                    <ReprogramateIntermediateDetail />
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    closeDetailFromBottom(
+                      "intermedio",
+                      event.currentTarget,
+                    )
+                  }
+                  aria-label="Cerrar explicación de Programa Intermedio"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span
+                    className="shrink-0 font-bold"
+                    aria-hidden="true"
+                  >
+                    －
+                  </span>
 
-                    <button
-                      type="button"
-                      onClick={(event) =>
-                        closeDetailFromBottom(
-                          "intermedio",
-                          event.currentTarget,
-                        )
-                      }
-                      aria-label="Cerrar explicación de Programa Intermedio"
-                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                    >
-                      <span
-                        className="shrink-0 font-bold"
-                        aria-hidden="true"
-                      >
-                        －
-                      </span>
-
-                      <span className="text-left font-semibold">
-                        Cerrar explicación
-                      </span>
-                    </button>
-                  </div>
-                )}
+                  <span className="text-left font-semibold">
+                    Cerrar explicación
+                  </span>
+                </button>
               </div>
             </div>
 
-            {/* Card 3 */}
-            <div className="flex flex-col">
-              <div 
-                onClick={() => setSelectedInfographic({ 
-                  id: 'programa_completo', 
-                  src: '/images/infografia_completo.jpg', 
-                  mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
-                  plan: 'completo',
-                  alt: 'Infografía detallada del Programa Completo ReprogrÁmate con sesiones, herramientas y acompañamiento intensivo incluidos.'
-                })}
-                className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
-              >
-                <picture>
-                  <source
-                    media="(max-width: 1024px) and (orientation: portrait)"
-                    srcSet="/images/programa_completo_vertical.jpg"
-                  />
-                  <img
-                    src="/images/programa_completo.jpg"
-                    alt="Programa Completo ReprogrÁmate para ansiedad profunda, síntomas depresivos, heridas emocionales, dependencia emocional, insomnio severo y malestar psicosomático."
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </picture>
+            {/* Card 3: Completo */}
+            <div className="flex flex-col md:contents">
+              <div className="flex flex-col md:row-start-1 md:col-start-3">
+                <div 
+                  onClick={() => setSelectedInfographic({ 
+                    id: 'programa_completo', 
+                    src: '/images/infografia_completo.jpg', 
+                    mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
+                    plan: 'completo',
+                    alt: 'Infografía detallada del Programa Completo ReprogrÁmate con sesiones, herramientas y acompañamiento intensivo incluidos.'
+                  })}
+                  className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
+                >
+                  <picture>
+                    <source
+                      media="(max-width: 1024px) and (orientation: portrait)"
+                      srcSet="/images/programa_completo_vertical.jpg"
+                    />
+                    <img
+                      src="/images/programa_completo.jpg"
+                      alt="Programa Completo ReprogrÁmate para ansiedad profunda, síntomas depresivos, heridas emocionales, dependencia emocional, insomnio severo y malestar psicosomático."
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </picture>
+                </div>
+
+                <button
+                  ref={completeDetailButtonRef}
+                  type="button"
+                  aria-expanded={openDetail === "completo"}
+                  aria-controls="reprogramate-complete-detail"
+                  onClick={() => toggleDetail("completo")}
+                  className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span className="shrink-0 font-bold" aria-hidden="true">
+                    {openDetail === "completo" ? "－" : "＋"}
+                  </span>
+                  <span className="text-left font-semibold">
+                    {openDetail === "completo"
+                      ? "Cerrar explicación"
+                      : "Conocer en detalle el Programa Completo"}
+                  </span>
+                </button>
               </div>
 
-              <button
-                ref={completeDetailButtonRef}
-                type="button"
-                aria-expanded={openDetail === "completo"}
-                aria-controls="reprogramate-complete-detail"
-                onClick={() => toggleDetail("completo")}
-                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+              <div
+                className={
+                  openDetail === "completo"
+                    ? "block md:row-start-2 md:col-start-1 md:col-span-3"
+                    : "hidden md:row-start-2 md:col-start-1 md:col-span-3"
+                }
+                aria-hidden={openDetail !== "completo"}
               >
-                <span className="shrink-0 font-bold" aria-hidden="true">
-                  {openDetail === "completo" ? "－" : "＋"}
-                </span>
-                <span className="text-left font-semibold">
-                  {openDetail === "completo"
-                    ? "Cerrar explicación"
-                    : "Conocer en detalle el Programa Completo"}
-                </span>
-              </button>
+                <ReprogramateCompleteDetail />
 
-              <div className="block md:hidden">
-                {openDetail === "completo" && (
-                  <div>
-                    <ReprogramateCompleteDetail />
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    closeDetailFromBottom(
+                      "completo",
+                      event.currentTarget,
+                    )
+                  }
+                  aria-label="Cerrar explicación de Programa Completo"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                >
+                  <span
+                    className="shrink-0 font-bold"
+                    aria-hidden="true"
+                  >
+                    －
+                  </span>
 
-                    <button
-                      type="button"
-                      onClick={(event) =>
-                        closeDetailFromBottom(
-                          "completo",
-                          event.currentTarget,
-                        )
-                      }
-                      aria-label="Cerrar explicación de Programa Completo"
-                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                    >
-                      <span
-                        className="shrink-0 font-bold"
-                        aria-hidden="true"
-                      >
-                        －
-                      </span>
-
-                      <span className="text-left font-semibold">
-                        Cerrar explicación
-                      </span>
-                    </button>
-                  </div>
-                )}
+                  <span className="text-left font-semibold">
+                    Cerrar explicación
+                  </span>
+                </button>
               </div>
-            </div>
-
-            {/* Desktop details spanning full width under the cards */}
-            <div className="hidden md:block md:col-span-3">
-              {openDetail === "basico" && (
-                <div>
-                  <ReprogramateBasicDetail />
-                  <button
-                    type="button"
-                    onClick={(event) =>
-                      closeDetailFromBottom("basico", event.currentTarget)
-                    }
-                    aria-label="Cerrar explicación de Programa Básico"
-                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                  >
-                    <span className="shrink-0 font-bold" aria-hidden="true">－</span>
-                    <span className="text-left font-semibold">Cerrar explicación</span>
-                  </button>
-                </div>
-              )}
-
-              {openDetail === "intermedio" && (
-                <div>
-                  <ReprogramateIntermediateDetail />
-
-                  <button
-                    type="button"
-                    onClick={(event) =>
-                      closeDetailFromBottom(
-                        "intermedio",
-                        event.currentTarget,
-                      )
-                    }
-                    aria-label="Cerrar explicación de Programa Intermedio"
-                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                  >
-                    <span
-                      className="shrink-0 font-bold"
-                      aria-hidden="true"
-                    >
-                      －
-                    </span>
-
-                    <span className="text-left font-semibold">
-                      Cerrar explicación
-                    </span>
-                  </button>
-                </div>
-              )}
-
-              {openDetail === "completo" && (
-                <div>
-                  <ReprogramateCompleteDetail />
-
-                  <button
-                    type="button"
-                    onClick={(event) =>
-                      closeDetailFromBottom(
-                        "completo",
-                        event.currentTarget,
-                      )
-                    }
-                    aria-label="Cerrar explicación de Programa Completo"
-                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
-                  >
-                    <span
-                      className="shrink-0 font-bold"
-                      aria-hidden="true"
-                    >
-                      －
-                    </span>
-
-                    <span className="text-left font-semibold">
-                      Cerrar explicación
-                    </span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>

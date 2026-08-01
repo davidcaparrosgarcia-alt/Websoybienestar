@@ -117,7 +117,7 @@ export default function Layout() {
 
   const getLinkClass = (path: string) => {
     const activeGroups: Record<string, string[]> = {
-      "/tratamientos-online": ["/tratamientos-online", "/treatments", "/reprogramate", "/hipnodigestive", "/hipnodisgest"],
+      "/tratamientos-online": ["/tratamientos-online", "/treatments", "/reprogramate", "/hipnodigest", "/hipnodigestive", "/hipnodisgest"],
       "/como-trabajamos": ["/como-trabajamos", "/method", "/method-details"],
       "/quienes-somos": ["/quienes-somos", "/como-trabajamos/detalles"],
       "/herramientas": ["/herramientas", "/resources"],

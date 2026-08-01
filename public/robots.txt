@@ -9,6 +9,7 @@ Disallow: /dossier-espejo
 Disallow: /sesion-validacion
 Disallow: /emotion-diary
 Disallow: /weekly-goals
+Disallow: /ai-diagnostics
 Disallow: /anxiety
 
 Sitemap: https://soybienestar.es/sitemap.xml

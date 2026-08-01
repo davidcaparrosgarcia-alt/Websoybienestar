@@ -71,6 +71,33 @@ export default function MethodDetails() {
     ]
   };
 
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": "https://soybienestar.es/quienes-somos#about",
+    "url": "https://soybienestar.es/quienes-somos",
+    "mainEntity": [
+      {
+        "@type": "Person",
+        "name": "María Iris",
+        "jobTitle": "Terapeuta y directora de los programas de SoyBienestar.es",
+        "description": "María Iris es terapeuta psicosomática, hipnoterapeuta, profesora de kundalini yoga y meditación, con experiencia acompañando procesos de transformación emocional, corporal y mental."
+      },
+      {
+        "@type": "Person",
+        "name": "Diego Arnold",
+        "jobTitle": "Asesor y coach nutricional especializado en Kinesiología Bioenergética",
+        "description": "Diego Arnold acompaña el área nutricional desde una mirada integradora, ayudando a cuidar el cuerpo, equilibrar hábitos y favorecer una transformación más completa."
+      },
+      {
+        "@type": "Person",
+        "name": "David Caparrós",
+        "jobTitle": "Creador del proyecto y desarrollo de contenidos terapéuticos digitales",
+        "description": "David Caparrós participa en la creación, estructura y desarrollo de contenidos del proyecto, integrando comunicación, experiencia de usuario y herramientas digitales orientadas al bienestar emocional."
+      }
+    ]
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -113,6 +140,7 @@ export default function MethodDetails() {
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-quienes-somos" data={breadcrumbSchema} />
+      <StructuredData id="about-page-schema" data={aboutPageSchema} />
 
       {/* Header Section */}
       <section className="px-8 md:px-24 pt-8 md:pt-12 pb-6 max-w-screen-2xl mx-auto text-center animate-in fade-in duration-500">

@@ -217,7 +217,7 @@ export default function HipnoDigestive() {
         "@type": "ListItem",
         "position": 3,
         "name": "HipnoDigest",
-        "item": "https://soybienestar.es/hipnodisgest"
+        "item": "https://soybienestar.es/hipnodigest"
       }
     ]
   };
@@ -225,14 +225,27 @@ export default function HipnoDigestive() {
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": "https://soybienestar.es/hipnodisgest#service",
+    "@id": "https://soybienestar.es/hipnodigest#service",
     "name": "Programa HipnoDigest",
     "serviceType": "Acompañamiento en bienestar digestivo y hábitos",
     "provider": {
       "@id": "https://soybienestar.es/#organization"
     },
-    "url": "https://soybienestar.es/hipnodisgest",
-    "description": "Acompañamiento complementario que une hipnosis digestiva y asesoramiento nutricional para favorecer una mejor relación cuerpo-mente y digestión."
+    "url": "https://soybienestar.es/hipnodigest",
+    "description": "Acompañamiento complementario que une hipnosis digestiva y asesoramiento nutricional para favorecer una mejor relación cuerpo-mente y digestión.",
+    "areaServed": {
+      "@type": "Country",
+      "name": "España"
+    },
+    "image": "https://soybienestar.es/images/fondo_hipnodigestive.jpg",
+    "availableChannel": {
+      "@type": "ServiceChannel",
+      "serviceUrl": "https://soybienestar.es/hipnodigest",
+      "availableLanguage": {
+        "@type": "Language",
+        "name": "Español"
+      }
+    }
   };
 
   return (
@@ -240,11 +253,13 @@ export default function HipnoDigestive() {
       <SEO
         title="HipnoDigest | Hipnosis digestiva y acompañamiento nutricional | SoyBienestar"
         description="Programa online en preparación que combina hipnosis digestiva de María Iris y acompañamiento nutricional personalizado de Diego Arnold para cuidar digestión, hábitos y bienestar emocional."
-        canonicalPath="/hipnodisgest"
+        canonicalPath="/hipnodigest"
         noIndex={false}
+        imagePath="/images/fondo_hipnodigestive.jpg"
+        imageAlt="Programa HipnoDigest de acompañamiento digestivo, nutricional y emocional"
       />
-      <StructuredData id="breadcrumb-schema-hipnodisgest" data={breadcrumbSchema} />
-      <StructuredData id="hipnodisgest-service-schema" data={serviceSchema} />
+      <StructuredData id="breadcrumb-schema-hipnodigest" data={breadcrumbSchema} />
+      <StructuredData id="hipnodigest-service-schema" data={serviceSchema} />
 
       {/* Main Content Area */}
       <section className="px-6 md:px-12 py-16 max-w-4xl lg:max-w-screen-2xl mx-auto flex-grow flex flex-col justify-center animate-in fade-in duration-500">

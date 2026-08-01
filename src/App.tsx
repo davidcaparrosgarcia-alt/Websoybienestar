@@ -51,6 +51,7 @@ export default function App() {
           <Route path="treatments" element={<Treatments />} />
           <Route path="tratamientos-online" element={<Treatments />} />
           <Route path="reprogramate" element={<Reprogramate />} />
+          <Route path="hipnodigest" element={<HipnoDigestive />} />
           <Route path="hipnodigestive" element={<HipnoDigestive />} />
           <Route path="hipnodisgest" element={<HipnoDigestive />} />
           <Route path="method" element={<Method />} />
