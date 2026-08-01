@@ -1,4 +1,9 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -11,6 +16,7 @@ import {
   ReprogramateDetailId,
   ReprogramateGeneralDetail,
   ReprogramateBasicDetail,
+  ReprogramateIntermediateDetail,
 } from "../data/reprogramateDetails";
 
 export default function Reprogramate() {
@@ -25,6 +31,59 @@ export default function Reprogramate() {
   const [showReservationState, setShowReservationState] = useState(false);
 
   const [openDetail, setOpenDetail] = useState<ReprogramateDetailId>(null);
+
+  const generalDetailButtonRef = useRef<HTMLButtonElement | null>(null);
+  const basicDetailButtonRef = useRef<HTMLButtonElement | null>(null);
+  const intermediateDetailButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  type ClosableDetailId = "general" | "basico" | "intermedio";
+
+  const pendingCloseAlignmentRef = useRef<{
+    id: ClosableDetailId;
+    viewportTop: number;
+  } | null>(null);
+
+  const getDetailButtonRef = (id: ClosableDetailId) => {
+    if (id === "general") return generalDetailButtonRef;
+    if (id === "basico") return basicDetailButtonRef;
+    return intermediateDetailButtonRef;
+  };
+
+  const closeDetailFromBottom = (
+    id: ClosableDetailId,
+    button: HTMLButtonElement,
+  ) => {
+    pendingCloseAlignmentRef.current = {
+      id,
+      viewportTop: button.getBoundingClientRect().top,
+    };
+
+    setOpenDetail(null);
+  };
+
+  useLayoutEffect(() => {
+    if (openDetail !== null) return;
+
+    const pending = pendingCloseAlignmentRef.current;
+    if (!pending) return;
+
+    const targetButton = getDetailButtonRef(pending.id).current;
+
+    if (targetButton) {
+      const currentTop = targetButton.getBoundingClientRect().top;
+      const adjustment = currentTop - pending.viewportTop;
+
+      if (Math.abs(adjustment) > 1) {
+        window.scrollBy({
+          top: adjustment,
+          left: 0,
+          behavior: "auto",
+        });
+      }
+    }
+
+    pendingCloseAlignmentRef.current = null;
+  }, [openDetail]);
 
   const toggleDetail = (id: Exclude<ReprogramateDetailId, null>) => {
     setOpenDetail((current) => (current === id ? null : id));
@@ -199,6 +258,7 @@ export default function Reprogramate() {
         </div>
 
         <button
+          ref={generalDetailButtonRef}
           type="button"
           aria-expanded={openDetail === "general"}
           aria-controls="reprogramate-general-detail"
@@ -214,11 +274,13 @@ export default function Reprogramate() {
         </button>
 
         {openDetail === "general" && (
-          <div className="[overflow-anchor:none]">
+          <div>
             <ReprogramateGeneralDetail />
             <button
               type="button"
-              onClick={() => setOpenDetail(null)}
+              onClick={(event) =>
+                closeDetailFromBottom("general", event.currentTarget)
+              }
               aria-label="Cerrar explicación de ReprogrÁmate"
               className="w-full min-h-[64px] mt-5 md:mt-6 px-6 md:px-8 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl md:text-2xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
             >
@@ -274,6 +336,7 @@ export default function Reprogramate() {
               </div>
 
               <button
+                ref={basicDetailButtonRef}
                 type="button"
                 aria-expanded={openDetail === "basico"}
                 aria-controls="reprogramate-basic-detail"
@@ -291,11 +354,13 @@ export default function Reprogramate() {
               {/* Mobile basic details */}
               <div className="block md:hidden">
                 {openDetail === "basico" && (
-                  <div className="[overflow-anchor:none]">
+                  <div>
                     <ReprogramateBasicDetail />
                     <button
                       type="button"
-                      onClick={() => setOpenDetail(null)}
+                      onClick={(event) =>
+                        closeDetailFromBottom("basico", event.currentTarget)
+                      }
                       aria-label="Cerrar explicación de Programa Básico"
                       className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                     >
@@ -315,7 +380,7 @@ export default function Reprogramate() {
                   src: '/images/infografia_intermedio.jpg', 
                   mobileSrc: '/images/infografia_intermedio_vertical_movil.jpg',
                   plan: 'intermedio',
-                  alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate'
+                  alt: 'Infografía detallada del Programa Intermedio ReprogrÁmate con sesiones, herramientas y acompañamiento incluidos.'
                 })}
                 className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
               >
@@ -326,21 +391,60 @@ export default function Reprogramate() {
                   />
                   <img
                     src="/images/programa_intermedio.jpg"
-                    alt="Programa intermedio"
+                    alt="Programa Intermedio ReprogrÁmate para ansiedad recurrente, pensamientos en bucle, procrastinación, insomnio grave, conflictos relacionales y estrés persistente."
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </picture>
               </div>
 
               <button
+                ref={intermediateDetailButtonRef}
                 type="button"
-                disabled
-                aria-disabled="true"
-                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+                aria-expanded={openDetail === "intermedio"}
+                aria-controls="reprogramate-intermediate-detail"
+                onClick={() => toggleDetail("intermedio")}
+                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
               >
-                <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
-                <span className="text-left font-semibold">Conocer en detalle el Programa Intermedio</span>
+                <span className="shrink-0 font-bold" aria-hidden="true">
+                  {openDetail === "intermedio" ? "－" : "＋"}
+                </span>
+                <span className="text-left font-semibold">
+                  {openDetail === "intermedio"
+                    ? "Cerrar explicación"
+                    : "Conocer en detalle el Programa Intermedio"}
+                </span>
               </button>
+
+              <div className="block md:hidden">
+                {openDetail === "intermedio" && (
+                  <div>
+                    <ReprogramateIntermediateDetail />
+
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        closeDetailFromBottom(
+                          "intermedio",
+                          event.currentTarget,
+                        )
+                      }
+                      aria-label="Cerrar explicación de Programa Intermedio"
+                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                    >
+                      <span
+                        className="shrink-0 font-bold"
+                        aria-hidden="true"
+                      >
+                        －
+                      </span>
+
+                      <span className="text-left font-semibold">
+                        Cerrar explicación
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Card 3 */}
@@ -379,19 +483,50 @@ export default function Reprogramate() {
               </button>
             </div>
 
-            {/* Desktop basic details spanning full width under the cards */}
+            {/* Desktop details spanning full width under the cards */}
             <div className="hidden md:block md:col-span-3">
               {openDetail === "basico" && (
-                <div className="[overflow-anchor:none]">
+                <div>
                   <ReprogramateBasicDetail />
                   <button
                     type="button"
-                    onClick={() => setOpenDetail(null)}
+                    onClick={(event) =>
+                      closeDetailFromBottom("basico", event.currentTarget)
+                    }
                     aria-label="Cerrar explicación de Programa Básico"
                     className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                   >
                     <span className="shrink-0 font-bold" aria-hidden="true">－</span>
                     <span className="text-left font-semibold">Cerrar explicación</span>
+                  </button>
+                </div>
+              )}
+
+              {openDetail === "intermedio" && (
+                <div>
+                  <ReprogramateIntermediateDetail />
+
+                  <button
+                    type="button"
+                    onClick={(event) =>
+                      closeDetailFromBottom(
+                        "intermedio",
+                        event.currentTarget,
+                      )
+                    }
+                    aria-label="Cerrar explicación de Programa Intermedio"
+                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  >
+                    <span
+                      className="shrink-0 font-bold"
+                      aria-hidden="true"
+                    >
+                      －
+                    </span>
+
+                    <span className="text-left font-semibold">
+                      Cerrar explicación
+                    </span>
                   </button>
                 </div>
               )}

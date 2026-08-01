@@ -367,6 +367,23 @@ export function ReprogramateGeneralDetail() {
             "Pensado para personas que necesitan recuperar calma, descanso, claridad y foco ante situaciones de estrés sostenido, insomnio, sobrecarga laboral o bloqueos cotidianos. Incluye tres sesiones terapéuticas, una sesión personal de gestión emocional, acceso a los cinco módulos básicos del curso de gestión de emociones, ejercicios guiados, recursos personalizados y acompañamiento puntual mediante WhatsApp.",
           ),
         ),
+        e(
+          "div",
+          {
+            className:
+              "mt-4 bg-primary/5 rounded-2xl p-6 border border-primary/20 space-y-2",
+          },
+          e(
+            "h4",
+            { className: "font-headline text-xl font-bold text-primary" },
+            "Programa Intermedio",
+          ),
+          e(
+            "p",
+            null,
+            "Pensado para personas que necesitan un acompañamiento más continuado ante ansiedad recurrente, pensamientos en bucle, procrastinación, insomnio grave, desconexión emocional, conflictos relacionales o estrés persistente. Incluye seis sesiones terapéuticas durante tres meses, una sesión aproximadamente cada quince días, y tres sesiones adicionales de gestión emocional.",
+          ),
+        ),
       ),
       e(
         "div",
@@ -835,3 +852,340 @@ export function ReprogramateBasicDetail() {
     ),
   );
 }
+
+export function ReprogramateIntermediateDetail() {
+  return e(
+    "section",
+    {
+      id: "reprogramate-intermediate-detail",
+      className:
+        "w-full mt-6 rounded-[2rem] border border-outline-variant/15 bg-surface-container-low p-6 md:p-10 shadow-sm text-on-surface-variant leading-relaxed",
+    },
+    e(
+      "div",
+      { className: "max-w-5xl mx-auto space-y-10" },
+      e(
+        "div",
+        null,
+        e(
+          "h2",
+          {
+            className:
+              "font-headline text-3xl md:text-4xl font-bold text-primary mb-2",
+          },
+          "Programa Intermedio",
+        ),
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-xl md:text-2xl font-semibold text-primary/80 mb-4",
+          },
+          "Un acompañamiento más continuado para recuperar dirección y equilibrio",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Intermedio está dirigido a personas que conviven con ansiedad recurrente, pensamientos que vuelven una y otra vez, procrastinación, insomnio grave, desconexión emocional, conflictos en sus relaciones o un estrés que persiste en el tiempo.",
+          ),
+          e(
+            "p",
+            null,
+            "Durante tres meses se plantea un seguimiento terapéutico más frecuente que en el Programa Básico, con una sesión personal aproximadamente cada quince días. Esta continuidad permite revisar con mayor regularidad la evolución de la persona y trabajar de manera progresiva los patrones, hábitos y respuestas emocionales que están interfiriendo en su bienestar.",
+          ),
+        ),
+        e(
+          "div",
+          {
+            className:
+              "mt-6 bg-surface/60 rounded-2xl p-6 border border-outline-variant/10",
+          },
+          e(
+            "h4",
+            {
+              className:
+                "font-headline text-lg font-bold text-primary mb-3",
+            },
+            "El programa pone el foco especialmente en:",
+          ),
+          e(
+            "ul",
+            { className: "list-disc pl-6 space-y-2" },
+            e(
+              "li",
+              null,
+              "Ansiedad recurrente y estados de alerta que se repiten.",
+            ),
+            e("li", null, "Pensamientos en bucle y rumiación mental."),
+            e("li", null, "Hábitos bloqueantes y procrastinación."),
+            e(
+              "li",
+              null,
+              "Gestión de emociones y desconexión emocional.",
+            ),
+            e("li", null, "Autoestima."),
+            e("li", null, "Relaciones y conflictos relacionales."),
+            e("li", null, "Insomnio grave y estrés persistente."),
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Seis sesiones terapéuticas en tres meses",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El programa incluye seis sesiones terapéuticas distribuidas a lo largo de tres meses, con una sesión personal online aproximadamente cada quince días.",
+          ),
+          e(
+            "p",
+            null,
+            "La mayor frecuencia de encuentros permite mantener un seguimiento más continuado del proceso, revisar qué está funcionando, detectar resistencias o nuevos bloqueos y ajustar el trabajo a medida que la persona avanza.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Tres sesiones adicionales de gestión emocional",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "Además de las seis sesiones terapéuticas, el Programa Intermedio incluye tres sesiones personales de gestión emocional, online y en directo.",
+          ),
+          e(
+            "p",
+            null,
+            "Estas sesiones se alternan con las sesiones terapéuticas y permiten acompañar de forma más cercana el recorrido por el curso de gestión de emociones, resolver dudas y reforzar la aplicación práctica de sus contenidos.",
+          ),
+          e(
+            "p",
+            null,
+            "El programa da acceso a los cinco módulos básicos del curso y permite desbloquear uno de los tres módulos de especialidad disponibles, junto con sus ejercicios de refuerzo.",
+          ),
+          e(
+            "p",
+            null,
+            "El módulo de especialidad se selecciona según la situación y las necesidades de la persona. Si ninguno se adapta específicamente a su necesidad en ese momento, puede elegir el que prefiera trabajar.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Qué trabajamos",
+        ),
+        e(
+          "div",
+          { className: "space-y-4 mb-4" },
+          e(
+            "p",
+            null,
+            "El Programa Intermedio profundiza en aspectos que pueden mantenerse o repetirse a pesar de los intentos de cambio.",
+          ),
+          e(
+            "p",
+            null,
+            "El objetivo es trabajar tanto la respuesta emocional inmediata como los patrones que la sostienen y su repercusión en la vida cotidiana.",
+          ),
+        ),
+        e(
+          "ul",
+          { className: "list-disc pl-6 space-y-3" },
+          e(
+            "li",
+            null,
+            e("strong", null, "Ansiedad: "),
+            "observar detonantes, respuestas automáticas y formas de recuperar regulación y sensación de control.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Bucles mentales: "),
+            "reconocer pensamientos repetitivos y trabajar formas más útiles de relacionarse con ellos.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Hábitos bloqueantes: "),
+            "identificar conductas que frenan el avance y desarrollar respuestas alternativas.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Gestión de emociones: "),
+            "ampliar la capacidad de reconocer, comprender y regular lo que se siente.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Autoestima: "),
+            "revisar creencias y patrones que afectan a la valoración personal.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Relaciones: "),
+            "trabajar respuestas emocionales y patrones que influyen en los vínculos y los conflictos relacionales.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Herramientas clave",
+        ),
+        e(
+          "p",
+          { className: "mb-3" },
+          "Según la situación y las necesidades detectadas, el proceso puede apoyarse en diferentes herramientas terapéuticas y recursos de acompañamiento.",
+        ),
+        e(
+          "ul",
+          { className: "list-disc pl-6 space-y-2 mb-4" },
+          e("li", null, "Programación Neurolingüística (PNL)."),
+          e("li", null, "Reprogramación de patrones y creencias."),
+          e(
+            "li",
+            null,
+            "Balance mental y reorganización de la dirección personal.",
+          ),
+          e("li", null, "Meditación."),
+          e("li", null, "Hipnosis cuando resulte adecuada para el proceso."),
+          e("li", null, "Prácticas apoyadas por guías audiovisuales."),
+          e("li", null, "Materiales personalizados."),
+        ),
+        e(
+          "p",
+          null,
+          "La hipnosis no tiene que utilizarse necesariamente en todos los casos. Se incorpora cuando la terapeuta considera que puede aportar valor al proceso; en otras situaciones, el tiempo de terapia puede aprovecharse mediante técnicas más adecuadas y eficientes para la necesidad concreta de la persona.",
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Seguimiento y continuidad entre sesiones",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Intermedio mantiene el acompañamiento mediante WhatsApp durante los tres meses para dudas puntuales relacionadas con ejercicios, materiales o indicaciones concretas del proceso, y para situaciones excepcionales surgidas entre sesiones cuando sea necesaria una orientación breve.",
+          ),
+          e(
+            "p",
+            null,
+            "El WhatsApp complementa el programa, pero no sustituye las sesiones ni está planteado como un sistema de consultas terapéuticas ilimitadas.",
+          ),
+          e(
+            "p",
+            null,
+            "Su función es mantener la continuidad del acompañamiento únicamente cuando resulte necesario entre una sesión y la siguiente.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Materiales y recursos personalizados",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Intermedio incorpora guías y materiales personalizados. Estos recursos permiten trasladar parte del trabajo de las sesiones al día a día y continuar practicando entre encuentros.",
+          ),
+          e(
+            "p",
+            null,
+            "En este plan se libera un número mayor de meditaciones genéricas adicionales y de guías de ejercicios. También se mantiene la meditación guiada creada específicamente para la persona y, cuando forma parte del trabajo terapéutico, la moneda de anclaje impresa en 3D y adaptada a su proceso.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Un plan con mayor continuidad y profundidad",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "La principal diferencia respecto al Programa Básico es la frecuencia y profundidad del acompañamiento: seis sesiones terapéuticas durante tres meses, aproximadamente una cada quince días, además de tres sesiones de gestión emocional.",
+          ),
+          e(
+            "p",
+            null,
+            "Este ritmo permite trabajar con mayor continuidad situaciones más complejas o persistentes, revisar con más frecuencia los cambios y sostener de forma más cercana la aplicación de las herramientas aprendidas.",
+          ),
+          e(
+            "p",
+            null,
+            "También amplía el acceso al curso de gestión de emociones, a las meditaciones, a las guías y a los materiales disponibles durante el proceso.",
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
