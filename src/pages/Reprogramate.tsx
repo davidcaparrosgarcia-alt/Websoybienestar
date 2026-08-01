@@ -17,6 +17,7 @@ import {
   ReprogramateGeneralDetail,
   ReprogramateBasicDetail,
   ReprogramateIntermediateDetail,
+  ReprogramateCompleteDetail,
 } from "../data/reprogramateDetails";
 
 export default function Reprogramate() {
@@ -35,8 +36,9 @@ export default function Reprogramate() {
   const generalDetailButtonRef = useRef<HTMLButtonElement | null>(null);
   const basicDetailButtonRef = useRef<HTMLButtonElement | null>(null);
   const intermediateDetailButtonRef = useRef<HTMLButtonElement | null>(null);
+  const completeDetailButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  type ClosableDetailId = "general" | "basico" | "intermedio";
+  type ClosableDetailId = "general" | "basico" | "intermedio" | "completo";
 
   const pendingCloseAlignmentRef = useRef<{
     id: ClosableDetailId;
@@ -46,7 +48,8 @@ export default function Reprogramate() {
   const getDetailButtonRef = (id: ClosableDetailId) => {
     if (id === "general") return generalDetailButtonRef;
     if (id === "basico") return basicDetailButtonRef;
-    return intermediateDetailButtonRef;
+    if (id === "intermedio") return intermediateDetailButtonRef;
+    return completeDetailButtonRef;
   };
 
   const closeDetailFromBottom = (
@@ -455,7 +458,7 @@ export default function Reprogramate() {
                   src: '/images/infografia_completo.jpg', 
                   mobileSrc: '/images/infografia_completo_vertical_movil.jpg',
                   plan: 'completo',
-                  alt: 'Infografía detallada del Programa Completo ReprogrÁmate'
+                  alt: 'Infografía detallada del Programa Completo ReprogrÁmate con sesiones, herramientas y acompañamiento intensivo incluidos.'
                 })}
                 className="group bg-surface dark:bg-[#d1e7e4] rounded-2xl aspect-[4/5] md:aspect-square hover:-translate-y-3 hover:shadow-2xl dark:hover:shadow-2xl transition-all duration-500 relative overflow-hidden cursor-pointer"
               >
@@ -466,21 +469,60 @@ export default function Reprogramate() {
                   />
                   <img
                     src="/images/programa_completo.jpg"
-                    alt="Programa completo"
+                    alt="Programa Completo ReprogrÁmate para ansiedad profunda, síntomas depresivos, heridas emocionales, dependencia emocional, insomnio severo y malestar psicosomático."
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </picture>
               </div>
 
               <button
+                ref={completeDetailButtonRef}
                 type="button"
-                disabled
-                aria-disabled="true"
-                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 opacity-70 cursor-not-allowed transition-all duration-300"
+                aria-expanded={openDetail === "completo"}
+                aria-controls="reprogramate-complete-detail"
+                onClick={() => toggleDetail("completo")}
+                className="w-full min-h-[88px] md:h-[88px] mt-5 md:mt-6 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
               >
-                <span className="shrink-0 font-bold" aria-hidden="true">＋</span>
-                <span className="text-left font-semibold">Conocer en detalle el Programa Completo</span>
+                <span className="shrink-0 font-bold" aria-hidden="true">
+                  {openDetail === "completo" ? "－" : "＋"}
+                </span>
+                <span className="text-left font-semibold">
+                  {openDetail === "completo"
+                    ? "Cerrar explicación"
+                    : "Conocer en detalle el Programa Completo"}
+                </span>
               </button>
+
+              <div className="block md:hidden">
+                {openDetail === "completo" && (
+                  <div>
+                    <ReprogramateCompleteDetail />
+
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        closeDetailFromBottom(
+                          "completo",
+                          event.currentTarget,
+                        )
+                      }
+                      aria-label="Cerrar explicación de Programa Completo"
+                      className="w-full min-h-[88px] mt-5 px-5 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                    >
+                      <span
+                        className="shrink-0 font-bold"
+                        aria-hidden="true"
+                      >
+                        －
+                      </span>
+
+                      <span className="text-left font-semibold">
+                        Cerrar explicación
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Desktop details spanning full width under the cards */}
@@ -515,6 +557,35 @@ export default function Reprogramate() {
                       )
                     }
                     aria-label="Cerrar explicación de Programa Intermedio"
+                    className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  >
+                    <span
+                      className="shrink-0 font-bold"
+                      aria-hidden="true"
+                    >
+                      －
+                    </span>
+
+                    <span className="text-left font-semibold">
+                      Cerrar explicación
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {openDetail === "completo" && (
+                <div>
+                  <ReprogramateCompleteDetail />
+
+                  <button
+                    type="button"
+                    onClick={(event) =>
+                      closeDetailFromBottom(
+                        "completo",
+                        event.currentTarget,
+                      )
+                    }
+                    aria-label="Cerrar explicación de Programa Completo"
                     className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                   >
                     <span

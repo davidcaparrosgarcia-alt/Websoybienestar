@@ -384,6 +384,23 @@ export function ReprogramateGeneralDetail() {
             "Pensado para personas que necesitan un acompañamiento más continuado ante ansiedad recurrente, pensamientos en bucle, procrastinación, insomnio grave, desconexión emocional, conflictos relacionales o estrés persistente. Incluye seis sesiones terapéuticas durante tres meses, una sesión aproximadamente cada quince días, y tres sesiones adicionales de gestión emocional.",
           ),
         ),
+        e(
+          "div",
+          {
+            className:
+              "mt-4 bg-primary/5 rounded-2xl p-6 border border-primary/20 space-y-2",
+          },
+          e(
+            "h4",
+            { className: "font-headline text-xl font-bold text-primary" },
+            "Programa Completo",
+          ),
+          e(
+            "p",
+            null,
+            "Pensado para personas que necesitan un acompañamiento intensivo ante ansiedad profunda, síntomas depresivos, heridas emocionales, dependencia emocional, patrones repetitivos, insomnio severo, desorden alimenticio o malestar psicosomático. Incluye doce sesiones terapéuticas en tres meses, una sesión personal online semanal, y cuatro sesiones personales de gestión emocional.",
+          ),
+        ),
       ),
       e(
         "div",
@@ -1182,6 +1199,342 @@ export function ReprogramateIntermediateDetail() {
             "p",
             null,
             "También amplía el acceso al curso de gestión de emociones, a las meditaciones, a las guías y a los materiales disponibles durante el proceso.",
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+export function ReprogramateCompleteDetail() {
+  return e(
+    "section",
+    {
+      id: "reprogramate-complete-detail",
+      className:
+        "w-full mt-6 rounded-[2rem] border border-outline-variant/15 bg-surface-container-low p-6 md:p-10 shadow-sm text-on-surface-variant leading-relaxed",
+    },
+    e(
+      "div",
+      { className: "max-w-5xl mx-auto space-y-10" },
+      e(
+        "div",
+        null,
+        e(
+          "h2",
+          {
+            className:
+              "font-headline text-3xl md:text-4xl font-bold text-primary mb-2",
+          },
+          "Programa Completo",
+        ),
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-xl md:text-2xl font-semibold text-primary/80 mb-4",
+          },
+          "Un acompañamiento intensivo para trabajar en profundidad",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Completo está dirigido a personas que necesitan un acompañamiento más intensivo y continuado ante situaciones como ansiedad profunda, bajo estado de ánimo, heridas emocionales, dependencia emocional, patrones repetitivos, hábitos bloqueantes, insomnio severo o desorden alimenticio.",
+          ),
+          e(
+            "p",
+            null,
+            "Durante tres meses se realiza una sesión terapéutica personal cada semana. Esta frecuencia permite revisar de forma cercana la evolución de la persona, profundizar en los bloqueos de raíz y adaptar el proceso conforme aparecen nuevas necesidades, resistencias o avances.",
+          ),
+        ),
+        e(
+          "div",
+          {
+            className:
+              "mt-6 bg-surface/60 rounded-2xl p-6 border border-outline-variant/10",
+          },
+          e(
+            "h4",
+            {
+              className:
+                "font-headline text-lg font-bold text-primary mb-3",
+            },
+            "El programa pone el foco especialmente en:",
+          ),
+          e(
+            "ul",
+            { className: "list-disc pl-6 space-y-2" },
+            e(
+              "li",
+              null,
+              "Ansiedad profunda y estados de alerta persistentes.",
+            ),
+            e("li", null, "Síntomas depresivos y bajo estado de ánimo."),
+            e("li", null, "Heridas emocionales y bloqueos de raíz."),
+            e("li", null, "Dependencia emocional y patrones repetitivos."),
+            e("li", null, "Hábitos bloqueantes."),
+            e("li", null, "Insomnio severo."),
+            e("li", null, "Desorden alimenticio."),
+            e(
+              "li",
+              null,
+              "Malestar psicosomático y trastornos gastrointestinales.",
+            ),
+            e("li", null, "Gestión de emociones, estrés y descanso."),
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Doce sesiones terapéuticas en tres meses",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El programa incluye doce sesiones terapéuticas distribuidas a lo largo de tres meses, con una sesión personal online semanal.",
+          ),
+          e(
+            "p",
+            null,
+            "La frecuencia semanal permite mantener una continuidad alta, revisar el impacto de las herramientas utilizadas y trabajar con mayor profundidad los patrones, creencias, respuestas emocionales y bloqueos que están influyendo en la vida cotidiana.",
+          ),
+          e(
+            "p",
+            null,
+            "La distribución prevista es semanal. De forma muy excepcional, una sesión puede desplazarse para recuperar un encuentro que no haya podido realizarse por una causa justificada. Cuando sea necesario, el final del programa puede ampliarse únicamente el tiempo imprescindible para completar esa sesión pendiente.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Cuatro sesiones adicionales de gestión emocional",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "Además de las doce sesiones terapéuticas, el Programa Completo incluye cuatro sesiones personales de gestión emocional, online y en directo.",
+          ),
+          e(
+            "p",
+            null,
+            "Estas sesiones se alternan con las sesiones terapéuticas y permiten acompañar de manera más cercana el recorrido por el curso de gestión de emociones, resolver dudas, reforzar la aplicación práctica de sus contenidos y adaptar el aprendizaje a las situaciones que la persona está atravesando.",
+          ),
+          e(
+            "p",
+            null,
+            "El Programa Completo desbloquea los cinco módulos básicos y los tres módulos especiales del curso de gestión de emociones, junto con sus ejercicios de refuerzo.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Qué trabajamos",
+        ),
+        e(
+          "div",
+          { className: "space-y-4 mb-4" },
+          e(
+            "p",
+            null,
+            "El Programa Completo está planteado para abordar situaciones de mayor complejidad, profundidad y persistencia que requieren una continuidad alta y una mayor variedad de recursos. El trabajo puede dirigirse tanto a los síntomas presentes como a los patrones y experiencias que los sostienen.",
+          ),
+        ),
+        e(
+          "ul",
+          { className: "list-disc pl-6 space-y-3" },
+          e(
+            "li",
+            null,
+            e("strong", null, "Ansiedad: "),
+            "identificar detonantes, respuestas automáticas y formas de recuperar regulación y sensación de control.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Trauma emocional: "),
+            "explorar experiencias y heridas que continúan influyendo en el presente.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Síntomas depresivos: "),
+            "trabajar desánimo, apatía, bloqueo, pérdida de dirección y patrones emocionales asociados.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Bloqueos de raíz: "),
+            "detectar creencias, aprendizajes y respuestas profundas que mantienen el malestar.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Dependencia emocional y relaciones: "),
+            "revisar patrones vinculares, autoestima, límites y respuestas repetitivas.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Malestar psicosomático y trastornos gastrointestinales: "),
+            "observar la relación entre emociones, estrés y manifestaciones corporales.",
+          ),
+          e(
+            "li",
+            null,
+            e("strong", null, "Gestión de emociones, estrés y descanso: "),
+            "ampliar recursos para comprender, regular y responder de una forma más consciente.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Herramientas clave",
+        ),
+        e(
+          "p",
+          { className: "mb-3" },
+          "Según la situación y las necesidades detectadas, el proceso puede combinar todas las técnicas y recursos que resulten adecuados para la persona.",
+        ),
+        e(
+          "ul",
+          { className: "list-disc pl-6 space-y-2 mb-4" },
+          e("li", null, "Programación Neurolingüística (PNL)."),
+          e("li", null, "Hipnosis consciente terapéutica."),
+          e("li", null, "Trabajo con el niño interior."),
+          e("li", null, "Reprogramación de creencias y patrones."),
+          e("li", null, "Trabajo transgeneracional."),
+          e("li", null, "Meditación y regulación emocional."),
+          e("li", null, "Acompañamiento intensivo."),
+          e("li", null, "Guías, ejercicios y múltiples recursos personalizados."),
+        ),
+        e(
+          "p",
+          null,
+          "Las técnicas no se aplican de manera automática ni idéntica en todos los casos. Se seleccionan según el proceso, la necesidad real de la persona y el criterio terapéutico. Cuando varias técnicas resultan necesarias y pueden integrarse de forma adecuada, pueden utilizarse dentro del mismo proceso.",
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Seguimiento y continuidad entre sesiones",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Completo mantiene el acompañamiento mediante WhatsApp durante los tres meses para dudas puntuales relacionadas con ejercicios, materiales o indicaciones concretas del proceso, y para situaciones excepcionales surgidas entre sesiones cuando sea necesaria una orientación breve.",
+          ),
+          e(
+            "p",
+            null,
+            "El WhatsApp complementa el programa, pero no sustituye las sesiones ni está planteado como un sistema de consultas terapéuticas ilimitadas. Su función es mantener la continuidad del acompañamiento únicamente cuando resulte necesario entre una sesión y la siguiente.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Materiales y recursos personalizados",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "El Programa Completo incorpora múltiples recursos personalizados para trasladar el trabajo de las sesiones al día a día y mantener una práctica continuada entre encuentros.",
+          ),
+          e(
+            "p",
+            null,
+            "Se mantienen las herramientas personalizadas de los planes anteriores, como la meditación guiada creada específicamente para la persona y, cuando forma parte del trabajo terapéutico, la moneda de anclaje impresa en 3D y adaptada a su proceso.",
+          ),
+          e(
+            "p",
+            null,
+            "El plan también incorpora los ejercicios de refuerzo correspondientes a los tres módulos especiales del curso. Por lo demás, los materiales disponibles son esencialmente los mismos que en el Programa Intermedio; la diferencia principal está en el mayor número de sesiones, la frecuencia semanal y el acceso completo al curso de gestión de emociones.",
+          ),
+        ),
+      ),
+      e(
+        "div",
+        null,
+        e(
+          "h3",
+          {
+            className:
+              "font-headline text-2xl md:text-3xl font-bold text-primary mb-4",
+          },
+          "Un plan con acompañamiento intensivo",
+        ),
+        e(
+          "div",
+          { className: "space-y-4" },
+          e(
+            "p",
+            null,
+            "La principal diferencia del Programa Completo es la intensidad y continuidad del acompañamiento: doce sesiones terapéuticas en tres meses, una cada semana, además de cuatro sesiones personales de gestión emocional.",
+          ),
+          e(
+            "p",
+            null,
+            "Este ritmo permite trabajar con mayor continuidad situaciones persistentes, complejas o que afectan a distintas áreas de la vida, revisar con mucha frecuencia los cambios y combinar un número mayor de herramientas, materiales y recursos personalizados.",
+          ),
+          e(
+            "p",
+            null,
+            "Es el nivel de ReprogrÁmate con mayor número de sesiones, mayor continuidad y acceso más amplio a los contenidos y herramientas disponibles dentro del programa.",
           ),
         ),
       ),
