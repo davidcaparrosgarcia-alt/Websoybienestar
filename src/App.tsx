@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -48,16 +48,64 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="emocionario" element={<Emocionario />} />
-          <Route path="treatments" element={<Treatments />} />
+          <Route
+            path="treatments"
+            element={
+              <Navigate
+                to="/tratamientos-online"
+                replace
+              />
+            }
+          />
           <Route path="tratamientos-online" element={<Treatments />} />
           <Route path="reprogramate" element={<Reprogramate />} />
           <Route path="hipnodigest" element={<HipnoDigestive />} />
-          <Route path="hipnodigestive" element={<HipnoDigestive />} />
-          <Route path="hipnodisgest" element={<HipnoDigestive />} />
-          <Route path="method" element={<Method />} />
+          <Route
+            path="hipnodigestive"
+            element={
+              <Navigate
+                to="/hipnodigest"
+                replace
+              />
+            }
+          />
+          <Route
+            path="hipnodisgest"
+            element={
+              <Navigate
+                to="/hipnodigest"
+                replace
+              />
+            }
+          />
+          <Route
+            path="method"
+            element={
+              <Navigate
+                to="/como-trabajamos"
+                replace
+              />
+            }
+          />
           <Route path="como-trabajamos" element={<Method />} />
-          <Route path="method-details" element={<MethodDetails />} />
-          <Route path="como-trabajamos/detalles" element={<MethodDetails />} />
+          <Route
+            path="method-details"
+            element={
+              <Navigate
+                to="/quienes-somos"
+                replace
+              />
+            }
+          />
+          <Route
+            path="como-trabajamos/detalles"
+            element={
+              <Navigate
+                to="/quienes-somos"
+                replace
+              />
+            }
+          />
           <Route path="quienes-somos" element={<MethodDetails />} />
           <Route path="anxiety" element={<AnxietyManagement />} />
           <Route path="ansiedad" element={<Ansiedad />} />
@@ -111,7 +159,15 @@ export default function App() {
               <SesionValidacion />
             </ProtectedRoute>
           } />
-          <Route path="resources" element={<Resources />} />
+          <Route
+            path="resources"
+            element={
+              <Navigate
+                to="/herramientas"
+                replace
+              />
+            }
+          />
           <Route path="herramientas" element={<Resources />} />
           <Route path="ai-diagnostics" element={
             <ProtectedRoute>

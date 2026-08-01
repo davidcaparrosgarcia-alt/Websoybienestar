@@ -6,9 +6,27 @@ Disallow: /session
 Disallow: /session-ended
 Disallow: /report
 Disallow: /dossier-espejo
+Disallow: /reservar-programa
 Disallow: /sesion-validacion
 Disallow: /emotion-diary
 Disallow: /weekly-goals
+Disallow: /emocionario
+Disallow: /ai-diagnostics
+Disallow: /anxiety
+
+User-agent: OAI-SearchBot
+Allow: /
+
+Disallow: /login
+Disallow: /session
+Disallow: /session-ended
+Disallow: /report
+Disallow: /dossier-espejo
+Disallow: /reservar-programa
+Disallow: /sesion-validacion
+Disallow: /emotion-diary
+Disallow: /weekly-goals
+Disallow: /emocionario
 Disallow: /ai-diagnostics
 Disallow: /anxiety
 

@@ -47,6 +47,8 @@ export default function Treatments() {
         description="Conoce los tratamientos online de SoyBienestar.es: ReprogrÁmate, programa terapéutico emocional de 3 meses, e HipnoDigest, hipnosis digestiva acompañada con nutrición personalizada."
         canonicalPath="/tratamientos-online"
         noIndex={false}
+        imagePath="/images/fondo_modulo_5.jpg"
+        imageAlt="Programas online ReprogrÁmate e HipnoDigest de SoyBienestar"
       />
       <StructuredData id="breadcrumb-schema-tratamientos" data={breadcrumbSchema} />
       <StructuredData id="treatments-service-schema" data={treatmentsServiceSchema} />

@@ -1,43 +1,39 @@
 {
   "redirects": [
     {
-      "source": "/hipnodisgest",
-      "destination": "/hipnodigest",
+      "source": "/treatments",
+      "destination": "/tratamientos-online",
+      "permanent": true
+    },
+    {
+      "source": "/method",
+      "destination": "/como-trabajamos",
+      "permanent": true
+    },
+    {
+      "source": "/method-details",
+      "destination": "/quienes-somos",
+      "permanent": true
+    },
+    {
+      "source": "/como-trabajamos/detalles",
+      "destination": "/quienes-somos",
+      "permanent": true
+    },
+    {
+      "source": "/resources",
+      "destination": "/herramientas",
       "permanent": true
     },
     {
       "source": "/hipnodigestive",
       "destination": "/hipnodigest",
       "permanent": true
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(index.html|sitemap.xml|robots.txt)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
     },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/images/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "source": "/hipnodisgest",
+      "destination": "/hipnodigest",
+      "permanent": true
     }
   ],
   "rewrites": [

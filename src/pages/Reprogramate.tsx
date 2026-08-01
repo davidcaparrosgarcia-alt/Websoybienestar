@@ -422,7 +422,7 @@ export default function Reprogramate() {
                     closeDetailFromBottom("basico", event.currentTarget)
                   }
                   aria-label="Cerrar explicación de Programa Básico"
-                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-5 md:px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                 >
                   <span className="shrink-0 font-bold" aria-hidden="true">－</span>
                   <span className="text-left font-semibold">Cerrar explicación</span>
@@ -494,7 +494,7 @@ export default function Reprogramate() {
                     )
                   }
                   aria-label="Cerrar explicación de Programa Intermedio"
-                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-5 md:px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                 >
                   <span
                     className="shrink-0 font-bold"
@@ -574,7 +574,7 @@ export default function Reprogramate() {
                     )
                   }
                   aria-label="Cerrar explicación de Programa Completo"
-                  className="w-full min-h-[88px] mt-5 md:mt-6 px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
+                  className="w-full min-h-[88px] mt-5 md:mt-6 px-5 md:px-6 py-4 rounded-2xl bg-primary text-on-primary font-headline text-lg md:text-xl flex items-center justify-start gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:opacity-95"
                 >
                   <span
                     className="shrink-0 font-bold"

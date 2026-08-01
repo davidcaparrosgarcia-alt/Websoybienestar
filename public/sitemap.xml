@@ -1,109 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+>
   <url>
     <loc>https://soybienestar.es/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
     <image:image>
       <image:loc>https://soybienestar.es/images/inicio-horizontal.jpg</image:loc>
-      <image:title>SoyBienestar, plataforma online de bienestar emocional</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/inicio-movil.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-ansiedad.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-estres.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-insomnio.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-procrastinacion.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-rumiacion.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-emociones.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/info-alimentacion.jpg</image:loc>
     </image:image>
   </url>
+
   <url>
     <loc>https://soybienestar.es/tratamientos-online</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
     <image:image>
-      <image:loc>https://soybienestar.es/images/tratamientos_reprogramate.jpg</image:loc>
-      <image:title>Tratamientos online de SoyBienestar</image:title>
+      <image:loc>https://soybienestar.es/images/fondo_modulo_5.jpg</image:loc>
     </image:image>
-  </url>
-  <url>
-    <loc>https://soybienestar.es/reprogramate</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://soybienestar.es/images/tratamientos_reprogramate.jpg</image:loc>
-      <image:title>Programa ReprogrÁmate de acompañamiento emocional</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://soybienestar.es/hipnodigest</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
     <image:image>
       <image:loc>https://soybienestar.es/images/fondo_hipnodigestive.jpg</image:loc>
-      <image:title>Programa HipnoDigest de acompañamiento digestivo, nutricional y emocional</image:title>
     </image:image>
   </url>
+
   <url>
-    <loc>https://soybienestar.es/quienes-somos</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://soybienestar.es/reprogramate</loc>
     <image:image>
-      <image:loc>https://soybienestar.es/images/fundadores-david-maria.webp</image:loc>
-      <image:title>David y María, fundadores de SoyBienestar</image:title>
+      <image:loc>https://soybienestar.es/images/tratamientos_reprogramate.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_basico.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_basico_vertical.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_basico.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_basico_vertical_movil.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_intermedio.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_intermedio_vertical.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_intermedio.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_intermedio_vertical_movil.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_completo.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/programa_completo_vertical.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_completo.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/infografia_completo_vertical_movil.jpg</image:loc>
     </image:image>
   </url>
+
   <url>
-    <loc>https://soybienestar.es/ansiedad</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://soybienestar.es/hipnodigest</loc>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/fondo_hipnodigestive.jpg</image:loc>
+    </image:image>
   </url>
-  <url>
-    <loc>https://soybienestar.es/estres</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://soybienestar.es/insomnio</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://soybienestar.es/herramientas</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
   <url>
     <loc>https://soybienestar.es/como-trabajamos</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://soybienestar.es/quienes-somos</loc>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/equipo-maria-iris.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/ficha-maria-iris.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/equipo-david-caparros.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/ficha-david-caparros.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/equipo-diego-arnold.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://soybienestar.es/images/ficha-diego-arnold.jpg</image:loc>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://soybienestar.es/herramientas</loc>
+  </url>
+
+  <url>
+    <loc>https://soybienestar.es/ansiedad</loc>
+  </url>
+
+  <url>
+    <loc>https://soybienestar.es/estres</loc>
+  </url>
+
+  <url>
+    <loc>https://soybienestar.es/insomnio</loc>
+  </url>
+
   <url>
     <loc>https://soybienestar.es/procrastinacion</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/pensar-demasiado-rumiacion</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/gestion-emocional</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/alimentacion-emocional</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/privacy</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.3</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/terms</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.3</priority>
   </url>
+
   <url>
     <loc>https://soybienestar.es/cookies</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.3</priority>
   </url>
 </urlset>
