@@ -346,7 +346,7 @@ export default function SesionValidacion() {
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === "AbortError") {
-        setErrorMessage("La solicitud ha tardado demasiado tiempo. Por favor, inténtalo de nuevo.");
+        setErrorMessage("La solicitud está tardando más de lo esperado. No vuelvas a pulsar de inmediato; recarga la página para comprobar si los datos bancarios ya se registraron.");
       } else {
         setErrorMessage("Error de conexión. Inténtalo de nuevo.");
       }
@@ -426,13 +426,25 @@ export default function SesionValidacion() {
       if (data.ok) {
         setBankTransferState("done");
         setSuccessMessage("Gracias. Tu aviso de transferencia ha quedado registrado. Revisaremos el ingreso y nos pondremos en contacto contigo usando los datos de esta página para confirmar los siguientes pasos.");
+        if (planId === "hipnodigest" && (paymentMode === "reserva" || bankData?.paymentMode === "reservation")) {
+          setUserDbData((prev: any) => ({
+            ...prev,
+            hipnoDigestReservationStatus: "pending_bank_review",
+            hipnoDigestReservationAmount: 300,
+            hipnoDigestReservationPaymentMethod: "bank_transfer",
+            hipnoDigestBalanceAvailable: true,
+            hipnoDigestBalanceAmount: 1000,
+            hipnoDigestBalanceStatus: "available",
+            hipnoDigestOverallPaymentStatus: "reservation_pending_bank_review"
+          }));
+        }
       } else {
         setErrorMessage(data.error || "Error al actualizar el estado de la transferencia.");
       }
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === "AbortError") {
-        setErrorMessage("La solicitud ha tardado demasiado tiempo. Por favor, inténtalo de nuevo.");
+        setErrorMessage("La solicitud está tardando más de lo esperado. No vuelvas a pulsar de inmediato; recarga la página para comprobar si los datos bancarios ya se registraron.");
       } else {
         setErrorMessage("Error de conexión. Inténtalo de nuevo.");
       }
@@ -730,30 +742,49 @@ export default function SesionValidacion() {
               </label>
 
               {/* Option 3 (Completa tu pago - HipnoDigest Saldo) */}
-              {showCompletaTuPago && (
-                <label className="cursor-pointer relative md:col-span-2">
-                  <input
-                    type="radio"
-                    name="payment_plan"
-                    className="peer sr-only"
-                    checked={paymentMode === "saldo"}
-                    onChange={() => setPaymentMode("saldo")}
-                  />
-                  <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-md transition-all duration-300 ring-2 ring-transparent peer-checked:ring-primary peer-checked:bg-surface-container-low hover:bg-surface-container-low h-full flex flex-col justify-start border border-primary/20">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="font-headline text-xl text-primary flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">lock_open</span> Completa tu pago
-                      </span>
-                      <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
+              {showCompletaTuPago && (() => {
+                const isBalanceConfirmed = userDbData?.hipnoDigestBalanceStatus === "confirmed";
+                const isBalancePending = userDbData?.hipnoDigestBalanceStatus === "pending_bank_review";
+                const isBalanceDisabled = isBalanceConfirmed || isBalancePending;
+
+                return (
+                  <label className={`relative md:col-span-2 ${isBalanceDisabled ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}>
+                    <input
+                      type="radio"
+                      name="payment_plan"
+                      className="peer sr-only"
+                      disabled={isBalanceDisabled}
+                      checked={paymentMode === "saldo"}
+                      onChange={() => {
+                        if (!isBalanceDisabled) setPaymentMode("saldo");
+                      }}
+                    />
+                    <div className={`bg-surface-container-lowest rounded-2xl p-6 shadow-md transition-all duration-300 ring-2 ring-transparent border border-primary/20 h-full flex flex-col justify-start ${isBalanceDisabled ? "" : "peer-checked:ring-primary peer-checked:bg-surface-container-low hover:bg-surface-container-low"}`}>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="font-headline text-xl text-primary flex items-center gap-2">
+                          <span className="material-symbols-outlined text-primary">lock_open</span> Completa tu pago
+                        </span>
+                        {isBalanceConfirmed ? (
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                            Pago completado
+                          </span>
+                        ) : isBalancePending ? (
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            Transferencia pendiente de revisión
+                          </span>
+                        ) : (
+                          <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
+                        )}
+                      </div>
+                      <p className="text-4xl font-headline text-primary mb-1">1.000 €</p>
+                      <p className="text-xs text-on-surface-variant/80 mb-3 font-body">IVA e impuestos incluidos</p>
+                      <p className="text-sm font-body text-on-surface-variant">
+                        Abona los 1.000 € restantes de tu programa HipnoDigest. Este pago completará tu inversión inicial.
+                      </p>
                     </div>
-                    <p className="text-4xl font-headline text-primary mb-1">1.000 €</p>
-                    <p className="text-xs text-on-surface-variant/80 mb-3 font-body">IVA e impuestos incluidos</p>
-                    <p className="text-sm font-body text-on-surface-variant">
-                      Abona los 1.000 € restantes de tu programa HipnoDigest. Este pago completará tu inversión inicial.
-                    </p>
-                  </div>
-                </label>
-              )}
+                  </label>
+                );
+              })()}
             </div>
           </section>
 

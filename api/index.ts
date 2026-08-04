@@ -2916,6 +2916,9 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
 
     const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
 
+    let userData: any = null;
+    let isOldReservationValid = false;
+
     // If balance payment mode, perform strict server-side validation against Firestore state
     if (paymentMode === "balance") {
       if (planId !== "hipnodigest") {
@@ -2923,12 +2926,12 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       }
 
       const userSnap = await db.collection("users").doc(uid).get();
-      const userData = userSnap.exists ? userSnap.data() : null;
+      userData = userSnap.exists ? userSnap.data() : null;
 
-      const isOldReservationValid = userData &&
+      isOldReservationValid = !!(userData &&
         userData.selectedProgram === "hipnodigest" &&
         userData.selectedProgramPaymentMode === "reservation" &&
-        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review"));
 
       const isNewReservationValid = userData &&
         (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
@@ -3046,6 +3049,26 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
     if (paymentMode === "balance") {
       (userUpdate as any).hipnoDigestBalanceStatus = "checkout_created";
       (userUpdate as any).hipnoDigestBalancePaymentMethod = "card";
+
+      if (isOldReservationValid && userData && !userData.hipnoDigestReservationStatus) {
+        const oldStatus = userData.selectedProgramPaymentStatus;
+        const oldMethod = userData.selectedProgramPaymentMethod || "card";
+        if (oldStatus === "confirmed") {
+          (userUpdate as any).hipnoDigestReservationStatus = "confirmed";
+          (userUpdate as any).hipnoDigestReservationAmount = 300;
+          (userUpdate as any).hipnoDigestReservationPaymentMethod = oldMethod;
+          (userUpdate as any).hipnoDigestBalanceAvailable = true;
+          (userUpdate as any).hipnoDigestBalanceAmount = 1000;
+          (userUpdate as any).hipnoDigestOverallPaymentStatus = "reservation_confirmed";
+        } else if (oldStatus === "pending_bank_review") {
+          (userUpdate as any).hipnoDigestReservationStatus = "pending_bank_review";
+          (userUpdate as any).hipnoDigestReservationAmount = 300;
+          (userUpdate as any).hipnoDigestReservationPaymentMethod = oldMethod;
+          (userUpdate as any).hipnoDigestBalanceAvailable = true;
+          (userUpdate as any).hipnoDigestBalanceAmount = 1000;
+          (userUpdate as any).hipnoDigestOverallPaymentStatus = "reservation_pending_bank_review";
+        }
+      }
     }
 
     const batch = db.batch();
@@ -3123,6 +3146,9 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
 
     const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
 
+    let userData: any = null;
+    let isOldReservationValid = false;
+
     // If balance payment mode, perform strict server-side validation against Firestore state
     if (paymentMode === "balance") {
       if (planId !== "hipnodigest") {
@@ -3130,12 +3156,12 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       }
 
       const userSnap = await db.collection("users").doc(uid).get();
-      const userData = userSnap.exists ? userSnap.data() : null;
+      userData = userSnap.exists ? userSnap.data() : null;
 
-      const isOldReservationValid = userData &&
+      isOldReservationValid = !!(userData &&
         userData.selectedProgram === "hipnodigest" &&
         userData.selectedProgramPaymentMode === "reservation" &&
-        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review"));
 
       const isNewReservationValid = userData &&
         (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
@@ -3274,6 +3300,26 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       userPayload.hipnoDigestBalanceStatus = "bank_details_shown";
       userPayload.hipnoDigestBalancePaymentMethod = "bank_transfer";
       userPayload.hipnoDigestBalanceAmount = 1000;
+
+      if (isOldReservationValid && userData && !userData.hipnoDigestReservationStatus) {
+        const oldStatus = userData.selectedProgramPaymentStatus;
+        const oldMethod = userData.selectedProgramPaymentMethod || "bank_transfer";
+        if (oldStatus === "confirmed") {
+          userPayload.hipnoDigestReservationStatus = "confirmed";
+          userPayload.hipnoDigestReservationAmount = 300;
+          userPayload.hipnoDigestReservationPaymentMethod = oldMethod;
+          userPayload.hipnoDigestBalanceAvailable = true;
+          userPayload.hipnoDigestBalanceAmount = 1000;
+          userPayload.hipnoDigestOverallPaymentStatus = "reservation_confirmed";
+        } else if (oldStatus === "pending_bank_review") {
+          userPayload.hipnoDigestReservationStatus = "pending_bank_review";
+          userPayload.hipnoDigestReservationAmount = 300;
+          userPayload.hipnoDigestReservationPaymentMethod = oldMethod;
+          userPayload.hipnoDigestBalanceAvailable = true;
+          userPayload.hipnoDigestBalanceAmount = 1000;
+          userPayload.hipnoDigestOverallPaymentStatus = "reservation_pending_bank_review";
+        }
+      }
     }
 
     const batch = db.batch();
@@ -3295,6 +3341,7 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
       iban: BANK_TRANSFER_CONFIG.iban,
       paymentStatus: "bank_details_shown",
+      alreadyExists: isReused,
       reused: isReused
     });
 
@@ -3526,7 +3573,12 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
       const metadata = session.metadata || {};
 
       const existingPaymentSessionSnap = await db.collection("paymentSessions").doc(session.id).get();
-      const alreadyNotified = !!existingPaymentSessionSnap.data()?.internalPaymentEmailSentAt;
+      const existingSessionData = existingPaymentSessionSnap.data();
+      if (existingSessionData?.status === "paid") {
+        console.log("Webhook already processed for session");
+        return res.json({ received: true });
+      }
+      const alreadyNotified = !!existingSessionData?.internalPaymentEmailSentAt;
 
       const batch = db.batch();
 
