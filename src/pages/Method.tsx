@@ -384,7 +384,7 @@ export default function Method() {
               {/* Discrete WhatsApp Button */}
               <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                 <a 
-                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+                  href={`https://wa.me/34622852799?text=${encodeURIComponent("Hola, me gustaría hacer una consulta sobre SoyBienestar.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#1F9E5A] text-white px-8 py-3 rounded-full font-label font-semibold inline-flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100 w-fit order-2 sm:order-1"

@@ -776,7 +776,9 @@ export default function SesionValidacion() {
                           <span className="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
                         )}
                       </div>
-                      <p className="text-4xl font-headline text-primary mb-1">1.000 €</p>
+                      <p className="text-4xl font-headline text-primary mb-1 whitespace-nowrap">
+                        1.000{"\u00A0"}€
+                      </p>
                       <p className="text-xs text-on-surface-variant/80 mb-3 font-body">IVA e impuestos incluidos</p>
                       <p className="text-sm font-body text-on-surface-variant">
                         Abona los 1.000 € restantes de tu programa HipnoDigest. Este pago completará tu inversión inicial.

@@ -1,5 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ReprogramateBasicDetail,
+  ReprogramateIntermediateDetail,
+  ReprogramateCompleteDetail
+} from "../data/reprogramateDetails";
+
+type SelectedPlan = "basico" | "intermedio" | "completo" | null;
 
 interface ProgramPlansSectionProps {
   selectedPlan?: "basico" | "intermedio" | "completo" | null;
@@ -7,7 +14,7 @@ interface ProgramPlansSectionProps {
 
 export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectionProps) {
   const navigate = useNavigate();
-  const [selectedPlanImage, setSelectedPlanImage] = useState<string | null>(null);
+  const [selectedPlanDetail, setSelectedPlanDetail] = useState<SelectedPlan>(null);
 
   const getHighlightClass = (plan: "basico" | "intermedio" | "completo") => {
     if (!selectedPlan) return "";
@@ -39,7 +46,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             </div>
             <div className="mb-8 relative z-10">
               <button 
-                onClick={() => setSelectedPlanImage('/images/infografia_basico.jpg')}
+                onClick={() => setSelectedPlanDetail('basico')}
                 className="inline-flex items-center text-[14px] font-bold tracking-wide uppercase text-primary/70 hover:text-primary transition-colors border-b border-primary/30 pb-0.5 mb-4 group/btn"
               >
                   ¿En qué consiste?
@@ -95,7 +102,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             </div>
             <div className="mb-8 relative z-10">
               <button 
-                onClick={() => setSelectedPlanImage('/images/infografia_intermedio.jpg')}
+                onClick={() => setSelectedPlanDetail('intermedio')}
                 className="inline-flex items-center text-[14px] font-bold tracking-wide uppercase text-primary/70 hover:text-primary transition-colors border-b border-primary/30 pb-0.5 mb-4 group/btn"
               >
                   ¿En qué consiste?
@@ -150,7 +157,7 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             </div>
             <div className="mb-8 relative z-10">
               <button 
-                onClick={() => setSelectedPlanImage('/images/infografia_completo.jpg')}
+                onClick={() => setSelectedPlanDetail('completo')}
                 className="inline-flex items-center text-[14px] font-bold tracking-wide uppercase text-primary/70 hover:text-primary transition-colors border-b border-primary/30 pb-0.5 mb-4 group/btn"
               >
                   ¿En qué consiste?
@@ -202,29 +209,21 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
       </section>
 
       {/* Plan Details Modal */}
-      {selectedPlanImage && (
+      {selectedPlanDetail && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-[#191c1c]/80 backdrop-blur-sm" 
-          onClick={() => setSelectedPlanImage(null)}
+          onClick={() => setSelectedPlanDetail(null)}
         >
           <div 
             className="relative w-full max-w-6xl max-h-[90vh] bg-[#11181f] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col z-50" 
             onClick={e => e.stopPropagation()}
           >
-            {/* Elegant Action Buttons */}
-            <div className="p-4 pb-0 flex justify-center md:justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
-              <a 
-                href={selectedPlanImage} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hidden md:flex w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white items-center justify-center transition-all duration-300 shadow-sm group"
-                title="Abrir en pantalla completa / Descargar"
-              >
-                <span className="material-symbols-outlined text-2xl font-light group-hover:scale-110 transition-transform">open_in_new</span>
-              </a>
+            {/* Elegant Close Button */}
+            <div className="p-4 pb-0 flex justify-end gap-3 md:p-0 md:absolute md:top-8 md:right-8 z-[130] shrink-0">
               <button 
-                onClick={() => setSelectedPlanImage(null)}
+                onClick={() => setSelectedPlanDetail(null)}
                 className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-300 shadow-sm group"
+                aria-label="Cerrar modal"
               >
                 <span className="material-symbols-outlined text-2xl font-light group-hover:rotate-90 transition-transform">close</span>
               </button>
@@ -232,18 +231,9 @@ export default function ProgramPlansSection({ selectedPlan }: ProgramPlansSectio
             
             {/* Scrollable document area */}
             <div className="w-full h-full overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar flex flex-col">
-              <img 
-                src={selectedPlanImage} 
-                alt="Detalle del plan" 
-                className="w-full h-auto rounded-xl shadow-sm object-contain"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const msg = document.createElement('div');
-                  msg.className = 'p-12 text-center text-white/70 font-label text-white';
-                  msg.innerText = 'Infografía pendiente de incorporar.';
-                  e.currentTarget.parentElement?.appendChild(msg);
-                }}
-              />
+              {selectedPlanDetail === "basico" && <ReprogramateBasicDetail />}
+              {selectedPlanDetail === "intermedio" && <ReprogramateIntermediateDetail />}
+              {selectedPlanDetail === "completo" && <ReprogramateCompleteDetail />}
             </div>
           </div>
         </div>
