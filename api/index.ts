@@ -2903,8 +2903,43 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Plan inválido." });
     }
 
-    if (paymentMode !== "full" && paymentMode !== "reservation") {
+    if (paymentMode !== "full" && paymentMode !== "reservation" && paymentMode !== "balance") {
       return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+
+    // If balance payment mode, perform strict server-side validation against Firestore state
+    if (paymentMode === "balance") {
+      if (planId !== "hipnodigest") {
+        return res.status(400).json({ error: "El modo balance solo está permitido para HipnoDigest." });
+      }
+
+      const userSnap = await db.collection("users").doc(uid).get();
+      const userData = userSnap.exists ? userSnap.data() : null;
+
+      const isOldReservationValid = userData && 
+        userData.selectedProgram === "hipnodigest" && 
+        userData.selectedProgramPaymentMode === "reservation" &&
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+
+      const isNewReservationValid = userData &&
+        (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
+
+      const hasValidReservation = isOldReservationValid || isNewReservationValid;
+
+      if (!hasValidReservation) {
+        return res.status(403).json({ error: "No existe una reserva válida de HipnoDigest." });
+      }
+
+      const balanceStatus = userData?.hipnoDigestBalanceStatus;
+      if (balanceStatus === "confirmed" || balanceStatus === "pending_bank_review") {
+        return res.status(409).json({ error: "El saldo ya está confirmado o pendiente de revisión bancaria." });
+      }
     }
 
     const safeContactSnapshot = {
@@ -2919,8 +2954,13 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
         : "unchanged";
 
     const plan = PLAN_DETAILS[planId];
-    const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
-    const productName = `${plan.name} - ${paymentMode === "full" ? "Pago único" : "Reserva"}`;
+    let amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
+    let productName = `${plan.name} - ${paymentMode === "full" ? "Pago único" : "Reserva"}`;
+
+    if (paymentMode === "balance") {
+      amount = 100000; // Fixed at exactly 1000 € (100,000 cents) regardless of client input
+      productName = "HipnoDigest - Completar pago";
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -2953,14 +2993,9 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       cancel_url: `${APP_URL}/sesion-validacion?payment=cancelled&plan=${planId}&mode=${paymentMode}`,
     });
 
-    if (!admin.apps.length) {
-      return res.status(500).json({ error: "Firebase Admin no está configurado." });
-    }
-
-    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
     const now = Date.now();
 
-    const intentPayload = {
+    const intentPayload: any = {
       id: session.id,
       source: "soybienestar",
       type: "program_card_payment",
@@ -2984,7 +3019,7 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       updatedAt: now
     };
 
-    const userUpdate = {
+    const userUpdate: any = {
       selectedProgram: planId,
       selectedProgramLabel: plan.name,
       selectedProgramPaymentMode: paymentMode,
@@ -3000,6 +3035,11 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       selectedProgramContactUsage: safeContactUsage,
       selectedProgramUpdatedAt: now
     };
+
+    if (paymentMode === "balance") {
+      userUpdate.hipnoDigestBalanceStatus = "checkout_created";
+      userUpdate.hipnoDigestBalancePaymentMethod = "card";
+    }
 
     const batch = db.batch();
     const userRef = db.collection("users").doc(uid);
@@ -3066,8 +3106,43 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       return res.status(400).json({ error: "Plan inválido." });
     }
 
-    if (paymentMode !== "full" && paymentMode !== "reservation") {
+    if (paymentMode !== "full" && paymentMode !== "reservation" && paymentMode !== "balance") {
       return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+
+    // If balance payment mode, perform strict server-side validation against Firestore state
+    if (paymentMode === "balance") {
+      if (planId !== "hipnodigest") {
+        return res.status(400).json({ error: "El modo balance solo está permitido para HipnoDigest." });
+      }
+
+      const userSnap = await db.collection("users").doc(uid).get();
+      const userData = userSnap.exists ? userSnap.data() : null;
+
+      const isOldReservationValid = userData && 
+        userData.selectedProgram === "hipnodigest" && 
+        userData.selectedProgramPaymentMode === "reservation" &&
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+
+      const isNewReservationValid = userData &&
+        (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
+
+      const hasValidReservation = isOldReservationValid || isNewReservationValid;
+
+      if (!hasValidReservation) {
+        return res.status(403).json({ error: "No existe una reserva válida de HipnoDigest." });
+      }
+
+      const balanceStatus = userData?.hipnoDigestBalanceStatus;
+      if (balanceStatus === "confirmed" || balanceStatus === "pending_bank_review") {
+        return res.status(409).json({ error: "El saldo ya está confirmado o pendiente de revisión bancaria." });
+      }
     }
 
     const safeContactSnapshot = {
@@ -3091,14 +3166,14 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
     }
 
     const plan = PROGRAM_PLANS[planId];
-    const amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
-    const bankConcept = buildBankTransferConcept(plan.label, safeContactSnapshot.fullName, numericPhone);
-
-    if (!admin.apps.length) {
-      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    let amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
+    if (paymentMode === "balance") {
+      amountDueToday = 1000; // Fixed on the server regardless of client input
     }
 
-    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const planLabel = paymentMode === "balance" ? "HIPNODIGEST-SALDO" : plan.label;
+    const bankConcept = buildBankTransferConcept(planLabel, safeContactSnapshot.fullName, numericPhone);
+
     const now = Date.now();
     
     const intentId = `bt_${uid}_${now}`;
@@ -3108,7 +3183,7 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       source: "soybienestar",
       type: "program_bank_transfer",
       planId,
-      planLabel: plan.label,
+      planLabel,
       paymentMode,
       amountDueToday,
       currency: "EUR",
@@ -3132,7 +3207,7 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       updatedAt: now
     };
 
-    const userPayload = {
+    const userPayload: any = {
       selectedProgram: planId,
       selectedProgramLabel: plan.label,
       selectedProgramPaymentMode: paymentMode,
@@ -3156,6 +3231,12 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       selectedProgramUpdatedAt: now
     };
 
+    if (paymentMode === "balance") {
+      userPayload.hipnoDigestBalanceStatus = "bank_details_shown";
+      userPayload.hipnoDigestBalancePaymentMethod = "bank_transfer";
+      userPayload.hipnoDigestBalanceAmount = 1000;
+    }
+
     const batch = db.batch();
     const userRef = db.collection("users").doc(uid);
     const profileRef = db.collection("userProfiles").doc(uid);
@@ -3169,11 +3250,11 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
 
     // Internal Email Notification
     try {
-      const emailSubject = `Nueva intención de transferencia - ${plan.label} - ${amountDueToday} €`;
+      const emailSubject = `Nueva intención de transferencia - ${planLabel} - ${amountDueToday} €`;
       const emailBody = [
         `Evento: Nueva intención de transferencia`,
         `Estado: bank_details_shown`,
-        `Plan: ${plan.label}`,
+        `Plan: ${planLabel}`,
         `Modalidad: ${paymentMode}`,
         `Importe: ${amountDueToday} €`,
         `Concepto bancario: ${bankConcept}`,
@@ -3262,6 +3343,15 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
     
     const intentData = intentDoc.data() || {};
 
+    // IDEMPOTENCY: Do not reprocess if already marked as pending bank review
+    if (intentData.paymentStatus === "pending_bank_review") {
+      return res.json({
+        ok: true,
+        paymentStatus: "pending_bank_review",
+        alreadyDone: true
+      });
+    }
+
     const batch = db.batch();
     
     batch.update(intentRef, {
@@ -3270,11 +3360,28 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
       updatedAt: now
     });
     
-    const userUpdate = {
+    const isHipnoDigestReservation = intentData.planId === "hipnodigest" && intentData.paymentMode === "reservation";
+    const isHipnoDigestBalance = intentData.planId === "hipnodigest" && intentData.paymentMode === "balance";
+
+    const userUpdate: any = {
       selectedProgramPaymentStatus: "pending_bank_review",
       selectedProgramTransferMarkedDoneAt: now,
       selectedProgramUpdatedAt: now
     };
+
+    if (isHipnoDigestReservation) {
+      userUpdate.hipnoDigestReservationStatus = "pending_bank_review";
+      userUpdate.hipnoDigestReservationAmount = 300;
+      userUpdate.hipnoDigestReservationPaymentMethod = "bank_transfer";
+      userUpdate.hipnoDigestBalanceAvailable = true;
+      userUpdate.hipnoDigestBalanceAmount = 1000;
+      userUpdate.hipnoDigestBalanceStatus = "available";
+      userUpdate.hipnoDigestOverallPaymentStatus = "reservation_pending_bank_review";
+    } else if (isHipnoDigestBalance) {
+      userUpdate.hipnoDigestBalanceStatus = "pending_bank_review";
+      userUpdate.hipnoDigestBalancePaymentMethod = "bank_transfer";
+      userUpdate.hipnoDigestBalanceAmount = 1000;
+    }
     
     batch.set(userRef, userUpdate, { merge: true });
     batch.set(profileRef, userUpdate, { merge: true });
@@ -3370,7 +3477,13 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
       const metadata = session.metadata || {};
 
       const existingPaymentSessionSnap = await db.collection("paymentSessions").doc(session.id).get();
-      const alreadyNotified = !!existingPaymentSessionSnap.data()?.internalPaymentEmailSentAt;
+      const existingPaymentSession = existingPaymentSessionSnap.exists ? existingPaymentSessionSnap.data() : null;
+      if (existingPaymentSession?.status === "paid") {
+        console.log(`Webhook already processed for session ${session.id}`);
+        return res.json({ received: true });
+      }
+
+      const alreadyNotified = !!existingPaymentSession?.internalPaymentEmailSentAt;
 
       const batch = db.batch();
 
@@ -3434,7 +3547,11 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           currency: session.currency ? session.currency.toUpperCase() : null
         }, { merge: true });
 
-        const userUpdate = {
+        const isHipnoDigestReservation = metadata.planId === "hipnodigest" && metadata.paymentMode === "reservation";
+        const isHipnoDigestBalance = metadata.planId === "hipnodigest" && metadata.paymentMode === "balance";
+        const isHipnoDigestFull = metadata.planId === "hipnodigest" && metadata.paymentMode === "full";
+
+        const userUpdate: any = {
           selectedProgramPaymentStatus: "confirmed",
           selectedProgramPaymentMethod: "card",
           selectedProgramPaidAt: now,
@@ -3450,6 +3567,37 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           selectedProgramContactFullName: metadata.contactFullName || null,
           selectedProgramContactUsage: metadata.contactUsage || "unchanged"
         };
+
+        if (isHipnoDigestReservation) {
+          userUpdate.hipnoDigestReservationStatus = "confirmed";
+          userUpdate.hipnoDigestReservationAmount = 300;
+          userUpdate.hipnoDigestReservationPaymentMethod = "card";
+          userUpdate.hipnoDigestBalanceAvailable = true;
+          userUpdate.hipnoDigestBalanceAmount = 1000;
+          userUpdate.hipnoDigestBalanceStatus = "available";
+          userUpdate.hipnoDigestOverallPaymentStatus = "reservation_confirmed";
+        } else if (isHipnoDigestFull) {
+          userUpdate.hipnoDigestBalanceAvailable = false;
+          userUpdate.hipnoDigestOverallPaymentStatus = "paid_in_full";
+        } else if (isHipnoDigestBalance) {
+          const userSnap = await db.collection("users").doc(uid).get();
+          const userData = userSnap.exists ? userSnap.data() : {};
+          
+          const reservationStatus = userData?.hipnoDigestReservationStatus || 
+            (userData?.selectedProgramPaymentStatus === "confirmed" ? "confirmed" : "pending_bank_review");
+            
+          userUpdate.hipnoDigestBalanceStatus = "confirmed";
+          userUpdate.hipnoDigestBalancePaymentMethod = "card";
+          userUpdate.hipnoDigestBalanceAmount = 1000;
+          userUpdate.hipnoDigestBalancePaidAt = now;
+          userUpdate.hipnoDigestBalanceAvailable = false;
+          
+          if (reservationStatus === "confirmed") {
+            userUpdate.hipnoDigestOverallPaymentStatus = "paid_in_full";
+          } else {
+            userUpdate.hipnoDigestOverallPaymentStatus = "balance_confirmed_reservation_pending_review";
+          }
+        }
 
         batch.set(userRef, userUpdate, { merge: true });
         batch.set(profileRef, userUpdate, { merge: true });
