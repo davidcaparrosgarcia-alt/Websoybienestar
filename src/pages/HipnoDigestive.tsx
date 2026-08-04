@@ -454,14 +454,11 @@ export default function HipnoDigestive() {
 
               <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                 <div>
-                  <p className="font-label text-sm uppercase tracking-widest text-on-secondary-container dark:text-secondary font-semibold">
+                  <p className="font-label text-sm uppercase tracking-widest text-secondary font-semibold">
                     Precio del programa
                   </p>
                   <p className="font-headline text-4xl md:text-5xl text-primary mt-1">
                     1.300 €
-                  </p>
-                  <p className="text-xs md:text-sm text-on-surface-variant/90 dark:text-on-surface-variant/75 font-light mt-1">
-                    IVA e impuestos incluidos
                   </p>
                 </div>
 
@@ -472,7 +469,7 @@ export default function HipnoDigestive() {
                   >
                     Agendar y pagar reserva
                   </Link>
-                  <p className="text-xs md:text-sm text-on-surface-variant/90 dark:text-on-surface-variant/75 font-light text-center md:text-right max-w-xs">
+                  <p className="text-xs md:text-sm text-on-surface-variant/75 font-light text-center md:text-right max-w-xs">
                     Accederás a una página segura para confirmar tus datos y seleccionar la modalidad de abono.
                   </p>
                 </div>

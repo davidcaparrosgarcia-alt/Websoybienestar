@@ -2845,7 +2845,10 @@ async function sendInternalPaymentNotification(params: {
       auth: {
         user: SMTP_USER,
         pass: SMTP_PASS
-      }
+      },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000
     });
 
     await transporter.sendMail({
@@ -2903,8 +2906,43 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Plan inválido." });
     }
 
-    if (paymentMode !== "full" && paymentMode !== "reservation") {
+    if (paymentMode !== "full" && paymentMode !== "reservation" && paymentMode !== "balance") {
       return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+
+    // If balance payment mode, perform strict server-side validation against Firestore state
+    if (paymentMode === "balance") {
+      if (planId !== "hipnodigest") {
+        return res.status(400).json({ error: "El modo balance solo está permitido para HipnoDigest." });
+      }
+
+      const userSnap = await db.collection("users").doc(uid).get();
+      const userData = userSnap.exists ? userSnap.data() : null;
+
+      const isOldReservationValid = userData &&
+        userData.selectedProgram === "hipnodigest" &&
+        userData.selectedProgramPaymentMode === "reservation" &&
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+
+      const isNewReservationValid = userData &&
+        (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
+
+      const hasValidReservation = isOldReservationValid || isNewReservationValid;
+
+      if (!hasValidReservation) {
+        return res.status(403).json({ error: "No existe una reserva válida de HipnoDigest." });
+      }
+
+      const balanceStatus = userData?.hipnoDigestBalanceStatus;
+      if (balanceStatus === "confirmed" || balanceStatus === "pending_bank_review") {
+        return res.status(409).json({ error: "El saldo ya está confirmado o pendiente de revisión bancaria." });
+      }
     }
 
     const safeContactSnapshot = {
@@ -2919,8 +2957,13 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
         : "unchanged";
 
     const plan = PLAN_DETAILS[planId];
-    const amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
-    const productName = `${plan.name} - ${paymentMode === "full" ? "Pago único" : "Reserva"}`;
+    let amount = paymentMode === "full" ? plan.oneTimeAmount : plan.reservationAmount;
+    let productName = `${plan.name} - ${paymentMode === "full" ? "Pago único" : "Reserva"}`;
+
+    if (paymentMode === "balance") {
+      amount = 100000; // Fixed at exactly 1000 € (100,000 cents) regardless of client input
+      productName = "HipnoDigest - Completar pago";
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -2957,7 +3000,6 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       return res.status(500).json({ error: "Firebase Admin no está configurado." });
     }
 
-    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
     const now = Date.now();
 
     const intentPayload = {
@@ -3000,6 +3042,11 @@ app.post("/api/create-checkout-session", requireAuth, async (req, res) => {
       selectedProgramContactUsage: safeContactUsage,
       selectedProgramUpdatedAt: now
     };
+
+    if (paymentMode === "balance") {
+      (userUpdate as any).hipnoDigestBalanceStatus = "checkout_created";
+      (userUpdate as any).hipnoDigestBalancePaymentMethod = "card";
+    }
 
     const batch = db.batch();
     const userRef = db.collection("users").doc(uid);
@@ -3066,8 +3113,43 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       return res.status(400).json({ error: "Plan inválido." });
     }
 
-    if (paymentMode !== "full" && paymentMode !== "reservation") {
+    if (paymentMode !== "full" && paymentMode !== "reservation" && paymentMode !== "balance") {
       return res.status(400).json({ error: "Modo de pago inválido." });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    }
+
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+
+    // If balance payment mode, perform strict server-side validation against Firestore state
+    if (paymentMode === "balance") {
+      if (planId !== "hipnodigest") {
+        return res.status(400).json({ error: "El modo balance solo está permitido para HipnoDigest." });
+      }
+
+      const userSnap = await db.collection("users").doc(uid).get();
+      const userData = userSnap.exists ? userSnap.data() : null;
+
+      const isOldReservationValid = userData &&
+        userData.selectedProgram === "hipnodigest" &&
+        userData.selectedProgramPaymentMode === "reservation" &&
+        (userData.selectedProgramPaymentStatus === "confirmed" || userData.selectedProgramPaymentStatus === "pending_bank_review");
+
+      const isNewReservationValid = userData &&
+        (userData.hipnoDigestReservationStatus === "confirmed" || userData.hipnoDigestReservationStatus === "pending_bank_review");
+
+      const hasValidReservation = isOldReservationValid || isNewReservationValid;
+
+      if (!hasValidReservation) {
+        return res.status(403).json({ error: "No existe una reserva válida de HipnoDigest." });
+      }
+
+      const balanceStatus = userData?.hipnoDigestBalanceStatus;
+      if (balanceStatus === "confirmed" || balanceStatus === "pending_bank_review") {
+        return res.status(409).json({ error: "El saldo ya está confirmado o pendiente de revisión bancaria." });
+      }
     }
 
     const safeContactSnapshot = {
@@ -3091,48 +3173,80 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
     }
 
     const plan = PROGRAM_PLANS[planId];
-    const amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
-    const bankConcept = buildBankTransferConcept(plan.label, safeContactSnapshot.fullName, numericPhone);
-
-    if (!admin.apps.length) {
-      return res.status(500).json({ error: "Firebase Admin no está configurado." });
+    let amountDueToday = paymentMode === "full" ? plan.full : plan.reservation;
+    if (paymentMode === "balance") {
+      amountDueToday = 1000; // Fixed on the server regardless of client input
     }
 
-    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const planLabel = paymentMode === "balance" ? "HIPNODIGEST-SALDO" : plan.label;
+    const bankConcept = buildBankTransferConcept(planLabel, safeContactSnapshot.fullName, numericPhone);
+
     const now = Date.now();
     
-    const intentId = `bt_${uid}_${now}`;
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
 
-    const intentPayload = {
-      id: intentId,
-      source: "soybienestar",
-      type: "program_bank_transfer",
-      planId,
-      planLabel: plan.label,
-      paymentMode,
-      amountDueToday,
-      currency: "EUR",
-      paymentMethod: "bank_transfer",
-      paymentStatus: "bank_details_shown",
-      bankConcept,
-      accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
-      accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
-      iban: BANK_TRANSFER_CONFIG.iban,
-      fullName: safeContactSnapshot.fullName,
-      phone: safeContactSnapshot.phone,
-      age,
-      sex,
-      authEmail,
-      email: safeContactSnapshot.contactEmail || authEmail,
-      contactEmail: safeContactSnapshot.contactEmail || authEmail,
-      contactSnapshot: safeContactSnapshot,
-      contactUsage: safeContactUsage,
-      uid,
-      createdAt: now,
-      updatedAt: now
-    };
+    let intentId = `bt_${uid}_${now}`;
+    let isReused = false;
 
-    const userPayload = {
+    // Search for an existing intent with the same parameters
+    const existingIntentsSnap = await userRef.collection("paymentIntents")
+      .where("paymentStatus", "==", "bank_details_shown")
+      .where("planId", "==", planId)
+      .where("paymentMode", "==", paymentMode)
+      .limit(1)
+      .get();
+
+    let intentPayload: any;
+
+    if (!existingIntentsSnap.empty) {
+      const existingIntentDoc = existingIntentsSnap.docs[0];
+      intentId = existingIntentDoc.id;
+      isReused = true;
+      intentPayload = existingIntentDoc.data();
+      intentPayload.updatedAt = now;
+      intentPayload.bankConcept = bankConcept;
+      intentPayload.amountDueToday = amountDueToday;
+      intentPayload.planLabel = planLabel;
+      intentPayload.fullName = safeContactSnapshot.fullName;
+      intentPayload.phone = safeContactSnapshot.phone;
+      intentPayload.age = age || intentPayload.age || "";
+      intentPayload.sex = sex || intentPayload.sex || "";
+      intentPayload.contactEmail = safeContactSnapshot.contactEmail || authEmail;
+      intentPayload.contactSnapshot = safeContactSnapshot;
+      intentPayload.contactUsage = safeContactUsage;
+    } else {
+      intentPayload = {
+        id: intentId,
+        source: "soybienestar",
+        type: "program_bank_transfer",
+        planId,
+        planLabel,
+        paymentMode,
+        amountDueToday,
+        currency: "EUR",
+        paymentMethod: "bank_transfer",
+        paymentStatus: "bank_details_shown",
+        bankConcept,
+        accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
+        accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
+        iban: BANK_TRANSFER_CONFIG.iban,
+        fullName: safeContactSnapshot.fullName,
+        phone: safeContactSnapshot.phone,
+        age,
+        sex,
+        authEmail,
+        email: safeContactSnapshot.contactEmail || authEmail,
+        contactEmail: safeContactSnapshot.contactEmail || authEmail,
+        contactSnapshot: safeContactSnapshot,
+        contactUsage: safeContactUsage,
+        uid,
+        createdAt: now,
+        updatedAt: now
+      };
+    }
+
+    const userPayload: any = {
       selectedProgram: planId,
       selectedProgramLabel: plan.label,
       selectedProgramPaymentMode: paymentMode,
@@ -3156,65 +3270,22 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       selectedProgramUpdatedAt: now
     };
 
+    if (paymentMode === "balance") {
+      userPayload.hipnoDigestBalanceStatus = "bank_details_shown";
+      userPayload.hipnoDigestBalancePaymentMethod = "bank_transfer";
+      userPayload.hipnoDigestBalanceAmount = 1000;
+    }
+
     const batch = db.batch();
-    const userRef = db.collection("users").doc(uid);
-    const profileRef = db.collection("userProfiles").doc(uid);
     const intentRef = userRef.collection("paymentIntents").doc(intentId);
     
-    batch.set(intentRef, intentPayload);
+    batch.set(intentRef, intentPayload, { merge: true });
     batch.set(userRef, userPayload, { merge: true });
     batch.set(profileRef, userPayload, { merge: true });
     
     await batch.commit();
 
-    // Internal Email Notification
-    try {
-      const emailSubject = `Nueva intención de transferencia - ${plan.label} - ${amountDueToday} €`;
-      const emailBody = [
-        `Evento: Nueva intención de transferencia`,
-        `Estado: bank_details_shown`,
-        `Plan: ${plan.label}`,
-        `Modalidad: ${paymentMode}`,
-        `Importe: ${amountDueToday} €`,
-        `Concepto bancario: ${bankConcept}`,
-        `Nombre: ${safeContactSnapshot.fullName}`,
-        `Email de contacto: ${safeContactSnapshot.contactEmail || authEmail}`,
-        `Email de acceso/Auth: ${authEmail}`,
-        `Teléfono: ${safeContactSnapshot.phone}`,
-        `Edad: ${age || ""}`,
-        `Sexo: ${sex || ""}`,
-        `UID: ${uid}`,
-        `PaymentIntentId: ${intentId}`,
-        `Fecha: ${new Date(now).toLocaleString("es-ES")}`
-      ].join("\n");
-
-      const mailRes = await sendInternalPaymentNotification({
-        subject: emailSubject,
-        text: emailBody
-      });
-
-      if (mailRes.sent) {
-        await intentRef.update({
-          internalIntentEmailStatus: "sent",
-          internalIntentEmailSentAt: Date.now()
-        });
-      } else if (mailRes.skipped) {
-        await intentRef.update({
-          internalIntentEmailStatus: "skipped",
-          internalIntentEmailSkippedAt: Date.now(),
-          internalIntentEmailError: "SMTP_NOT_CONFIGURED"
-        });
-      } else {
-        await intentRef.update({
-          internalIntentEmailStatus: "error",
-          internalIntentEmailError: String(mailRes.error).slice(0, 200),
-          internalIntentEmailErrorAt: Date.now()
-        });
-      }
-    } catch (emailErr) {
-      console.error("Error sending internal intent email:", emailErr);
-    }
-
+    // Respond immediately to browser without waiting for SMTP
     res.json({
       ok: true,
       paymentIntentId: intentId,
@@ -3223,8 +3294,62 @@ app.post("/api/register-bank-transfer-intent", requireAuth, async (req, res) => 
       accountHolder: BANK_TRANSFER_CONFIG.accountHolder,
       accountHolderRole: BANK_TRANSFER_CONFIG.accountHolderRole,
       iban: BANK_TRANSFER_CONFIG.iban,
-      paymentStatus: "bank_details_shown"
+      paymentStatus: "bank_details_shown",
+      reused: isReused
     });
+
+    // Run email notification as secondary task in the background
+    (async () => {
+      try {
+        const emailSubject = `Nueva intención de transferencia - ${planLabel} - ${amountDueToday} €`;
+        const emailBody = [
+          `Evento: Nueva intención de transferencia`,
+          `Estado: bank_details_shown`,
+          `Plan: ${planLabel}`,
+          `Modalidad: ${paymentMode}`,
+          `Importe: ${amountDueToday} €`,
+          `Concepto bancario: ${bankConcept}`,
+          `Nombre: ${safeContactSnapshot.fullName}`,
+          `Email de contacto: ${safeContactSnapshot.contactEmail || authEmail}`,
+          `Email de acceso/Auth: ${authEmail}`,
+          `Teléfono: ${safeContactSnapshot.phone}`,
+          `Edad: ${age || ""}`,
+          `Sexo: ${sex || ""}`,
+          `UID: ${uid}`,
+          `PaymentIntentId: ${intentId}`,
+          `Reutilizado: ${isReused ? "Sí" : "No"}`,
+          `Fecha: ${new Date(now).toLocaleString("es-ES")}`
+        ].join("\n");
+
+        const mailRes = await sendInternalPaymentNotification({
+          subject: emailSubject,
+          text: emailBody
+        });
+
+        const updatedIntentRef = db.collection("users").doc(uid).collection("paymentIntents").doc(intentId);
+        if (mailRes.sent) {
+          await updatedIntentRef.update({
+            internalIntentEmailStatus: "sent",
+            internalIntentEmailSentAt: Date.now()
+          });
+        } else if (mailRes.skipped) {
+          await updatedIntentRef.update({
+            internalIntentEmailStatus: "skipped",
+            internalIntentEmailSkippedAt: Date.now(),
+            internalIntentEmailError: "SMTP_NOT_CONFIGURED"
+          });
+        } else {
+          await updatedIntentRef.update({
+            internalIntentEmailStatus: "error",
+            internalIntentEmailError: String(mailRes.error).slice(0, 200),
+            internalIntentEmailErrorAt: Date.now()
+          });
+        }
+      } catch (emailErr) {
+        console.error("Error sending internal intent email as secondary task:", emailErr);
+      }
+    })();
+
   } catch (error) {
     console.error("Error registering bank transfer:", error);
     res.status(500).json({ error: "Error interno al registrar la intención." });
@@ -3262,6 +3387,15 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
     
     const intentData = intentDoc.data() || {};
 
+    // IDEMPOTENCY: Do not reprocess if already marked as pending bank review
+    if (intentData.paymentStatus === "pending_bank_review") {
+      return res.json({
+        ok: true,
+        paymentStatus: "pending_bank_review",
+        alreadyDone: true
+      });
+    }
+
     const batch = db.batch();
     
     batch.update(intentRef, {
@@ -3270,71 +3404,93 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
       updatedAt: now
     });
     
-    const userUpdate = {
+    const isHipnoDigestReservation = intentData.planId === "hipnodigest" && intentData.paymentMode === "reservation";
+    const isHipnoDigestBalance = intentData.planId === "hipnodigest" && intentData.paymentMode === "balance";
+
+    const userUpdate: any = {
       selectedProgramPaymentStatus: "pending_bank_review",
       selectedProgramTransferMarkedDoneAt: now,
       selectedProgramUpdatedAt: now
     };
+
+    if (isHipnoDigestReservation) {
+      userUpdate.hipnoDigestReservationStatus = "pending_bank_review";
+      userUpdate.hipnoDigestReservationAmount = 300;
+      userUpdate.hipnoDigestReservationPaymentMethod = "bank_transfer";
+      userUpdate.hipnoDigestBalanceAvailable = true;
+      userUpdate.hipnoDigestBalanceAmount = 1000;
+      userUpdate.hipnoDigestBalanceStatus = "available";
+      userUpdate.hipnoDigestOverallPaymentStatus = "reservation_pending_bank_review";
+    } else if (isHipnoDigestBalance) {
+      userUpdate.hipnoDigestBalanceStatus = "pending_bank_review";
+      userUpdate.hipnoDigestBalancePaymentMethod = "bank_transfer";
+      userUpdate.hipnoDigestBalanceAmount = 1000;
+    }
     
     batch.set(userRef, userUpdate, { merge: true });
     batch.set(profileRef, userUpdate, { merge: true });
     
     await batch.commit();
 
-    // Send internal email notification if not already sent
-    if (!intentData.transferMarkedDoneEmailSentAt) {
-      try {
-        const planLabel = intentData.planLabel || intentData.planId || "Programa";
-        const amount = intentData.amountDueToday || "";
-        const emailSubject = `Transferencia marcada como realizada - ${planLabel} - ${amount} €`;
-        const emailBody = [
-          `Evento: Usuario ha avisado de transferencia realizada`,
-          `Estado: pending_bank_review`,
-          `Plan: ${planLabel}`,
-          `Modalidad: ${intentData.paymentMode || ""}`,
-          `Importe: ${amount} €`,
-          `Concepto bancario: ${intentData.bankConcept || ""}`,
-          `Nombre: ${intentData.contactSnapshot?.fullName || intentData.fullName || ""}`,
-          `Email de contacto: ${intentData.contactSnapshot?.contactEmail || intentData.contactEmail || intentData.email || ""}`,
-          `Email de acceso/Auth: ${intentData.authEmail || ""}`,
-          `Teléfono: ${intentData.contactSnapshot?.phone || intentData.phone || ""}`,
-          `UID: ${uid}`,
-          `PaymentIntentId: ${paymentIntentId}`,
-          `Fecha aviso: ${new Date(now).toLocaleString("es-ES")}`
-        ].join("\n");
-
-        const mailRes = await sendInternalPaymentNotification({
-          subject: emailSubject,
-          text: emailBody
-        });
-
-        if (mailRes.sent) {
-          await intentRef.update({
-            transferMarkedDoneEmailStatus: "sent",
-            transferMarkedDoneEmailSentAt: Date.now()
-          });
-        } else if (mailRes.skipped) {
-          await intentRef.update({
-            transferMarkedDoneEmailStatus: "skipped",
-            transferMarkedDoneEmailSkippedAt: Date.now(),
-            transferMarkedDoneEmailError: "SMTP_NOT_CONFIGURED"
-          });
-        } else {
-          await intentRef.update({
-            transferMarkedDoneEmailStatus: "error",
-            transferMarkedDoneEmailError: String(mailRes.error).slice(0, 200),
-            transferMarkedDoneEmailErrorAt: Date.now()
-          });
-        }
-      } catch (emailErr) {
-        console.error("Error sending transfer marked done email:", emailErr);
-      }
-    }
-
+    // Respond immediately to browser without waiting for SMTP
     res.json({
       ok: true,
       paymentStatus: "pending_bank_review"
     });
+
+    // Send internal email notification as a secondary task in the background
+    if (!intentData.transferMarkedDoneEmailSentAt) {
+      (async () => {
+        try {
+          const planLabel = intentData.planLabel || intentData.planId || "Programa";
+          const amount = intentData.amountDueToday || "";
+          const emailSubject = `Transferencia marcada como realizada - ${planLabel} - ${amount} €`;
+          const emailBody = [
+            `Evento: Usuario ha avisado de transferencia realizada`,
+            `Estado: pending_bank_review`,
+            `Plan: ${planLabel}`,
+            `Modalidad: ${intentData.paymentMode || ""}`,
+            `Importe: ${amount} €`,
+            `Concepto bancario: ${intentData.bankConcept || ""}`,
+            `Nombre: ${intentData.contactSnapshot?.fullName || intentData.fullName || ""}`,
+            `Email de contacto: ${intentData.contactSnapshot?.contactEmail || intentData.contactEmail || intentData.email || ""}`,
+            `Email de acceso/Auth: ${intentData.authEmail || ""}`,
+            `Teléfono: ${intentData.contactSnapshot?.phone || intentData.phone || ""}`,
+            `UID: ${uid}`,
+            `PaymentIntentId: ${paymentIntentId}`,
+            `Fecha aviso: ${new Date(now).toLocaleString("es-ES")}`
+          ].join("\n");
+
+          const mailRes = await sendInternalPaymentNotification({
+            subject: emailSubject,
+            text: emailBody
+          });
+
+          const updatedIntentRef = db.collection("users").doc(uid).collection("paymentIntents").doc(paymentIntentId);
+          if (mailRes.sent) {
+            await updatedIntentRef.update({
+              transferMarkedDoneEmailStatus: "sent",
+              transferMarkedDoneEmailSentAt: Date.now()
+            });
+          } else if (mailRes.skipped) {
+            await updatedIntentRef.update({
+              transferMarkedDoneEmailStatus: "skipped",
+              transferMarkedDoneEmailSkippedAt: Date.now(),
+              transferMarkedDoneEmailError: "SMTP_NOT_CONFIGURED"
+            });
+          } else {
+            await updatedIntentRef.update({
+              transferMarkedDoneEmailStatus: "error",
+              transferMarkedDoneEmailError: String(mailRes.error).slice(0, 200),
+              transferMarkedDoneEmailErrorAt: Date.now()
+            });
+          }
+        } catch (emailErr) {
+          console.error("Error sending transfer marked done email as secondary task:", emailErr);
+        }
+      })();
+    }
+
   } catch (error) {
     console.error("Error marking bank transfer as done:", error);
     res.status(500).json({ error: "Error interno al actualizar el estado de la transferencia." });
@@ -3434,7 +3590,11 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           currency: session.currency ? session.currency.toUpperCase() : null
         }, { merge: true });
 
-        const userUpdate = {
+        const isHipnoDigestReservation = metadata.planId === "hipnodigest" && metadata.paymentMode === "reservation";
+        const isHipnoDigestBalance = metadata.planId === "hipnodigest" && metadata.paymentMode === "balance";
+        const isHipnoDigestFull = metadata.planId === "hipnodigest" && metadata.paymentMode === "full";
+
+        const userUpdate: any = {
           selectedProgramPaymentStatus: "confirmed",
           selectedProgramPaymentMethod: "card",
           selectedProgramPaidAt: now,
@@ -3450,6 +3610,37 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
           selectedProgramContactFullName: metadata.contactFullName || null,
           selectedProgramContactUsage: metadata.contactUsage || "unchanged"
         };
+
+        if (isHipnoDigestReservation) {
+          userUpdate.hipnoDigestReservationStatus = "confirmed";
+          userUpdate.hipnoDigestReservationAmount = 300;
+          userUpdate.hipnoDigestReservationPaymentMethod = "card";
+          userUpdate.hipnoDigestBalanceAvailable = true;
+          userUpdate.hipnoDigestBalanceAmount = 1000;
+          userUpdate.hipnoDigestBalanceStatus = "available";
+          userUpdate.hipnoDigestOverallPaymentStatus = "reservation_confirmed";
+        } else if (isHipnoDigestFull) {
+          userUpdate.hipnoDigestBalanceAvailable = false;
+          userUpdate.hipnoDigestOverallPaymentStatus = "paid_in_full";
+        } else if (isHipnoDigestBalance) {
+          const userSnap = await db.collection("users").doc(uid).get();
+          const userData = userSnap.exists ? userSnap.data() : {};
+
+          const reservationStatus = userData?.hipnoDigestReservationStatus ||
+            (userData?.selectedProgramPaymentStatus === "confirmed" ? "confirmed" : "pending_bank_review");
+
+          userUpdate.hipnoDigestBalanceStatus = "confirmed";
+          userUpdate.hipnoDigestBalancePaymentMethod = "card";
+          userUpdate.hipnoDigestBalanceAmount = 1000;
+          userUpdate.hipnoDigestBalancePaidAt = now;
+          userUpdate.hipnoDigestBalanceAvailable = false;
+
+          if (reservationStatus === "confirmed") {
+            userUpdate.hipnoDigestOverallPaymentStatus = "paid_in_full";
+          } else {
+            userUpdate.hipnoDigestOverallPaymentStatus = "balance_confirmed_reservation_pending_review";
+          }
+        }
 
         batch.set(userRef, userUpdate, { merge: true });
         batch.set(profileRef, userUpdate, { merge: true });
