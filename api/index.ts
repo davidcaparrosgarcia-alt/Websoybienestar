@@ -173,11 +173,63 @@ function parseGeminiJSON(text: string) {
   }
 }
 
+async function callGeminiJSONWithRetry(params: {
+  endpoint: string;
+  prompt: string;
+  responseSchema?: any;
+  maxOutputTokens?: number;
+  validator?: (parsed: any) => boolean;
+}): Promise<any> {
+  if (!ai) {
+    throw new Error("AI not initialized");
+  }
+
+  const modelsToTry = AI_MODEL_CANDIDATES.slice(0, 2);
+  let lastError: any = null;
+
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const model = modelsToTry[i];
+    try {
+      const config: any = {
+        maxOutputTokens: params.maxOutputTokens || 700,
+        responseMimeType: "application/json",
+      };
+      if (params.responseSchema) {
+        config.responseSchema = params.responseSchema;
+      }
+
+      const response = await ai.models.generateContent({
+        model,
+        contents: params.prompt,
+        config,
+      });
+
+      const parsed = parseGeminiJSON(response.text || "{}");
+
+      if (params.validator && !params.validator(parsed)) {
+        throw new Error("Parsed response failed custom validation");
+      }
+
+      return parsed;
+    } catch (err) {
+      lastError = err;
+      const info = getGeminiErrorInfo(err);
+      console.error(`AI retry attempt ${i + 1} failed`, {
+        endpoint: params.endpoint,
+        model,
+        ...info,
+      });
+    }
+  }
+
+  throw lastError || new Error("All AI attempts failed");
+}
+
 const requireAI = (req: Request, res: Response, next: NextFunction) => {
   if (!ai) {
     return res.status(503).json({
       error:
-        "En este momento estamos recibiendo muchas consultas y nuestros guías virtuales están algo saturados. Te agradecemos mucho la paciencia. Por favor, toma un respiro e inténtalo de nuevo en unos minutos.",
+        "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
     });
   }
   next();
@@ -904,90 +956,120 @@ Al salir verás una primera lectura comprensiva. No es el dossier final, sino un
 
 Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres continuar. Mientras tanto, tendrás disponibles algunos recursos iniciales en la web."`;
 
-    const chatWithHistory = ai.chats.create({
-      model: AI_MODEL,
-      config: {
-        systemInstruction: SESSION_SYSTEM_INSTRUCTION,
-        maxOutputTokens: 700,
-        tools: [
+    const sessionTools = [
+      {
+        functionDeclarations: [
           {
-            functionDeclarations: [
-              {
-                name: "update_user_profile_data",
-                description:
-                  "Guarda o actualiza datos básicos del usuario cuando los aporte o confirme.",
-                parameters: {
-                  type: Type.OBJECT,
-                  properties: {
-                    nombre: {
-                      type: Type.STRING,
-                      description: "Nombre real del usuario.",
-                    },
-                    edad: {
-                      type: Type.STRING,
-                      description: "Edad del usuario.",
-                    },
-                    sexo: {
-                      type: Type.STRING,
-                      description:
-                        "Sexo del usuario ('hombre', 'mujer', o 'prefiero_no_definirme').",
-                    },
-                    telefono: {
-                      type: Type.STRING,
-                      description: "Teléfono de contacto.",
-                    },
-                    consentConfirmed: {
-                      type: Type.BOOLEAN,
-                      description:
-                        "True si el usuario ha consentido explícitamente dar esta información.",
-                    },
-                  },
-                  required: ["consentConfirmed"],
+            name: "update_user_profile_data",
+            description:
+              "Guarda o actualiza datos básicos del usuario cuando los aporte o confirme.",
+            parameters: {
+              type: Type.OBJECT,
+              properties: {
+                nombre: {
+                  type: Type.STRING,
+                  description: "Nombre real del usuario.",
+                },
+                edad: {
+                  type: Type.STRING,
+                  description: "Edad del usuario.",
+                },
+                sexo: {
+                  type: Type.STRING,
+                  description:
+                    "Sexo del usuario ('hombre', 'mujer', o 'prefiero_no_definirme').",
+                },
+                telefono: {
+                  type: Type.STRING,
+                  description: "Teléfono de contacto.",
+                },
+                consentConfirmed: {
+                  type: Type.BOOLEAN,
+                  description:
+                    "True si el usuario ha consentido explícitamente dar esta información.",
                 },
               },
-              {
-                name: "send_internal_risk_alert",
-                description:
-                  "Envía una alerta interna a los terapeutas sobre una situación de riesgo suicida, autolesivo o de peligro inmediato.",
-                parameters: {
-                  type: Type.OBJECT,
-                  properties: {
-                    riskLevel: {
-                      type: Type.STRING,
-                      description:
-                        "Nivel de riesgo ('medio', 'alto', 'inminente').",
-                    },
-                    reason: {
-                      type: Type.STRING,
-                      description:
-                        "Motivo resumido de la alerta (ej. 'Ideación suicida activa').",
-                    },
-                    nombre: {
-                      type: Type.STRING,
-                      description: "Nombre del usuario si se conoce.",
-                    },
-                    email: {
-                      type: Type.STRING,
-                      description: "Email del usuario si se conoce.",
-                    },
-                    telefono: {
-                      type: Type.STRING,
-                      description: "Teléfono si se conoce.",
-                    },
-                  },
-                  required: ["riskLevel", "reason"],
+              required: ["consentConfirmed"],
+            },
+          },
+          {
+            name: "send_internal_risk_alert",
+            description:
+              "Envía una alerta interna a los terapeutas sobre una situación de riesgo suicida, autolesivo o de peligro inmediato.",
+            parameters: {
+              type: Type.OBJECT,
+              properties: {
+                riskLevel: {
+                  type: Type.STRING,
+                  description:
+                    "Nivel de riesgo ('medio', 'alto', 'inminente').",
+                },
+                reason: {
+                  type: Type.STRING,
+                  description:
+                    "Motivo resumido de la alerta (ej. 'Ideación suicida activa').",
+                },
+                nombre: {
+                  type: Type.STRING,
+                  description: "Nombre del usuario si se conoce.",
+                },
+                email: {
+                  type: Type.STRING,
+                  description: "Email del usuario si se conoce.",
+                },
+                telefono: {
+                  type: Type.STRING,
+                  description: "Teléfono si se conoce.",
                 },
               },
-            ],
+              required: ["riskLevel", "reason"],
+            },
           },
         ],
       },
-      history,
+    ];
+
+    const modelsToTry = AI_MODEL_CANDIDATES.slice(0, 2);
+    let responseText = "";
+
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const model = modelsToTry[i];
+      try {
+        const chatWithHistory = ai.chats.create({
+          model,
+          config: {
+            systemInstruction: SESSION_SYSTEM_INSTRUCTION,
+            maxOutputTokens: 700,
+            tools: sessionTools,
+          },
+          history,
+        });
+
+        const response = await chatWithHistory.sendMessage({ message });
+        if (response && response.text) {
+          responseText = response.text;
+          break;
+        }
+      } catch (err) {
+        const info = getGeminiErrorInfo(err);
+        console.error(`AI session-reply attempt ${i + 1} failed`, {
+          endpoint: "/api/session-reply",
+          model,
+          uid: req.user?.uid,
+          email: req.user?.email,
+          ...info,
+        });
+      }
+    }
+
+    if (responseText) {
+      return res.json({ text: responseText });
+    }
+
+    return res.status(503).json({
+      error:
+        "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
     });
-
-    const response = await chatWithHistory.sendMessage({ message });
-
-    res.json({ text: response.text });
   } catch (error) {
     const info = getGeminiErrorInfo(error);
     console.error("AI endpoint failed", {
@@ -1000,7 +1082,7 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
     });
     res.status(503).json({
       error:
-        "En este momento estamos recibiendo muchas consultas y nuestro sistema está algo saturado. Te agradecemos mucho la paciencia. Por favor, toma un respiro e intenta enviar tu mensaje nuevamente.",
+        "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
     });
   }
 });
@@ -1274,7 +1356,7 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
     });
     res.status(503).json({
       error:
-        "En este momento estamos procesando muchas consultas y nuestro sistema está algo saturado. Te agradecemos la paciencia. Por favor, intenta de nuevo en unos momentos.",
+        "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
     });
   }
 });
@@ -1330,16 +1412,22 @@ Responde EXCLUSIVAMENTE con un JSON:
   "newAccumulatedSummary": "resumen global"
 }`;
 
-    const response = await ai.models.generateContent({
-      model: AI_MODEL,
-      contents: prompt,
-      config: { 
-        maxOutputTokens: 700,
-        responseMimeType: "application/json"
+    const parsed = await callGeminiJSONWithRetry({
+      endpoint: "/api/diary-validate",
+      prompt,
+      maxOutputTokens: 700,
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          score1: { type: Type.NUMBER },
+          score2: { type: Type.NUMBER },
+          reflection: { type: Type.STRING },
+          newAccumulatedSummary: { type: Type.STRING }
+        },
+        required: ["reflection"]
       },
+      validator: (data) => typeof data.reflection === "string" && data.reflection.trim().length > 0
     });
-
-    const parsed = parseGeminiJSON(response.text || "{}");
 
     try {
       await recordGratitudeUsage(req, req.user!.uid, entry1, entry2);
@@ -1361,7 +1449,7 @@ Responde EXCLUSIVAMENTE con un JSON:
       aiAvailable: !!ai,
       ...info
     });
-    res.status(500).json({ error: "Failed to validate diary" });
+    res.status(500).json({ error: "No hemos podido completar esta reflexión en este momento. Inténtalo de nuevo." });
   }
 });
 
@@ -1392,17 +1480,22 @@ app.post("/api/diary-deepen", requireAuth, requireAI, async (req, res) => {
         ? accumulatedSummary.substring(0, 5000)
         : "";
 
-    if (!entry1 || !entry2 || !reflection) {
+    if ((!entry1 && !entry2) || !reflection) {
       res.status(400).json({ error: "Faltan datos." });
       return;
     }
 
     if (!ai) return;
 
+    const entriesText = [
+      entry1 ? `Motivo 1: "${entry1}"` : null,
+      entry2 ? `Motivo 2: "${entry2}"` : null
+    ].filter(Boolean).join(", ");
+
     const prompt = `${AI_SECURITY_GUARDRAILS}
 
 Eres un coach de vida amigable y empático. Basándote en los motivos de gratitud y tu reflexión, profundiza brevemente.
-Motivos: 1. "${entry1}", 2. "${entry2}"
+Motivos: ${entriesText}
 Reflexión anterior: "${reflection}"
 
 Profundiza (1 o 2 párrafos) y da un pequeño anclaje. Mantén el tono humano.
@@ -1414,16 +1507,22 @@ Responde EXCLUSIVAMENTE con un JSON:
   "deepReflection": "tu texto aquí",
   "newAccumulatedSummary": "resumen global fusionado"
 }`;
-    const response = await ai.models.generateContent({
-      model: AI_MODEL,
-      contents: prompt,
-      config: { 
-        maxOutputTokens: 700,
-        responseMimeType: "application/json"
+
+    const parsed = await callGeminiJSONWithRetry({
+      endpoint: "/api/diary-deepen",
+      prompt,
+      maxOutputTokens: 700,
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          deepReflection: { type: Type.STRING },
+          newAccumulatedSummary: { type: Type.STRING }
+        },
+        required: ["deepReflection"]
       },
+      validator: (data) => typeof data.deepReflection === "string" && data.deepReflection.trim().length > 0
     });
 
-    const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
     const info = getGeminiErrorInfo(error);
@@ -1435,7 +1534,7 @@ Responde EXCLUSIVAMENTE con un JSON:
       aiAvailable: !!ai,
       ...info
     });
-    res.status(500).json({ error: "Failed to deepen emotion diary" });
+    res.status(500).json({ error: "No hemos podido completar esta reflexión en este momento. Inténtalo de nuevo." });
   }
 });
 
@@ -1483,16 +1582,25 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
     DEBES responder ÚNICAMENTE con JSON: {"title": "breve", "description": "1 consejo"}
     `;
 
-    const response = await ai.models.generateContent({
-      model: AI_MODEL,
-      contents: prompt,
-      config: { 
-        maxOutputTokens: 300,
-        responseMimeType: "application/json"
+    const parsed = await callGeminiJSONWithRetry({
+      endpoint: "/api/weekly-goal",
+      prompt,
+      maxOutputTokens: 300,
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING }
+        },
+        required: ["title", "description"]
       },
+      validator: (data) =>
+        typeof data.title === "string" &&
+        data.title.trim().length > 0 &&
+        typeof data.description === "string" &&
+        data.description.trim().length > 0
     });
 
-    const parsed = parseGeminiJSON(response.text || "{}");
     res.json(parsed);
   } catch (error) {
     const info = getGeminiErrorInfo(error);
@@ -1504,7 +1612,7 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
       aiAvailable: !!ai,
       ...info
     });
-    res.status(500).json({ error: "Failed to generate weekly goal" });
+    res.status(500).json({ error: "No hemos podido generar una propuesta en este momento. Inténtalo de nuevo." });
   }
 });
 
@@ -1859,8 +1967,19 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const now = Date.now();
     let isResendingDueToContactChange = false;
 
+    const isConvertingFromRequested =
+      requestMode === "direct_now" &&
+      userData.questionnaireStatus === "requested" &&
+      (
+        userData.questionnaireDeliveryMode === "manual_request" ||
+        (
+          !userData.questionnaireDeliveryMode &&
+          userData.questionnaireRequestStatus === "pending"
+        )
+      );
+
     requestStep = "rate_limit_check";
-    if (!isTestUser(req)) {
+    if (!isTestUser(req) && !isConvertingFromRequested) {
       if (
         userData.lastQuestionnaireRequestAt &&
         now - userData.lastQuestionnaireRequestAt < thirtyDaysMs
@@ -1938,10 +2057,10 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       .doc(uid)
       .collection("questionnaireRequests");
     
-    let isConvertingFromRequested = (requestMode === "direct_now" && userData.questionnaireStatus === "requested");
-    let requestId = isConvertingFromRequested && userData.lastQuestionnaireRequestId 
-      ? userData.lastQuestionnaireRequestId 
-      : requestsRef.doc().id;
+    const requestId =
+      isConvertingFromRequested && userData.lastQuestionnaireRequestId
+        ? userData.lastQuestionnaireRequestId
+        : requestsRef.doc().id;
 
     // Create numeric timestamp and ISO string
     const createdAt = Date.now();

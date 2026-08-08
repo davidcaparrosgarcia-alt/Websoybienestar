@@ -989,13 +989,20 @@ export default function SesionValidacion() {
 
           {/* Support */}
           <section className="mt-8 flex justify-end">
-            <button className="bg-surface-container-lowest text-primary border border-outline-variant/20 rounded-full py-3 px-6 flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors shadow-sm">
+            <a
+              href={`https://wa.me/34622852799?text=${encodeURIComponent(
+                "Hola, tengo una duda sobre el proceso de reserva o pago de un programa en SoyBienestar."
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-surface-container-lowest text-primary border border-outline-variant/20 rounded-full py-3 px-6 flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors shadow-sm"
+            >
               <span className="material-symbols-outlined">chat</span>
               <div className="text-left">
                 <span className="block font-label font-bold text-sm">Soporte vía WhatsApp</span>
                 <span className="block font-body text-xs text-on-surface-variant">Respuesta en aprox. 24 horas laborables</span>
               </div>
-            </button>
+            </a>
           </section>
             </>
           )}

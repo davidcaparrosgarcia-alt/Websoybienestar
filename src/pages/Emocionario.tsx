@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import SEO from '../components/SEO';
+import SpecialModuleSelectionModal from '../components/SpecialModuleSelectionModal';
 
 interface EmocionarioProgress {
   moduloActual: string;
@@ -1085,6 +1086,8 @@ export default function Emocionario() {
   const [activeMobileCard, setActiveMobileCard] = useState<string | null>(null);
 
   const [isTester, setIsTester] = useState(false);
+  const [isSpecialModuleModalOpen, setIsSpecialModuleModalOpen] = useState(false);
+  const [selectedSpecialModule, setSelectedSpecialModule] = useState<string | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem('emocionarioAccess') === 'true') {
@@ -1489,16 +1492,37 @@ export default function Emocionario() {
           
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="font-headline text-3xl md:text-4xl text-primary mb-4">Módulos de Especialidad (Gestión de Crisis)</h2>
-            <p className="text-on-surface-variant text-lg font-light">
+            <p className="text-on-surface-variant text-lg font-light mb-6">
               Aplicaciones específicas del método para momentos vitales de mayor carga emocional.
             </p>
+            <button
+              type="button"
+              onClick={() => setIsSpecialModuleModalOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-label text-xs uppercase tracking-widest font-semibold shadow-md hover:bg-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-base">widgets</span>
+              Elegir módulo especializado
+            </button>
+            {selectedSpecialModule && (
+              <p className="mt-3 text-sm text-primary font-medium">
+                Módulo seleccionado: <span className="font-bold">{
+                  selectedSpecialModule === "crisis-perdida-salud" ? "Crisis, pérdida y salud" :
+                  selectedSpecialModule === "amor-desamor" ? "Amor y desamor" :
+                  selectedSpecialModule === "trabajo-finanzas" ? "Trabajo y finanzas" : selectedSpecialModule
+                }</span>
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
             {/* Especialidad 1 */}
             <div 
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
-              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec1' ? null : 'spec1'); }}
+              onClick={() => {
+                if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec1' ? null : 'spec1');
+                setSelectedSpecialModule("crisis-perdida-salud");
+                setIsSpecialModuleModalOpen(true);
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_crisis.jpg" alt="Crisis, Pérdida y Salud" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -1519,7 +1543,11 @@ export default function Emocionario() {
             {/* Especialidad 2 */}
             <div 
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
-              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec2' ? null : 'spec2'); }}
+              onClick={() => {
+                if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec2' ? null : 'spec2');
+                setSelectedSpecialModule("amor-desamor");
+                setIsSpecialModuleModalOpen(true);
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_amor.jpg" alt="Amor y Desamor" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -1540,7 +1568,11 @@ export default function Emocionario() {
             {/* Especialidad 3 */}
             <div 
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
-              onClick={() => { if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec3' ? null : 'spec3'); }}
+              onClick={() => {
+                if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec3' ? null : 'spec3');
+                setSelectedSpecialModule("trabajo-finanzas");
+                setIsSpecialModuleModalOpen(true);
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
               <img src="/images/fondo_modulo_trabajo.jpg" alt="Trabajo y Finanzas" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -1716,6 +1748,15 @@ export default function Emocionario() {
             </div>
           </div>
         </section>
+
+        <SpecialModuleSelectionModal
+          isOpen={isSpecialModuleModalOpen}
+          onClose={() => setIsSpecialModuleModalOpen(false)}
+          onConfirm={(moduleId) => {
+            setSelectedSpecialModule(moduleId);
+          }}
+          initialSelection={selectedSpecialModule || undefined}
+        />
 
       </div>
     </div>

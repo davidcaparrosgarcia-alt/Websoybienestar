@@ -48,6 +48,7 @@ export default function Session() {
     useState(false);
   const [urgentMessage, setUrgentMessage] = useState<string | null>(null);
   const [sessionUserContext, setSessionUserContext] = useState<any>(null);
+  const [hasExpandedAudioTranscription, setHasExpandedAudioTranscription] = useState(false);
 
   const startSessionTimerIfNeeded = () => {
     if (!hasUserStartedResponding) {
@@ -552,6 +553,7 @@ export default function Session() {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     startSessionTimerIfNeeded();
     setInput(e.target.value);
+    setHasExpandedAudioTranscription(false);
 
     if (!isRecordingRef.current) {
       isTypingPauseRef.current = true;
@@ -607,6 +609,7 @@ export default function Session() {
       baseInputRef.current = "";
       inputRef.current = "";
     }
+    setHasExpandedAudioTranscription(false);
     setIsLoading(true);
 
     await processMessage(newMessages, submittedText, userMessage.id, options?.timeLeftOverride);
@@ -922,6 +925,7 @@ export default function Session() {
 
             inputRef.current = finalText;
             setInput(finalText);
+            setHasExpandedAudioTranscription(true);
 
             const mustAutoSendBecauseSessionEnded =
               reason === "session_limit" ||
@@ -1438,99 +1442,232 @@ export default function Session() {
             </div>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-center gap-3 md:gap-4"
-          >
-            <button
-              type="button"
-              onClick={toggleRecording}
-              disabled={timeLeft <= 0 || isTranscribingAudio}
-              aria-label={
-                isTranscribingAudio
-                  ? "Transcribiendo audio"
-                  : isRecording || isFallbackRecording
-                  ? "Detener grabación"
-                  : "Iniciar grabación de voz"
-              }
-              title={
-                isTranscribingAudio
-                  ? "Transcribiendo audio"
-                  : isRecording || isFallbackRecording
-                  ? "Detener y transcribir"
-                  : "Hablar en lugar de escribir"
-              }
-              className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
-                isRecording || isFallbackRecording
-                  ? "bg-error/10 text-error hover:bg-error/20"
-                  : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <span
-                className={`material-symbols-outlined ${
-                  isTranscribingAudio ? "animate-spin" : ""
-                }`}
+          {isSessionExpired ? (
+            <>
+              {/* Botón para móvil/tablet cuando la sesión expira */}
+              <div className="block lg:hidden">
+                <button
+                  type="button"
+                  onClick={finishSession}
+                  disabled={isFinishing}
+                  className="w-full font-label text-sm uppercase tracking-widest bg-primary text-on-primary transition-opacity hover:opacity-90 flex items-center justify-center gap-2 py-4 px-6 rounded-full shadow-md disabled:opacity-50"
+                >
+                  {isFinishing ? (
+                    <>
+                      Evaluando{" "}
+                      <span className="material-symbols-outlined animate-spin text-sm">
+                        progress_activity
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Finalizar Sesión{" "}
+                      <span className="material-symbols-outlined text-sm">
+                        arrow_forward
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Formulario deshabilitado para escritorio */}
+              <form
+                onSubmit={handleSubmit}
+                className="hidden lg:flex items-center gap-3 md:gap-4"
               >
-                {isTranscribingAudio
-                  ? "progress_activity"
-                  : isRecording || isFallbackRecording
-                  ? "stop"
-                  : "mic"}
-              </span>
-            </button>
-            <div className="flex-1 relative">
-              <textarea
-                value={input}
-                onChange={handleInputChange}
-                onFocus={startSessionTimerIfNeeded}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    if (timeLeft > 0) handleSubmit(e);
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  disabled={timeLeft <= 0 || isTranscribingAudio}
+                  aria-label={
+                    isTranscribingAudio
+                      ? "Transcribiendo audio"
+                      : isRecording || isFallbackRecording
+                      ? "Detener grabación"
+                      : "Iniciar grabación de voz"
                   }
-                }}
-                disabled={timeLeft <= 0}
-                placeholder={
+                  title={
+                    isTranscribingAudio
+                      ? "Transcribiendo audio"
+                      : isRecording || isFallbackRecording
+                      ? "Detener y transcribir"
+                      : "Hablar en lugar de escribir"
+                  }
+                  className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
+                    isRecording || isFallbackRecording
+                      ? "bg-error/10 text-error hover:bg-error/20"
+                      : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <span
+                    className={`material-symbols-outlined ${
+                      isTranscribingAudio ? "animate-spin" : ""
+                    }`}
+                  >
+                    {isTranscribingAudio
+                      ? "progress_activity"
+                      : isRecording || isFallbackRecording
+                      ? "stop"
+                      : "mic"}
+                  </span>
+                </button>
+                <div className="flex-1 relative">
+                  <textarea
+                    value={input}
+                    onChange={handleInputChange}
+                    onFocus={startSessionTimerIfNeeded}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (timeLeft > 0) handleSubmit(e);
+                      }
+                    }}
+                    disabled={timeLeft <= 0}
+                    placeholder={
+                      isTranscribingAudio
+                        ? "Transcribiendo tu audio…"
+                        : timeLeft <= 0
+                        ? "Tiempo finalizado"
+                        : isFallbackRecording
+                        ? "Pulsa detener para convertir tu grabación en texto."
+                        : "Escribe tu mensaje aquí..."
+                    }
+                    className={`w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed ${
+                      hasExpandedAudioTranscription
+                        ? "h-48 min-h-48 max-h-48 lg:h-16 lg:min-h-16 lg:max-h-16"
+                        : "h-16 min-h-16 max-h-16"
+                    }`}
+                    rows={1}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={
+                    !input.trim() ||
+                    isLoading ||
+                    timeLeft <= 0 ||
+                    isRecording ||
+                    isFallbackRecording ||
+                    isTranscribingAudio
+                  }
+                  className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
+                >
+                  <span className="material-symbols-outlined">send</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={finishSession}
+                  disabled={isFinishing}
+                  title="Finalizar consulta ahora"
+                  className="h-16 w-16 p-0 hidden md:flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
+                >
+                  <span
+                    className={`material-symbols-outlined ${isFinishing ? "animate-spin" : ""}`}
+                  >
+                    {isFinishing ? "progress_activity" : "logout"}
+                  </span>
+                </button>
+              </form>
+            </>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="flex items-center gap-3 md:gap-4"
+            >
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={timeLeft <= 0 || isTranscribingAudio}
+                aria-label={
                   isTranscribingAudio
-                    ? "Transcribiendo tu audio…"
-                    : timeLeft <= 0
-                    ? "Tiempo finalizado"
-                    : isFallbackRecording
-                    ? "Pulsa detener para convertir tu grabación en texto."
-                    : "Escribe tu mensaje aquí..."
+                    ? "Transcribiendo audio"
+                    : isRecording || isFallbackRecording
+                    ? "Detener grabación"
+                    : "Iniciar grabación de voz"
                 }
-                className="w-full h-16 min-h-16 max-h-16 bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                rows={1}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={
-                !input.trim() ||
-                isLoading ||
-                timeLeft <= 0 ||
-                isRecording ||
-                isFallbackRecording ||
-                isTranscribingAudio
-              }
-              className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
-            >
-              <span className="material-symbols-outlined">send</span>
-            </button>
-            <button
-              type="button"
-              onClick={finishSession}
-              disabled={isFinishing}
-              title="Finalizar consulta ahora"
-              className="h-16 w-16 p-0 hidden md:flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
-            >
-              <span
-                className={`material-symbols-outlined ${isFinishing ? "animate-spin" : ""}`}
+                title={
+                  isTranscribingAudio
+                    ? "Transcribiendo audio"
+                    : isRecording || isFallbackRecording
+                    ? "Detener y transcribir"
+                    : "Hablar en lugar de escribir"
+                }
+                className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
+                  isRecording || isFallbackRecording
+                    ? "bg-error/10 text-error hover:bg-error/20"
+                    : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isFinishing ? "progress_activity" : "logout"}
-              </span>
-            </button>
-          </form>
+                <span
+                  className={`material-symbols-outlined ${
+                    isTranscribingAudio ? "animate-spin" : ""
+                  }`}
+                >
+                  {isTranscribingAudio
+                    ? "progress_activity"
+                    : isRecording || isFallbackRecording
+                    ? "stop"
+                    : "mic"}
+                </span>
+              </button>
+              <div className="flex-1 relative">
+                <textarea
+                  value={input}
+                  onChange={handleInputChange}
+                  onFocus={startSessionTimerIfNeeded}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      if (timeLeft > 0) handleSubmit(e);
+                    }
+                  }}
+                  disabled={timeLeft <= 0}
+                  placeholder={
+                    isTranscribingAudio
+                      ? "Transcribiendo tu audio…"
+                      : timeLeft <= 0
+                      ? "Tiempo finalizado"
+                      : isFallbackRecording
+                      ? "Pulsa detener para convertir tu grabación en texto."
+                      : "Escribe tu mensaje aquí..."
+                  }
+                  className={`w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed ${
+                    hasExpandedAudioTranscription
+                      ? "h-48 min-h-48 max-h-48 lg:h-16 lg:min-h-16 lg:max-h-16"
+                      : "h-16 min-h-16 max-h-16"
+                  }`}
+                  rows={1}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={
+                  !input.trim() ||
+                  isLoading ||
+                  timeLeft <= 0 ||
+                  isRecording ||
+                  isFallbackRecording ||
+                  isTranscribingAudio
+                }
+                className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
+              >
+                <span className="material-symbols-outlined">send</span>
+              </button>
+              <button
+                type="button"
+                onClick={finishSession}
+                disabled={isFinishing}
+                title="Finalizar consulta ahora"
+                className="h-16 w-16 p-0 hidden md:flex items-center justify-center bg-transparent text-primary hover:bg-primary/5 rounded-full flex-shrink-0 transition-all duration-300 shadow-sm border border-primary/20 aspect-square disabled:opacity-50"
+              >
+                <span
+                  className={`material-symbols-outlined ${isFinishing ? "animate-spin" : ""}`}
+                >
+                  {isFinishing ? "progress_activity" : "logout"}
+                </span>
+              </button>
+            </form>
+          )}
           <div className="mt-3 flex items-center justify-between gap-2 md:hidden">
             <div className="min-h-7 flex min-w-0 items-center">
               {isFallbackRecording && (

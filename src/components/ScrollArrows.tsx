@@ -55,7 +55,7 @@ export default function ScrollArrows() {
   };
 
   return (
-    <div className="fixed right-6 bottom-12 flex flex-col gap-3 z-40">
+    <div className="fixed right-6 bottom-12 hidden lg:flex flex-col gap-3 z-40">
       {/* Up Arrow */}
       <div 
         className={`transition-all duration-500 origin-bottom ${showUp ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-90 pointer-events-none'}`}

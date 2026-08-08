@@ -19,6 +19,7 @@ interface Goal {
   timestamp: string; // ISO date
   completedAt?: string;
   isHistorical?: boolean; // computed locally
+  isDraft?: boolean;
 }
 
 // Function to check if a date is from a previous week (weeks string Monday, ending Sunday)
@@ -51,6 +52,8 @@ export default function WeeklyGoals() {
   
   const [isGenerating, setIsGenerating] = useState<string | null>(null); // goal id being generated
   const [userSummary, setUserSummary] = useState("");
+  const [aiGenerationAttempts, setAiGenerationAttempts] = useState(0);
+  const [goalError, setGoalError] = useState<string | null>(null);
 
   const loadGoals = useCallback(async (uid: string) => {
     try {
@@ -102,7 +105,7 @@ export default function WeeklyGoals() {
     loadGoals(user.uid);
   }, [user, loadGoals]);
 
-  const activeGoals = goals.filter(g => !g.isHistorical);
+  const activeGoals = goals.filter(g => !g.isHistorical && !g.isDraft);
   const totalActive = activeGoals.length;
   const completedActive = activeGoals.filter(g => g.completed).length;
 
@@ -139,37 +142,33 @@ export default function WeeklyGoals() {
     }
   };
 
-  const handleAddEmptyGoal = async () => {
+  const handleAddEmptyGoal = () => {
     if (!user) return;
-    
-    if (totalActive >= 7) {
-      alert("Has alcanzado el límite máximo de 7 propósitos activos en pantalla.");
-      return;
+
+    if (editingGoalId) {
+      // Cancel previous editing session if active
+      cancelEdit();
     }
 
-    const allowed = await checkWeeklyCreationLimit();
-    if (!allowed) {
-      alert("Has alcanzado el límite máximo de 7 propósitos creados para esta semana.");
-      return;
-    }
-
-    const newId = Date.now().toString();
-    const newGoal = {
-      title: "Nueva Meta",
-      description: "¿Qué te propones alcanzar esta semana?",
+    const draftId = `draft_${Date.now()}`;
+    const draftGoal: Goal = {
+      id: draftId,
+      title: "",
+      description: "",
       type: "Azar" as GoalType,
       completed: false,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      isHistorical: false,
+      isDraft: true
     };
-    await setDoc(doc(db, 'users', user.uid, 'weeklyGoals', newId), newGoal);
-    
-    // Update local state
-    setGoals(prev => {
-      const updated = [...prev, { id: newId, ...newGoal, isHistorical: false }];
-      return updated.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    });
-    
-    startEditing({ id: newId, ...newGoal });
+
+    setGoals(prev => [...prev, draftGoal]);
+    setEditingGoalId(draftId);
+    setEditTitle("");
+    setEditDescription("");
+    setEditType("Azar");
+    setAiGenerationAttempts(0);
+    setGoalError(null);
   };
 
   const toggleComplete = async (goal: Goal) => {
@@ -224,69 +223,105 @@ export default function WeeklyGoals() {
     setEditTitle(goal.title);
     setEditDescription(goal.description);
     setEditType(goal.type);
+    setAiGenerationAttempts(0);
+    setGoalError(null);
+  };
+
+  const cancelEdit = () => {
+    if (editingGoalId) {
+      setGoals(prev => prev.filter(g => g.id !== editingGoalId || !g.isDraft));
+    }
+    setEditingGoalId(null);
+    setGoalError(null);
+    setAiGenerationAttempts(0);
   };
 
   const saveEdit = async () => {
     if (!user || !editingGoalId) return;
-    const updates = {
-      title: editTitle,
-      description: editDescription,
-      type: editType
-    };
-    await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', editingGoalId), updates);
-    
-    setGoals(prev => prev.map(g => g.id === editingGoalId ? { ...g, ...updates } : g));
-    setEditingGoalId(null);
+
+    const trimmedTitle = editTitle.trim();
+    const trimmedDescription = editDescription.trim();
+
+    if (!trimmedTitle || !trimmedDescription) {
+      setGoalError("Escribe un título y una descripción antes de guardar.");
+      return;
+    }
+
+    const currentGoal = goals.find(g => g.id === editingGoalId);
+    const isNewDraft = currentGoal?.isDraft;
+
+    if (isNewDraft) {
+      if (totalActive >= 7) {
+        setGoalError("Has alcanzado el límite máximo de 7 propósitos activos en pantalla.");
+        return;
+      }
+
+      const allowed = await checkWeeklyCreationLimit();
+      if (!allowed) {
+        setGoalError("Has alcanzado el límite máximo de 7 propósitos creados para esta semana.");
+        return;
+      }
+
+      try {
+        const realId = Date.now().toString();
+        const newGoal = {
+          title: trimmedTitle,
+          description: trimmedDescription,
+          type: editType,
+          completed: false,
+          timestamp: new Date().toISOString()
+        };
+        await setDoc(doc(db, 'users', user.uid, 'weeklyGoals', realId), newGoal);
+
+        setGoals(prev => prev.map(g => g.id === editingGoalId ? { id: realId, ...newGoal, isHistorical: false, isDraft: false } : g));
+        setEditingGoalId(null);
+        setGoalError(null);
+        setAiGenerationAttempts(0);
+      } catch (e) {
+        console.error(e);
+        setGoalError("No se ha podido guardar la meta. Inténtalo de nuevo.");
+      }
+    } else {
+      try {
+        const updates = {
+          title: trimmedTitle,
+          description: trimmedDescription,
+          type: editType
+        };
+        await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', editingGoalId), updates);
+
+        setGoals(prev => prev.map(g => g.id === editingGoalId ? { ...g, ...updates } : g));
+        setEditingGoalId(null);
+        setGoalError(null);
+        setAiGenerationAttempts(0);
+      } catch (e) {
+        console.error(e);
+        setGoalError("No se ha podido actualizar la meta. Inténtalo de nuevo.");
+      }
+    }
   };
 
   const generateAIGoalInEdit = async () => {
-    if (!user) return;
+    if (!user || aiGenerationAttempts >= 3) return;
     setIsGenerating("edit");
+    setGoalError(null);
     
     try {
       const accumulatedSummary = userSummary;
       const data = await api.weeklyGoal(editType, accumulatedSummary);
 
-      setEditTitle(data.title || "Meta Sorpresa");
-      setEditDescription(data.description || "Tómate un momento para descubrir qué necesitas esta semana.");
-
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || "Error al conectar con la IA.");
-    } finally {
-      setIsGenerating(null);
-    }
-  };
-
-  const generateAIGoal = async (goalId: string, type: GoalType) => {
-    if (!user) return;
-    setIsGenerating(goalId);
-    
-    try {
-      const accumulatedSummary = userSummary;
-      const data = await api.weeklyGoal(type, accumulatedSummary);
-
-      let finalizedType = type;
-      if (type === "Azar") {
-        finalizedType = "Azar";
+      if (data && data.title && data.description) {
+        setEditTitle(data.title.trim());
+        setEditDescription(data.description.trim());
+        setAiGenerationAttempts(prev => prev + 1);
+      } else {
+        setGoalError("No hemos podido generar una propuesta en este momento. Inténtalo de nuevo.");
       }
-
-      const updates = {
-        title: data.title || "Meta Sorpresa",
-        description: data.description || "Tómate un momento para descubrir qué necesitas esta semana.",
-        type: finalizedType
-      };
-
-      await updateDoc(doc(db, 'users', user.uid, 'weeklyGoals', goalId), updates);
-
-      setGoals(prev => prev.map(g => g.id === goalId ? { ...g, ...updates } : g));
-
     } catch (e: any) {
       console.error(e);
-      alert(e.message || "Error al conectar con la IA.");
+      setGoalError("No hemos podido generar una propuesta en este momento. Inténtalo de nuevo.");
     } finally {
       setIsGenerating(null);
-      setEditingGoalId(null);
     }
   };
 
@@ -367,45 +402,69 @@ export default function WeeklyGoals() {
                     <input 
                       type="text" 
                       value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
+                      onChange={(e) => {
+                        setEditTitle(e.target.value);
+                        if (goalError) setGoalError(null);
+                      }}
                       className="w-full bg-transparent font-headline text-xl font-semibold text-primary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 placeholder:text-outline-variant outline-none"
                       placeholder="Título de tu meta..."
                     />
                     <textarea 
                       value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
+                      onChange={(e) => {
+                        setEditDescription(e.target.value);
+                        if (goalError) setGoalError(null);
+                      }}
                       className="w-full bg-transparent font-body text-secondary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 resize-none placeholder:text-outline-variant outline-none"
                       rows={2}
                       placeholder="Descripción detallada de tus pasos a seguir..."
                     />
-                    <div className="flex flex-wrap gap-2 mt-2">
-                       {GOAL_TYPES.map((type) => {
-                         const isSelected = editType === type;
-                         return (
-                           <div key={type} className="relative group/btntype">
-                             <button 
-                                onClick={() => {
-                                  if (isSelected) {
-                                    generateAIGoalInEdit();
-                                  } else {
-                                    setEditType(type);
-                                  }
-                                }}
-                                disabled={isGenerating === "edit"}
-                                className={`px-3 py-1 font-label text-xs rounded-full border transition-all ${isSelected ? 'bg-secondary text-white border-secondary' : 'bg-transparent text-secondary border-secondary/50 hover:bg-secondary/10'}`}
-                             >
-                               {isGenerating === "edit" && isSelected ? "Generando..." : type}
-                             </button>
-                             <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface text-[10px] font-medium px-3 py-1 rounded shadow-md opacity-0 pointer-events-none group-hover/btntype:opacity-100 transition-opacity whitespace-nowrap z-20">
-                               Generar propuesta de objetivo
-                             </span>
-                           </div>
-                         );
-                       })}
-                    </div>
                     
-                    <div className="flex justify-end gap-3 mt-4">
-                      <button onClick={() => setEditingGoalId(null)} className="px-4 py-2 font-label text-sm text-secondary hover:text-primary transition-colors">Cancelar</button>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+                      <div className="flex flex-wrap gap-2">
+                        {GOAL_TYPES.map((type) => {
+                          const isSelected = editType === type;
+                          return (
+                            <button 
+                              key={type}
+                              type="button"
+                              onClick={() => setEditType(type)}
+                              className={`px-3 py-1 font-label text-xs rounded-full border transition-all ${isSelected ? 'bg-secondary text-white border-secondary' : 'bg-transparent text-secondary border-secondary/50 hover:bg-secondary/10'}`}
+                            >
+                              {type}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={generateAIGoalInEdit}
+                        disabled={isGenerating === "edit" || aiGenerationAttempts >= 3}
+                        className="px-4 py-1.5 bg-[#dcfce7] hover:bg-[#bbf7d0] text-[#166534] disabled:opacity-50 text-xs font-bold font-label rounded-full transition-colors flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+                      >
+                        <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                        <span>
+                          {isGenerating === "edit"
+                            ? "Generando propuesta..."
+                            : aiGenerationAttempts === 0
+                            ? "Generar con IA"
+                            : "Generar otra"}
+                        </span>
+                        <span className="text-[10px] opacity-75">
+                          ({aiGenerationAttempts}/3)
+                        </span>
+                      </button>
+                    </div>
+
+                    {goalError && (
+                      <div className="bg-error/10 text-error text-xs font-body p-2.5 rounded-lg border border-error/20">
+                        {goalError}
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end gap-3 mt-2">
+                      <button onClick={cancelEdit} className="px-4 py-2 font-label text-sm text-secondary hover:text-primary transition-colors">Cancelar</button>
                       <button onClick={saveEdit} className="px-6 py-2 bg-[#162839] hover:bg-[#2c3e50] text-white rounded-lg font-label text-sm transition-colors">Guardar</button>
                     </div>
                   </div>
@@ -432,20 +491,9 @@ export default function WeeklyGoals() {
                     <p className="text-secondary font-body whitespace-pre-wrap">{goal.description}</p>
                     
                     <div className="flex flex-wrap items-center gap-3 pt-2 group-hover:bg-transparent">
-                      <button 
-                        onClick={() => generateAIGoal(goal.id, goal.type)}
-                        disabled={!!isGenerating || goal.isHistorical}
-                        className="px-3 py-1 bg-[#dcfce7] hover:bg-[#bbf7d0] text-[#166534] text-xs font-bold font-label rounded-full transition-colors group/ai relative"
-                      >
-                        {isGenerating === goal.id ? "Generando..." : goal.type}
-                        
-                        {/* Hover Tooltip for AI gen */}
-                        {!goal.isHistorical && (
-                          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface text-[10px] font-medium px-3 py-1 rounded shadow-md opacity-0 pointer-events-none group-hover/ai:opacity-100 transition-opacity whitespace-nowrap z-20">
-                            Generar propuesta de objetivo
-                          </span>
-                        )}
-                      </button>
+                      <span className="px-3 py-1 bg-[#dcfce7] text-[#166534] text-xs font-bold font-label rounded-full">
+                        {goal.type}
+                      </span>
 
                       {goal.completed && !goal.isHistorical && (
                         <span className="text-xs text-outline font-label italic flex items-center gap-1">

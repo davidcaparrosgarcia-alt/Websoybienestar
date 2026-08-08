@@ -283,16 +283,30 @@ export default function Resources() {
   
   const meditations = [
     {
-      id: "somatica",
-      title: "Meditación Somática",
-      type: "Meditación Standard",
+      id: "relajacion-progresiva-profunda",
+      title: "Relajación Progresiva Profunda",
+      type: "Meditación Somática",
       duration: "Aprox 12 min",
-      src: "/audios/meditacion_somatica.mp3"
+      src: "/audios/relajacion_progresiva_profunda.mp3"
+    },
+    {
+      id: "descenso-consciente",
+      title: "Descenso Consciente",
+      type: "Meditación Somática",
+      duration: "8:30 min",
+      src: "/audios/descenso_consciente.mp3"
+    },
+    {
+      id: "el-cauce-de-la-calma",
+      title: "El Cauce de la Calma",
+      type: "Meditación Cognitiva",
+      duration: "Aprox 10 min",
+      src: "/audios/el_cauce_de_la_calma.mp3"
     },
     {
       id: "orilla",
       title: "Orilla en Calma",
-      type: "Meditación Standard",
+      type: "Meditación Ambiental",
       duration: "Aprox 15 min",
       src: "/audios/orilla_en_calma.mp3"
     }

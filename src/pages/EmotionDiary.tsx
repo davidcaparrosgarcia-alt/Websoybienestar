@@ -79,6 +79,9 @@ export default function EmotionDiary() {
   const [hasDeepened, setHasDeepened] = useState(false);
   const [isSilenced, setIsSilenced] = useState(false);
   
+  const [validateError, setValidateError] = useState<string | null>(null);
+  const [deepenError, setDeepenError] = useState<string | null>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDeep, setIsLoadingDeep] = useState(false);
 
@@ -182,8 +185,9 @@ export default function EmotionDiary() {
   }, [user]);
 
   const handleValidate = async () => {
+    setValidateError(null);
     if (!user) {
-      alert("Por favor, regístrate o inicia sesión para usar el diario.");
+      setValidateError("Por favor, regístrate o inicia sesión para usar el diario.");
       return;
     }
     
@@ -191,7 +195,7 @@ export default function EmotionDiary() {
     const send2 = entry2Saved ? "" : entry2;
 
     if (!send1.trim() && !send2.trim()) {
-      alert("Por favor, detalla al menos un nuevo motivo de gratitud antes de validar.");
+      setValidateError("Por favor, detalla al menos un nuevo motivo de gratitud antes de validar.");
       return;
     }
     setIsLoading(true);
@@ -255,7 +259,7 @@ export default function EmotionDiary() {
       
     } catch (e: any) {
       console.error("AI or Firestore Error:", e);
-      alert(e.message || "Ocurrió un error al contactar al guía o guardar los datos. Verifica tu conexión e inténtalo de nuevo.");
+      setValidateError("No hemos podido completar esta reflexión en este momento. Puedes volver a intentarlo.");
     } finally {
       setIsLoading(false);
     }
@@ -263,6 +267,7 @@ export default function EmotionDiary() {
 
   const handleDeepen = async () => {
     if (hasDeepened || !isValidated || !user) return;
+    setDeepenError(null);
     setIsLoadingDeep(true);
     try {
       const accumulatedSummary = userSummary;
@@ -287,7 +292,7 @@ export default function EmotionDiary() {
       setHasDeepened(true);
     } catch (e: any) {
       console.error(e);
-      alert(e.message || "Error profundizando en la sesión.");
+      setDeepenError("No hemos podido profundizar en esta reflexión en este momento. Puedes volver a intentarlo.");
     } finally {
       setIsLoadingDeep(false);
     }
@@ -408,7 +413,10 @@ export default function EmotionDiary() {
                   className="w-full bg-transparent border-none focus:ring-0 font-body text-xl text-on-surface placeholder:text-outline-variant/50 resize-none h-32 outline-none disabled:opacity-70 disabled:cursor-not-allowed" 
                   placeholder="Hoy agradezco por..."
                   value={entry1}
-                  onChange={e => setEntry1(e.target.value)}
+                  onChange={e => {
+                    setEntry1(e.target.value);
+                    if (validateError) setValidateError(null);
+                  }}
                   disabled={entry1Saved || isLoading}
                 ></textarea>
               </div>
@@ -424,14 +432,22 @@ export default function EmotionDiary() {
                   className="w-full bg-transparent border-none focus:ring-0 font-body text-xl text-on-surface placeholder:text-outline-variant/50 resize-none h-32 outline-none disabled:opacity-70 disabled:cursor-not-allowed" 
                   placeholder="También he notado un destello en..."
                   value={entry2}
-                  onChange={e => setEntry2(e.target.value)}
+                  onChange={e => {
+                    setEntry2(e.target.value);
+                    if (validateError) setValidateError(null);
+                  }}
                   disabled={entry2Saved || isLoading}
                 ></textarea>
               </div>
             </div>
 
             {!(entry1Saved && entry2Saved) && (
-              <div className="flex justify-end border-t border-outline-variant/10 pt-8">
+              <div className="flex flex-col items-end gap-3 border-t border-outline-variant/10 pt-8">
+                {validateError && (
+                  <div className="w-full bg-error/10 text-error text-sm font-body p-3 rounded-lg border border-error/20">
+                    {validateError}
+                  </div>
+                )}
                 <button 
                   onClick={handleValidate}
                   disabled={isLoading || !user}
@@ -474,7 +490,12 @@ export default function EmotionDiary() {
                       )}
 
                       {!hasDeepened && (
-                        <div className="pt-4">
+                        <div className="pt-4 space-y-3">
+                          {deepenError && (
+                            <div className="bg-error/10 text-error text-sm font-body p-3 rounded-lg border border-error/20">
+                              {deepenError}
+                            </div>
+                          )}
                           <button 
                             onClick={handleDeepen}
                             disabled={isLoadingDeep}

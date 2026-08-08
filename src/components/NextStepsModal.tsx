@@ -727,7 +727,7 @@ export default function NextStepsModal({
               </label>
 
               {(whatsappChecked || smsChecked) && (
-                <label className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
+                <label className="flex flex-col lg:flex-row lg:items-center gap-3 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors">
                   <div className="flex items-center gap-2 text-on-surface-variant shrink-0">
                     <span className="material-symbols-outlined text-base">phone_iphone</span>
                     <span className="text-sm">Número para WhatsApp y/o SMS</span>
@@ -736,7 +736,7 @@ export default function NextStepsModal({
                     type="tel" 
                     value={phoneValue} 
                     onChange={(e) => setPhoneValue(e.target.value)}
-                    className="text-sm px-3 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none flex-1 min-w-0 bg-transparent text-on-surface"
+                    className="text-sm px-3 py-1.5 bg-surface-container rounded-md border border-outline-variant/20 focus:ring-1 focus:ring-primary outline-none w-full lg:flex-1 min-w-0 bg-transparent text-on-surface"
                     placeholder="+34"
                   />
                 </label>
