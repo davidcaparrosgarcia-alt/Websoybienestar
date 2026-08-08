@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField } from "firebase/firestore";
 import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
 import SEO from "../components/SEO";
@@ -401,19 +401,26 @@ export default function EmotionDiary() {
 
         if (todayDoc.exists()) {
           const data = todayDoc.data();
-          if (data.score1 !== undefined || data.score2 !== undefined) {
-             setIsValidated(true);
-             setEntry1(data.entry1 || "");
-             setEntry2(data.entry2 || "");
-             setScore1(data.score1 !== undefined ? data.score1 : 0);
-             setScore2(data.score2 !== undefined ? data.score2 : 0);
-             setEntry1Saved(data.score1 !== undefined);
-             setEntry2Saved(data.score2 !== undefined);
-             setReflection(data.reflection || "");
-             if (data.hasDeepened) {
-                setHasDeepened(true);
-                setDeepReflection(data.deepReflection || "");
-             }
+          const hasEntry1 = !!(data.entry1 && data.entry1.trim());
+          const hasEntry2 = !!(data.entry2 && data.entry2.trim());
+
+          setEntry1(data.entry1 || "");
+          setEntry2(data.entry2 || "");
+
+          const validScore1 = hasEntry1 && typeof data.score1 === "number" ? data.score1 : 0;
+          const validScore2 = hasEntry2 && typeof data.score2 === "number" ? data.score2 : 0;
+
+          setScore1(validScore1);
+          setScore2(validScore2);
+
+          setEntry1Saved(hasEntry1);
+          setEntry2Saved(hasEntry2);
+
+          setIsValidated(hasEntry1 || hasEntry2);
+          setReflection(data.reflection || "");
+          if (data.hasDeepened) {
+            setHasDeepened(true);
+            setDeepReflection(data.deepReflection || "");
           }
         }
       } catch (err) {
@@ -450,26 +457,52 @@ export default function EmotionDiary() {
       const data = await api.diaryValidate(send1, send2, accumulatedSummary);
       
       const pRef = profileRef || doc(db, 'userProfiles', user.uid);
-
       const todayStr = getDailyStr(new Date());
-      const s1 = typeof data.score1 === 'number' ? data.score1 : (send1.trim() ? 1 : (entry1Saved ? score1 : 0));
-      const s2 = typeof data.score2 === 'number' ? data.score2 : (send2.trim() ? 1 : (entry2Saved ? score2 : 0));
-      const totalDayScore = s1 + s2;
+
+      const isE1Saved = entry1Saved || !!send1.trim();
+      const isE2Saved = entry2Saved || !!send2.trim();
+
+      const s1 = isE1Saved ? (entry1Saved ? score1 : (typeof data.score1 === 'number' ? data.score1 : (send1.trim() ? 1 : 0))) : 0;
+      const s2 = isE2Saved ? (entry2Saved ? score2 : (typeof data.score2 === 'number' ? data.score2 : (send2.trim() ? 1 : 0))) : 0;
+
+      const totalDayScore = (isE1Saved ? s1 : 0) + (isE2Saved ? s2 : 0);
 
       // merge old reflection if exists and new is generated
-      const previousReflection = reflection ? reflection + "\n\n" : "";
-      const newReflection = data.reflection ? previousReflection + data.reflection : (reflection || "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.");
+      let newReflection = reflection;
+      if (data.reflection && data.reflection.trim()) {
+        const incoming = data.reflection.trim();
+        if (reflection && reflection.trim()) {
+          if (!reflection.includes(incoming)) {
+            newReflection = `${reflection.trim()}\n\n${incoming}`;
+          }
+        } else {
+          newReflection = incoming;
+        }
+      }
+      if (!newReflection) {
+        newReflection = "Excelente esfuerzo por encontrar la luz de hoy. Sigue adelante.";
+      }
 
       const newData: any = {
-        score1: s1,
-        score2: s2,
         dayScore: totalDayScore,
         reflection: newReflection,
         createdAt: new Date().toISOString()
       };
-      if (entry1.trim()) newData.entry1 = entry1;
-      if (entry2.trim()) newData.entry2 = entry2;
-      
+
+      if (isE1Saved) {
+        newData.entry1 = entry1;
+        newData.score1 = s1;
+      } else {
+        newData.score1 = deleteField();
+      }
+
+      if (isE2Saved) {
+        newData.entry2 = entry2;
+        newData.score2 = s2;
+      } else {
+        newData.score2 = deleteField();
+      }
+
       const docRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
       await setDoc(docRef, newData, { merge: true }).catch(err => {
         handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/diaryEntries/${todayStr}`);
@@ -494,16 +527,74 @@ export default function EmotionDiary() {
 
       setUserSummary(data.newAccumulatedSummary || accumulatedSummary);
       setRecentScores(updatedScores);
-      setScore1(newData.score1);
-      setScore2(newData.score2);
-      setReflection(newData.reflection);
-      if (newData.entry1) setEntry1Saved(true);
-      if (newData.entry2) setEntry2Saved(true);
+      setScore1(isE1Saved ? s1 : 0);
+      setScore2(isE2Saved ? s2 : 0);
+      setReflection(newReflection);
+      setEntry1Saved(isE1Saved);
+      setEntry2Saved(isE2Saved);
       setIsValidated(true);
       
     } catch (e: any) {
       console.error("AI or Firestore Error:", e);
       setValidateError("No hemos podido completar esta reflexión en este momento. Puedes volver a intentarlo.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isTesterUser = user?.email?.toLowerCase() === "davidcaparrosgarcia@gmail.com";
+
+  const handleResetTodayTester = async () => {
+    if (!user || !isTesterUser) return;
+    const confirmed = window.confirm("¿Seguro que deseas reiniciar el diario de hoy para hacer pruebas?");
+    if (!confirmed) return;
+
+    try {
+      setIsLoading(true);
+      const todayStr = getDailyStr(new Date());
+
+      // 1. Delete today's diaryEntries document
+      const todayRef = doc(db, 'users', user.uid, 'diaryEntries', todayStr);
+      await deleteDoc(todayRef).catch(err => {
+        handleFirestoreError(err, OperationType.DELETE, `users/${user.uid}/diaryEntries/${todayStr}`);
+      });
+
+      // 2. Remove today's score from recentScores in profile
+      const pRef = profileRef || doc(db, 'userProfiles', user.uid);
+      let updatedScores = [...recentScores];
+      updatedScores = updatedScores.filter(s => s.date !== todayStr);
+
+      await updateDoc(pRef, {
+        "diaryProfile.recentScores": updatedScores,
+        "diaryProfile.lastUsedAt": new Date().toISOString()
+      }).catch(err => {
+        handleFirestoreError(err, OperationType.UPDATE, `userProfiles/${user.uid}`);
+      });
+
+      // 3. Reset local state
+      setRecentScores(updatedScores);
+      setEntry1("");
+      setEntry2("");
+      setScore1(0);
+      setScore2(0);
+      setReflection("");
+      setDeepReflection("");
+      setEntry1Saved(false);
+      setEntry2Saved(false);
+      setHasDeepened(false);
+      setIsValidated(false);
+      setValidateError(null);
+      setDeepenError(null);
+      setRecordingState1("initial");
+      setRecordingState2("initial");
+      setRecordingError1(null);
+      setRecordingError2(null);
+      setOriginalText1("");
+      setOriginalText2("");
+
+    } catch (err) {
+      console.error("Error resetting tester daily entry:", err);
+      alert("Error al reiniciar el diario de hoy.");
     } finally {
       setIsLoading(false);
     }
@@ -555,6 +646,20 @@ export default function EmotionDiary() {
     <>
       <SEO title="Diario emocional privado | SoyBienestar" description="Herramienta privada de diario emocional dentro de SoyBienestar.es." canonicalPath="/emotion-diary" noIndex={true} />
     <div className="flex-1 bg-transparent dark:bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen flex flex-col pt-20 md:pt-32 pb-20 px-6 md:px-8 max-w-7xl mx-auto w-full">
+      {/* Tester reset button */}
+      {isTesterUser && (
+        <div className="mb-6 flex justify-start">
+          <button
+            onClick={handleResetTodayTester}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-label font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+            title="Borra únicamente la entrada del día de hoy para pruebas"
+          >
+            <span className="material-symbols-outlined text-base">restart_alt</span>
+            Reiniciar diario de hoy (tester)
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Image & Title Section */}
         <div className="lg:col-span-5 relative">
@@ -845,7 +950,16 @@ export default function EmotionDiary() {
               </div>
             </div>
 
-            {!(entry1Saved && entry2Saved) && (
+            {(entry1Saved && entry2Saved) ? (
+              <div className="p-6 bg-primary/10 border border-primary/20 rounded-xl text-primary font-body text-center shadow-sm mt-8 space-y-1">
+                <p className="font-semibold text-base sm:text-lg">
+                  Ya has completado tus dos agradecimientos de hoy.
+                </p>
+                <p className="text-sm sm:text-base text-primary/80">
+                  Mañana podrás añadir nuevos motivos de gratitud.
+                </p>
+              </div>
+            ) : (
               <div className="flex flex-col items-end gap-3 border-t border-outline-variant/10 pt-8">
                 {validateError && (
                   <div className="w-full bg-error/10 text-error text-sm font-body p-3 rounded-lg border border-error/20">
