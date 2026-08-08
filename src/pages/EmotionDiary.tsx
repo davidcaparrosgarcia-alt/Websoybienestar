@@ -98,6 +98,17 @@ export default function EmotionDiary() {
   const streamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const isStoppingRef = useRef(false);
+  const nativeRecognitionRef = useRef<any>(null);
+  const hasNativeResultRef = useRef<boolean>(false);
+
+  const isMobileLikeDevice = () => {
+    if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+    return (
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ||
+      window.matchMedia("(pointer: coarse)").matches
+    );
+  };
 
   const supportsMediaRecorderAudio = () => {
     return (
@@ -108,12 +119,19 @@ export default function EmotionDiary() {
   };
 
   const cleanupMic = () => {
+    if (nativeRecognitionRef.current) {
+      try {
+        nativeRecognitionRef.current.abort();
+      } catch (_) {}
+      nativeRecognitionRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     mediaRecorderRef.current = null;
     audioChunksRef.current = [];
+    isStoppingRef.current = false;
   };
 
   useEffect(() => {
@@ -123,13 +141,6 @@ export default function EmotionDiary() {
   }, []);
 
   const startRecording = async (fieldNum: 1 | 2) => {
-    if (!supportsMediaRecorderAudio()) {
-      const errMsg = "El micrófono no está soportado en este navegador.";
-      if (fieldNum === 1) setRecordingError1(errMsg);
-      else setRecordingError2(errMsg);
-      return;
-    }
-
     if (fieldNum === 1) {
       setOriginalText1(entry1);
       setRecordingError1(null);
@@ -138,6 +149,96 @@ export default function EmotionDiary() {
       setOriginalText2(entry2);
       setRecordingError2(null);
       setRecordingState2("recording");
+    }
+
+    // DESKTOP: Try browser SpeechRecognition first if non-mobile
+    if (!isMobileLikeDevice()) {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        try {
+          if (nativeRecognitionRef.current) {
+            try {
+              nativeRecognitionRef.current.abort();
+            } catch (_) {}
+            nativeRecognitionRef.current = null;
+          }
+
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "es-ES";
+
+          hasNativeResultRef.current = false;
+          const initialText = fieldNum === 1 ? entry1 : entry2;
+
+          recognition.onresult = (event: any) => {
+            let interimTranscript = "";
+            let finalTranscript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+              } else {
+                interimTranscript += event.results[i][0].transcript;
+              }
+            }
+
+            const addedText = (finalTranscript + " " + interimTranscript).trim();
+            if (addedText) {
+              hasNativeResultRef.current = true;
+              const updated = initialText.trim()
+                ? `${initialText.trim()} ${addedText}`
+                : addedText;
+              if (fieldNum === 1) {
+                setEntry1(updated);
+              } else {
+                setEntry2(updated);
+              }
+            }
+          };
+
+          recognition.onerror = (event: any) => {
+            console.warn("SpeechRecognition error:", event?.error);
+            nativeRecognitionRef.current = null;
+            if (hasNativeResultRef.current) {
+              if (fieldNum === 1) setRecordingState1("reviewing");
+              else setRecordingState2("reviewing");
+            } else {
+              startMediaRecorder(fieldNum);
+            }
+          };
+
+          recognition.onend = () => {
+            nativeRecognitionRef.current = null;
+          };
+
+          recognition.start();
+          nativeRecognitionRef.current = recognition;
+          return;
+        } catch (err) {
+          console.warn("SpeechRecognition start error, using MediaRecorder fallback:", err);
+        }
+      }
+    }
+
+    // Fallback or Mobile: MediaRecorder + /api/transcribe-audio
+    await startMediaRecorder(fieldNum);
+  };
+
+  const startMediaRecorder = async (fieldNum: 1 | 2) => {
+    if (!supportsMediaRecorderAudio()) {
+      const errMsg = "El micrófono no está soportado en este navegador.";
+      if (fieldNum === 1) {
+        setRecordingState1("initial");
+        setRecordingError1(errMsg);
+      } else {
+        setRecordingState2("initial");
+        setRecordingError2(errMsg);
+      }
+      return;
     }
 
     try {
@@ -191,6 +292,22 @@ export default function EmotionDiary() {
     if (isStoppingRef.current) return;
     isStoppingRef.current = true;
 
+    // Check if native SpeechRecognition is running
+    if (nativeRecognitionRef.current) {
+      try {
+        nativeRecognitionRef.current.stop();
+      } catch (_) {}
+      nativeRecognitionRef.current = null;
+
+      if (fieldNum === 1) {
+        setRecordingState1("reviewing");
+      } else {
+        setRecordingState2("reviewing");
+      }
+      isStoppingRef.current = false;
+      return;
+    }
+
     if (fieldNum === 1) {
       setRecordingState1("transcribing");
     } else {
@@ -207,6 +324,7 @@ export default function EmotionDiary() {
         setRecordingState2("initial");
         setRecordingError2("Grabación inactiva.");
       }
+      isStoppingRef.current = false;
       return;
     }
 
@@ -286,9 +404,21 @@ export default function EmotionDiary() {
 
     } catch (err: any) {
       console.error("Audio transcription error", err);
-      const errMsg = err?.message?.includes("límite diario")
-        ? "Has alcanzado el límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente."
-        : "No hemos podido transcribir tu audio. Puedes reintentar o escribir manualmente.";
+      let errMsg = "No hemos podido transcribir tu audio. Puedes reintentar o escribir manualmente.";
+      const msg = String(err?.message || "").toLowerCase();
+
+      if (
+        msg.includes("renueve el servicio") ||
+        msg.includes("límite disponible por hoy") ||
+        msg.includes("429") ||
+        msg.includes("quota") ||
+        msg.includes("resource_exhausted")
+      ) {
+        errMsg = "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio.";
+      } else if (msg.includes("límite diario") || msg.includes("limite diario")) {
+        errMsg = "Has alcanzado tu límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente. Mañana podrás volver a grabar tus audios.";
+      }
+
       if (fieldNum === 1) {
         setRecordingState1("initial");
         setRecordingError1(errMsg);
@@ -302,6 +432,7 @@ export default function EmotionDiary() {
   };
 
   const saveTranscription = (fieldNum: 1 | 2) => {
+    cleanupMic();
     if (fieldNum === 1) {
       setRecordingState1("initial");
       setOriginalText1("");
@@ -312,6 +443,7 @@ export default function EmotionDiary() {
   };
 
   const cancelTranscription = (fieldNum: 1 | 2) => {
+    cleanupMic();
     if (fieldNum === 1) {
       setEntry1(originalText1);
       setRecordingState1("initial");
@@ -548,8 +680,15 @@ export default function EmotionDiary() {
       
     } catch (e: any) {
       console.error("AI or Firestore Error:", e);
-      if (e?.message && (e.message.includes("Ya has validado") || e.message.includes("agradecimientos disponibles"))) {
-        setValidateError(e.message);
+      const msg = String(e?.message || "");
+      if (
+        msg.includes("Ya has validado") ||
+        msg.includes("agradecimientos disponibles") ||
+        msg.includes("La reflexión automática ha alcanzado") ||
+        msg.includes("renueve el servicio") ||
+        msg.includes("límite disponible")
+      ) {
+        setValidateError(msg);
       } else {
         setValidateError("No hemos podido completar esta reflexión en este momento. Puedes volver a intentarlo.");
       }

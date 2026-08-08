@@ -110,13 +110,20 @@ if (!admin.apps.length) {
 // Initialize Gemini
 let ai: GoogleGenAI | null = null;
 const API_KEY = process.env.GEMINI_API_KEY;
-const AI_MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
+const AI_MODEL = process.env.AI_MODEL || "gemini-3.1-flash-lite";
 
-const AI_MODEL_CANDIDATES = [
+const GENERATIVE_MODEL_CANDIDATES = [
   AI_MODEL,
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash"
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+  "gemini-2.5-flash-lite"
+].filter((value, index, array) => value && array.indexOf(value) === index);
+
+const TRANSCRIPTION_MODEL_CANDIDATES = [
+  AI_MODEL,
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+  "gemini-2.5-flash-lite"
 ].filter((value, index, array) => value && array.indexOf(value) === index);
 
 if (!API_KEY) {
@@ -155,6 +162,20 @@ function getGeminiErrorInfo(error: unknown) {
   };
 }
 
+function isQuotaError(err: unknown): boolean {
+  if (!err) return false;
+  const anyErr = err as any;
+  const msg = String(anyErr?.message || "").toLowerCase();
+  const status = anyErr?.status || anyErr?.code || anyErr?.response?.status;
+  return (
+    status === 429 ||
+    msg.includes("429") ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("quota exceeded") ||
+    msg.includes("rate limit")
+  );
+}
+
 function parseGeminiJSON(text: string) {
   if (!text) return {};
   let jsonStr = text.replace(/```json\n?|```/g, "").trim();
@@ -184,8 +205,9 @@ async function callGeminiJSONWithRetry(params: {
     throw new Error("AI not initialized");
   }
 
-  const modelsToTry = AI_MODEL_CANDIDATES.slice(0, 2);
+  const modelsToTry = GENERATIVE_MODEL_CANDIDATES;
   let lastError: any = null;
+  let firstQuotaError: any = null;
 
   for (let i = 0; i < modelsToTry.length; i++) {
     const model = modelsToTry[i];
@@ -213,6 +235,9 @@ async function callGeminiJSONWithRetry(params: {
       return parsed;
     } catch (err) {
       lastError = err;
+      if (isQuotaError(err) && !firstQuotaError) {
+        firstQuotaError = err;
+      }
       const info = getGeminiErrorInfo(err);
       console.error(`AI retry attempt ${i + 1} failed`, {
         endpoint: params.endpoint,
@@ -222,7 +247,7 @@ async function callGeminiJSONWithRetry(params: {
     }
   }
 
-  throw lastError || new Error("All AI attempts failed");
+  throw firstQuotaError || lastError || new Error("All AI attempts failed");
 }
 
 const requireAI = (req: Request, res: Response, next: NextFunction) => {
@@ -314,6 +339,84 @@ async function checkAILimit(
   } catch (e) {
     console.error("Limit check transaction failed", e);
     return true;
+  }
+}
+
+async function checkAILimitReadOnly(
+  req: any,
+  uid: string,
+  limitKey: string,
+  period: "daily" | "weekly" | "monthly",
+  maxLimit: number,
+): Promise<boolean> {
+  if (isTestUser(req)) return true;
+  if (!admin.apps.length) return true;
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const now = new Date();
+  let periodStr = "";
+  if (period === "daily") periodStr = now.toISOString().split("T")[0];
+  if (period === "monthly") periodStr = now.toISOString().slice(0, 7);
+  if (period === "weekly") {
+    const firstDay = new Date(now.getFullYear(), 0, 1);
+    const pastDays = (now.getTime() - firstDay.getTime()) / 86400000;
+    const weekNum = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+    periodStr = `${now.getFullYear()}-W${weekNum}`;
+  }
+
+  const docId = `${limitKey}_${periodStr}`;
+  const limitRef = db
+    .collection("users")
+    .doc(uid)
+    .collection("aiLimits")
+    .doc(docId);
+
+  try {
+    const doc = await limitRef.get();
+    if (!doc.exists) return true;
+    const data = doc.data() || { count: 0 };
+    return (data.count || 0) < maxLimit;
+  } catch (e) {
+    console.error("Limit check read-only failed", e);
+    return true; // Fail open
+  }
+}
+
+async function incrementAILimit(
+  req: any,
+  uid: string,
+  limitKey: string,
+  period: "daily" | "weekly" | "monthly",
+): Promise<void> {
+  if (isTestUser(req)) return;
+  if (!admin.apps.length) return;
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const now = new Date();
+  let periodStr = "";
+  if (period === "daily") periodStr = now.toISOString().split("T")[0];
+  if (period === "monthly") periodStr = now.toISOString().slice(0, 7);
+  if (period === "weekly") {
+    const firstDay = new Date(now.getFullYear(), 0, 1);
+    const pastDays = (now.getTime() - firstDay.getTime()) / 86400000;
+    const weekNum = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+    periodStr = `${now.getFullYear()}-W${weekNum}`;
+  }
+
+  const docId = `${limitKey}_${periodStr}`;
+  const limitRef = db
+    .collection("users")
+    .doc(uid)
+    .collection("aiLimits")
+    .doc(docId);
+
+  try {
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(limitRef);
+      let data = doc.data() || { count: 0 };
+      data.count = (data.count || 0) + 1;
+      t.set(limitRef, data, { merge: true });
+    });
+  } catch (e) {
+    console.error("Limit increment transaction failed", e);
   }
 }
 
@@ -487,7 +590,7 @@ app.post("/api/ai-smoke-test", requireAuth, async (req, res) => {
 
   const attempts: any[] = [];
 
-  for (const model of AI_MODEL_CANDIDATES) {
+  for (const model of GENERATIVE_MODEL_CANDIDATES) {
     try {
       const response = await ai.models.generateContent({
         model,
@@ -1029,7 +1132,7 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
       },
     ];
 
-    const modelsToTry = AI_MODEL_CANDIDATES.slice(0, 2);
+    const modelsToTry = GENERATIVE_MODEL_CANDIDATES;
     let responseText = "";
 
     for (let i = 0; i < modelsToTry.length; i++) {
@@ -1089,7 +1192,7 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 
 app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
   try {
-    const allowed = await checkAILimit(
+    const allowed = await checkAILimitReadOnly(
       req,
       req.user!.uid,
       "audioTranscription",
@@ -1100,7 +1203,7 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
     if (!allowed) {
       res.status(429).json({
         error:
-          "Has alcanzado temporalmente el límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente."
+          "Has alcanzado tu límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente. Mañana podrás volver a grabar tus audios."
       });
       return;
     }
@@ -1140,8 +1243,9 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
 
     let textResult = "";
     let lastError: any = null;
+    let firstQuotaError: any = null;
 
-    for (const modelCandidate of AI_MODEL_CANDIDATES) {
+    for (const modelCandidate of TRANSCRIPTION_MODEL_CANDIDATES) {
       try {
         const response = await ai!.models.generateContent({
           model: modelCandidate,
@@ -1173,11 +1277,21 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
         }
       } catch (err) {
         lastError = err;
+        if (isQuotaError(err) && !firstQuotaError) {
+          firstQuotaError = err;
+        }
         console.error(`Transcribe audio error with model ${modelCandidate}:`, getGeminiErrorInfo(err));
       }
     }
 
     if (!textResult) {
+      const errToEvaluate = firstQuotaError || lastError;
+      if (isQuotaError(errToEvaluate)) {
+        res.status(429).json({
+          error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio."
+        });
+        return;
+      }
       if (lastError) {
         res.status(503).json({
           error: "No se pudo procesar la transcripción del audio. Por favor intenta de nuevo o escribe manualmente."
@@ -1190,6 +1304,13 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
       return;
     }
 
+    // Success, increment count in Firestore
+    try {
+      await incrementAILimit(req, req.user!.uid, "audioTranscription", "daily");
+    } catch (incrementError) {
+      console.error("Could not increment audioTranscription limit after successful transcription", incrementError);
+    }
+
     res.json({ text: textResult });
   } catch (error) {
     const info = getGeminiErrorInfo(error);
@@ -1199,6 +1320,12 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
       email: req.user?.email,
       ...info
     });
+    if (isQuotaError(error)) {
+      res.status(429).json({
+        error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio."
+      });
+      return;
+    }
     res.status(503).json({
       error: "Ocurrió un error al transcribir el audio. Puedes continuar escribiendo manualmente."
     });
@@ -1372,16 +1499,32 @@ app.post("/api/tester-reset-gratitude-today", requireAuth, async (req, res) => {
     const uid = req.user!.uid;
     if (admin.apps.length) {
       const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
-      const dateStr = getMadridDateStr();
-      const limitRef = db
+      const madridDateStr = getMadridDateStr();
+      const utcDateStr = new Date().toISOString().split("T")[0];
+
+      const gratitudeRef = db
         .collection("users")
         .doc(uid)
         .collection("aiLimits")
-        .doc(`gratitude_${dateStr}`);
+        .doc(`gratitude_${madridDateStr}`);
 
-      await limitRef.delete().catch((e) => {
-        console.error("Error deleting tester gratitude limit doc:", e);
-      });
+      const audioTranscriptionUTCRef = db
+        .collection("users")
+        .doc(uid)
+        .collection("aiLimits")
+        .doc(`audioTranscription_${utcDateStr}`);
+
+      const audioTranscriptionMadridRef = db
+        .collection("users")
+        .doc(uid)
+        .collection("aiLimits")
+        .doc(`audioTranscription_${madridDateStr}`);
+
+      const batch = db.batch();
+      batch.delete(gratitudeRef);
+      batch.delete(audioTranscriptionUTCRef);
+      batch.delete(audioTranscriptionMadridRef);
+      await batch.commit();
     }
 
     res.json({ ok: true });
@@ -1479,6 +1622,12 @@ Responde EXCLUSIVAMENTE con un JSON:
       aiAvailable: !!ai,
       ...info
     });
+    if (isQuotaError(error)) {
+      res.status(429).json({
+        error: "La reflexión automática no está disponible temporalmente porque se ha alcanzado el límite del servicio. Tus textos siguen disponibles y podrás volver a validarlos cuando el servicio esté disponible."
+      });
+      return;
+    }
     res.status(500).json({ error: "No hemos podido completar esta reflexión en este momento. Inténtalo de nuevo." });
   }
 });
