@@ -1361,6 +1361,36 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
   }
 });
 
+app.post("/api/tester-reset-gratitude-today", requireAuth, async (req, res) => {
+  try {
+    const email = req.user?.email?.toLowerCase();
+    if (email !== "davidcaparrosgarcia@gmail.com") {
+      res.status(403).json({ error: "Acceso denegado." });
+      return;
+    }
+
+    const uid = req.user!.uid;
+    if (admin.apps.length) {
+      const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+      const dateStr = getMadridDateStr();
+      const limitRef = db
+        .collection("users")
+        .doc(uid)
+        .collection("aiLimits")
+        .doc(`gratitude_${dateStr}`);
+
+      await limitRef.delete().catch((e) => {
+        console.error("Error deleting tester gratitude limit doc:", e);
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error resetting tester gratitude today:", err);
+    res.status(500).json({ error: "Error al reiniciar límite de gratitud." });
+  }
+});
+
 app.post("/api/diary-validate", requireAuth, requireAI, async (req, res) => {
   try {
     let { entry1, entry2, accumulatedSummary } = req.body;

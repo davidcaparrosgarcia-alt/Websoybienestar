@@ -329,6 +329,11 @@ export default function EmotionDiary() {
     recordingState2 === "recording" || 
     recordingState2 === "transcribing";
 
+  const isVoicePending1 = recordingState1 === "recording" || recordingState1 === "transcribing" || recordingState1 === "reviewing";
+  const isVoicePending2 = recordingState2 === "recording" || recordingState2 === "transcribing" || recordingState2 === "reviewing";
+  const isVoicePending = isVoicePending1 || isVoicePending2;
+  const isReviewing = recordingState1 === "reviewing" || recordingState2 === "reviewing";
+
   // Optimization: Keep summary and refs to avoid redundant fetches
   const [userSummary, setUserSummary] = useState("");
   const [profileRef, setProfileRef] = useState<any>(null);
@@ -441,6 +446,13 @@ export default function EmotionDiary() {
       setValidateError("Por favor, regístrate o inicia sesión para usar el diario.");
       return;
     }
+
+    if (isVoicePending) {
+      if (isReviewing) {
+        setValidateError("Guarda o cancela la transcripción antes de validar tus destellos.");
+      }
+      return;
+    }
     
     const send1 = entry1Saved ? "" : entry1;
     const send2 = entry2Saved ? "" : entry2;
@@ -536,7 +548,11 @@ export default function EmotionDiary() {
       
     } catch (e: any) {
       console.error("AI or Firestore Error:", e);
-      setValidateError("No hemos podido completar esta reflexión en este momento. Puedes volver a intentarlo.");
+      if (e?.message && (e.message.includes("Ya has validado") || e.message.includes("agradecimientos disponibles"))) {
+        setValidateError(e.message);
+      } else {
+        setValidateError("No hemos podido completar esta reflexión en este momento. Puedes volver a intentarlo.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -551,6 +567,26 @@ export default function EmotionDiary() {
 
     try {
       setIsLoading(true);
+
+      const token = await user.getIdToken(true);
+      const res = await fetch("/api/tester-reset-gratitude-today", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        let errText = "Error al reiniciar el límite en el servidor.";
+        try {
+          const data = await res.json();
+          if (data && data.error) errText = data.error;
+        } catch (_) {}
+        alert(`Error al reiniciar: ${errText}`);
+        return;
+      }
+
       const todayStr = getDailyStr(new Date());
 
       // 1. Delete today's diaryEntries document
@@ -961,6 +997,11 @@ export default function EmotionDiary() {
               </div>
             ) : (
               <div className="flex flex-col items-end gap-3 border-t border-outline-variant/10 pt-8">
+                {isReviewing && (
+                  <div className="w-full bg-amber-500/10 text-amber-800 dark:text-amber-200 text-sm font-body p-3 rounded-lg border border-amber-500/20">
+                    Guarda o cancela la transcripción antes de validar tus destellos.
+                  </div>
+                )}
                 {validateError && (
                   <div className="w-full bg-error/10 text-error text-sm font-body p-3 rounded-lg border border-error/20">
                     {validateError}
@@ -968,8 +1009,8 @@ export default function EmotionDiary() {
                 )}
                 <button 
                   onClick={handleValidate}
-                  disabled={isLoading || !user}
-                  className="bg-primary text-on-primary px-8 py-4 rounded-xl font-label text-sm uppercase tracking-wide font-bold hover:shadow-lg disabled:opacity-50 transition-all hover:bg-primary-container hover:text-on-primary-container flex items-center gap-3"
+                  disabled={isLoading || !user || isVoicePending}
+                  className="bg-primary text-on-primary px-8 py-4 rounded-xl font-label text-sm uppercase tracking-wide font-bold hover:shadow-lg disabled:opacity-50 transition-all hover:bg-primary-container hover:text-on-primary-container flex items-center gap-3 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isLoading ? <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span> : <span className="material-symbols-outlined text-lg">task_alt</span>}
                   {isLoading ? "Validando tu día..." : "Validar Destellos"}

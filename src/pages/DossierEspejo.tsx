@@ -344,7 +344,16 @@ export default function DossierEspejo() {
           <div className="absolute inset-0 bg-white/[0.02] dark:bg-black/[0.02] pointer-events-none"></div>
         </div>
         <div className="relative z-10 bg-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-md shadow-2xl rounded-[2rem] p-8 md:p-16 max-w-4xl mx-auto border border-outline-variant/15">
-          <div className="flex flex-col md:flex-row justify-between md:items-start mb-12 border-b border-outline-variant/20 pb-8 gap-6">
+          <div className={`flex flex-col md:flex-row justify-between md:items-start border-b border-outline-variant/20 ${!audioUrl ? 'gap-3 md:gap-6 pb-4 md:pb-8 mb-5 md:mb-12' : 'gap-6 pb-8 mb-12'}`}>
+            {!audioUrl && (
+              <div className="flex md:hidden justify-end w-full">
+                <div className="inline-flex items-center gap-1.5 text-xs font-label text-on-surface-variant/70">
+                  <span>Audio no disponible</span>
+                  <span className="material-symbols-outlined text-sm">volume_off</span>
+                </div>
+              </div>
+            )}
+
             <div>
               <p className="font-label text-sm text-primary tracking-widest uppercase mb-2">Conclusiones personalizadas</p>
               <h2 className="font-headline text-3xl md:text-4xl text-primary">Dossier Espejo Personal</h2>
@@ -353,7 +362,7 @@ export default function DossierEspejo() {
             <button 
               onClick={toggleAudio}
               disabled={!audioUrl}
-              className={`flex shrink-0 items-center space-x-3 bg-surface-container-lowest hover:bg-surface-container transition-colors border border-outline-variant/20 rounded-xl px-5 py-3 group ${!audioUrl ? 'opacity-50 cursor-not-allowed' : 'text-primary'}`}
+              className={`shrink-0 items-center space-x-3 bg-surface-container-lowest hover:bg-surface-container transition-colors border border-outline-variant/20 rounded-xl px-5 py-3 group ${!audioUrl ? 'opacity-50 cursor-not-allowed hidden md:flex' : 'text-primary flex'}`}
             >
               <span className="font-label font-medium text-sm">{!audioUrl ? "Audio no disponible" : (isAudioPlaying ? "Pausar audio" : "Escuchar audio")}</span>
               <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">
