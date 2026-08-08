@@ -1495,15 +1495,17 @@ export default function Emocionario() {
             <p className="text-on-surface-variant text-lg font-light mb-6">
               Aplicaciones específicas del método para momentos vitales de mayor carga emocional.
             </p>
-            <button
-              type="button"
-              onClick={() => setIsSpecialModuleModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-label text-xs uppercase tracking-widest font-semibold shadow-md hover:bg-primary-container transition-all"
-            >
-              <span className="material-symbols-outlined text-base">widgets</span>
-              Elegir módulo especializado
-            </button>
-            {selectedSpecialModule && (
+            {isTester && (
+              <button
+                type="button"
+                onClick={() => setIsSpecialModuleModalOpen(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-label text-xs uppercase tracking-widest font-semibold shadow-md hover:bg-primary-container transition-all"
+              >
+                <span className="material-symbols-outlined text-base">widgets</span>
+                Elegir módulo especializado
+              </button>
+            )}
+            {selectedSpecialModule && isTester && (
               <p className="mt-3 text-sm text-primary font-medium">
                 Módulo seleccionado: <span className="font-bold">{
                   selectedSpecialModule === "crisis-perdida-salud" ? "Crisis, pérdida y salud" :
@@ -1520,8 +1522,6 @@ export default function Emocionario() {
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
               onClick={() => {
                 if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec1' ? null : 'spec1');
-                setSelectedSpecialModule("crisis-perdida-salud");
-                setIsSpecialModuleModalOpen(true);
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
@@ -1545,8 +1545,6 @@ export default function Emocionario() {
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
               onClick={() => {
                 if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec2' ? null : 'spec2');
-                setSelectedSpecialModule("amor-desamor");
-                setIsSpecialModuleModalOpen(true);
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>
@@ -1570,8 +1568,6 @@ export default function Emocionario() {
               className="relative group overflow-hidden rounded-[2rem] bg-surface-container border border-outline-variant/10 shadow-lg min-h-[380px] w-full transition-all hover:shadow-xl cursor-pointer"
               onClick={() => {
                 if (isTouchDevice()) setActiveMobileCard(activeMobileCard === 'spec3' ? null : 'spec3');
-                setSelectedSpecialModule("trabajo-finanzas");
-                setIsSpecialModuleModalOpen(true);
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface-container-highest"></div>

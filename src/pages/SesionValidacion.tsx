@@ -999,7 +999,7 @@ export default function SesionValidacion() {
             >
               <span className="material-symbols-outlined">chat</span>
               <div className="text-left">
-                <span className="block font-label font-bold text-sm">Soporte vía WhatsApp</span>
+                <span className="block font-label font-bold text-sm">Soporte vía WhatsApp (622 852 799)</span>
                 <span className="block font-body text-xs text-on-surface-variant">Respuesta en aprox. 24 horas laborables</span>
               </div>
             </a>

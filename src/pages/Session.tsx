@@ -553,7 +553,6 @@ export default function Session() {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     startSessionTimerIfNeeded();
     setInput(e.target.value);
-    setHasExpandedAudioTranscription(false);
 
     if (!isRecordingRef.current) {
       isTypingPauseRef.current = true;
