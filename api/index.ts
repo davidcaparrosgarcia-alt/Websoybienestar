@@ -1438,16 +1438,48 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
       }
     `;
 
-    const response = await ai.models.generateContent({
-      model: AI_MODEL,
-      contents: prompt,
-      config: { 
-        maxOutputTokens: 3500,
-        responseMimeType: "application/json"
-      },
-    });
+    const modelsToTry = GENERATIVE_MODEL_CANDIDATES;
+    let responseText = "";
+    let lastError: any = null;
+    let firstQuotaError: any = null;
 
-    const parsed = parseGeminiJSON(response.text || "{}");
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const model = modelsToTry[i];
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: { 
+            maxOutputTokens: 3500,
+            responseMimeType: "application/json"
+          },
+        });
+        if (response && response.text) {
+          responseText = response.text;
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        if (isQuotaError(err) && !firstQuotaError) {
+          firstQuotaError = err;
+        }
+        const info = getGeminiErrorInfo(err);
+        console.error(`AI report attempt ${i + 1} failed`, {
+          endpoint: "/api/report",
+          model,
+          uid: req.user?.uid,
+          email: req.user?.email,
+          ...info,
+        });
+      }
+    }
+
+    if (!responseText) {
+      const errorToThrow = firstQuotaError || lastError || new Error("No response from AI models");
+      throw errorToThrow;
+    }
+
+    const parsed = parseGeminiJSON(responseText);
 
     // If valid conclusion, apply monthly valid limit
     if (parsed.validConclusion && !isTestUser(req)) {
@@ -1481,6 +1513,12 @@ app.post("/api/report", requireAuth, requireAI, async (req, res) => {
       aiAvailable: !!ai,
       ...info
     });
+    if (isQuotaError(error)) {
+      res.status(429).json({
+        error: "El servicio de evaluación automática está temporalmente saturado o ha alcanzado su límite de cuota. Por favor, inténtalo de nuevo en unos minutos."
+      });
+      return;
+    }
     res.status(503).json({
       error:
         "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
@@ -1514,16 +1552,9 @@ app.post("/api/tester-reset-gratitude-today", requireAuth, async (req, res) => {
         .collection("aiLimits")
         .doc(`audioTranscription_${utcDateStr}`);
 
-      const audioTranscriptionMadridRef = db
-        .collection("users")
-        .doc(uid)
-        .collection("aiLimits")
-        .doc(`audioTranscription_${madridDateStr}`);
-
       const batch = db.batch();
       batch.delete(gratitudeRef);
       batch.delete(audioTranscriptionUTCRef);
-      batch.delete(audioTranscriptionMadridRef);
       await batch.commit();
     }
 

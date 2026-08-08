@@ -100,6 +100,8 @@ export default function EmotionDiary() {
   const isStoppingRef = useRef(false);
   const nativeRecognitionRef = useRef<any>(null);
   const hasNativeResultRef = useRef<boolean>(false);
+  const nativeBaseText1Ref = useRef("");
+  const nativeBaseText2Ref = useRef("");
 
   const isMobileLikeDevice = () => {
     if (typeof navigator === "undefined" || typeof window === "undefined") return false;
@@ -143,88 +145,116 @@ export default function EmotionDiary() {
   const startRecording = async (fieldNum: 1 | 2) => {
     if (fieldNum === 1) {
       setOriginalText1(entry1);
+      nativeBaseText1Ref.current = entry1;
       setRecordingError1(null);
       setRecordingState1("recording");
     } else {
       setOriginalText2(entry2);
+      nativeBaseText2Ref.current = entry2;
       setRecordingError2(null);
       setRecordingState2("recording");
     }
 
-    // DESKTOP: Try browser SpeechRecognition first if non-mobile
-    if (!isMobileLikeDevice()) {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
-      if (SpeechRecognition) {
-        try {
-          if (nativeRecognitionRef.current) {
-            try {
-              nativeRecognitionRef.current.abort();
-            } catch (_) {}
-            nativeRecognitionRef.current = null;
+    if (SpeechRecognition) {
+      try {
+        if (nativeRecognitionRef.current) {
+          try {
+            nativeRecognitionRef.current.abort();
+          } catch (_) {}
+          nativeRecognitionRef.current = null;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "es-ES";
+
+        hasNativeResultRef.current = false;
+
+        recognition.onresult = (event: any) => {
+          let interimTranscript = "";
+          let finalTranscript = "";
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
           }
 
-          const recognition = new SpeechRecognition();
-          recognition.continuous = true;
-          recognition.interimResults = true;
-          recognition.lang = "es-ES";
+          const baseRef = fieldNum === 1 ? nativeBaseText1Ref : nativeBaseText2Ref;
 
-          hasNativeResultRef.current = false;
-          const initialText = fieldNum === 1 ? entry1 : entry2;
+          if (finalTranscript) {
+            const space =
+              baseRef.current &&
+              !baseRef.current.endsWith(" ") &&
+              !finalTranscript.startsWith(" ")
+                ? " "
+                : "";
+            baseRef.current = baseRef.current + space + finalTranscript;
+            hasNativeResultRef.current = true;
+          }
 
-          recognition.onresult = (event: any) => {
-            let interimTranscript = "";
-            let finalTranscript = "";
+          const space2 =
+            baseRef.current &&
+            !baseRef.current.endsWith(" ") &&
+            interimTranscript &&
+            !interimTranscript.startsWith(" ")
+              ? " "
+              : "";
 
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
-              } else {
-                interimTranscript += event.results[i][0].transcript;
-              }
-            }
+          const currentText = baseRef.current + space2 + interimTranscript;
 
-            const addedText = (finalTranscript + " " + interimTranscript).trim();
-            if (addedText) {
-              hasNativeResultRef.current = true;
-              const updated = initialText.trim()
-                ? `${initialText.trim()} ${addedText}`
-                : addedText;
-              if (fieldNum === 1) {
-                setEntry1(updated);
-              } else {
-                setEntry2(updated);
-              }
-            }
-          };
+          if (fieldNum === 1) {
+            setEntry1(currentText);
+          } else {
+            setEntry2(currentText);
+          }
+        };
 
-          recognition.onerror = (event: any) => {
-            console.warn("SpeechRecognition error:", event?.error);
-            nativeRecognitionRef.current = null;
-            if (hasNativeResultRef.current) {
-              if (fieldNum === 1) setRecordingState1("reviewing");
-              else setRecordingState2("reviewing");
+        recognition.onerror = (event: any) => {
+          const errorType = event?.error;
+          console.warn("SpeechRecognition error:", errorType);
+          nativeRecognitionRef.current = null;
+
+          if (errorType === "not-allowed" || errorType === "permission-blocked") {
+            const errMsg = "Permiso de micrófono denegado para el reconocimiento de voz.";
+            if (fieldNum === 1) {
+              setRecordingState1("initial");
+              setRecordingError1(errMsg);
             } else {
-              startMediaRecorder(fieldNum);
+              setRecordingState2("initial");
+              setRecordingError2(errMsg);
             }
-          };
+            return;
+          }
 
-          recognition.onend = () => {
-            nativeRecognitionRef.current = null;
-          };
+          if (hasNativeResultRef.current) {
+            if (fieldNum === 1) setRecordingState1("reviewing");
+            else setRecordingState2("reviewing");
+          } else {
+            startMediaRecorder(fieldNum);
+          }
+        };
 
-          recognition.start();
-          nativeRecognitionRef.current = recognition;
-          return;
-        } catch (err) {
-          console.warn("SpeechRecognition start error, using MediaRecorder fallback:", err);
-        }
+        recognition.onend = () => {
+          nativeRecognitionRef.current = null;
+        };
+
+        recognition.start();
+        nativeRecognitionRef.current = recognition;
+        return;
+      } catch (err) {
+        console.warn("SpeechRecognition start error, using MediaRecorder fallback:", err);
       }
     }
 
-    // Fallback or Mobile: MediaRecorder + /api/transcribe-audio
+    // Fallback or Mobile not compatible: MediaRecorder + /api/transcribe-audio
     await startMediaRecorder(fieldNum);
   };
 
