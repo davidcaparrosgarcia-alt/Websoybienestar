@@ -1492,7 +1492,9 @@ export default function Session() {
                       ? "Detener y transcribir"
                       : "Hablar en lugar de escribir"
                   }
-                  className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
+                  className={`w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 ${
+                    isFallbackRecording ? "h-[88px]" : "h-16 aspect-square"
+                  } ${
                     isRecording || isFallbackRecording
                       ? "bg-error/10 text-error hover:bg-error/20"
                       : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -1534,6 +1536,8 @@ export default function Session() {
                     className={`w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed ${
                       hasExpandedAudioTranscription
                         ? "h-48 min-h-48 max-h-48 lg:h-16 lg:min-h-16 lg:max-h-16"
+                        : isFallbackRecording
+                        ? "h-[88px] min-h-[88px] max-h-[88px]"
                         : "h-16 min-h-16 max-h-16"
                     }`}
                     rows={1}
@@ -1549,7 +1553,9 @@ export default function Session() {
                     isFallbackRecording ||
                     isTranscribingAudio
                   }
-                  className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
+                  className={`w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 ${
+                    isFallbackRecording ? "h-[88px]" : "h-16 aspect-square"
+                  }`}
                 >
                   <span className="material-symbols-outlined">send</span>
                 </button>
@@ -1591,7 +1597,9 @@ export default function Session() {
                     ? "Detener y transcribir"
                     : "Hablar en lugar de escribir"
                 }
-                className={`h-16 w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 aspect-square ${
+                className={`w-16 p-0 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-300 border border-gray-800 dark:border-gray-200 ${
+                  isFallbackRecording ? "h-[88px]" : "h-16 aspect-square"
+                } ${
                   isRecording || isFallbackRecording
                     ? "bg-error/10 text-error hover:bg-error/20"
                     : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -1633,6 +1641,8 @@ export default function Session() {
                   className={`w-full bg-surface-container-low border border-gray-800 dark:border-gray-200 focus:ring-1 focus:ring-gray-500 focus:bg-surface-container rounded-[2rem] px-6 md:px-8 py-2.5 resize-none overflow-y-auto leading-5 transition-all font-body font-light text-on-surface disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasExpandedAudioTranscription
                       ? "h-48 min-h-48 max-h-48 lg:h-16 lg:min-h-16 lg:max-h-16"
+                      : isFallbackRecording
+                      ? "h-[88px] min-h-[88px] max-h-[88px]"
                       : "h-16 min-h-16 max-h-16"
                   }`}
                   rows={1}
@@ -1648,7 +1658,9 @@ export default function Session() {
                   isFallbackRecording ||
                   isTranscribingAudio
                 }
-                className="h-16 w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 aspect-square"
+                className={`w-16 p-0 flex items-center justify-center bg-primary text-on-primary rounded-full flex-shrink-0 hover:bg-primary-container transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-gray-800 dark:border-gray-200 ${
+                  isFallbackRecording ? "h-[88px]" : "h-16 aspect-square"
+                }`}
               >
                 <span className="material-symbols-outlined">send</span>
               </button>

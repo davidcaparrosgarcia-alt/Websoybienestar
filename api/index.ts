@@ -1094,7 +1094,7 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
       req.user!.uid,
       "audioTranscription",
       "daily",
-      30
+      35
     );
 
     if (!allowed) {
@@ -2698,6 +2698,236 @@ app.post("/api/resend-questionnaire", requireAuth, async (req, res) => {
   }
 });
 
+interface HipnoDigestSyncParams {
+  uid: string;
+  paymentIntentId?: string | null;
+  paymentMode: "reservation" | "full" | "balance" | string;
+  paymentMethod: "card" | "bank_transfer" | string;
+  paymentStatus: "confirmed" | "pending_bank_review" | string;
+  amount: number | string;
+  contactInfo?: {
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    age?: number | string | null;
+    sex?: string | null;
+  };
+}
+
+async function syncHipnoDigestClientToCuestionarioEspejo(params: HipnoDigestSyncParams): Promise<{
+  success: boolean;
+  status: string;
+  error?: string;
+}> {
+  const { uid, paymentIntentId, paymentMode, paymentMethod, paymentStatus, amount, contactInfo } = params;
+
+  if (!uid) {
+    console.warn("[HipnoDigest Sync] Missing uid parameter");
+    return { success: false, status: "error", error: "Missing uid" };
+  }
+
+  if (!admin.apps.length) {
+    console.warn("[HipnoDigest Sync] Firebase Admin not initialized");
+    return { success: false, status: "skipped_no_firebase", error: "Firebase Admin not initialized" };
+  }
+
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const now = Date.now();
+
+  try {
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+
+    const [userSnap, profileSnap] = await Promise.all([
+      userRef.get().catch(() => null),
+      profileRef.get().catch(() => null)
+    ]);
+
+    const userData = userSnap && userSnap.exists ? userSnap.data() || {} : {};
+    const profileData = profileSnap && profileSnap.exists ? profileSnap.data() || {} : {};
+
+    const fullName = (
+      contactInfo?.fullName ||
+      userData.selectedProgramContactFullName ||
+      userData.selectedProgramContactSnapshot?.fullName ||
+      userData.fullName ||
+      profileData.fullName ||
+      userData.displayName ||
+      profileData.displayName ||
+      ""
+    ).trim();
+
+    const email = (
+      contactInfo?.email ||
+      userData.selectedProgramContactEmail ||
+      userData.contactEmail ||
+      userData.email ||
+      userData.authEmail ||
+      profileData.email ||
+      ""
+    ).trim();
+
+    const phone = (
+      contactInfo?.phone ||
+      userData.selectedProgramContactPhone ||
+      userData.phone ||
+      profileData.phone ||
+      ""
+    ).trim();
+
+    const rawAge = contactInfo?.age ?? userData.selectedProgramAge ?? userData.age ?? profileData.age ?? null;
+    const age = rawAge !== null && rawAge !== undefined && rawAge !== "" ? rawAge : null;
+
+    const rawSex = contactInfo?.sex ?? userData.selectedProgramSex ?? userData.sex ?? profileData.sex ?? userData.gender ?? null;
+    const sex = rawSex ? String(rawSex).trim() : null;
+
+    const apiUrl = process.env.QUESTIONNAIRE_API_URL;
+    const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET || process.env.SOYBIENESTAR_BRIDGE_SECRET;
+
+    const syncLogUpdate: any = {
+      hipnoDigestSyncLastAttemptAt: now,
+      hipnoDigestSyncLastMode: paymentMode,
+      hipnoDigestSyncLastMethod: paymentMethod,
+      hipnoDigestSyncLastStatus: paymentStatus,
+      hipnoDigestSyncLastAmount: amount,
+    };
+
+    if (!apiUrl || !bridgeSecret) {
+      const errMsg = !apiUrl ? "QUESTIONNAIRE_API_URL missing" : "QUESTIONNAIRE_BRIDGE_SECRET missing";
+      console.warn(`[HipnoDigest Sync] Skipped: ${errMsg}`);
+
+      syncLogUpdate.hipnoDigestSyncStatus = "skipped_no_config";
+      syncLogUpdate.hipnoDigestSyncError = errMsg;
+
+      await Promise.all([
+        userRef.set(syncLogUpdate, { merge: true }),
+        profileRef.set(syncLogUpdate, { merge: true })
+      ]).catch(e => console.error("Error writing sync log:", e));
+
+      if (paymentIntentId) {
+        await userRef.collection("paymentIntents").doc(paymentIntentId).set({
+          hipnoDigestSyncStatus: "skipped_no_config",
+          hipnoDigestSyncLastAttemptAt: now,
+          hipnoDigestSyncError: errMsg
+        }, { merge: true }).catch(e => console.error("Error writing intent sync log:", e));
+      }
+
+      return { success: false, status: "skipped_no_config", error: errMsg };
+    }
+
+    const dateIso = new Date(now).toISOString();
+    const payload = {
+      soybienestarUid: uid,
+      uid,
+      fullName: fullName || null,
+      nombreCompleto: fullName || null,
+      email: email || null,
+      phone: phone || null,
+      telefono: phone || null,
+      age: age || null,
+      edad: age || null,
+      sex: sex || null,
+      sexo: sex || null,
+      program: "hipnodigest",
+      programa: "hipnodigest",
+      date: dateIso,
+      fecha: dateIso,
+      timestamp: now,
+      paymentMode,
+      modalidadPago: paymentMode,
+      paymentMethod,
+      metodoPago: paymentMethod,
+      amount: Number(amount) || amount,
+      importe: Number(amount) || amount,
+      currency: "EUR",
+      paymentStatus,
+      estadoPago: paymentStatus,
+      estadoDelPago: paymentStatus,
+      paymentIntentId: paymentIntentId || null,
+      source: "soybienestar"
+    };
+
+    const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+    const targetEndpoint = `${normalizedApiUrl}/api/hipnodigest-client-sync`;
+
+    let response: any;
+    try {
+      response = await fetch(targetEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-bridge-secret": bridgeSecret,
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch (fetchErr: any) {
+      console.error("[HipnoDigest Sync] Fetch request failed:", fetchErr);
+      const errMsg = fetchErr?.message ? String(fetchErr.message).slice(0, 250) : "Network/connection error";
+      
+      syncLogUpdate.hipnoDigestSyncStatus = "error";
+      syncLogUpdate.hipnoDigestSyncError = errMsg;
+
+      await Promise.all([
+        userRef.set(syncLogUpdate, { merge: true }),
+        profileRef.set(syncLogUpdate, { merge: true })
+      ]).catch(() => {});
+
+      if (paymentIntentId) {
+        await userRef.collection("paymentIntents").doc(paymentIntentId).set({
+          hipnoDigestSyncStatus: "error",
+          hipnoDigestSyncLastAttemptAt: now,
+          hipnoDigestSyncError: errMsg
+        }, { merge: true }).catch(() => {});
+      }
+
+      return { success: false, status: "error", error: errMsg };
+    }
+
+    const responseText = await response.text();
+    let responseJson: any = null;
+    try {
+      responseJson = JSON.parse(responseText);
+    } catch (_) {}
+
+    const isOk = response.ok && responseJson?.success !== false;
+
+    if (isOk) {
+      syncLogUpdate.hipnoDigestSyncStatus = "success";
+      syncLogUpdate.hipnoDigestSyncError = null;
+      syncLogUpdate.hipnoDigestSyncedAt = Date.now();
+    } else {
+      const errMsg = `HTTP ${response.status}: ${(responseJson?.error || responseJson?.message || responseText || "Bridge endpoint returned error").slice(0, 250)}`;
+      syncLogUpdate.hipnoDigestSyncStatus = "error";
+      syncLogUpdate.hipnoDigestSyncError = errMsg;
+    }
+
+    await Promise.all([
+      userRef.set(syncLogUpdate, { merge: true }),
+      profileRef.set(syncLogUpdate, { merge: true })
+    ]).catch(e => console.error("Error writing sync status:", e));
+
+    if (paymentIntentId) {
+      await userRef.collection("paymentIntents").doc(paymentIntentId).set({
+        hipnoDigestSyncStatus: syncLogUpdate.hipnoDigestSyncStatus,
+        hipnoDigestSyncLastAttemptAt: now,
+        hipnoDigestSyncError: syncLogUpdate.hipnoDigestSyncError || null,
+        hipnoDigestSyncedAt: syncLogUpdate.hipnoDigestSyncedAt || null
+      }, { merge: true }).catch(() => {});
+    }
+
+    return {
+      success: isOk,
+      status: syncLogUpdate.hipnoDigestSyncStatus,
+      error: syncLogUpdate.hipnoDigestSyncError || undefined
+    };
+
+  } catch (err: any) {
+    console.error("[HipnoDigest Sync] Unhandled exception:", err);
+    const errMsg = err?.message ? String(err.message).slice(0, 250) : "Unknown internal error";
+    return { success: false, status: "error", error: errMsg };
+  }
+}
+
 app.post("/api/questionnaire-status-webhook", async (req, res) => {
   try {
     const incomingSecret = req.headers["x-bridge-secret"];
@@ -3572,6 +3802,8 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
     
     const isHipnoDigestReservation = intentData.planId === "hipnodigest" && intentData.paymentMode === "reservation";
     const isHipnoDigestBalance = intentData.planId === "hipnodigest" && intentData.paymentMode === "balance";
+    const isHipnoDigestFull = intentData.planId === "hipnodigest" && (intentData.paymentMode === "full" || !intentData.paymentMode);
+    const isHipnoDigest = isHipnoDigestReservation || isHipnoDigestBalance || isHipnoDigestFull || intentData.planId === "hipnodigest";
 
     const userUpdate: any = {
       selectedProgramPaymentStatus: "pending_bank_review",
@@ -3598,7 +3830,35 @@ app.post("/api/mark-bank-transfer-done", requireAuth, async (req, res) => {
     
     await batch.commit();
 
-    // Respond immediately to browser without waiting for SMTP
+    // Trigger HipnoDigest client sync to Cuestionario Espejo asynchronously
+    if (isHipnoDigest && uid) {
+      const paymentMode = intentData.paymentMode || (isHipnoDigestReservation ? "reservation" : isHipnoDigestBalance ? "balance" : "full");
+      const amountDue = intentData.amountDueToday || (paymentMode === "reservation" ? 300 : paymentMode === "balance" ? 1000 : 1300);
+
+      (async () => {
+        try {
+          await syncHipnoDigestClientToCuestionarioEspejo({
+            uid,
+            paymentIntentId,
+            paymentMode,
+            paymentMethod: "bank_transfer",
+            paymentStatus: "pending_bank_review",
+            amount: amountDue,
+            contactInfo: {
+              fullName: intentData.contactSnapshot?.fullName || intentData.fullName || "",
+              email: intentData.contactSnapshot?.contactEmail || intentData.contactEmail || intentData.email || "",
+              phone: intentData.contactSnapshot?.phone || intentData.phone || "",
+              age: intentData.age || null,
+              sex: intentData.sex || null,
+            }
+          });
+        } catch (syncErr) {
+          console.error("Background error in HipnoDigest bank transfer sync:", syncErr);
+        }
+      })();
+    }
+
+    // Respond immediately to browser without waiting for SMTP or sync
     res.json({
       ok: true,
       paymentStatus: "pending_bank_review"
@@ -3818,6 +4078,40 @@ app.post("/api/stripe-webhook", express.raw({ type: "application/json" }), async
       }
 
       await batch.commit();
+
+      if (uid) {
+        const isHipnoDigestReservation = metadata.planId === "hipnodigest" && metadata.paymentMode === "reservation";
+        const isHipnoDigestBalance = metadata.planId === "hipnodigest" && metadata.paymentMode === "balance";
+        const isHipnoDigestFull = metadata.planId === "hipnodigest" && (metadata.paymentMode === "full" || !metadata.paymentMode);
+        const isHipnoDigest = isHipnoDigestReservation || isHipnoDigestBalance || isHipnoDigestFull || metadata.planId === "hipnodigest";
+
+        if (isHipnoDigest) {
+          const paymentMode = metadata.paymentMode || (isHipnoDigestReservation ? "reservation" : isHipnoDigestBalance ? "balance" : "full");
+          const amountPaid = session.amount_total ? session.amount_total / 100 : (paymentMode === "reservation" ? 300 : paymentMode === "balance" ? 1000 : 1300);
+
+          (async () => {
+            try {
+              await syncHipnoDigestClientToCuestionarioEspejo({
+                uid,
+                paymentIntentId: session.id,
+                paymentMode,
+                paymentMethod: "card",
+                paymentStatus: "confirmed",
+                amount: amountPaid,
+                contactInfo: {
+                  fullName: metadata.contactFullName || "",
+                  email: metadata.contactEmail || session.customer_details?.email || metadata.email || "",
+                  phone: metadata.contactPhone || "",
+                  age: metadata.age || metadata.selectedProgramAge || null,
+                  sex: metadata.sex || metadata.selectedProgramSex || null,
+                }
+              });
+            } catch (syncErr) {
+              console.error("Background error in HipnoDigest card payment sync:", syncErr);
+            }
+          })();
+        }
+      }
 
       if (!alreadyNotified) {
         try {

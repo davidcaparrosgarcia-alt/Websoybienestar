@@ -309,6 +309,13 @@ export default function Resources() {
       type: "Meditación Ambiental",
       duration: "Aprox 15 min",
       src: "/audios/orilla_en_calma.mp3"
+    },
+    {
+      id: "tarde-de-verano",
+      title: "Tarde de verano",
+      type: "Meditación Ambiental",
+      duration: "Aprox 15 min",
+      src: "/audios/tarde_de_verano.mp3"
     }
   ];
 

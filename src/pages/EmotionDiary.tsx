@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
@@ -84,6 +84,250 @@ export default function EmotionDiary() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDeep, setIsLoadingDeep] = useState(false);
+
+  // Voice recording and transcription states
+  const [recordingState1, setRecordingState1] = useState<"initial" | "recording" | "transcribing" | "reviewing">("initial");
+  const [recordingState2, setRecordingState2] = useState<"initial" | "recording" | "transcribing" | "reviewing">("initial");
+  const [recordingError1, setRecordingError1] = useState<string | null>(null);
+  const [recordingError2, setRecordingError2] = useState<string | null>(null);
+
+  const [originalText1, setOriginalText1] = useState("");
+  const [originalText2, setOriginalText2] = useState("");
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const isStoppingRef = useRef(false);
+
+  const supportsMediaRecorderAudio = () => {
+    return (
+      typeof navigator !== "undefined" &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== "undefined"
+    );
+  };
+
+  const cleanupMic = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+  };
+
+  useEffect(() => {
+    return () => {
+      cleanupMic();
+    };
+  }, []);
+
+  const startRecording = async (fieldNum: 1 | 2) => {
+    if (!supportsMediaRecorderAudio()) {
+      const errMsg = "El micrófono no está soportado en este navegador.";
+      if (fieldNum === 1) setRecordingError1(errMsg);
+      else setRecordingError2(errMsg);
+      return;
+    }
+
+    if (fieldNum === 1) {
+      setOriginalText1(entry1);
+      setRecordingError1(null);
+      setRecordingState1("recording");
+    } else {
+      setOriginalText2(entry2);
+      setRecordingError2(null);
+      setRecordingState2("recording");
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      let mimeType = "audio/webm";
+      if (typeof MediaRecorder.isTypeSupported === "function") {
+        if (MediaRecorder.isTypeSupported("audio/webm")) {
+          mimeType = "audio/webm";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeType = "audio/mp4";
+        } else if (MediaRecorder.isTypeSupported("audio/aac")) {
+          mimeType = "audio/aac";
+        } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+          mimeType = "audio/ogg";
+        } else {
+          mimeType = "";
+        }
+      }
+
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(stream, options);
+
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start(250);
+      mediaRecorderRef.current = mediaRecorder;
+      isStoppingRef.current = false;
+
+    } catch (e: any) {
+      console.error("Could not start microphone recording", e);
+      cleanupMic();
+      const errMsg = "Permiso de micrófono denegado o error al iniciar la grabación.";
+      if (fieldNum === 1) {
+        setRecordingState1("initial");
+        setRecordingError1(errMsg);
+      } else {
+        setRecordingState2("initial");
+        setRecordingError2(errMsg);
+      }
+    }
+  };
+
+  const stopRecording = async (fieldNum: 1 | 2) => {
+    if (isStoppingRef.current) return;
+    isStoppingRef.current = true;
+
+    if (fieldNum === 1) {
+      setRecordingState1("transcribing");
+    } else {
+      setRecordingState2("transcribing");
+    }
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") {
+      cleanupMic();
+      if (fieldNum === 1) {
+        setRecordingState1("initial");
+        setRecordingError1("Grabación inactiva.");
+      } else {
+        setRecordingState2("initial");
+        setRecordingError2("Grabación inactiva.");
+      }
+      return;
+    }
+
+    const mimeType = recorder.mimeType || "audio/webm";
+
+    const stopPromise = new Promise<Blob>((resolve) => {
+      let resolved = false;
+      const done = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve(new Blob(audioChunksRef.current, { type: mimeType }));
+        }
+      };
+      recorder.onstop = done;
+      setTimeout(done, 1000);
+    });
+
+    try {
+      recorder.stop();
+    } catch (e) {
+      console.error("Error stopping MediaRecorder", e);
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    try {
+      const blob = await stopPromise;
+      if (blob.size === 0) {
+        cleanupMic();
+        if (fieldNum === 1) {
+          setRecordingState1("initial");
+          setRecordingError1("Grabación de audio vacía.");
+        } else {
+          setRecordingState2("initial");
+          setRecordingError2("Grabación de audio vacía.");
+        }
+        return;
+      }
+
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const base64Data = result.split(",")[1] || "";
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(blob);
+
+      const base64Data = await base64Promise;
+      const res = await api.transcribeAudio(base64Data, mimeType);
+
+      if (res && res.text) {
+        const transcribed = res.text.trim();
+        if (transcribed) {
+          if (fieldNum === 1) {
+            const previousText = originalText1.trim();
+            const finalText = previousText ? `${previousText} ${transcribed}` : transcribed;
+            setEntry1(finalText);
+            setRecordingState1("reviewing");
+          } else {
+            const previousText = originalText2.trim();
+            const finalText = previousText ? `${previousText} ${transcribed}` : transcribed;
+            setEntry2(finalText);
+            setRecordingState2("reviewing");
+          }
+        } else {
+          throw new Error("La transcripción no devolvió ningún texto.");
+        }
+      } else {
+        throw new Error("Error en la respuesta del servicio de transcripción.");
+      }
+
+    } catch (err: any) {
+      console.error("Audio transcription error", err);
+      const errMsg = err?.message?.includes("límite diario")
+        ? "Has alcanzado el límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente."
+        : "No hemos podido transcribir tu audio. Puedes reintentar o escribir manualmente.";
+      if (fieldNum === 1) {
+        setRecordingState1("initial");
+        setRecordingError1(errMsg);
+      } else {
+        setRecordingState2("initial");
+        setRecordingError2(errMsg);
+      }
+    } finally {
+      cleanupMic();
+    }
+  };
+
+  const saveTranscription = (fieldNum: 1 | 2) => {
+    if (fieldNum === 1) {
+      setRecordingState1("initial");
+      setOriginalText1("");
+    } else {
+      setRecordingState2("initial");
+      setOriginalText2("");
+    }
+  };
+
+  const cancelTranscription = (fieldNum: 1 | 2) => {
+    if (fieldNum === 1) {
+      setEntry1(originalText1);
+      setRecordingState1("initial");
+      setOriginalText1("");
+    } else {
+      setEntry2(originalText2);
+      setRecordingState2("initial");
+      setOriginalText2("");
+    }
+  };
+
+  const isAnyRecordingOrTranscribing = 
+    recordingState1 === "recording" || 
+    recordingState1 === "transcribing" || 
+    recordingState2 === "recording" || 
+    recordingState2 === "transcribing";
 
   // Optimization: Keep summary and refs to avoid redundant fetches
   const [userSummary, setUserSummary] = useState("");
@@ -417,8 +661,88 @@ export default function EmotionDiary() {
                     setEntry1(e.target.value);
                     if (validateError) setValidateError(null);
                   }}
-                  disabled={entry1Saved || isLoading}
+                  disabled={entry1Saved || isLoading || recordingState1 === "recording" || recordingState1 === "transcribing" || recordingState1 === "reviewing"}
                 ></textarea>
+
+                {!entry1Saved && (
+                  <div className="flex items-center justify-between pt-4 border-t border-outline-variant/10 mt-2">
+                    {/* Status Message */}
+                    <div className="flex items-center gap-2 text-sm min-h-[36px]">
+                      {recordingState1 === "recording" && (
+                        <span className="text-error flex items-center gap-1.5 font-medium animate-pulse">
+                          <span className="w-2.5 h-2.5 bg-error rounded-full inline-block"></span>
+                          Grabando tu voz...
+                        </span>
+                      )}
+                      {recordingState1 === "transcribing" && (
+                        <span className="text-secondary flex items-center gap-1.5 font-medium">
+                          <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                          Transcribiendo...
+                        </span>
+                      )}
+                      {recordingError1 && (
+                        <span className="text-error text-xs font-medium bg-error/10 px-3 py-1 rounded border border-error/20 max-w-[200px] sm:max-w-none">
+                          {recordingError1}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Microphone control action */}
+                    <div className="flex items-center gap-2">
+                      {recordingState1 === "initial" && (
+                        <button
+                          type="button"
+                          onClick={() => startRecording(1)}
+                          disabled={isAnyRecordingOrTranscribing || isLoading}
+                          className="flex items-center justify-center p-2 rounded-full text-secondary hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Grabar por voz"
+                        >
+                          <span className="material-symbols-outlined text-2xl">mic</span>
+                        </button>
+                      )}
+
+                      {recordingState1 === "recording" && (
+                        <button
+                          type="button"
+                          onClick={() => stopRecording(1)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 hover:bg-error/20 text-error rounded-full text-xs uppercase tracking-wider font-bold transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">stop</span>
+                          STOP
+                        </button>
+                      )}
+
+                      {recordingState1 === "transcribing" && (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex items-center justify-center p-2 rounded-full text-outline-variant disabled:opacity-50"
+                        >
+                          <span className="material-symbols-outlined animate-spin text-2xl">progress_activity</span>
+                        </button>
+                      )}
+
+                      {recordingState1 === "reviewing" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveTranscription(1)}
+                            className="px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container rounded-lg text-xs uppercase tracking-wider font-bold transition-all shadow-sm"
+                          >
+                            Guardar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => cancelTranscription(1)}
+                            className="px-3 py-1.5 bg-outline-variant/20 text-secondary hover:bg-outline-variant/30 rounded-lg text-xs uppercase tracking-wider font-bold transition-all"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Entry 2 */}
@@ -436,8 +760,88 @@ export default function EmotionDiary() {
                     setEntry2(e.target.value);
                     if (validateError) setValidateError(null);
                   }}
-                  disabled={entry2Saved || isLoading}
+                  disabled={entry2Saved || isLoading || recordingState2 === "recording" || recordingState2 === "transcribing" || recordingState2 === "reviewing"}
                 ></textarea>
+
+                {!entry2Saved && (
+                  <div className="flex items-center justify-between pt-4 border-t border-outline-variant/10 mt-2">
+                    {/* Status Message */}
+                    <div className="flex items-center gap-2 text-sm min-h-[36px]">
+                      {recordingState2 === "recording" && (
+                        <span className="text-error flex items-center gap-1.5 font-medium animate-pulse">
+                          <span className="w-2.5 h-2.5 bg-error rounded-full inline-block"></span>
+                          Grabando tu voz...
+                        </span>
+                      )}
+                      {recordingState2 === "transcribing" && (
+                        <span className="text-secondary flex items-center gap-1.5 font-medium">
+                          <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                          Transcribiendo...
+                        </span>
+                      )}
+                      {recordingError2 && (
+                        <span className="text-error text-xs font-medium bg-error/10 px-3 py-1 rounded border border-error/20 max-w-[200px] sm:max-w-none">
+                          {recordingError2}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Microphone control action */}
+                    <div className="flex items-center gap-2">
+                      {recordingState2 === "initial" && (
+                        <button
+                          type="button"
+                          onClick={() => startRecording(2)}
+                          disabled={isAnyRecordingOrTranscribing || isLoading}
+                          className="flex items-center justify-center p-2 rounded-full text-secondary hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Grabar por voz"
+                        >
+                          <span className="material-symbols-outlined text-2xl">mic</span>
+                        </button>
+                      )}
+
+                      {recordingState2 === "recording" && (
+                        <button
+                          type="button"
+                          onClick={() => stopRecording(2)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 hover:bg-error/20 text-error rounded-full text-xs uppercase tracking-wider font-bold transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">stop</span>
+                          STOP
+                        </button>
+                      )}
+
+                      {recordingState2 === "transcribing" && (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex items-center justify-center p-2 rounded-full text-outline-variant disabled:opacity-50"
+                        >
+                          <span className="material-symbols-outlined animate-spin text-2xl">progress_activity</span>
+                        </button>
+                      )}
+
+                      {recordingState2 === "reviewing" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveTranscription(2)}
+                            className="px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container rounded-lg text-xs uppercase tracking-wider font-bold transition-all shadow-sm"
+                          >
+                            Guardar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => cancelTranscription(2)}
+                            className="px-3 py-1.5 bg-outline-variant/20 text-secondary hover:bg-outline-variant/30 rounded-lg text-xs uppercase tracking-wider font-bold transition-all"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

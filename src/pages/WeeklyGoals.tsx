@@ -399,26 +399,34 @@ export default function WeeklyGoals() {
               if (isEditing) {
                 return (
                   <div key={goal.id} className="bg-surface-container-low p-8 rounded-xl flex flex-col gap-4 border border-primary/20 shadow-sm transition-all duration-500">
-                    <input 
-                      type="text" 
-                      value={editTitle}
-                      onChange={(e) => {
-                        setEditTitle(e.target.value);
-                        if (goalError) setGoalError(null);
-                      }}
-                      className="w-full bg-transparent font-headline text-xl font-semibold text-primary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 placeholder:text-outline-variant outline-none"
-                      placeholder="Título de tu meta..."
-                    />
-                    <textarea 
-                      value={editDescription}
-                      onChange={(e) => {
-                        setEditDescription(e.target.value);
-                        if (goalError) setGoalError(null);
-                      }}
-                      className="w-full bg-transparent font-body text-secondary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 resize-none placeholder:text-outline-variant outline-none"
-                      rows={2}
-                      placeholder="Descripción detallada de tus pasos a seguir..."
-                    />
+                    <div className="relative">
+                      <div className="w-full font-headline text-xl font-semibold px-0 py-2 invisible whitespace-pre-wrap break-words border-b border-transparent pointer-events-none">
+                        {editTitle || "Título de tu meta..."}{' '}
+                      </div>
+                      <textarea 
+                        value={editTitle}
+                        onChange={(e) => {
+                          setEditTitle(e.target.value);
+                          if (goalError) setGoalError(null);
+                        }}
+                        className="absolute inset-0 w-full h-full bg-transparent font-headline text-xl font-semibold text-primary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 placeholder:text-outline-variant outline-none resize-none overflow-hidden"
+                        placeholder="Título de tu meta..."
+                      />
+                    </div>
+                    <div className="relative mt-2">
+                      <div className="w-full font-body text-secondary px-0 py-2 invisible whitespace-pre-wrap break-words border-b border-transparent pointer-events-none min-h-[3rem]">
+                        {editDescription || "Descripción detallada de tus pasos a seguir..."}{' '}
+                      </div>
+                      <textarea 
+                        value={editDescription}
+                        onChange={(e) => {
+                          setEditDescription(e.target.value);
+                          if (goalError) setGoalError(null);
+                        }}
+                        className="absolute inset-0 w-full h-full bg-transparent font-body text-secondary border-b border-outline/30 focus:border-primary focus:ring-0 px-0 py-2 resize-none placeholder:text-outline-variant outline-none overflow-hidden"
+                        placeholder="Descripción detallada de tus pasos a seguir..."
+                      />
+                    </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
                       <div className="flex flex-wrap gap-2">
@@ -543,7 +551,7 @@ export default function WeeklyGoals() {
             {!isGenerating && (
               <button 
                 onClick={handleAddEmptyGoal}
-                className="w-full py-6 border-2 border-dashed border-outline-variant/50 rounded-xl flex items-center justify-center gap-3 text-secondary hover:text-primary hover:border-primary transition-all group"
+                className="w-full py-6 border-2 border-dashed border-secondary text-secondary rounded-xl flex items-center justify-center gap-3 hover:text-primary hover:border-primary hover:bg-primary/5 transition-all group"
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 <span className="font-label font-medium">Añadir Nueva Meta Semanal</span>
