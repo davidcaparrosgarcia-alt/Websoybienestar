@@ -105,6 +105,7 @@ export default function EmotionDiary() {
   const voluntaryStopRef = useRef<boolean>(false);
   const speechErrorHandledRef = useRef<boolean>(false);
   const fallbackStartedRef = useRef<boolean>(false);
+  const deliberateCleanupRef = useRef<boolean>(false);
 
   const isMobileLikeDevice = () => {
     if (typeof navigator === "undefined" || typeof window === "undefined") return false;
@@ -124,6 +125,7 @@ export default function EmotionDiary() {
   };
 
   const cleanupMic = () => {
+    deliberateCleanupRef.current = true;
     if (nativeRecognitionRef.current) {
       try {
         nativeRecognitionRef.current.abort();
@@ -149,6 +151,7 @@ export default function EmotionDiary() {
     voluntaryStopRef.current = false;
     speechErrorHandledRef.current = false;
     fallbackStartedRef.current = false;
+    deliberateCleanupRef.current = false;
 
     if (fieldNum === 1) {
       setOriginalText1(entry1);
@@ -225,6 +228,9 @@ export default function EmotionDiary() {
         };
 
         recognition.onerror = (event: any) => {
+          if (deliberateCleanupRef.current) {
+            return;
+          }
           const errorType = event?.error;
           console.warn("SpeechRecognition error:", errorType);
           nativeRecognitionRef.current = null;
@@ -259,6 +265,10 @@ export default function EmotionDiary() {
 
         recognition.onend = () => {
           nativeRecognitionRef.current = null;
+
+          if (deliberateCleanupRef.current) {
+            return;
+          }
 
           if (speechErrorHandledRef.current || voluntaryStopRef.current) {
             return;

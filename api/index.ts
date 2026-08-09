@@ -1134,6 +1134,8 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 
     const modelsToTry = GENERATIVE_MODEL_CANDIDATES;
     let responseText = "";
+    let lastError: any = null;
+    let firstQuotaError: any = null;
 
     for (let i = 0; i < modelsToTry.length; i++) {
       const model = modelsToTry[i];
@@ -1154,6 +1156,10 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
           break;
         }
       } catch (err) {
+        lastError = err;
+        if (isQuotaError(err) && !firstQuotaError) {
+          firstQuotaError = err;
+        }
         const info = getGeminiErrorInfo(err);
         console.error(`AI session-reply attempt ${i + 1} failed`, {
           endpoint: "/api/session-reply",
@@ -1167,6 +1173,14 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 
     if (responseText) {
       return res.json({ text: responseText });
+    }
+
+    const errorToEvaluate = firstQuotaError || lastError;
+    if (isQuotaError(errorToEvaluate)) {
+      return res.status(429).json({
+        error:
+          "El asistente no está disponible temporalmente porque se ha alcanzado el límite del servicio. Puedes continuar más tarde cuando el servicio vuelva a estar disponible."
+      });
     }
 
     return res.status(503).json({
@@ -1183,6 +1197,12 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
       aiAvailable: !!ai,
       ...info
     });
+    if (isQuotaError(error)) {
+      return res.status(429).json({
+        error:
+          "El asistente no está disponible temporalmente porque se ha alcanzado el límite del servicio. Puedes continuar más tarde cuando el servicio vuelva a estar disponible."
+      });
+    }
     res.status(503).json({
       error:
         "No hemos podido conectar con el servicio en este momento. Puedes volver a intentarlo en unos segundos.",
@@ -1744,6 +1764,12 @@ Responde EXCLUSIVAMENTE con un JSON:
       aiAvailable: !!ai,
       ...info
     });
+    if (isQuotaError(error)) {
+      res.status(429).json({
+        error: "La profundización automática no está disponible temporalmente porque se ha alcanzado el límite del servicio. Puedes continuar más tarde cuando el servicio vuelva a estar disponible."
+      });
+      return;
+    }
     res.status(500).json({ error: "No hemos podido completar esta reflexión en este momento. Inténtalo de nuevo." });
   }
 });
@@ -1822,6 +1848,12 @@ app.post("/api/weekly-goal", requireAuth, requireAI, async (req, res) => {
       aiAvailable: !!ai,
       ...info
     });
+    if (isQuotaError(error)) {
+      res.status(429).json({
+        error: "La propuesta de meta semanal no está disponible temporalmente porque se ha alcanzado el límite del servicio. Puedes continuar más tarde cuando el servicio vuelva a estar disponible."
+      });
+      return;
+    }
     res.status(500).json({ error: "No hemos podido generar una propuesta en este momento. Inténtalo de nuevo." });
   }
 });
