@@ -102,6 +102,9 @@ export default function EmotionDiary() {
   const hasNativeResultRef = useRef<boolean>(false);
   const nativeBaseText1Ref = useRef("");
   const nativeBaseText2Ref = useRef("");
+  const voluntaryStopRef = useRef<boolean>(false);
+  const speechErrorHandledRef = useRef<boolean>(false);
+  const fallbackStartedRef = useRef<boolean>(false);
 
   const isMobileLikeDevice = () => {
     if (typeof navigator === "undefined" || typeof window === "undefined") return false;
@@ -143,6 +146,10 @@ export default function EmotionDiary() {
   }, []);
 
   const startRecording = async (fieldNum: 1 | 2) => {
+    voluntaryStopRef.current = false;
+    speechErrorHandledRef.current = false;
+    fallbackStartedRef.current = false;
+
     if (fieldNum === 1) {
       setOriginalText1(entry1);
       nativeBaseText1Ref.current = entry1;
@@ -221,6 +228,16 @@ export default function EmotionDiary() {
           const errorType = event?.error;
           console.warn("SpeechRecognition error:", errorType);
           nativeRecognitionRef.current = null;
+          speechErrorHandledRef.current = true;
+
+          if (hasNativeResultRef.current) {
+            if (fieldNum === 1) {
+              setRecordingState1("reviewing");
+            } else {
+              setRecordingState2("reviewing");
+            }
+            return;
+          }
 
           if (errorType === "not-allowed" || errorType === "permission-blocked") {
             const errMsg = "Permiso de micrófono denegado para el reconocimiento de voz.";
@@ -234,16 +251,31 @@ export default function EmotionDiary() {
             return;
           }
 
-          if (hasNativeResultRef.current) {
-            if (fieldNum === 1) setRecordingState1("reviewing");
-            else setRecordingState2("reviewing");
-          } else {
+          if (!fallbackStartedRef.current) {
+            fallbackStartedRef.current = true;
             startMediaRecorder(fieldNum);
           }
         };
 
         recognition.onend = () => {
           nativeRecognitionRef.current = null;
+
+          if (speechErrorHandledRef.current || voluntaryStopRef.current) {
+            return;
+          }
+
+          if (hasNativeResultRef.current) {
+            if (fieldNum === 1) {
+              setRecordingState1("reviewing");
+            } else {
+              setRecordingState2("reviewing");
+            }
+          } else {
+            if (!fallbackStartedRef.current) {
+              fallbackStartedRef.current = true;
+              startMediaRecorder(fieldNum);
+            }
+          }
         };
 
         recognition.start();
@@ -255,7 +287,10 @@ export default function EmotionDiary() {
     }
 
     // Fallback or Mobile not compatible: MediaRecorder + /api/transcribe-audio
-    await startMediaRecorder(fieldNum);
+    if (!fallbackStartedRef.current) {
+      fallbackStartedRef.current = true;
+      await startMediaRecorder(fieldNum);
+    }
   };
 
   const startMediaRecorder = async (fieldNum: 1 | 2) => {
@@ -324,6 +359,7 @@ export default function EmotionDiary() {
 
     // Check if native SpeechRecognition is running
     if (nativeRecognitionRef.current) {
+      voluntaryStopRef.current = true;
       try {
         nativeRecognitionRef.current.stop();
       } catch (_) {}
