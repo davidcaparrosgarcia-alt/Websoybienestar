@@ -165,6 +165,12 @@ export default function EmotionDiary() {
       setRecordingState2("recording");
     }
 
+    if (isMobileLikeDevice()) {
+      fallbackStartedRef.current = true;
+      await startMediaRecorder(fieldNum);
+      return;
+    }
+
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
