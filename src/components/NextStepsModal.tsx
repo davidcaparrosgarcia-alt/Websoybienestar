@@ -258,19 +258,19 @@ export default function NextStepsModal({
         let msg = data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
 
         if (response.status === 409 && data.status === "already_has_active_questionnaire") {
+          const currentQuestionnaireStatus = data.currentQuestionnaireStatus;
           const existingQuestionnaireUrl =
             questionnaireSuccessData?.questionnaireUrl ||
             fullUserData?.latestQuestionnaireDirectUrl ||
             fullUserData?.questionnaireUrl ||
             null;
 
-          if (existingQuestionnaireUrl) {
-            const reconciledStatus =
-              questionnaireStatus === "in_progress" || fullUserData?.questionnaireStatus === "in_progress"
-                ? "in_progress"
-                : "sent";
+          if (
+            (currentQuestionnaireStatus === "sent" || currentQuestionnaireStatus === "in_progress") &&
+            existingQuestionnaireUrl
+          ) {
             setLastQuestionnaireAction("direct_now");
-            setQuestionnaireStatus(reconciledStatus);
+            setQuestionnaireStatus(currentQuestionnaireStatus);
             setQuestionnaireSuccessData((previousData) => ({
               ...(previousData || {}),
               questionnaireUrl: existingQuestionnaireUrl,
@@ -278,11 +278,24 @@ export default function NextStepsModal({
             }));
             setFullUserData((previousData: any) => ({
               ...(previousData || {}),
-              questionnaireStatus: reconciledStatus,
+              questionnaireStatus: currentQuestionnaireStatus,
               questionnaireRequestStatus: "sent",
               latestQuestionnaireDirectUrl: existingQuestionnaireUrl,
             }));
             setQuestionnaireRequestMessage({ text: msg, type: "warning" });
+            return;
+          }
+
+          if (
+            ["completed_pending_dossier", "completed", "dossier_available", "concluded"].includes(
+              currentQuestionnaireStatus,
+            )
+          ) {
+            setQuestionnaireStatus(currentQuestionnaireStatus);
+            setFullUserData((previousData: any) => ({
+              ...(previousData || {}),
+              questionnaireStatus: currentQuestionnaireStatus,
+            }));
             return;
           }
         }

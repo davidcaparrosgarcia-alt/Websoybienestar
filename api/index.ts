@@ -2206,7 +2206,8 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       return res.status(409).json({
         success: false,
         status: "already_has_active_questionnaire",
-        message: blockMessage
+        message: blockMessage,
+        currentQuestionnaireStatus: existingQuestionnaireStatus
       });
     }
 
