@@ -2155,6 +2155,26 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
     const userData = userDoc.data() || {};
     const profileData = profileDoc.data() || {};
+
+    const questionnaireStatusPriority = [
+      "reset_required",
+      "concluded",
+      "dossier_available",
+      "completed",
+      "completed_pending_dossier",
+      "in_progress",
+      "sent",
+      "requested",
+    ];
+    const existingQuestionnaireStatus =
+      questionnaireStatusPriority.find(
+        (status) =>
+          userData.questionnaireStatus === status ||
+          profileData.questionnaireStatus === status,
+      ) ||
+      userData.questionnaireStatus ||
+      profileData.questionnaireStatus ||
+      null;
     
     // Bloquear si ya hay un cuestionario en curso (ignorando "reset_required" o vacíos)
     requestStep = "check_active_questionnaire";
@@ -2162,29 +2182,22 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     let isBlocked = false;
     let blockMessage = "Ya tienes una solicitud o cuestionario activo. Revisa el estado actual o solicita un reenvío del enlace si lo has perdido.";
     
-    if (userData.questionnaireStatus) {
+    if (existingQuestionnaireStatus) {
       if (requestMode === "manual_request") {
         const activeStatusesManual = [
           "requested", "sent", "in_progress", "completed_pending_dossier", 
           "completed", "dossier_available", "concluded"
         ];
-        if (activeStatusesManual.includes(userData.questionnaireStatus)) {
+        if (activeStatusesManual.includes(existingQuestionnaireStatus)) {
            isBlocked = true;
         }
       } else if (requestMode === "direct_now") {
         const activeStatusesDirect = [
-          "sent", "in_progress", "completed_pending_dossier", 
-          "completed", "dossier_available", "concluded"
+          "completed_pending_dossier", "completed", "dossier_available", "concluded"
         ];
-        if (activeStatusesDirect.includes(userData.questionnaireStatus)) {
+        if (activeStatusesDirect.includes(existingQuestionnaireStatus)) {
           isBlocked = true;
           blockMessage = "Ya existe un cuestionario activo. Solicita el reenvío del enlace para continuar.";
-        } else if (userData.questionnaireStatus === "requested") {
-          const isManualPending = userData.questionnaireDeliveryMode === "manual_request" ||
-                                  (!userData.questionnaireDeliveryMode && userData.questionnaireRequestStatus === "pending");
-          if (!isManualPending) {
-            isBlocked = true;
-          }
         }
       }
     }
@@ -2209,19 +2222,12 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     const now = Date.now();
     let isResendingDueToContactChange = false;
 
-    const isConvertingFromRequested =
+    const isContinuingQuestionnaire =
       requestMode === "direct_now" &&
-      userData.questionnaireStatus === "requested" &&
-      (
-        userData.questionnaireDeliveryMode === "manual_request" ||
-        (
-          !userData.questionnaireDeliveryMode &&
-          userData.questionnaireRequestStatus === "pending"
-        )
-      );
+      ["requested", "sent", "in_progress"].includes(existingQuestionnaireStatus);
 
     requestStep = "rate_limit_check";
-    if (!isTestUser(req) && !isConvertingFromRequested) {
+    if (!isTestUser(req) && !isContinuingQuestionnaire) {
       if (
         userData.lastQuestionnaireRequestAt &&
         now - userData.lastQuestionnaireRequestAt < thirtyDaysMs
@@ -2300,7 +2306,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       .collection("questionnaireRequests");
     
     const requestId =
-      isConvertingFromRequested && userData.lastQuestionnaireRequestId
+      isContinuingQuestionnaire && userData.lastQuestionnaireRequestId
         ? userData.lastQuestionnaireRequestId
         : requestsRef.doc().id;
 
@@ -2491,9 +2497,15 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     }, { merge: true });
 
     requestStep = "update_user_request_metadata";
+    const resolvedQuestionnaireStatus =
+      isDirectAccess && existingQuestionnaireStatus === "in_progress"
+        ? "in_progress"
+        : isDirectAccess
+          ? "sent"
+          : "requested";
     const updateData: any = {
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
-      questionnaireStatus: isDirectAccess ? "sent" : "requested",
+      questionnaireStatus: resolvedQuestionnaireStatus,
       questionnaireDeliveryMode: requestMode,
       questionnaireRequestedAt: timestamp,
       lastQuestionnaireRequestAt: timestamp,
@@ -2526,7 +2538,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     await docRef.set(updateData, { merge: true });
 
     await profileRef.set({
-      questionnaireStatus: isDirectAccess ? "sent" : "requested",
+      questionnaireStatus: resolvedQuestionnaireStatus,
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
       questionnaireDeliveryMode: requestMode,
       ...(finalAccessCode
@@ -2542,7 +2554,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
     
     return res.json({
       success: true,
-      status: isDirectAccess ? "sent" : "pending",
+      status: isDirectAccess ? resolvedQuestionnaireStatus : "pending",
       message: isDirectAccess 
          ? "Hemos generado tu cuestionario."
          : (isResendingDueToContactChange 

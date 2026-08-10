@@ -140,7 +140,9 @@ export default function NextStepsModal({
 
   const handleFormSubmit = async (mode: "manual_request" | "direct_now") => {
     setQuestionnaireRequestMessage(null);
-    setQuestionnaireSuccessData(null);
+    if (mode === "manual_request") {
+      setQuestionnaireSuccessData(null);
+    }
 
     if (!emailValue.trim() || !/\S+@\S+\.\S+/.test(emailValue)) {
       setQuestionnaireRequestMessage({ text: "Por favor, introduce un email válido.", type: "error" });
@@ -212,14 +214,33 @@ export default function NextStepsModal({
       const data = await response.json();
 
       if (response.ok) {
+        const nextQuestionnaireStatus =
+          data.status === "in_progress"
+            ? "in_progress"
+            : data.status === "sent"
+              ? "sent"
+              : "requested";
+        const nextRequestStatus = mode === "direct_now" ? "sent" : "pending";
         setLastQuestionnaireAction(mode);
-        setQuestionnaireStatus(data.status === "sent" ? "sent" : "requested");
-        setQuestionnaireRequestMessage({ text: data.message || "Solicitud enviada correctamente.", type: "success" });
+        setQuestionnaireStatus(nextQuestionnaireStatus);
+        setQuestionnaireRequestMessage(
+          mode === "manual_request"
+            ? null
+            : { text: data.message || "Solicitud enviada correctamente.", type: "success" },
+        );
         setQuestionnaireSuccessData({
           accessCode: data.accessCode,
           questionnaireUrl: data.questionnaireUrl,
           directAccessAvailable: data.directAccessAvailable
         });
+        setFullUserData((previousData: any) => ({
+          ...(previousData || {}),
+          questionnaireStatus: nextQuestionnaireStatus,
+          questionnaireRequestStatus: nextRequestStatus,
+          questionnaireDeliveryMode: mode,
+          latestQuestionnaireDirectUrl:
+            data.questionnaireUrl || previousData?.latestQuestionnaireDirectUrl || null,
+        }));
         try {
           await setDoc(doc(db, "users", user.uid), {
             edad: ageValue,
@@ -235,6 +256,36 @@ export default function NextStepsModal({
         }
       } else {
         let msg = data.message || "No hemos podido registrar la solicitud en este momento. Inténtalo de nuevo más tarde o contacta con nosotros.";
+
+        if (response.status === 409 && data.status === "already_has_active_questionnaire") {
+          const existingQuestionnaireUrl =
+            questionnaireSuccessData?.questionnaireUrl ||
+            fullUserData?.latestQuestionnaireDirectUrl ||
+            fullUserData?.questionnaireUrl ||
+            null;
+
+          if (existingQuestionnaireUrl) {
+            const reconciledStatus =
+              questionnaireStatus === "in_progress" || fullUserData?.questionnaireStatus === "in_progress"
+                ? "in_progress"
+                : "sent";
+            setLastQuestionnaireAction("direct_now");
+            setQuestionnaireStatus(reconciledStatus);
+            setQuestionnaireSuccessData((previousData) => ({
+              ...(previousData || {}),
+              questionnaireUrl: existingQuestionnaireUrl,
+              directAccessAvailable: true,
+            }));
+            setFullUserData((previousData: any) => ({
+              ...(previousData || {}),
+              questionnaireStatus: reconciledStatus,
+              questionnaireRequestStatus: "sent",
+              latestQuestionnaireDirectUrl: existingQuestionnaireUrl,
+            }));
+            setQuestionnaireRequestMessage({ text: msg, type: "warning" });
+            return;
+          }
+        }
         
         if (user.email === "davidcaparrosgarcia@gmail.com" && data.debug) {
           msg += `\n\n--- TEMP DEBUG UI ---\nPaso de error: ${data.debug.step}\nName: ${data.debug.name}\nMensaje: ${data.debug.message}\nCode: ${data.debug.code || 'N/A'}`;
