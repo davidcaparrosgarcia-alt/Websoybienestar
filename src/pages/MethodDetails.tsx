@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
 import { motion, AnimatePresence } from "motion/react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase";
 
 interface Profile {
   id: string;
@@ -50,7 +52,12 @@ const teamProfiles: Profile[] = [
 
 export default function MethodDetails() {
   const navigate = useNavigate();
+  const [user] = useAuthState(auth);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const firstName = user?.displayName?.trim().split(/\s+/)[0] || "";
+  const directConsultationMessage = firstName
+    ? `Hola, soy ${firstName}. Te escribo desde SoyBienestar y me gustaría hacer una consulta:`
+    : "Hola. Te escribo desde SoyBienestar y me gustaría hacer una consulta:";
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -103,7 +110,7 @@ export default function MethodDetails() {
   const handleShare = async () => {
     const shareData = {
       title: 'ReprogrÁmate - Quiénes somos',
-      text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía, con una orientación gratuita y máxima privacidad.',
+      text: 'Te recomiendo echar un vistazo a SoyBienestar.es. Puedes hacer una consulta guiada gratuita de 15 minutos para obtener una primera orientación con máxima privacidad. Además, encontrarás herramientas gratuitas pensadas para ayudarte a relajarte, reducir la activación, comprender mejor cómo te sientes y gestionar tus emociones en el día a día. Puedes utilizarlas cuando las necesites y descubrir cuáles te resultan más útiles. Quizá encuentres algo que también te ayude a ti.',
       url: window.location.origin,
     };
 
@@ -111,7 +118,7 @@ export default function MethodDetails() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " ¡Pruébalo aquí: " + shareData.url)}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
         window.open(whatsappUrl, '_blank');
       }
     } catch (err) {
@@ -242,7 +249,7 @@ export default function MethodDetails() {
           <div className="space-y-4">
             <a 
               className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" 
-              href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un guía, con una orientación y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+              href={`https://wa.me/?text=${encodeURIComponent(directConsultationMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
             >

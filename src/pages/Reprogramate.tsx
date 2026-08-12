@@ -30,6 +30,10 @@ export default function Reprogramate() {
   const [dossierViewed, setDossierViewed] = useState(false);
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [showReservationState, setShowReservationState] = useState(false);
+  const firstName = user?.displayName?.trim().split(/\s+/)[0] || "";
+  const directConsultationMessage = firstName
+    ? `Hola, soy ${firstName}. Te escribo desde SoyBienestar y me gustaría hacer una consulta:`
+    : "Hola. Te escribo desde SoyBienestar y me gustaría hacer una consulta:";
 
   const [openDetail, setOpenDetail] = useState<ReprogramateDetailId>(null);
 
@@ -241,14 +245,15 @@ export default function Reprogramate() {
   };
 
   const handleShare = () => {
+    const shareText = 'Te recomiendo echar un vistazo a SoyBienestar.es. Puedes hacer una consulta guiada gratuita de 15 minutos para obtener una primera orientación con máxima privacidad. Además, encontrarás herramientas gratuitas pensadas para ayudarte a relajarte, reducir la activación, comprender mejor cómo te sientes y gestionar tus emociones en el día a día. Puedes utilizarlas cuando las necesites y descubrir cuáles te resultan más útiles. Quizá encuentres algo que también te ayude a ti.';
     if (navigator.share) {
       navigator.share({
         title: 'ReprogrÁmate',
-        text: 'Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad.',
+        text: shareText,
         url: window.location.origin
       }).catch(console.error);
     } else {
-      alert('La función de compartir no está soportada en este navegador, pero puedes copiar este enlace: ' + window.location.origin);
+      alert(shareText + ' ' + window.location.origin);
     }
   };
 
@@ -630,7 +635,7 @@ export default function Reprogramate() {
               {/* Discrete WhatsApp Button */}
               <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                 <a 
-                  href={`https://wa.me/?text=${encodeURIComponent("Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad. ¡Pruébalo aquí: " + window.location.origin)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(directConsultationMessage)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#1F9E5A] text-white px-8 py-3 rounded-full font-label font-semibold inline-flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all opacity-90 hover:opacity-100 w-fit order-2 sm:order-1"

@@ -192,7 +192,7 @@ export default function Report() {
   const handleShare = async () => {
     const shareData = {
       title: "ReprogrÁmate - Sesión Gratuita",
-      text: "Te recomiendo probar esta web. Ofrece una sesión gratuita de 15 minutos con un asistente inicial, con una orientación gratuita y máxima privacidad.",
+      text: "Te recomiendo echar un vistazo a SoyBienestar.es. Puedes hacer una consulta guiada gratuita de 15 minutos para obtener una primera orientación con máxima privacidad. Además, encontrarás herramientas gratuitas pensadas para ayudarte a relajarte, reducir la activación, comprender mejor cómo te sientes y gestionar tus emociones en el día a día. Puedes utilizarlas cuando las necesites y descubrir cuáles te resultan más útiles. Quizá encuentres algo que también te ayude a ti.",
       url: window.location.origin,
     };
 
@@ -201,7 +201,7 @@ export default function Report() {
         await navigator.share(shareData);
       } else {
         // Fallback for browsers that don't support Web Share API
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " ¡Pruébalo aquí: " + shareData.url)}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
         window.open(whatsappUrl, "_blank");
       }
     } catch (err) {
@@ -805,8 +805,8 @@ export default function Report() {
                   </div>
                 )}
 
-                {/* 4. Resuelve tus dudas */}
-                {activeNextStep === "validacion" ? (
+                {/* Resuelve tus dudas: solo disponible tras leer el Dossier */}
+                {dossierViewed && (
                   <div
                     onClick={() => window.open(dossierContactUrl, "_blank", "noopener,noreferrer")}
                     className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
@@ -821,26 +821,6 @@ export default function Report() {
                         <span className="font-medium text-primary dark:text-[#2c3e50]">
                           Escríbenos por WhatsApp
                         </span>
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-4">
-                    <div
-                      className={`flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center ${dossierViewed /* assuming validacion comes after dossierViewed */ ? "border-secondary dark:border-[#2c3e50] bg-secondary/10 dark:bg-[#2c3e50]/10" : "border-outline-variant dark:border-[#2c3e50]/30"}`}
-                    >
-                      {dossierViewed && (
-                        <span className="material-symbols-outlined text-secondary dark:text-[#2c3e50] text-sm font-bold">
-                          check
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">
-                        Resuelve tus dudas
-                      </p>
-                      <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">
-                        Después de revisar tu Dossier, si te queda alguna duda sobre la propuesta o sobre qué programa puede encajar mejor contigo, podrás escribirnos directamente por WhatsApp.
                       </p>
                     </div>
                   </div>
