@@ -723,20 +723,6 @@ export default function Resources() {
               <p className="text-on-surface-variant text-lg font-light mb-10 leading-relaxed">
                 Accede a herramientas preparadas para acompañar tu proceso, según los pasos que hayas completado y los recursos que vayas desbloqueando en la plataforma.
               </p>
-              <button 
-                onClick={() => {
-                  if (hasAccess) {
-                    alert("Acceso a contenido reservado concedido. (Área exclusiva en desarrollo)");
-                  } else {
-                    setPendingAction("reservado");
-                    setIsCodeModalOpen(true);
-                  }
-                }} 
-                className="flex items-center justify-center gap-4 w-fit bg-primary dark:bg-[#1a252f] text-white px-8 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-secondary dark:hover:bg-[#2c3e50] transition-all"
-              >
-                {hasAccess ? "Ver Colección" : "Introducir Clave"}
-                <span className="material-symbols-outlined text-sm dark:text-white">{hasAccess ? "arrow_forward" : "lock"}</span>
-              </button>
             </div>
           </div>
         </section>

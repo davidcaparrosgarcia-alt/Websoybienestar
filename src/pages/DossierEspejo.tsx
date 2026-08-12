@@ -6,6 +6,7 @@ import Markdown from "react-markdown";
 import SEO from "../components/SEO";
 import ProgramPlansSection from "../components/ProgramPlansSection";
 import { userCache } from "../lib/userCache";
+import { DOSSIER_CONTACT_URL } from "../lib/dossierContact";
 
 export default function DossierEspejo() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function DossierEspejo() {
   const [unlocked, setUnlocked] = useState(userCache.unlocked);
   const [latestDossier, setLatestDossier] = useState<any>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioSource, setAudioSource] = useState<"ephemeral" | "legacy" | null>(null);
   
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -30,6 +32,7 @@ export default function DossierEspejo() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [selectedPlanImage, setSelectedPlanImage] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioConsumedRef = useRef(false);
 
   useEffect(() => {
     if (!loading) {
@@ -85,7 +88,12 @@ export default function DossierEspejo() {
             setDossierAvailable(data.dossierAvailable);
             setHasAccessCode(data.hasAccessCode);
             setLatestDossier(data.latestDossier);
-            setAudioUrl(data.audioUrl || null);
+            const legacyAudioUrl = typeof data.audioUrl === "string" &&
+              (data.audioUrl.startsWith("data:audio/") || /^https?:\/\//i.test(data.audioUrl))
+              ? data.audioUrl
+              : null;
+            setAudioUrl(legacyAudioUrl);
+            setAudioSource(legacyAudioUrl ? "legacy" : null);
             
             if (data.dossierViewed) {
                setUnlocked(true);
@@ -104,6 +112,38 @@ export default function DossierEspejo() {
 
     return () => checkAuth();
   }, [testerPreviewParam]);
+
+  useEffect(() => {
+    if (!unlocked || testerPreviewParam) return;
+
+    let cancelled = false;
+    const loadAudio = async () => {
+      try {
+        const user = getAuth().currentUser;
+        if (!user) return;
+        const token = await user.getIdToken();
+        const response = await fetch("/api/dossier-espejo-audio", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const playableAudio = response.ok && data.available &&
+          typeof data.audioDataUrl === "string" &&
+          (data.audioDataUrl.startsWith("data:audio/") || /^https?:\/\//i.test(data.audioDataUrl));
+        if (!cancelled) {
+          setAudioUrl(playableAudio ? data.audioDataUrl : null);
+          setAudioSource(playableAudio && data.source === "ephemeral" ? "ephemeral" : playableAudio ? "legacy" : null);
+          audioConsumedRef.current = false;
+        }
+      } catch (error) {
+        console.warn("Dossier audio unavailable", error);
+      }
+    };
+
+    void loadAudio();
+    return () => {
+      cancelled = true;
+    };
+  }, [unlocked, testerPreviewParam, dossierState]);
 
   if (loading) {
     return (
@@ -269,6 +309,24 @@ export default function DossierEspejo() {
     );
   }
 
+  const consumeEphemeralAudio = async () => {
+    try {
+      const user = getAuth().currentUser;
+      if (!user) return;
+      const token = await user.getIdToken();
+      await fetch("/api/dossier-espejo-audio-consume", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
+    } catch (error) {
+      console.warn("Dossier audio consumption could not be confirmed", error);
+    }
+  };
+
   const toggleAudio = () => {
     if (!audioRef.current) return;
     if (isAudioPlaying) {
@@ -277,6 +335,10 @@ export default function DossierEspejo() {
     } else {
       audioRef.current.play().then(() => {
         setIsAudioPlaying(true);
+        if (audioSource === "ephemeral" && !audioConsumedRef.current) {
+          audioConsumedRef.current = true;
+          void consumeEphemeralAudio();
+        }
       }).catch(() => {
         setIsAudioPlaying(false);
       });
@@ -400,6 +462,24 @@ export default function DossierEspejo() {
       </section>
 
       <ProgramPlansSection />
+
+      <section className="w-full max-w-3xl mx-auto px-6 py-14 text-center">
+        <h2 className="font-headline text-3xl md:text-4xl text-primary mb-5">
+          ¿Te queda alguna duda antes de decidir?
+        </h2>
+        <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-8">
+          Si después de leer tu Dossier o revisar los programas te queda una duda concreta, escríbenos y te responderemos de forma breve. Este contacto está pensado para dudas puntuales; no es una sesión de valoración.
+        </p>
+        <a
+          href={DOSSIER_CONTACT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-full font-label font-bold hover:bg-primary-container hover:text-primary transition-colors"
+        >
+          Resolver una duda por WhatsApp
+          <span className="material-symbols-outlined text-lg">chat</span>
+        </a>
+      </section>
     </div>
     </>
   );

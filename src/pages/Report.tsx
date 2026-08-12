@@ -15,6 +15,7 @@ import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
+import { DOSSIER_CONTACT_URL } from "../lib/dossierContact";
 
 export default function Report() {
   const seo = (
@@ -801,25 +802,21 @@ export default function Report() {
                   </div>
                 )}
 
-                {/* 4. Sesión de Validación */}
+                {/* 4. Resolver una duda */}
                 {activeNextStep === "validacion" ? (
                   <div
-                    onClick={() => {
-                      alert("Esta funcionalidad estará disponible pronto.");
-                    }}
+                    onClick={() => window.open(DOSSIER_CONTACT_URL, "_blank", "noopener,noreferrer")}
                     className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
                   >
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">
-                        Sesión de Validación
+                        Resolver una duda
                       </p>
                       <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">
-                        Cuando hayas revisado tu dossier, podrás valorar una
-                        sesión humana para resolver dudas y decidir si quieres
-                        continuar con acompañamiento personalizado.{" "}
+                        Si después de leer tu Dossier te queda una duda concreta sobre la propuesta o sobre qué programa puede encajar mejor contigo, escríbenos y te responderemos de forma breve. Si lo tienes claro, no necesitas realizar este paso.{" "}
                         <span className="font-medium text-primary dark:text-[#2c3e50]">
-                          Agendar ahora
+                          Resolver una duda
                         </span>
                       </p>
                     </div>
@@ -837,12 +834,10 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">
-                        Sesión de Validación
+                        Resolver una duda
                       </p>
                       <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">
-                        Después del dossier, podrás valorar una sesión humana
-                        para resolver dudas y decidir si quieres continuar con
-                        acompañamiento personalizado.
+                        Después de revisar tu Dossier, si te queda una duda concreta sobre la propuesta o sobre qué programa puede encajar mejor contigo, podrás escribirnos para resolverla antes de decidir.
                       </p>
                     </div>
                   </div>

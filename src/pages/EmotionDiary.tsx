@@ -35,6 +35,12 @@ interface FirestoreErrorInfo {
   }
 }
 
+interface AudioTranscriptionQuota {
+  usage: { slot1: number; slot2: number; total: number };
+  remaining: { slot1: number; slot2: number; total: number };
+  limits: { perSlot: number; total: number };
+}
+
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
@@ -90,6 +96,12 @@ export default function EmotionDiary() {
   const [recordingState2, setRecordingState2] = useState<"initial" | "recording" | "transcribing" | "reviewing">("initial");
   const [recordingError1, setRecordingError1] = useState<string | null>(null);
   const [recordingError2, setRecordingError2] = useState<string | null>(null);
+  const [audioTranscriptionQuota, setAudioTranscriptionQuota] = useState<AudioTranscriptionQuota | null>(null);
+
+  const voiceLimitReached1 = !!audioTranscriptionQuota &&
+    (audioTranscriptionQuota.remaining.slot1 <= 0 || audioTranscriptionQuota.remaining.total <= 0);
+  const voiceLimitReached2 = !!audioTranscriptionQuota &&
+    (audioTranscriptionQuota.remaining.slot2 <= 0 || audioTranscriptionQuota.remaining.total <= 0);
 
   const [originalText1, setOriginalText1] = useState("");
   const [originalText2, setOriginalText2] = useState("");
@@ -146,6 +158,21 @@ export default function EmotionDiary() {
       cleanupMic();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    api.audioTranscriptionUsage()
+      .then((quota) => {
+        if (!cancelled && quota?.usage && quota?.remaining && quota?.limits) {
+          setAudioTranscriptionQuota(quota);
+        }
+      })
+      .catch((error) => console.warn("Could not load audio transcription usage", error));
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const startRecording = async (fieldNum: 1 | 2) => {
     voluntaryStopRef.current = false;
@@ -461,7 +488,11 @@ export default function EmotionDiary() {
       reader.readAsDataURL(blob);
 
       const base64Data = await base64Promise;
-      const res = await api.transcribeAudio(base64Data, mimeType);
+      const res = await api.transcribeAudio(base64Data, mimeType, fieldNum);
+
+      if (res?.usage && res?.remaining && res?.limits) {
+        setAudioTranscriptionQuota(res);
+      }
 
       if (res && res.text) {
         const transcribed = res.text.trim();
@@ -486,6 +517,9 @@ export default function EmotionDiary() {
 
     } catch (err: any) {
       console.error("Audio transcription error", err);
+      if (err?.data?.usage && err?.data?.remaining && err?.data?.limits) {
+        setAudioTranscriptionQuota(err.data);
+      }
       let errMsg = "No hemos podido transcribir tu audio. Puedes reintentar o escribir manualmente.";
       const msg = String(err?.message || "").toLowerCase();
 
@@ -1055,7 +1089,7 @@ export default function EmotionDiary() {
                         <button
                           type="button"
                           onClick={() => startRecording(1)}
-                          disabled={isAnyRecordingOrTranscribing || isLoading}
+                          disabled={isAnyRecordingOrTranscribing || isLoading || voiceLimitReached1}
                           className="flex items-center justify-center p-2 rounded-full text-secondary hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Grabar por voz"
                         >
@@ -1104,6 +1138,11 @@ export default function EmotionDiary() {
                       )}
                     </div>
                   </div>
+                )}
+                {voiceLimitReached1 && (
+                  <p className="text-error text-xs font-medium">
+                    Has alcanzado el límite de 3 transcripciones de voz de hoy en este espacio. Puedes seguir escribiendo manualmente.
+                  </p>
                 )}
               </div>
 
@@ -1154,7 +1193,7 @@ export default function EmotionDiary() {
                         <button
                           type="button"
                           onClick={() => startRecording(2)}
-                          disabled={isAnyRecordingOrTranscribing || isLoading}
+                          disabled={isAnyRecordingOrTranscribing || isLoading || voiceLimitReached2}
                           className="flex items-center justify-center p-2 rounded-full text-secondary hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Grabar por voz"
                         >
@@ -1203,6 +1242,11 @@ export default function EmotionDiary() {
                       )}
                     </div>
                   </div>
+                )}
+                {voiceLimitReached2 && (
+                  <p className="text-error text-xs font-medium">
+                    Has alcanzado el límite de 3 transcripciones de voz de hoy en este espacio. Puedes seguir escribiendo manualmente.
+                  </p>
                 )}
               </div>
             </div>

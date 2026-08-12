@@ -429,6 +429,90 @@ function getMadridDateStr() {
   }).format(new Date());
 }
 
+const AUDIO_TRANSCRIPTION_LIMIT_PER_SLOT = 3;
+const AUDIO_TRANSCRIPTION_LIMIT_TOTAL = 6;
+
+type AudioTranscriptionSlot = 1 | 2;
+type AudioTranscriptionUsage = { slot1: number; slot2: number; total: number };
+
+function normalizeAudioTranscriptionUsage(data: any): AudioTranscriptionUsage {
+  const slot1 = Math.max(0, Number(data?.slot1) || 0);
+  const slot2 = Math.max(0, Number(data?.slot2) || 0);
+  return {
+    slot1,
+    slot2,
+    total: Math.max(slot1 + slot2, Math.max(0, Number(data?.total) || 0))
+  };
+}
+
+function buildAudioTranscriptionQuota(usage: AudioTranscriptionUsage) {
+  return {
+    usage,
+    remaining: {
+      slot1: Math.max(0, AUDIO_TRANSCRIPTION_LIMIT_PER_SLOT - usage.slot1),
+      slot2: Math.max(0, AUDIO_TRANSCRIPTION_LIMIT_PER_SLOT - usage.slot2),
+      total: Math.max(0, AUDIO_TRANSCRIPTION_LIMIT_TOTAL - usage.total)
+    },
+    limits: {
+      perSlot: AUDIO_TRANSCRIPTION_LIMIT_PER_SLOT,
+      total: AUDIO_TRANSCRIPTION_LIMIT_TOTAL
+    }
+  };
+}
+
+export function resolveAudioTranscriptionReservation(data: any, slot: AudioTranscriptionSlot) {
+  const usage = normalizeAudioTranscriptionUsage(data);
+  const slotKey = slot === 1 ? "slot1" : "slot2";
+  if (
+    usage[slotKey] >= AUDIO_TRANSCRIPTION_LIMIT_PER_SLOT ||
+    usage.total >= AUDIO_TRANSCRIPTION_LIMIT_TOTAL
+  ) {
+    return { allowed: false as const, ...buildAudioTranscriptionQuota(usage) };
+  }
+
+  const updatedUsage = {
+    ...usage,
+    [slotKey]: usage[slotKey] + 1,
+    total: usage.total + 1
+  };
+  return {
+    allowed: true as const,
+    update: { ...updatedUsage, updatedAt: Date.now() },
+    ...buildAudioTranscriptionQuota(updatedUsage)
+  };
+}
+
+async function getAudioTranscriptionQuota(uid: string) {
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const dateStr = getMadridDateStr();
+  const limitRef = db
+    .collection("users")
+    .doc(uid)
+    .collection("aiLimits")
+    .doc(`audioTranscription_${dateStr}`);
+  const snapshot = await limitRef.get();
+  return buildAudioTranscriptionQuota(normalizeAudioTranscriptionUsage(snapshot.data()));
+}
+
+async function reserveAudioTranscription(uid: string, slot: AudioTranscriptionSlot) {
+  const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+  const dateStr = getMadridDateStr();
+  const limitRef = db
+    .collection("users")
+    .doc(uid)
+    .collection("aiLimits")
+    .doc(`audioTranscription_${dateStr}`);
+
+  return db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(limitRef);
+    const reservation = resolveAudioTranscriptionReservation(snapshot.data(), slot);
+    if (reservation.allowed) {
+      transaction.set(limitRef, reservation.update, { merge: true });
+    }
+    return reservation;
+  });
+}
+
 function normalizeGratitudeText(value: string) {
   return String(value || "")
     .trim()
@@ -1211,24 +1295,13 @@ Desde la siguiente pantalla podrás solicitar el Cuestionario Espejo si quieres 
 });
 
 app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
+  let quota: Awaited<ReturnType<typeof reserveAudioTranscription>> | null = null;
   try {
-    const allowed = await checkAILimitReadOnly(
-      req,
-      req.user!.uid,
-      "audioTranscription",
-      "daily",
-      35
-    );
-
-    if (!allowed) {
-      res.status(429).json({
-        error:
-          "Has alcanzado tu límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente. Mañana podrás volver a grabar tus audios."
-      });
+    const { audioBase64, mimeType, slot } = req.body;
+    if (slot !== undefined && slot !== 1 && slot !== 2) {
+      res.status(400).json({ error: "El espacio de transcripción no es válido." });
       return;
     }
-
-    const { audioBase64, mimeType } = req.body;
     if (!audioBase64 || typeof audioBase64 !== "string" || !audioBase64.trim()) {
       res.status(400).json({ error: "Audio no recibido o en formato incorrecto." });
       return;
@@ -1259,6 +1332,33 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
     if (cleanBase64.length > 6 * 1024 * 1024) {
       res.status(413).json({ error: "El audio enviado supera el tamaño máximo permitido." });
       return;
+    }
+
+    if (slot === 1 || slot === 2) {
+      quota = await reserveAudioTranscription(req.user!.uid, slot);
+      if (!quota.allowed) {
+        res.status(429).json({
+          error: "Has alcanzado el límite de 3 transcripciones de voz de hoy en este espacio. Puedes seguir escribiendo manualmente.",
+          usage: quota.usage,
+          remaining: quota.remaining,
+          limits: quota.limits
+        });
+        return;
+      }
+    } else {
+      const allowed = await checkAILimitReadOnly(
+        req,
+        req.user!.uid,
+        "audioTranscription",
+        "daily",
+        35
+      );
+      if (!allowed) {
+        res.status(429).json({
+          error: "Has alcanzado tu límite diario de transcripciones por voz. Puedes continuar escribiendo manualmente. Mañana podrás volver a grabar tus audios."
+        });
+        return;
+      }
     }
 
     let textResult = "";
@@ -1308,7 +1408,12 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
       const errToEvaluate = firstQuotaError || lastError;
       if (isQuotaError(errToEvaluate)) {
         res.status(429).json({
-          error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio."
+          error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio.",
+          ...(quota ? {
+            usage: quota.usage,
+            remaining: quota.remaining,
+            limits: quota.limits
+          } : {})
         });
         return;
       }
@@ -1324,14 +1429,22 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
       return;
     }
 
-    // Success, increment count in Firestore
-    try {
-      await incrementAILimit(req, req.user!.uid, "audioTranscription", "daily");
-    } catch (incrementError) {
-      console.error("Could not increment audioTranscription limit after successful transcription", incrementError);
+    if (!quota) {
+      try {
+        await incrementAILimit(req, req.user!.uid, "audioTranscription", "daily");
+      } catch (incrementError) {
+        console.error("Could not increment legacy audioTranscription limit after successful transcription", incrementError);
+      }
     }
 
-    res.json({ text: textResult });
+    res.json({
+      text: textResult,
+      ...(quota ? {
+        usage: quota.usage,
+        remaining: quota.remaining,
+        limits: quota.limits
+      } : {})
+    });
   } catch (error) {
     const info = getGeminiErrorInfo(error);
     console.error("AI endpoint failed", {
@@ -1342,13 +1455,28 @@ app.post("/api/transcribe-audio", requireAuth, requireAI, async (req, res) => {
     });
     if (isQuotaError(error)) {
       res.status(429).json({
-        error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio."
+        error: "La transcripción por voz ha alcanzado el límite disponible por hoy. Puedes continuar escribiendo manualmente. La grabación volverá a estar disponible cuando se renueve el servicio.",
+        ...(quota ? {
+          usage: quota.usage,
+          remaining: quota.remaining,
+          limits: quota.limits
+        } : {})
       });
       return;
     }
     res.status(503).json({
       error: "Ocurrió un error al transcribir el audio. Puedes continuar escribiendo manualmente."
     });
+  }
+});
+
+app.get("/api/audio-transcription-usage", requireAuth, async (req, res) => {
+  try {
+    const quota = await getAudioTranscriptionQuota(req.user!.uid);
+    res.json({ success: true, ...quota });
+  } catch (error) {
+    console.error("Error reading audio transcription usage:", error);
+    res.status(500).json({ success: false, error: "No se pudo consultar el uso de transcripciones." });
   }
 });
 
@@ -1572,9 +1700,18 @@ app.post("/api/tester-reset-gratitude-today", requireAuth, async (req, res) => {
         .collection("aiLimits")
         .doc(`audioTranscription_${utcDateStr}`);
 
+      const audioTranscriptionMadridRef = db
+        .collection("users")
+        .doc(uid)
+        .collection("aiLimits")
+        .doc(`audioTranscription_${madridDateStr}`);
+
       const batch = db.batch();
       batch.delete(gratitudeRef);
       batch.delete(audioTranscriptionUTCRef);
+      if (madridDateStr !== utcDateStr) {
+        batch.delete(audioTranscriptionMadridRef);
+      }
       await batch.commit();
     }
 
@@ -2600,6 +2737,117 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
   }
 });
 
+const DOSSIER_FINALIZATION_RETRY_MS = 60_000;
+
+function getQuestionnaireBridgeConfig() {
+  const apiUrl = process.env.QUESTIONNAIRE_API_URL?.replace(/\/$/, "") || "";
+  const bridgeSecret = process.env.QUESTIONNAIRE_BRIDGE_SECRET || process.env.SOYBIENESTAR_BRIDGE_SECRET || "";
+  return { apiUrl, bridgeSecret };
+}
+
+export function resolveQuestionnairePatientId(userData: any, profileData: any): string | null {
+  const candidate =
+    userData.latestQuestionnairePatientId ||
+    profileData.latestQuestionnairePatientId ||
+    userData.linkedQuestionnairePatientId ||
+    profileData.linkedQuestionnairePatientId;
+  return typeof candidate === "string" && candidate.trim() ? candidate.trim() : null;
+}
+
+export function getLegacyDossierAudio(userData: any, profileData: any): string | null {
+  const candidate = userData?.latestQuestionnaireAudioConclusion ||
+    profileData?.latestQuestionnaireAudioConclusion ||
+    userData?.latestQuestionnaireAudioConclusionUrl ||
+    profileData?.latestQuestionnaireAudioConclusionUrl ||
+    userData?.audioConclusion ||
+    profileData?.audioConclusion ||
+    userData?.latestDossierAudio ||
+    profileData?.latestDossierAudio ||
+    userData?.latestDossierAudioUrl ||
+    profileData?.latestDossierAudioUrl;
+  if (typeof candidate !== "string") return null;
+  const value = candidate.trim();
+  return value.startsWith("data:audio/") || /^https?:\/\//i.test(value) ? value : null;
+}
+
+async function syncDossierViewedWithQuestionnaire(
+  userRef: FirebaseFirestore.DocumentReference,
+  profileRef: FirebaseFirestore.DocumentReference,
+  userData: any,
+  profileData: any
+) {
+  const patientId = resolveQuestionnairePatientId(userData, profileData);
+  const now = Date.now();
+  if (!patientId) {
+    const pendingUpdate = {
+      dossierFinalizationSyncStatus: "pending_missing_patient_id",
+      dossierFinalizationSyncLastAttemptAt: now
+    };
+    await Promise.all([
+      userRef.set(pendingUpdate, { merge: true }),
+      profileRef.set(pendingUpdate, { merge: true })
+    ]);
+    return { synced: false, status: "pending_missing_patient_id" };
+  }
+
+  const attemptUpdate = {
+    dossierFinalizationSyncStatus: "pending",
+    dossierFinalizationSyncLastAttemptAt: now
+  };
+  await Promise.all([
+    userRef.set(attemptUpdate, { merge: true }),
+    profileRef.set(attemptUpdate, { merge: true })
+  ]);
+
+  const { apiUrl, bridgeSecret } = getQuestionnaireBridgeConfig();
+  if (!apiUrl || !bridgeSecret) {
+    return { synced: false, status: "pending_configuration" };
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/api/soybienestar-dossier-viewed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-bridge-secret": bridgeSecret
+      },
+      body: JSON.stringify({ patientId, event: "dossier_viewed" }),
+      signal: AbortSignal.timeout(5000)
+    });
+    const responseData = await response.json().catch(() => ({}));
+    const confirmedStatus = responseData?.status || responseData?.questionnaireStatus;
+    if (response.ok && confirmedStatus === "finalized") {
+      const syncedUpdate = {
+        questionnaireStatus: "finalized",
+        dossierFinalizationSyncStatus: "synced",
+        dossierFinalizationSyncedAt: Date.now(),
+        dossierFinalizationSyncLastHttpStatus: response.status
+      };
+      await Promise.all([
+        userRef.set(syncedUpdate, { merge: true }),
+        profileRef.set(syncedUpdate, { merge: true })
+      ]);
+      return { synced: true, status: "finalized" };
+    }
+
+    const pendingUpdate = {
+      dossierFinalizationSyncStatus: "pending",
+      dossierFinalizationSyncLastHttpStatus: response.status
+    };
+    await Promise.all([
+      userRef.set(pendingUpdate, { merge: true }),
+      profileRef.set(pendingUpdate, { merge: true })
+    ]);
+    return { synced: false, status: "pending", httpStatus: response.status };
+  } catch (error) {
+    console.warn("Dossier viewed sync pending", {
+      patientId: patientId.length > 8 ? `${patientId.slice(0, 8)}...` : patientId,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return { synced: false, status: "pending" };
+  }
+}
+
 app.get("/api/dossier-espejo-state", requireAuth, async (req, res) => {
   try {
     const uid = req.user!.uid;
@@ -2627,17 +2875,32 @@ app.get("/api/dossier-espejo-state", requireAuth, async (req, res) => {
     ];
     const hasAccessCode = possibleCodes.some(code => code && normalizeAccessCode(code).length > 0);
     const dossierViewed = !!userData.dossierViewedAt || !!profileData.dossierViewedAt;
+    let questionnaireStatus = userData.questionnaireStatus || profileData.questionnaireStatus || null;
+    const patientId = resolveQuestionnairePatientId(userData, profileData);
+    const lastSyncAttemptAt = Math.max(
+      Number(userData.dossierFinalizationSyncLastAttemptAt) || 0,
+      Number(profileData.dossierFinalizationSyncLastAttemptAt) || 0
+    );
+    if (
+      dossierViewed &&
+      patientId &&
+      questionnaireStatus !== "finalized" &&
+      Date.now() - lastSyncAttemptAt >= DOSSIER_FINALIZATION_RETRY_MS
+    ) {
+      try {
+        const catchUp = await syncDossierViewedWithQuestionnaire(
+          db.collection("users").doc(uid),
+          db.collection("userProfiles").doc(uid),
+          userData,
+          profileData
+        );
+        if (catchUp.synced) questionnaireStatus = "finalized";
+      } catch (error) {
+        console.warn("Dossier finalization catch-up remains pending", error instanceof Error ? error.message : String(error));
+      }
+    }
 
-    const audioUrl = userData?.latestQuestionnaireAudioConclusion ||
-      profileData?.latestQuestionnaireAudioConclusion ||
-      userData?.latestQuestionnaireAudioConclusionUrl ||
-      profileData?.latestQuestionnaireAudioConclusionUrl ||
-      userData?.audioConclusion ||
-      profileData?.audioConclusion ||
-      userData?.latestDossierAudio ||
-      profileData?.latestDossierAudio ||
-      userData?.latestDossierAudioUrl ||
-      profileData?.latestDossierAudioUrl;
+    const audioUrl = dossierViewed ? getLegacyDossierAudio(userData, profileData) : null;
 
     res.json({
       success: true,
@@ -2647,7 +2910,7 @@ app.get("/api/dossier-espejo-state", requireAuth, async (req, res) => {
       dossierViewed,
       latestDossier: latestDossier || "",
       latestDossierInternalContext: userData.latestDossierInternalContext || profileData.latestDossierInternalContext || "",
-      questionnaireStatus: userData.questionnaireStatus || profileData.questionnaireStatus || null,
+      questionnaireStatus,
       audioUrl: audioUrl || null
     });
   } catch (error) {
@@ -2706,6 +2969,12 @@ app.post("/api/dossier-espejo-verify", requireAuth, async (req, res) => {
       profileRef.set({ dossierViewedAt: now }, { merge: true })
     ]);
 
+    try {
+      await syncDossierViewedWithQuestionnaire(userRef, profileRef, userData, profileData);
+    } catch (error) {
+      console.warn("Dossier unlocked; finalization sync remains pending", error instanceof Error ? error.message : String(error));
+    }
+
     res.json({
       success: true,
       latestDossier: userData.latestDossier || profileData.latestDossier || "",
@@ -2715,6 +2984,94 @@ app.post("/api/dossier-espejo-verify", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Error in /api/dossier-espejo-verify:", error);
     res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+app.get("/api/dossier-espejo-audio", requireAuth, async (req, res) => {
+  try {
+    res.set("Cache-Control", "no-store");
+    const uid = req.user!.uid;
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const userRef = db.collection("users").doc(uid);
+    const profileRef = db.collection("userProfiles").doc(uid);
+    const [userSnap, profileSnap] = await Promise.all([userRef.get(), profileRef.get()]);
+    const userData = userSnap.data() || {};
+    const profileData = profileSnap.data() || {};
+
+    if (!userData.dossierViewedAt && !profileData.dossierViewedAt) {
+      return res.status(403).json({ success: false, error: "DOSSIER_LOCKED" });
+    }
+
+    const patientId = resolveQuestionnairePatientId(userData, profileData);
+    const legacyAudio = getLegacyDossierAudio(userData, profileData);
+    const { apiUrl, bridgeSecret } = getQuestionnaireBridgeConfig();
+
+    if (patientId && apiUrl && bridgeSecret) {
+      try {
+        const response = await fetch(`${apiUrl}/api/soybienestar-dossier-audio`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-bridge-secret": bridgeSecret
+          },
+          body: JSON.stringify({ patientId, soybienestarUid: uid }),
+          signal: AbortSignal.timeout(5000)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data?.available && typeof data.audioDataUrl === "string" && data.audioDataUrl.startsWith("data:audio/")) {
+          return res.json({ success: true, available: true, audioDataUrl: data.audioDataUrl, expiresAt: data.expiresAt || null, source: "ephemeral" });
+        }
+      } catch (error) {
+        console.warn("Ephemeral dossier audio unavailable", error instanceof Error ? error.message : String(error));
+      }
+    }
+
+    if (legacyAudio) {
+      return res.json({ success: true, available: true, audioDataUrl: legacyAudio, expiresAt: null, source: "legacy" });
+    }
+    return res.json({ success: true, available: false });
+  } catch (error) {
+    console.error("Error in /api/dossier-espejo-audio:", error);
+    return res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+app.post("/api/dossier-espejo-audio-consume", requireAuth, async (req, res) => {
+  try {
+    const uid = req.user!.uid;
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const [userSnap, profileSnap] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("userProfiles").doc(uid).get()
+    ]);
+    const userData = userSnap.data() || {};
+    const profileData = profileSnap.data() || {};
+    if (!userData.dossierViewedAt && !profileData.dossierViewedAt) {
+      return res.status(403).json({ success: false, error: "DOSSIER_LOCKED" });
+    }
+
+    const patientId = resolveQuestionnairePatientId(userData, profileData);
+    const { apiUrl, bridgeSecret } = getQuestionnaireBridgeConfig();
+    if (!patientId) return res.status(400).json({ success: false, error: "PATIENT_ID_MISSING" });
+    if (!apiUrl || !bridgeSecret) return res.status(503).json({ success: false, error: "BRIDGE_UNAVAILABLE" });
+
+    const response = await fetch(`${apiUrl}/api/soybienestar-dossier-audio-consume`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-bridge-secret": bridgeSecret
+      },
+      body: JSON.stringify({ patientId, soybienestarUid: uid }),
+      signal: AbortSignal.timeout(5000)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data?.success === false) {
+      return res.status(502).json({ success: false, error: "AUDIO_CONSUME_FAILED" });
+    }
+    return res.json({ success: true, consumed: true });
+  } catch (error) {
+    console.error("Error in /api/dossier-espejo-audio-consume:", error);
+    return res.status(502).json({ success: false, error: "AUDIO_CONSUME_FAILED" });
   }
 });
 
