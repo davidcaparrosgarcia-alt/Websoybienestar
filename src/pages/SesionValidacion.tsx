@@ -98,6 +98,10 @@ export default function SesionValidacion() {
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
+  const firstName = fullName.trim().split(/\s+/)[0] || "";
+  const supportWhatsAppMessage = firstName
+    ? `Hola, soy ${firstName}. Tengo una duda sobre el proceso de reserva o pago de un programa en SoyBienestar:`
+    : "Hola. Tengo una duda sobre el proceso de reserva o pago de un programa en SoyBienestar:";
 
   const [originalContactData, setOriginalContactData] = useState<{
     fullName: string;
@@ -991,7 +995,7 @@ export default function SesionValidacion() {
           <section className="mt-8 flex justify-end">
             <a
               href={`https://wa.me/34622852799?text=${encodeURIComponent(
-                "Hola, tengo una duda sobre el proceso de reserva o pago de un programa en SoyBienestar."
+                supportWhatsAppMessage
               )}`}
               target="_blank"
               rel="noopener noreferrer"
