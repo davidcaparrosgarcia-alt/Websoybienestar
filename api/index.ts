@@ -2911,6 +2911,7 @@ app.get("/api/dossier-espejo-state", requireAuth, async (req, res) => {
       latestDossier: latestDossier || "",
       latestDossierInternalContext: userData.latestDossierInternalContext || profileData.latestDossierInternalContext || "",
       questionnaireStatus,
+      displayName: userData.displayName || profileData.displayName || req.user?.name || null,
       audioUrl: audioUrl || null
     });
   } catch (error) {

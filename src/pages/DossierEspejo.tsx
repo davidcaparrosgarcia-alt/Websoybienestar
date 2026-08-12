@@ -6,7 +6,7 @@ import Markdown from "react-markdown";
 import SEO from "../components/SEO";
 import ProgramPlansSection from "../components/ProgramPlansSection";
 import { userCache } from "../lib/userCache";
-import { DOSSIER_CONTACT_URL } from "../lib/dossierContact";
+import { buildDossierContactUrl } from "../lib/dossierContact";
 
 export default function DossierEspejo() {
   const navigate = useNavigate();
@@ -167,6 +167,9 @@ export default function DossierEspejo() {
   const isTester = auth.currentUser?.email === "davidcaparrosgarcia@gmail.com";
   const testerPreview = isTester && new URLSearchParams(location.search).get("testerPreview") === "1";
   const isDemoMode = (!dossierState?.hasLatestDossier && isTester) || testerPreview;
+  const dossierContactUrl = buildDossierContactUrl(
+    dossierState?.displayName || auth.currentUser?.displayName || null
+  );
 
   if (!hasAccessCode && !testerPreview) {
     return (
@@ -461,25 +464,27 @@ export default function DossierEspejo() {
         </div>
       </section>
 
-      <ProgramPlansSection />
+      <div className="w-full space-y-8 md:space-y-12">
+        <ProgramPlansSection />
 
-      <section className="w-full max-w-3xl mx-auto px-6 py-14 text-center">
-        <h2 className="font-headline text-3xl md:text-4xl text-primary mb-5">
-          ¿Te queda alguna duda antes de decidir?
-        </h2>
-        <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-8">
-          Si después de leer tu Dossier o revisar los programas te queda una duda concreta, escríbenos y te responderemos de forma breve. Este contacto está pensado para dudas puntuales; no es una sesión de valoración.
-        </p>
-        <a
-          href={DOSSIER_CONTACT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-full font-label font-bold hover:bg-primary-container hover:text-primary transition-colors"
-        >
-          Resolver una duda por WhatsApp
-          <span className="material-symbols-outlined text-lg">chat</span>
-        </a>
-      </section>
+        <section className="w-full max-w-3xl mx-auto px-6 pb-8 text-center">
+          <h2 className="font-headline text-3xl md:text-4xl text-primary mb-5">
+            ¿Dudas antes de decidir?
+          </h2>
+          <p className="font-body text-lg text-on-surface-variant leading-relaxed mb-8">
+            Si después de leer tu Dossier o revisar los programas te queda alguna duda, escríbenos y te responderemos lo antes posible.
+          </p>
+          <a
+            href={dossierContactUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex max-w-full items-center justify-center gap-3 bg-primary text-on-primary px-6 sm:px-8 py-4 rounded-full text-center font-label font-bold hover:bg-primary-container hover:text-primary transition-colors"
+          >
+            Resolver tus dudas por WhatsApp
+            <span className="material-symbols-outlined text-lg shrink-0">chat</span>
+          </a>
+        </section>
+      </div>
     </div>
     </>
   );

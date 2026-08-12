@@ -15,7 +15,7 @@ import { api } from "../services/api";
 import { getOrMigrateUserProfile } from "../services/userProfile";
 import NextStepsModal from "../components/NextStepsModal";
 import SEO from "../components/SEO";
-import { DOSSIER_CONTACT_URL } from "../lib/dossierContact";
+import { buildDossierContactUrl } from "../lib/dossierContact";
 
 export default function Report() {
   const seo = (
@@ -54,6 +54,9 @@ export default function Report() {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [userData, setUserData] = useState<any>(null);
   const [profileDataState, setProfileDataState] = useState<any>(null);
+  const dossierContactUrl = buildDossierContactUrl(
+    userData?.displayName || profileDataState?.displayName || user?.displayName || null
+  );
 
   // States for NextStepsModal
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
@@ -802,21 +805,21 @@ export default function Report() {
                   </div>
                 )}
 
-                {/* 4. Resolver una duda */}
+                {/* 4. Resuelve tus dudas */}
                 {activeNextStep === "validacion" ? (
                   <div
-                    onClick={() => window.open(DOSSIER_CONTACT_URL, "_blank", "noopener,noreferrer")}
+                    onClick={() => window.open(dossierContactUrl, "_blank", "noopener,noreferrer")}
                     className="flex gap-4 p-4 -mx-4 border border-outline-variant/30 dark:border-primary/20 rounded-xl hover:bg-surface-container-lowest dark:hover:bg-white/40 cursor-pointer transition-all group shadow-sm hover:shadow-md mb-2"
                   >
                     <div className="flex-shrink-0 w-6 h-6 border-2 rounded-md flex items-center justify-center border-outline-variant dark:border-[#2c3e50]/30 group-hover:border-primary transition-colors"></div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50] group-hover:underline decoration-1 underline-offset-4">
-                        Resolver una duda
+                        Resuelve tus dudas
                       </p>
                       <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">
-                        Si después de leer tu Dossier te queda una duda concreta sobre la propuesta o sobre qué programa puede encajar mejor contigo, escríbenos y te responderemos de forma breve. Si lo tienes claro, no necesitas realizar este paso.{" "}
+                        Si después de leer tu Dossier te queda alguna duda sobre la propuesta o sobre qué programa puede encajar mejor contigo, escríbenos y te responderemos lo antes posible. Si este proceso te ha resultado útil y ya tienes claro tu siguiente paso, puedes compartir SoyBienestar con alguien a quien creas que también puede ayudar.{" "}
                         <span className="font-medium text-primary dark:text-[#2c3e50]">
-                          Resolver una duda
+                          Escríbenos por WhatsApp
                         </span>
                       </p>
                     </div>
@@ -834,10 +837,10 @@ export default function Report() {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-primary dark:text-[#2c3e50]">
-                        Resolver una duda
+                        Resuelve tus dudas
                       </p>
                       <p className="text-sm text-on-surface-variant dark:text-[#43474c] font-light mb-2">
-                        Después de revisar tu Dossier, si te queda una duda concreta sobre la propuesta o sobre qué programa puede encajar mejor contigo, podrás escribirnos para resolverla antes de decidir.
+                        Después de revisar tu Dossier, si te queda alguna duda sobre la propuesta o sobre qué programa puede encajar mejor contigo, podrás escribirnos directamente por WhatsApp.
                       </p>
                     </div>
                   </div>
