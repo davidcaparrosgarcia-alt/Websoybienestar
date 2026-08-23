@@ -299,6 +299,113 @@ function isTestUser(req: any) {
   );
 }
 
+const REPORTING_STATUS_PRIORITY = [
+  "reset_required",
+  "concluded",
+  "dossier_available",
+  "completed",
+  "completed_pending_dossier",
+  "in_progress",
+  "sent",
+  "requested",
+];
+
+function hasValidReportingSecret(req: Request): boolean {
+  const configuredSecret = process.env.SOYBIENESTAR_REPORTING_SECRET;
+  const receivedSecret = req.header("x-soybienestar-reporting-secret");
+
+  if (!configuredSecret || !receivedSecret) return false;
+
+  const configuredDigest = crypto
+    .createHash("sha256")
+    .update(configuredSecret, "utf8")
+    .digest();
+  const receivedDigest = crypto
+    .createHash("sha256")
+    .update(receivedSecret, "utf8")
+    .digest();
+
+  return crypto.timingSafeEqual(configuredDigest, receivedDigest);
+}
+
+function reportingTimestamp(value: any): number | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value?.toMillis === "function") return value.toMillis();
+  if (typeof value?._seconds === "number") return value._seconds * 1000;
+  if (typeof value?.seconds === "number") return value.seconds * 1000;
+
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function reportingNumber(...values: any[]): number {
+  for (const value of values) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+  return 0;
+}
+
+function resolvedQuestionnaireStatus(userData: any, profileData: any) {
+  return (
+    REPORTING_STATUS_PRIORITY.find(
+      (status) =>
+        userData.questionnaireStatus === status ||
+        profileData.questionnaireStatus === status,
+    ) ||
+    userData.questionnaireStatus ||
+    profileData.questionnaireStatus ||
+    null
+  );
+}
+
+function dateKeyInMadrid(timestamp: number): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(timestamp));
+  const part = (type: string) =>
+    parts.find((candidate) => candidate.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+async function readReportingDocuments(
+  db: FirebaseFirestore.Firestore,
+  collectionName: "users" | "userProfiles",
+  uids: string[],
+) {
+  const result = new Map<string, FirebaseFirestore.DocumentData>();
+
+  for (let index = 0; index < uids.length; index += 100) {
+    const uidBatch = uids.slice(index, index + 100);
+    const snapshots = await db.getAll(
+      ...uidBatch.map((uid) => db.collection(collectionName).doc(uid)),
+    );
+    snapshots.forEach((snapshot) => {
+      if (snapshot.exists) result.set(snapshot.id, snapshot.data() || {});
+    });
+  }
+
+  return result;
+}
+
+async function listAllReportingAuthUsers() {
+  const users: admin.auth.UserRecord[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const page = await admin.auth().listUsers(1000, pageToken);
+    users.push(...page.users);
+    pageToken = page.pageToken;
+  } while (pageToken);
+
+  return users;
+}
+
 async function checkAILimit(
   req: any,
   uid: string,
@@ -628,6 +735,301 @@ async function recordGratitudeUsage(
     );
   });
 }
+
+app.get("/api/internal/reporting-snapshot", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+
+  if (!process.env.SOYBIENESTAR_REPORTING_SECRET) {
+    return res.status(503).json({
+      success: false,
+      error: "Reporting no configurado.",
+    });
+  }
+
+  if (!hasValidReportingSecret(req)) {
+    return res.status(401).json({
+      success: false,
+      error: "No autorizado.",
+    });
+  }
+
+  if (!admin.apps.length) {
+    return res.status(503).json({
+      success: false,
+      error: "Firebase Admin no disponible.",
+    });
+  }
+
+  try {
+    const requestedDays = Number(req.query.days || 35);
+    const days = Number.isInteger(requestedDays)
+      ? Math.min(Math.max(requestedDays, 1), 45)
+      : 35;
+    const now = Date.now();
+    const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
+    const authUsers = await listAllReportingAuthUsers();
+    const uids = authUsers.map((user) => user.uid);
+    const [userDocuments, profileDocuments] = await Promise.all([
+      readReportingDocuments(db, "users", uids),
+      readReportingDocuments(db, "userProfiles", uids),
+    ]);
+
+    const daily = new Map<
+      string,
+      {
+        date: string;
+        registeredNew: number;
+        consultationCompleted: null;
+        questionnaireRequested: number;
+        questionnaireStarted: number;
+        questionnaireCompleted: number;
+        dossierAvailable: number;
+        dossierViewed: number;
+      }
+    >();
+
+    for (let offset = days - 1; offset >= 0; offset -= 1) {
+      const date = dateKeyInMadrid(now - offset * 24 * 60 * 60 * 1000);
+      daily.set(date, {
+        date,
+        registeredNew: 0,
+        consultationCompleted: null,
+        questionnaireRequested: 0,
+        questionnaireStarted: 0,
+        questionnaireCompleted: 0,
+        dossierAvailable: 0,
+        dossierViewed: 0,
+      });
+    }
+
+    const stock = {
+      registeredTotal: 0,
+      registeredTotalIncludingTesters: authUsers.length,
+      consultationCompleted: 0,
+      questionnaireRequested: 0,
+      questionnaireInProgress: 0,
+      questionnaireCompleted: 0,
+      dossierAvailable: 0,
+      dossierViewed: 0,
+    };
+    const tools = {
+      usersUsingTools: 0,
+      gratitudeEntriesCount: 0,
+      meditationsCompletedCount: 0,
+      breathingExercisesCount: 0,
+      weeklyGoalsCount: 0,
+      usersWithWeeklyGoalsBoard: 0,
+    };
+
+    const registeredUsers = authUsers.map((authUser) => {
+      const userData = userDocuments.get(authUser.uid) || {};
+      const profileData = profileDocuments.get(authUser.uid) || {};
+      const isTester =
+        (authUser.email || "").toLowerCase() === TEST_USER_EMAIL.toLowerCase();
+      const questionnaireStatus = resolvedQuestionnaireStatus(
+        userData,
+        profileData,
+      );
+      const consultationCompleted =
+        userData.hasDoneConsultation === true ||
+        profileData.hasDoneConsultation === true ||
+        userData.consultationCompleted === true ||
+        profileData.consultationCompleted === true ||
+        userData.sessionCompleted === true ||
+        profileData.sessionCompleted === true;
+      const questionnaireRequested =
+        !!reportingTimestamp(
+          userData.lastQuestionnaireRequestAt ??
+            profileData.lastQuestionnaireRequestAt,
+        ) ||
+        [
+          "requested",
+          "sent",
+          "in_progress",
+          "completed_pending_dossier",
+          "completed",
+          "dossier_available",
+          "concluded",
+        ].includes(questionnaireStatus);
+      const questionnaireCompleted = [
+        "completed_pending_dossier",
+        "completed",
+        "dossier_available",
+        "concluded",
+      ].includes(questionnaireStatus);
+      const dossierAvailable =
+        !!reportingTimestamp(
+          userData.dossierAvailableAt ??
+            profileData.dossierAvailableAt ??
+            userData.latestQuestionnaireDossierReceivedAt ??
+            profileData.latestQuestionnaireDossierReceivedAt,
+        ) || ["dossier_available", "concluded"].includes(questionnaireStatus);
+      const dossierViewed = !!reportingTimestamp(
+        userData.dossierViewedAt ?? profileData.dossierViewedAt,
+      );
+
+      const gratitudeEntriesCount = reportingNumber(
+        userData.gratitudeEntriesCount,
+        profileData.gratitudeEntriesCount,
+      );
+      const meditationsCompletedCount = reportingNumber(
+        userData.meditationsCompletedCount,
+        profileData.meditationsCompletedCount,
+      );
+      const breathingExercisesCount = reportingNumber(
+        userData.breathingExercisesCount,
+        profileData.breathingExercisesCount,
+      );
+      const weeklyGoalsCount = reportingNumber(
+        userData.weeklyGoalsCount,
+        profileData.weeklyGoalsCount,
+      );
+      const hasWeeklyGoalsBoard =
+        userData.hasWeeklyGoalsBoard === true ||
+        profileData.hasWeeklyGoalsBoard === true;
+
+      if (!isTester) {
+        stock.registeredTotal += 1;
+        if (consultationCompleted) stock.consultationCompleted += 1;
+        if (questionnaireRequested) stock.questionnaireRequested += 1;
+        if (questionnaireStatus === "in_progress")
+          stock.questionnaireInProgress += 1;
+        if (questionnaireCompleted) stock.questionnaireCompleted += 1;
+        if (dossierAvailable) stock.dossierAvailable += 1;
+        if (dossierViewed) stock.dossierViewed += 1;
+
+        const usesTools =
+          gratitudeEntriesCount > 0 ||
+          meditationsCompletedCount > 0 ||
+          breathingExercisesCount > 0 ||
+          weeklyGoalsCount > 0 ||
+          hasWeeklyGoalsBoard;
+        if (usesTools) tools.usersUsingTools += 1;
+        tools.gratitudeEntriesCount += gratitudeEntriesCount;
+        tools.meditationsCompletedCount += meditationsCompletedCount;
+        tools.breathingExercisesCount += breathingExercisesCount;
+        tools.weeklyGoalsCount += weeklyGoalsCount;
+        if (hasWeeklyGoalsBoard) tools.usersWithWeeklyGoalsBoard += 1;
+
+        const incrementDaily = (value: any, key: keyof Omit<
+          NonNullable<ReturnType<typeof daily.get>>,
+          "date" | "consultationCompleted"
+        >) => {
+          const timestamp = reportingTimestamp(value);
+          if (!timestamp) return;
+          const row = daily.get(dateKeyInMadrid(timestamp));
+          if (row) row[key] += 1;
+        };
+
+        incrementDaily(authUser.metadata.creationTime, "registeredNew");
+        incrementDaily(
+          userData.lastQuestionnaireRequestAt ??
+            profileData.lastQuestionnaireRequestAt,
+          "questionnaireRequested",
+        );
+        incrementDaily(
+          userData.questionnaireStartedAt ??
+            profileData.questionnaireStartedAt,
+          "questionnaireStarted",
+        );
+        incrementDaily(
+          userData.questionnaireCompletedAt ??
+            profileData.questionnaireCompletedAt,
+          "questionnaireCompleted",
+        );
+        incrementDaily(
+          userData.dossierAvailableAt ??
+            profileData.dossierAvailableAt ??
+            userData.latestQuestionnaireDossierReceivedAt ??
+            profileData.latestQuestionnaireDossierReceivedAt,
+          "dossierAvailable",
+        );
+        incrementDaily(
+          userData.dossierViewedAt ?? profileData.dossierViewedAt,
+          "dossierViewed",
+        );
+      }
+
+      return {
+        uid: authUser.uid,
+        displayName:
+          authUser.displayName ||
+          userData.fullName ||
+          profileData.fullName ||
+          userData.displayName ||
+          profileData.displayName ||
+          userData.name ||
+          profileData.name ||
+          "",
+        email: authUser.email || "",
+        createdAt: authUser.metadata.creationTime || null,
+        lastSignInAt: authUser.metadata.lastSignInTime || null,
+        provider: Array.from(
+          new Set(authUser.providerData.map((provider) => provider.providerId)),
+        ).join(", "),
+        disabled: authUser.disabled,
+        accountType: isTester ? "TESTER" : "USUARIO",
+        marketingConsentStatus: "unknown",
+        marketingConsentAt: null,
+        marketingConsentSource: null,
+        marketingConsentVersion: null,
+        marketingConsentRevokedAt: null,
+        marketingConsentObservation:
+          "Sin constancia de consentimiento comercial explícito auditado.",
+      };
+    });
+
+    const consent = registeredUsers.reduce(
+      (counts, user) => {
+        if (user.marketingConsentStatus === "yes") counts.yes += 1;
+        else if (user.marketingConsentStatus === "no") counts.no += 1;
+        else counts.unknown += 1;
+        return counts;
+      },
+      { yes: 0, no: 0, unknown: 0 },
+    );
+
+    return res.json({
+      success: true,
+      version: 1,
+      generatedAt: new Date(now).toISOString(),
+      timeZone: "Europe/Madrid",
+      source: {
+        authentication: "Firebase Authentication",
+        firestoreCollections: ["users", "userProfiles"],
+        firestoreDatabaseId: SERVER_FIRESTORE_DATABASE_ID,
+      },
+      stock,
+      daily: Array.from(daily.values()),
+      tools,
+      consent,
+      users: registeredUsers,
+      reliability: {
+        registeredNew: "Firebase Authentication creationTime",
+        consultationCompleted:
+          "Stock fiable; flujo diario no medido por ausencia de timestamp específico.",
+        questionnaireRequested: "lastQuestionnaireRequestAt",
+        questionnaireStarted: "questionnaireStartedAt",
+        questionnaireCompleted: "questionnaireCompletedAt",
+        dossierAvailable:
+          "dossierAvailableAt o latestQuestionnaireDossierReceivedAt",
+        dossierViewed: "dossierViewedAt",
+        testerExclusion: TEST_USER_EMAIL,
+        marketingConsent:
+          "unknown: no existe captura comercial explícita auditada en la aplicación.",
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error generating reporting snapshot:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return res.status(500).json({
+      success: false,
+      error: "No se pudo generar el snapshot de reporting.",
+    });
+  }
+});
 
 app.get("/api/health", (req, res) => {
   if (process.env.NODE_ENV === "production") {
