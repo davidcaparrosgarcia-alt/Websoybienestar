@@ -18,8 +18,21 @@ export default function ProcessStepsPanel({
   className = "",
   videoSrc = "/videos/video-metodo-2.mp4"
 }: ProcessStepsPanelProps) {
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isDirectVideoLink] = useState(
+    () => new URLSearchParams(window.location.search).get("video") === "como-trabajamos"
+  );
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(isDirectVideoLink);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const closeVideoModal = () => {
+    setIsVideoModalOpen(false);
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("video") === "como-trabajamos") {
+      url.searchParams.delete("video");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+  };
 
   const toggleVideoPlayback = () => {
     const video = videoRef.current;
@@ -105,11 +118,11 @@ export default function ProcessStepsPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 px-4"
-            onClick={() => setIsVideoModalOpen(false)}
+            onClick={closeVideoModal}
           >
             <div className="absolute top-6 right-6">
               <button 
-                onClick={(e) => { e.stopPropagation(); setIsVideoModalOpen(false); }}
+                onClick={(e) => { e.stopPropagation(); closeVideoModal(); }}
                 className="text-white hover:text-white/80"
               >
                 <span className="material-symbols-outlined text-4xl">close</span>
@@ -133,6 +146,8 @@ export default function ProcessStepsPanel({
                 controls 
                 playsInline
                 controlsList="nodownload"
+                autoPlay={isDirectVideoLink}
+                onEnded={closeVideoModal}
               >
                 <source src={videoSrc} type="video/mp4" />
                 Tu navegador no soporta la etiqueta de vídeo.
