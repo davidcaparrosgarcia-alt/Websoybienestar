@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   decideQuestionnaireWebhook,
+  isNewCycleAfterReset,
   resolveQuestionnaireMatch,
   resolveQuestionnaireUiState,
+  selectQuestionnaireRequestId,
   type QuestionnaireCycleInput,
   type QuestionnaireWebhookEvent,
 } from "../api/questionnaireWebhookPolicy";
@@ -141,4 +143,28 @@ test("UI: latestDossier is real dossier evidence", () => {
 
 test("UI: reset dominates residual latestDossier", () => {
   assert.equal(resolveQuestionnaireUiState({ questionnaireStatus: "reset_required", latestDossier: "residual" }, {}).dossierReady, false);
+});
+
+test("reset cooldown: reset after request enables one new cycle", () => {
+  assert.equal(isNewCycleAfterReset(100, 200), true);
+});
+
+test("reset cooldown: reset older than request does not bypass", () => {
+  assert.equal(isNewCycleAfterReset(200, 100), false);
+});
+
+test("reset cooldown: absent reset does not bypass", () => {
+  assert.equal(isNewCycleAfterReset(200, 0), false);
+  assert.equal(isNewCycleAfterReset(200, null), false);
+});
+
+test("reset cooldown: saved new request consumes the bypass", () => {
+  assert.equal(isNewCycleAfterReset(300, 200), false);
+});
+
+test("reset cycle: non-continuation selects a new request ID", () => {
+  assert.equal(
+    selectQuestionnaireRequestId(false, "request-old", "request-new"),
+    "request-new",
+  );
 });

@@ -9,11 +9,13 @@ import nodemailer from "nodemailer";
 import crypto from "crypto";
 import {
   decideQuestionnaireWebhook,
+  isNewCycleAfterReset as resolveIsNewCycleAfterReset,
   resolveEffectiveQuestionnaireStatus,
   resolveQuestionnaireMatch,
+  selectQuestionnaireRequestId,
   uniqueNonEmptyValues,
   type QuestionnaireWebhookEvent,
-} from "./questionnaireWebhookPolicy";
+} from "./questionnaireWebhookPolicy.js";
 
 const app = express();
 
@@ -2773,11 +2775,28 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       requestMode === "direct_now" &&
       ["requested", "sent", "in_progress"].includes(existingQuestionnaireStatus);
 
+    const lastRequestAt = Math.max(
+      reportingTimestamp(userData.lastQuestionnaireRequestAt) || 0,
+      reportingTimestamp(profileData.lastQuestionnaireRequestAt) || 0,
+    );
+    const resetRequiredAt = Math.max(
+      reportingTimestamp(userData.questionnaireResetRequiredAt) || 0,
+      reportingTimestamp(profileData.questionnaireResetRequiredAt) || 0,
+    );
+    const isNewCycleAfterReset = resolveIsNewCycleAfterReset(
+      lastRequestAt,
+      resetRequiredAt,
+    );
+
     requestStep = "rate_limit_check";
-    if (!isTestUser(req) && !isContinuingQuestionnaire) {
+    if (
+      !isTestUser(req) &&
+      !isContinuingQuestionnaire &&
+      !isNewCycleAfterReset
+    ) {
       if (
-        userData.lastQuestionnaireRequestAt &&
-        now - userData.lastQuestionnaireRequestAt < thirtyDaysMs
+        lastRequestAt > 0 &&
+        now - lastRequestAt < thirtyDaysMs
       ) {
         const lastContact = userData.lastQuestionnaireContactSnapshot || {};
         const contactChanged =
@@ -2788,7 +2807,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
 
         if (!contactChanged) {
           const nextAvailableAt = new Date(
-            userData.lastQuestionnaireRequestAt + thirtyDaysMs,
+            lastRequestAt + thirtyDaysMs,
           ).toISOString();
           return res.status(429).json({
             success: false,
@@ -2852,10 +2871,13 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       .doc(uid)
       .collection("questionnaireRequests");
     
-    const requestId =
-      isContinuingQuestionnaire && userData.lastQuestionnaireRequestId
+    const requestId = selectQuestionnaireRequestId(
+      isContinuingQuestionnaire,
+      typeof userData.lastQuestionnaireRequestId === "string"
         ? userData.lastQuestionnaireRequestId
-        : requestsRef.doc().id;
+        : null,
+      requestsRef.doc().id,
+    );
 
     // Create numeric timestamp and ISO string
     const createdAt = Date.now();

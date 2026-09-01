@@ -76,6 +76,23 @@ export function uniqueNonEmptyValues(values: unknown[]): string[] {
   return [...new Set(values.map(clean).filter((value): value is string => !!value))];
 }
 
+export function isNewCycleAfterReset(
+  lastRequestAt: number,
+  resetRequiredAt: number | null,
+): boolean {
+  return (resetRequiredAt || 0) > 0 && (resetRequiredAt || 0) >= lastRequestAt;
+}
+
+export function selectQuestionnaireRequestId(
+  isContinuingQuestionnaire: boolean,
+  previousRequestId: string | null,
+  newRequestId: string,
+): string {
+  return isContinuingQuestionnaire && previousRequestId
+    ? previousRequestId
+    : newRequestId;
+}
+
 export function resolveUniqueUid(candidates: string[]):
   | { kind: "match"; uid: string }
   | { kind: "unmatched" | "ambiguous" } {
