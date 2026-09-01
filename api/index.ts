@@ -7,6 +7,13 @@ import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import {
+  decideQuestionnaireWebhook,
+  resolveEffectiveQuestionnaireStatus,
+  resolveQuestionnaireMatch,
+  uniqueNonEmptyValues,
+  type QuestionnaireWebhookEvent,
+} from "./questionnaireWebhookPolicy";
 
 const app = express();
 
@@ -3999,74 +4006,53 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
     }
 
     const db = getFirestore(admin.app(), SERVER_FIRESTORE_DATABASE_ID);
-    let matchedUid: string | null = null;
-    let targetUserRef: FirebaseFirestore.DocumentReference | null = null;
-    let targetProfileRef: FirebaseFirestore.DocumentReference | null = null;
+    const queryCandidateUids = async (fields: string[], value: string) => {
+      const snapshots = await Promise.all(
+        ["users", "userProfiles"].flatMap((collectionName) =>
+          fields.map((field) =>
+            db.collection(collectionName).where(field, "==", value).limit(2).get(),
+          ),
+        ),
+      );
+      return snapshots.flatMap((snapshot) => snapshot.docs.map((doc) => doc.id));
+    };
 
+    let validExplicitUid: string | null = null;
     if (soybienestarUid) {
-      const userRef = db.collection("users").doc(soybienestarUid);
-      const userSnap = await userRef.get();
-      if (userSnap.exists) {
-        matchedUid = soybienestarUid;
-        targetUserRef = userRef;
-        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
-      }
+      const explicitUserRef = db.collection("users").doc(String(soybienestarUid));
+      const explicitProfileRef = db.collection("userProfiles").doc(String(soybienestarUid));
+      const [explicitUser, explicitProfile] = await Promise.all([
+        explicitUserRef.get(),
+        explicitProfileRef.get(),
+      ]);
+      if (explicitUser.exists || explicitProfile.exists) validExplicitUid = String(soybienestarUid);
     }
 
-    if (!matchedUid && sourceRequestId) {
-      const qs1 = await db
-        .collection("users")
-        .where("lastQuestionnaireRequestId", "==", sourceRequestId)
-        .limit(1)
-        .get();
-      if (!qs1.empty) {
-        matchedUid = qs1.docs[0].id;
-        targetUserRef = qs1.docs[0].ref;
-        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
-      } else {
-        const qs2 = await db
-          .collection("users")
-          .where("sourceRequestId", "==", sourceRequestId)
-          .limit(1)
-          .get();
-        if (!qs2.empty) {
-          matchedUid = qs2.docs[0].id;
-          targetUserRef = qs2.docs[0].ref;
-          targetProfileRef = db.collection("userProfiles").doc(matchedUid);
-        }
-      }
-    }
-
-    if (!matchedUid && email) {
-      const qsEmail = await db
-        .collection("users")
-        .where("email", "==", email)
-        .limit(1)
-        .get();
-      if (!qsEmail.empty) {
-        matchedUid = qsEmail.docs[0].id;
-        targetUserRef = qsEmail.docs[0].ref;
-        targetProfileRef = db.collection("userProfiles").doc(matchedUid);
-      } else {
-        const qsContactEmail = await db
-          .collection("users")
-          .where("contactEmail", "==", email)
-          .limit(1)
-          .get();
-        if (!qsContactEmail.empty) {
-          matchedUid = qsContactEmail.docs[0].id;
-          targetUserRef = qsContactEmail.docs[0].ref;
-          targetProfileRef = db.collection("userProfiles").doc(matchedUid);
-        }
-      }
-    }
+    const sourceRequestCandidates =
+      !validExplicitUid && sourceRequestId
+        ? await queryCandidateUids(
+            ["lastQuestionnaireRequestId", "sourceRequestId"],
+            String(sourceRequestId),
+          )
+        : [];
+    const emailCandidates =
+      !validExplicitUid && !sourceRequestId && !soybienestarUid && email
+        ? await queryCandidateUids(["email", "contactEmail"], String(email))
+        : [];
+    const matchDecision = resolveQuestionnaireMatch({
+      explicitUidProvided: !!soybienestarUid,
+      validExplicitUid,
+      sourceRequestIdProvided: !!sourceRequestId,
+      sourceRequestCandidates,
+      emailCandidates,
+    });
 
     const now = Date.now();
-    const receivedAccessCode = normalizeAccessCode(accessCode || accessPin || "");
 
-    if (!matchedUid || !targetUserRef || !targetProfileRef) {
+    if (matchDecision.kind !== "match") {
       await db.collection("questionnaireWebhookInbox").add({
-        status: "unmatched",
+        status: matchDecision.kind,
+        matchedBy: matchDecision.matchedBy,
         receivedAt: now,
         payload: {
           soybienestarUid: soybienestarUid || null,
@@ -4079,76 +4065,126 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
           dossierProvided: !!dossier,
         },
       });
-      return res.status(202).json({ ok: true, matched: false, stored: true });
+      return res.status(202).json({
+        ok: true,
+        matched: false,
+        stored: true,
+        reason: matchDecision.kind,
+      });
     }
 
-    const updatePayload: any = {
-      latestQuestionnaireStatusEvent: payload.event,
-      linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
-      linkedQuestionnaireSourceRequestId: sourceRequestId || null,
-      telefonoFromQuestionnaire: telefono || null,
-      questionnaireWebhookLastPayloadAt: now,
-      latestQuestionnaireStatusReceivedAt: now,
-    };
+    const matchedUid = matchDecision.uid;
+    const targetUserRef = db.collection("users").doc(matchedUid);
+    const targetProfileRef = db.collection("userProfiles").doc(matchedUid);
+    const receivedAccessCode = normalizeAccessCode(accessCode || accessPin || "");
 
-    if (payload.event === "questionnaire_started") {
-      updatePayload.questionnaireStatus = "in_progress";
-      updatePayload.questionnaireStartedAt = now;
-    } else if (payload.event === "questionnaire_completed") {
-      updatePayload.questionnaireStatus = "completed_pending_dossier";
-      updatePayload.questionnaireCompletedAt = now;
-      updatePayload.latestQuestionnaireCompletedStatus = status || "completed";
-    } else if (payload.event === "dossier_available") {
-      updatePayload.questionnaireStatus = "dossier_available";
-      updatePayload.dossierAvailableAt = now;
-      updatePayload.latestDossier = dossier?.finalConclusion || "";
-      updatePayload.latestDossierInternalContext = dossier?.conversationSummary || "";
-      updatePayload.latestQuestionnaireCompletedStatus = status || null;
-      updatePayload.latestQuestionnaireDossierReceivedAt = now;
-      updatePayload.latestQuestionnaireDossierDateConclusionSent = dossier?.dateConclusionSent || null;
-      updatePayload.latestQuestionnaireAudioConclusion = dossier?.audioConclusion || null;
-      updatePayload.accessPinProvidedBySoyBienestar = !!accessPinProvidedBySoyBienestar;
+    const transactionResult = await db.runTransaction(async (transaction) => {
+      const [userSnapshot, profileSnapshot] = await Promise.all([
+        transaction.get(targetUserRef),
+        transaction.get(targetProfileRef),
+      ]);
+      const userData = userSnapshot.data() || {};
+      const profileData = profileSnapshot.data() || {};
+      const currentRequestIds = uniqueNonEmptyValues([
+        userData.lastQuestionnaireRequestId,
+        profileData.lastQuestionnaireRequestId,
+      ]);
+      const latestPatientIds = uniqueNonEmptyValues([
+        userData.latestQuestionnairePatientId,
+        profileData.latestQuestionnairePatientId,
+      ]);
+      const linkedPatientIds = uniqueNonEmptyValues([
+        userData.linkedQuestionnairePatientId,
+        profileData.linkedQuestionnairePatientId,
+      ]);
+      const currentPatientIds = latestPatientIds.length > 0 ? latestPatientIds : linkedPatientIds;
 
-      if (/^[a-z0-9]{4}$/i.test(receivedAccessCode)) {
-        updatePayload.questionnaireAccessCode = receivedAccessCode;
-        updatePayload.personalAccessCode = receivedAccessCode;
-        updatePayload.latestQuestionnaireAccessCode = receivedAccessCode;
-        updatePayload.latestDossierAccessCode = receivedAccessCode;
-        updatePayload.lastQuestionnaireProposedAccessCode = receivedAccessCode;
-        updatePayload.questionnaireAccessCodeSyncedFromDossierAt = now;
+      if (currentRequestIds.length > 1 || currentPatientIds.length > 1) {
+        return { applied: false, reason: "stale_cycle" };
       }
-    } else if (payload.event === "questionnaire_deleted") {
-      updatePayload.questionnaireStatus = "reset_required";
-      updatePayload.questionnaireRequestStatus = "reset_required";
-      updatePayload.questionnaireDeliveryMode = null;
-      updatePayload.questionnaireDeletedAt = now;
-      updatePayload.questionnaireResetRequiredAt = now;
 
-      updatePayload.latestQuestionnaireDirectUrl = null;
-      updatePayload.latestQuestionnairePatientId = null;
-      updatePayload.linkedQuestionnairePatientId = null;
-      updatePayload.latestQuestionnaireAccessCode = null;
-      updatePayload.questionnaireAccessCode = null;
-      updatePayload.latestDossierAccessCode = null;
-      updatePayload.lastQuestionnaireProposedAccessCode = null;
+      const currentRequestId = currentRequestIds[0] || null;
+      const currentPatientId = currentPatientIds[0] || null;
+      const cycleIdentity = currentRequestId || currentPatientId;
+      if (!cycleIdentity) return { applied: false, reason: "stale_cycle" };
 
-      updatePayload.dossierAvailableAt = null;
-      updatePayload.dossierViewedAt = null;
-      updatePayload.latestDossier = null;
-      updatePayload.latestDossierInternalContext = null;
-      updatePayload.latestQuestionnaireAudioConclusion = null;
-      updatePayload.latestQuestionnaireDossierReceivedAt = null;
-      updatePayload.latestQuestionnaireDossierDateConclusionSent = null;
-    }
+      const eventFingerprint = crypto
+        .createHash("sha256")
+        .update(`${matchedUid}\u001f${cycleIdentity}\u001f${payload.event}`, "utf8")
+        .digest("hex");
+      const eventRef = targetUserRef.collection("questionnaireEvents").doc(eventFingerprint);
+      const eventSnapshot = await transaction.get(eventRef);
+      const decision = decideQuestionnaireWebhook({
+        currentStatus: resolveEffectiveQuestionnaireStatus(userData, profileData),
+        currentRequestId,
+        currentPatientId,
+        incomingRequestId: sourceRequestId || null,
+        incomingPatientId: linkedQuestionnairePatientId || null,
+        event: payload.event as QuestionnaireWebhookEvent,
+        semanticEventExists: eventSnapshot.exists,
+      });
 
-    await targetUserRef.set(updatePayload, { merge: true });
-    await targetProfileRef.set(updatePayload, { merge: true });
+      if (decision.action !== "apply" || !decision.nextStatus) {
+        return { applied: false, reason: decision.reason };
+      }
 
-    await db
-      .collection("users")
-      .doc(matchedUid)
-      .collection("questionnaireEvents")
-      .add({
+      const updatePayload: any = {
+        latestQuestionnaireStatusEvent: payload.event,
+        linkedQuestionnairePatientId: linkedQuestionnairePatientId || currentPatientId || null,
+        linkedQuestionnaireSourceRequestId: sourceRequestId || currentRequestId || null,
+        telefonoFromQuestionnaire: telefono || null,
+        questionnaireWebhookLastPayloadAt: now,
+        latestQuestionnaireStatusReceivedAt: now,
+        questionnaireStatus: decision.nextStatus,
+      };
+
+      if (payload.event === "questionnaire_started") {
+        updatePayload.questionnaireStartedAt = now;
+      } else if (payload.event === "questionnaire_completed") {
+        updatePayload.questionnaireCompletedAt = now;
+        updatePayload.latestQuestionnaireCompletedStatus = status || "completed";
+      } else if (payload.event === "dossier_available") {
+        updatePayload.dossierAvailableAt = now;
+        updatePayload.latestDossier = dossier?.finalConclusion || "";
+        updatePayload.latestDossierInternalContext = dossier?.conversationSummary || "";
+        updatePayload.latestQuestionnaireCompletedStatus = status || null;
+        updatePayload.latestQuestionnaireDossierReceivedAt = now;
+        updatePayload.latestQuestionnaireDossierDateConclusionSent = dossier?.dateConclusionSent || null;
+        updatePayload.latestQuestionnaireAudioConclusion = dossier?.audioConclusion || null;
+        updatePayload.accessPinProvidedBySoyBienestar = !!accessPinProvidedBySoyBienestar;
+
+        if (/^[a-z0-9]{4}$/i.test(receivedAccessCode)) {
+          updatePayload.questionnaireAccessCode = receivedAccessCode;
+          updatePayload.personalAccessCode = receivedAccessCode;
+          updatePayload.latestQuestionnaireAccessCode = receivedAccessCode;
+          updatePayload.latestDossierAccessCode = receivedAccessCode;
+          updatePayload.lastQuestionnaireProposedAccessCode = receivedAccessCode;
+          updatePayload.questionnaireAccessCodeSyncedFromDossierAt = now;
+        }
+      } else if (payload.event === "questionnaire_deleted") {
+        updatePayload.questionnaireRequestStatus = "reset_required";
+        updatePayload.questionnaireDeliveryMode = null;
+        updatePayload.questionnaireDeletedAt = now;
+        updatePayload.questionnaireResetRequiredAt = now;
+        updatePayload.latestQuestionnaireDirectUrl = null;
+        updatePayload.latestQuestionnairePatientId = null;
+        updatePayload.linkedQuestionnairePatientId = null;
+        updatePayload.latestQuestionnaireAccessCode = null;
+        updatePayload.questionnaireAccessCode = null;
+        updatePayload.latestDossierAccessCode = null;
+        updatePayload.lastQuestionnaireProposedAccessCode = null;
+        updatePayload.dossierAvailableAt = null;
+        updatePayload.dossierViewedAt = null;
+        updatePayload.latestDossier = null;
+        updatePayload.latestDossierInternalContext = null;
+        updatePayload.latestQuestionnaireAudioConclusion = null;
+        updatePayload.latestQuestionnaireDossierReceivedAt = null;
+        updatePayload.latestQuestionnaireDossierDateConclusionSent = null;
+      }
+
+      transaction.set(targetUserRef, updatePayload, { merge: true });
+      transaction.set(targetProfileRef, updatePayload, { merge: true });
+      transaction.create(eventRef, {
         event: payload.event,
         sourceRequestId: sourceRequestId || null,
         linkedQuestionnairePatientId: linkedQuestionnairePatientId || null,
@@ -4159,6 +4195,18 @@ app.post("/api/questionnaire-status-webhook", async (req, res) => {
         hasConversationSummary: dossier ? !!dossier.conversationSummary : false,
         hasAudioConclusion: dossier ? !!dossier.audioConclusion : false,
       });
+
+      return { applied: true, reason: "applied" };
+    });
+
+    if (!transactionResult.applied) {
+      return res.status(200).json({
+        ok: true,
+        matched: true,
+        ignored: true,
+        reason: transactionResult.reason,
+      });
+    }
 
     return res.json({
       ok: true,

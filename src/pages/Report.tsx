@@ -286,14 +286,16 @@ export default function Report() {
     navigate("/session");
   };
 
+  const questionnaireResetRequired =
+    userData?.questionnaireStatus === "reset_required" ||
+    userData?.questionnaireRequestStatus === "reset_required" ||
+    profileDataState?.questionnaireStatus === "reset_required" ||
+    profileDataState?.questionnaireRequestStatus === "reset_required";
+
   const mergedUserState = {
     ...(profileDataState || {}),
     ...(userData || {}),
   };
-
-  const questionnaireResetRequired =
-    mergedUserState?.questionnaireStatus === "reset_required" ||
-    mergedUserState?.questionnaireRequestStatus === "reset_required";
 
   const hasConsultation =
     !!mergedUserState?.hasDoneConsultation || !!reportData;

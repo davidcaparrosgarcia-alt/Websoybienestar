@@ -8,6 +8,7 @@ import { runLazyDataRetentionAndCleanup } from "../services/dataRetention";
 import { motion, AnimatePresence } from "motion/react";
 import ThemeToggle from "./ThemeToggle";
 import NextStepsModal from "./NextStepsModal";
+import { resolveQuestionnaireUiState } from "../../api/questionnaireWebhookPolicy";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
@@ -16,6 +17,7 @@ export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasDoneConsultation, setHasDoneConsultation] = useState(false);
   const [dossierAvailable, setDossierAvailable] = useState(false);
+  const [questionnaireActive, setQuestionnaireActive] = useState(false);
   const [phoneValue, setPhoneValue] = useState("");
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
 
@@ -29,27 +31,24 @@ export default function Layout() {
       const loadUserProcessState = async () => {
         try {
           const udRef = doc(db, "users", user.uid);
-          const snap = await getDoc(udRef);
-          if (snap.exists() && !cancelled) {
-            const data = snap.data();
+          const profileRef = doc(db, "userProfiles", user.uid);
+          const [userSnap, profileSnap] = await Promise.all([
+            getDoc(udRef),
+            getDoc(profileRef),
+          ]);
+          if (!cancelled) {
+            const data = userSnap.data() || {};
+            const profileData = profileSnap.data() || {};
             
             const consultationDone =
               data?.hasDoneConsultation === true ||
               data?.consultationCompleted === true ||
-              data?.sessionCompleted === true;
+              data?.sessionCompleted === true ||
+              profileData?.hasDoneConsultation === true ||
+              profileData?.consultationCompleted === true ||
+              profileData?.sessionCompleted === true;
 
-            const questionnaireCompleted =
-              data?.hasDoneCuestionario === true ||
-              data?.questionnaireStatus === "completed" ||
-              data?.questionnaireStatus === "concluded" ||
-              data?.questionnaireStatus === "finalized" ||
-              data?.questionnaireStatus === "dossier_available";
-
-            const dossierReady =
-              !!data?.dossierAvailableAt ||
-              !!data?.latestDossier ||
-              !!data?.dossierViewedAt ||
-              questionnaireCompleted;
+            const questionnaireUiState = resolveQuestionnaireUiState(data, profileData);
 
             const contactPhone =
               data?.contactPhone ||
@@ -57,10 +56,16 @@ export default function Layout() {
               data?.whatsappPhone ||
               data?.smsPhone ||
               data?.telefono ||
+              profileData?.contactPhone ||
+              profileData?.phone ||
+              profileData?.whatsappPhone ||
+              profileData?.smsPhone ||
+              profileData?.telefono ||
               "";
 
             setHasDoneConsultation(consultationDone);
-            setDossierAvailable(dossierReady);
+            setDossierAvailable(questionnaireUiState.dossierReady);
+            setQuestionnaireActive(questionnaireUiState.questionnaireActive);
             setPhoneValue(contactPhone ? String(contactPhone) : "");
           }
         } catch (error) {
@@ -72,6 +77,7 @@ export default function Layout() {
       if (!cancelled) {
         setHasDoneConsultation(false);
         setDossierAvailable(false);
+        setQuestionnaireActive(false);
         setPhoneValue("");
       }
     }
@@ -92,6 +98,7 @@ export default function Layout() {
 
   const getMobilePrimaryCtaLabel = () => {
     if (dossierAvailable) return "Ir al dosier";
+    if (questionnaireActive) return "Estado Cuestionario";
     if (hasDoneConsultation) return "Solicitar cuestionario";
     return "Consulta gratuita";
   };
@@ -107,7 +114,7 @@ export default function Layout() {
       return;
     }
 
-    if (hasDoneConsultation) {
+    if (questionnaireActive || hasDoneConsultation) {
       setIsNextStepsModalOpen(true);
       return;
     }
