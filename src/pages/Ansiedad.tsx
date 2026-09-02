@@ -116,8 +116,8 @@ export default function Ansiedad() {
                       id={`faq-ansiedad-answer-${index}`}
                       aria-hidden={openFaqIndex !== index}
                       className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-                        openFaqIndex === index ? "max-h-[5000px]" : "max-h-0"
-                      } px-8 md:px-10 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg`}
+                        openFaqIndex === index ? "max-h-[5000px] pb-8" : "max-h-0 pb-0"
+                      } px-8 md:px-10 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg`}
                     >
                       {item.answer}
                     </div>
