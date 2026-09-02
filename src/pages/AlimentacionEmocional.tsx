@@ -104,6 +104,7 @@ export default function AlimentacionEmocional() {
                     <button
                       type="button"
                       aria-expanded={openFaqIndex === index}
+                      aria-controls={`faq-alimentacion-emocional-answer-${index}`}
                       onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                       className="w-full text-left px-8 md:px-10 py-6 flex items-center justify-between gap-6 hover:bg-surface-variant/30 transition-colors"
                     >
@@ -115,11 +116,15 @@ export default function AlimentacionEmocional() {
                       </span>
                     </button>
 
-                    {openFaqIndex === index && (
-                      <div className="px-8 md:px-10 pb-8 text-on-surface-variant font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
-                        {item.answer}
-                      </div>
-                    )}
+                    <div
+                      id={`faq-alimentacion-emocional-answer-${index}`}
+                      aria-hidden={openFaqIndex !== index}
+                      className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+                        openFaqIndex === index ? "max-h-[5000px]" : "max-h-0"
+                      } px-8 md:px-10 pb-8 text-on-surface-variant font-body leading-relaxed whitespace-pre-line text-base md:text-lg`}
+                    >
+                      {item.answer}
+                    </div>
                   </div>
                 ))}
               </div>

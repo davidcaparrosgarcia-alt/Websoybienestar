@@ -100,6 +100,7 @@ export default function Ansiedad() {
                     <button
                       type="button"
                       aria-expanded={openFaqIndex === index}
+                      aria-controls={`faq-ansiedad-answer-${index}`}
                       onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                       className="w-full text-left px-8 md:px-10 py-6 flex items-center justify-between gap-6 hover:bg-white/5 transition-colors"
                     >
@@ -111,11 +112,15 @@ export default function Ansiedad() {
                       </span>
                     </button>
 
-                    {openFaqIndex === index && (
-                      <div className="px-8 md:px-10 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg">
-                        {item.answer}
-                      </div>
-                    )}
+                    <div
+                      id={`faq-ansiedad-answer-${index}`}
+                      aria-hidden={openFaqIndex !== index}
+                      className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+                        openFaqIndex === index ? "max-h-[5000px]" : "max-h-0"
+                      } px-8 md:px-10 pb-8 text-white/78 font-body leading-relaxed whitespace-pre-line text-base md:text-lg`}
+                    >
+                      {item.answer}
+                    </div>
                   </div>
                 ))}
               </div>
