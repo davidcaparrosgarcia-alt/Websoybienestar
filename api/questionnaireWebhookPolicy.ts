@@ -93,6 +93,29 @@ export function selectQuestionnaireRequestId(
     : newRequestId;
 }
 
+export function buildQuestionnaireCycleResetData(
+  shouldResetPreviousCycle: boolean,
+): Record<string, null> {
+  if (!shouldResetPreviousCycle) return {};
+
+  return {
+    latestQuestionnaireDirectUrl: null,
+    latestQuestionnairePatientId: null,
+    linkedQuestionnairePatientId: null,
+    latestQuestionnaireAccessCode: null,
+    questionnaireAccessCode: null,
+    latestDossierAccessCode: null,
+    lastQuestionnaireProposedAccessCode: null,
+    dossierAvailableAt: null,
+    dossierViewedAt: null,
+    latestDossier: null,
+    latestDossierInternalContext: null,
+    latestQuestionnaireAudioConclusion: null,
+    latestQuestionnaireDossierReceivedAt: null,
+    latestQuestionnaireDossierDateConclusionSent: null,
+  };
+}
+
 export function resolveUniqueUid(candidates: string[]):
   | { kind: "match"; uid: string }
   | { kind: "unmatched" | "ambiguous" } {

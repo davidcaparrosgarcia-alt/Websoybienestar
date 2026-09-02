@@ -8,6 +8,7 @@ import path from "path";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import {
+  buildQuestionnaireCycleResetData,
   decideQuestionnaireWebhook,
   isNewCycleAfterReset as resolveIsNewCycleAfterReset,
   resolveEffectiveQuestionnaireStatus,
@@ -3072,6 +3073,9 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
         : isDirectAccess
           ? "sent"
           : "requested";
+    const previousCycleResetData = buildQuestionnaireCycleResetData(
+      isNewCycleAfterReset,
+    );
     const updateData: any = {
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
       questionnaireStatus: resolvedQuestionnaireStatus,
@@ -3080,6 +3084,7 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       lastQuestionnaireRequestAt: timestamp,
       lastQuestionnaireRequestId: requestId || userData.lastQuestionnaireRequestId || null,
       lastQuestionnaireContactSnapshot: contactSnapshot,
+      ...previousCycleResetData,
     };
 
     if (finalAccessCode) {
@@ -3095,18 +3100,24 @@ app.post("/api/request-questionnaire", requireAuth, async (req, res) => {
       updateData.questionnaireDirectUrlCreatedAt = timestamp;
     }
 
-    if (userData.dossierAvailableAt !== undefined)
-      updateData.dossierAvailableAt = userData.dossierAvailableAt;
-    if (userData.dossierViewedAt !== undefined)
-      updateData.dossierViewedAt = userData.dossierViewedAt;
+    if (!isNewCycleAfterReset) {
+      if (userData.dossierAvailableAt !== undefined)
+        updateData.dossierAvailableAt = userData.dossierAvailableAt;
+      if (userData.dossierViewedAt !== undefined)
+        updateData.dossierViewedAt = userData.dossierViewedAt;
+    }
 
-    if (!userData.linkedQuestionnairePatientId && questionnairePatientId) {
+    if (
+      questionnairePatientId &&
+      (isNewCycleAfterReset || !userData.linkedQuestionnairePatientId)
+    ) {
       updateData.linkedQuestionnairePatientId = questionnairePatientId;
     }
 
     await docRef.set(updateData, { merge: true });
 
     await profileRef.set({
+      ...previousCycleResetData,
       questionnaireStatus: resolvedQuestionnaireStatus,
       questionnaireRequestStatus: isDirectAccess ? "sent" : "pending",
       questionnaireDeliveryMode: requestMode,

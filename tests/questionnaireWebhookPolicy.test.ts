@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildQuestionnaireCycleResetData,
   decideQuestionnaireWebhook,
   isNewCycleAfterReset,
   resolveQuestionnaireMatch,
@@ -167,4 +168,50 @@ test("reset cycle: non-continuation selects a new request ID", () => {
     selectQuestionnaireRequestId(false, "request-old", "request-new"),
     "request-new",
   );
+});
+
+test("reset isolation: accepted new cycle clears dossier state and stays active", () => {
+  const resetData = buildQuestionnaireCycleResetData(true);
+  const userState = {
+    questionnaireStatus: "requested",
+    dossierAvailableAt: "OLD",
+    dossierViewedAt: "OLD",
+    latestDossier: "OLD",
+    ...resetData,
+  };
+  const state = resolveQuestionnaireUiState(userState, resetData);
+
+  assert.equal(userState.dossierAvailableAt, null);
+  assert.equal(userState.dossierViewedAt, null);
+  assert.equal(userState.latestDossier, null);
+  assert.equal("personalAccessCode" in resetData, false);
+  assert.equal("questionnaireResetRequiredAt" in resetData, false);
+  assert.equal(state.questionnaireActive, true);
+  assert.equal(state.dossierReady, false);
+});
+
+test("reset isolation: residual latestDossier cannot make new cycle dossier ready", () => {
+  const state = resolveQuestionnaireUiState(
+    { questionnaireStatus: "sent", latestDossier: "OLD", ...buildQuestionnaireCycleResetData(true) },
+    {},
+  );
+  assert.equal(state.dossierReady, false);
+});
+
+test("reset isolation: residual dossierViewedAt cannot make new cycle dossier ready", () => {
+  const state = resolveQuestionnaireUiState(
+    { questionnaireStatus: "requested", dossierViewedAt: "OLD", ...buildQuestionnaireCycleResetData(true) },
+    {},
+  );
+  assert.equal(state.dossierReady, false);
+});
+
+test("reset isolation: normal continuation does not apply destructive cleanup", () => {
+  assert.deepEqual(buildQuestionnaireCycleResetData(false), {});
+});
+
+test("reset isolation: new request timestamp still consumes cooldown bypass", () => {
+  const resetRequiredAt = 200;
+  const newLastRequestAt = 300;
+  assert.equal(isNewCycleAfterReset(newLastRequestAt, resetRequiredAt), false);
 });
