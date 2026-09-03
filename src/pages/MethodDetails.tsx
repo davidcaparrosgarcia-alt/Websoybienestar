@@ -118,7 +118,7 @@ export default function MethodDetails() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        const whatsappUrl = `https://wa.me/34622852799?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
         window.open(whatsappUrl, '_blank');
       }
     } catch (err) {
