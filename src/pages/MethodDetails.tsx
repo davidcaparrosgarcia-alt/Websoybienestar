@@ -118,7 +118,7 @@ export default function MethodDetails() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
+        const whatsappUrl = `https://wa.me/34622852799?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
         window.open(whatsappUrl, '_blank');
       }
     } catch (err) {
@@ -249,7 +249,7 @@ export default function MethodDetails() {
           <div className="space-y-4">
             <a 
               className="flex items-center justify-between p-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-xl hover:-translate-x-1 transition-all group" 
-              href={`https://wa.me/?text=${encodeURIComponent(directConsultationMessage)}`}
+              href={`https://wa.me/34622852799?text=${encodeURIComponent(directConsultationMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
