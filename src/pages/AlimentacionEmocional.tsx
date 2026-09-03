@@ -4,52 +4,25 @@ import { motion } from "motion/react";
 import { ALIMENTACION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function AlimentacionEmocional() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Alimentación emocional",
-        "item": "https://soybienestar.es/alimentacion-emocional"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.alimentacionEmocional);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": ALIMENTACION_EMOCIONAL_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(ALIMENTACION_EMOCIONAL_FAQS);
 
   return (
     <>
       <SEO
-        title="Comer por ansiedad y hambre emocional | Acompañamiento online"
-        description="Si usas la comida para calmar ansiedad, estrés o tristeza, trabaja el patrón emocional sin dietas, culpa ni juicios."
-        canonicalPath="/alimentacion-emocional"
+        title={FAQ_SEO.alimentacionEmocional.title}
+        description={FAQ_SEO.alimentacionEmocional.description}
+        canonicalPath={FAQ_SEO.alimentacionEmocional.canonicalPath}
       />
-      <StructuredData id="breadcrumb-schema-alimentacion-emocional" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-alimentacion-emocional" data={faqSchema} />
+      <StructuredData id={FAQ_SEO.alimentacionEmocional.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.alimentacionEmocional.faqSchemaId} data={faqSchema} />
       <div
         className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
         onClick={() => navigate('/')}

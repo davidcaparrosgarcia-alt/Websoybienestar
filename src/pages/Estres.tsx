@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import { ESTRES_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function Estres() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Estrés",
-        "item": "https://soybienestar.es/estres"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.estres);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": ESTRES_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(ESTRES_FAQS);
 
   return (
     <>
-      <SEO title="Terapia online para estrés laboral y sobrecarga emocional" description="Sesiones online para trabajar estrés, presión laboral, agotamiento emocional y sobrecarga mental con herramientas prácticas de regulación." canonicalPath="/estres" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-estres" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-estres" data={faqSchema} />
+      <SEO title={FAQ_SEO.estres.title} description={FAQ_SEO.estres.description} canonicalPath={FAQ_SEO.estres.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.estres.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.estres.faqSchemaId} data={faqSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

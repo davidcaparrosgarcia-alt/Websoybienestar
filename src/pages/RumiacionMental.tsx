@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import { RUMIACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function RumiacionMental() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Rumiación mental",
-        "item": "https://soybienestar.es/pensar-demasiado-rumiacion"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.rumiacion);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": RUMIACION_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(RUMIACION_FAQS);
 
   return (
     <>
-      <SEO title="Pensar demasiado y rumiación mental | Ayuda online para frenar el bucle" description="Si tu cabeza no para, repasa, anticipa y no suelta, esta página te ayuda a entender el patrón y empezar a ordenar el ruido mental." canonicalPath="/pensar-demasiado-rumiacion" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-rumiacion" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-rumiacion" data={faqSchema} />
+      <SEO title={FAQ_SEO.rumiacion.title} description={FAQ_SEO.rumiacion.description} canonicalPath={FAQ_SEO.rumiacion.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.rumiacion.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.rumiacion.faqSchemaId} data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

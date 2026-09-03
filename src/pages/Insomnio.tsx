@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import { INSOMNIO_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function Insomnio() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Insomnio",
-        "item": "https://soybienestar.es/insomnio"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.insomnio);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": INSOMNIO_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(INSOMNIO_FAQS);
 
   return (
     <>
-      <SEO title="Terapia online para insomnio por ansiedad o estrés" description="Si no puedes dormir porque tu mente sigue activa, trabaja el insomnio online desde la regulación emocional, la ansiedad y el estrés." canonicalPath="/insomnio" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-insomnio" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-insomnio" data={faqSchema} />
+      <SEO title={FAQ_SEO.insomnio.title} description={FAQ_SEO.insomnio.description} canonicalPath={FAQ_SEO.insomnio.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.insomnio.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.insomnio.faqSchemaId} data={faqSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

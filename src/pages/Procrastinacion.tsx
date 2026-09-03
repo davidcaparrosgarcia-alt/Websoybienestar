@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import { PROCRASTINACION_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function Procrastinacion() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Procrastinación",
-        "item": "https://soybienestar.es/procrastinacion"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.procrastinacion);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": PROCRASTINACION_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(PROCRASTINACION_FAQS);
 
   return (
     <>
-      <SEO title="Cómo dejar de procrastinar | Apoyo online para bloqueo y foco" description="No siempre es pereza: a veces estás bloqueado, sobrepasado o atrapado en perfeccionismo y miedo. Aquí lo desglosamos y lo trabajamos." canonicalPath="/procrastinacion" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-procrastinacion" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-procrastinacion" data={faqSchema} />
+      <SEO title={FAQ_SEO.procrastinacion.title} description={FAQ_SEO.procrastinacion.description} canonicalPath={FAQ_SEO.procrastinacion.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.procrastinacion.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.procrastinacion.faqSchemaId} data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}

@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
 import { ANSIEDAD_FAQS } from "../data/symptomFaqs";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function Ansiedad() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Ansiedad",
-        "item": "https://soybienestar.es/ansiedad"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.ansiedad);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": ANSIEDAD_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(ANSIEDAD_FAQS);
 
   return (
     <>
-      <SEO title="Terapia para la ansiedad online | Síntomas y apoyo emocional" description="Trabaja la ansiedad online con herramientas de regulación, PNL, respiración y acompañamiento emocional para entender y reducir tus alertas internas." canonicalPath="/ansiedad" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-ansiedad" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-ansiedad" data={faqSchema} />
+      <SEO title={FAQ_SEO.ansiedad.title} description={FAQ_SEO.ansiedad.description} canonicalPath={FAQ_SEO.ansiedad.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.ansiedad.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.ansiedad.faqSchemaId} data={faqSchema} />
     <div 
       className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={() => navigate('/')}

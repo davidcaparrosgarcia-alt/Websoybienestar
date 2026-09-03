@@ -4,49 +4,22 @@ import { motion } from "motion/react";
 import { GESTION_EMOCIONAL_FAQS } from "../data/symptomFaqs";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import { buildBreadcrumbSchema, buildFaqSchema, FAQ_SEO } from "../data/faqSeo";
 
 export default function GestionEmocional() {
   const navigate = useNavigate();
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Gestión emocional",
-        "item": "https://soybienestar.es/gestion-emocional"
-      }
-    ]
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema(FAQ_SEO.gestionEmocional);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": GESTION_EMOCIONAL_FAQS.map((item) => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer,
-      },
-    })),
-  };
+  const faqSchema = buildFaqSchema(GESTION_EMOCIONAL_FAQS);
 
   return (
     <>
-      <SEO title="Terapia y gestión emocional online | SoyBienestar" description="Aprende a regular emociones intensas, entender tus reacciones y trabajar el bloqueo emocional con acompañamiento online." canonicalPath="/gestion-emocional" noIndex={false} />
-      <StructuredData id="breadcrumb-schema-gestion-emocional" data={breadcrumbSchema} />
-      <StructuredData id="faq-schema-gestion-emocional" data={faqSchema} />
+      <SEO title={FAQ_SEO.gestionEmocional.title} description={FAQ_SEO.gestionEmocional.description} canonicalPath={FAQ_SEO.gestionEmocional.canonicalPath} noIndex={false} />
+      <StructuredData id={FAQ_SEO.gestionEmocional.breadcrumbSchemaId} data={breadcrumbSchema} />
+      <StructuredData id={FAQ_SEO.gestionEmocional.faqSchemaId} data={faqSchema} />
     <div
       className="fixed inset-0 z-40 bg-white/20 backdrop-blur-sm overflow-y-auto"
       onClick={() => navigate('/')}
