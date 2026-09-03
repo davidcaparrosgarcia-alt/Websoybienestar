@@ -5,6 +5,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import SEO from "../components/SEO";
 import StructuredData from "../components/StructuredData";
+import {
+  RESOURCES_EDITORIAL,
+  RESOURCES_SEO,
+  buildResourcesBreadcrumbSchema,
+  buildResourcesServiceSchema,
+} from "../data/resourcesSeo";
 
 const MATRIZ_ESTADOS = [
   {"sentimiento":0,"energia":0,"sintoma":"Bloqueo absoluto","explicacion":"Sientes un sufrimiento muy intenso y el cuerpo está sin fuerzas, como si todo pesara demasiado."},
@@ -134,41 +140,8 @@ export default function Resources() {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Inicio",
-        "item": "https://soybienestar.es/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Herramientas",
-        "item": "https://soybienestar.es/herramientas"
-      }
-    ]
-  };
-
-  const resourcesServiceSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "@id": "https://soybienestar.es/herramientas#service",
-    "name": "Herramientas para calmar la ansiedad y el estrés",
-    "serviceType": "Recursos online de respiración, meditación y autorregulación emocional",
-    "provider": {
-      "@id": "https://soybienestar.es/#organization"
-    },
-    "areaServed": {
-      "@type": "Country",
-      "name": "España"
-    },
-    "url": "https://soybienestar.es/herramientas",
-    "description": "Recursos online de respiración, meditación personalizada, diario de agradecimientos, metas semanales y herramientas prácticas para bajar activación, recuperar foco y ordenar emociones."
-  };
+  const breadcrumbSchema = buildResourcesBreadcrumbSchema();
+  const resourcesServiceSchema = buildResourcesServiceSchema();
 
   // Modals state
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
@@ -412,9 +385,9 @@ export default function Resources() {
   return (
     <div className="flex-1 bg-transparent text-on-surface w-full font-body relative">
       <SEO
-        title="Herramientas para calmar la ansiedad y el estrés | SoyBienestar"
-        description="Respiración, meditación personalizada, recursos de regulación y primeros pasos para bajar activación y recuperar foco."
-        canonicalPath="/herramientas"
+        title={RESOURCES_SEO.title}
+        description={RESOURCES_SEO.description}
+        canonicalPath={RESOURCES_SEO.canonicalPath}
         noIndex={false}
       />
       <StructuredData id="breadcrumb-schema-herramientas" data={breadcrumbSchema} />
@@ -440,6 +413,62 @@ export default function Resources() {
             </div>
           </div>
         </header>
+
+        <section
+          aria-labelledby="resources-editorial-title"
+          className="mt-16 md:mt-24 max-w-5xl mx-auto"
+        >
+          <div className="rounded-[2rem] border border-outline-variant/20 bg-surface-container-low/60 p-8 md:p-12">
+            <h2 id="resources-editorial-title" className="font-headline text-3xl md:text-4xl text-primary mb-5">
+              {RESOURCES_EDITORIAL.introduction.title}
+            </h2>
+            {RESOURCES_EDITORIAL.introduction.paragraphs.map((paragraph) => (
+              <p key={paragraph} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mb-5 last:mb-0">
+                {paragraph}
+              </p>
+            ))}
+
+            <div className="mt-10 space-y-10">
+              {RESOURCES_EDITORIAL.sections.map((section) => (
+                <article key={section.title}>
+                  <h3 className="font-headline text-2xl md:text-3xl text-primary mb-3">
+                    {section.title}
+                  </h3>
+                  {section.paragraphs.map((paragraph) => (
+                    <p key={paragraph} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mb-4 last:mb-0">
+                      {paragraph}
+                    </p>
+                  ))}
+                  {"listLabel" in section && section.listLabel && section.items && (
+                    <>
+                      <p className="text-on-surface-variant text-base font-medium mt-5 mb-2">{section.listLabel}</p>
+                      <ul className="list-disc pl-6 space-y-1 text-on-surface-variant text-base md:text-lg font-light leading-relaxed">
+                        {section.items.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  {"groups" in section && section.groups && (
+                    <div className="mt-5 space-y-4">
+                      {section.groups.map((group) => (
+                        <div key={group.label}>
+                          <p className="text-on-surface-variant text-base font-medium mb-2">{group.label}</p>
+                          <ul className="list-disc pl-6 space-y-1 text-on-surface-variant text-base md:text-lg font-light leading-relaxed">
+                            {group.items.map((item) => <li key={item}>{item}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {"notes" in section && section.notes && section.notes.map((note) => (
+                    <p key={note} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mt-4">
+                      {note}
+                    </p>
+                  ))}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Asymmetric Editorial Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">

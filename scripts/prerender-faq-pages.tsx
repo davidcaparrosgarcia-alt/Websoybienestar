@@ -25,6 +25,12 @@ import {
   buildFaqSchema,
   type FaqSeoConfig,
 } from "../src/data/faqSeo";
+import {
+  RESOURCES_EDITORIAL,
+  RESOURCES_SEO,
+  buildResourcesBreadcrumbSchema,
+  buildResourcesServiceSchema,
+} from "../src/data/resourcesSeo";
 
 type FaqEntry = {question: string; answer: string};
 type PrerenderEntry = {
@@ -48,10 +54,13 @@ function jsonForHtml(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function buildHead(config: FaqSeoConfig, faqs: ReadonlyArray<FaqEntry>): string {
+type SeoMetaConfig = Pick<FaqSeoConfig, "title" | "description" | "canonicalPath">;
+
+function buildSeoHead(config: SeoMetaConfig, structuredData: ReadonlyArray<{id: string; data: unknown}> = []): string {
   const canonicalUrl = `https://soybienestar.es${config.canonicalPath}`;
-  const breadcrumbJson = jsonForHtml(buildBreadcrumbSchema(config));
-  const faqJson = jsonForHtml(buildFaqSchema(faqs));
+  const scripts = structuredData.map(({id, data}) =>
+    `<script id="${id}" type="application/ld+json">${jsonForHtml(data)}</script>`,
+  ).join("\n    ");
 
   return `
     <title>${config.title}</title>
@@ -71,9 +80,79 @@ function buildHead(config: FaqSeoConfig, faqs: ReadonlyArray<FaqEntry>): string 
     <meta name="twitter:description" content="${config.description}" />
     <meta name="twitter:image" content="https://soybienestar.es/images/inicio-horizontal.jpg" />
     <meta name="twitter:image:alt" content="SoyBienestar, plataforma online de bienestar emocional" />
-    <script id="${config.breadcrumbSchemaId}" type="application/ld+json">${breadcrumbJson}</script>
-    <script id="${config.faqSchemaId}" type="application/ld+json">${faqJson}</script>
+    ${scripts}
   `;
+}
+
+function buildFaqHead(config: FaqSeoConfig, faqs: ReadonlyArray<FaqEntry>): string {
+  return buildSeoHead(config, [
+    {id: config.breadcrumbSchemaId, data: buildBreadcrumbSchema(config)},
+    {id: config.faqSchemaId, data: buildFaqSchema(faqs)},
+  ]);
+}
+
+function buildResourcesEditorialMarkup(): string {
+  return renderToStaticMarkup(
+    <main className="pt-2 md:pt-16 pb-24 max-w-screen-xl mx-auto px-6 lg:px-8">
+      <h1 className="sr-only">Herramientas para calmar la ansiedad, el estrés y la mente</h1>
+      <section aria-labelledby="resources-editorial-title" className="mt-16 md:mt-24 max-w-5xl mx-auto">
+        <div className="rounded-[2rem] border border-outline-variant/20 bg-surface-container-low/60 p-8 md:p-12">
+          <h2 id="resources-editorial-title" className="font-headline text-3xl md:text-4xl text-primary mb-5">
+            {RESOURCES_EDITORIAL.introduction.title}
+          </h2>
+          {RESOURCES_EDITORIAL.introduction.paragraphs.map((paragraph) => (
+            <p key={paragraph} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mb-5 last:mb-0">
+              {paragraph}
+            </p>
+          ))}
+          <div className="mt-10 space-y-10">
+            {RESOURCES_EDITORIAL.sections.map((section) => (
+              <article key={section.title}>
+                <h3 className="font-headline text-2xl md:text-3xl text-primary mb-3">{section.title}</h3>
+                {section.paragraphs.map((paragraph) => (
+                  <p key={paragraph} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mb-4 last:mb-0">
+                    {paragraph}
+                  </p>
+                ))}
+                {"listLabel" in section && section.listLabel && section.items && (
+                  <>
+                    <p className="text-on-surface-variant text-base font-medium mt-5 mb-2">{section.listLabel}</p>
+                    <ul className="list-disc pl-6 space-y-1 text-on-surface-variant text-base md:text-lg font-light leading-relaxed">
+                      {section.items.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </>
+                )}
+                {"groups" in section && section.groups && (
+                  <div className="mt-5 space-y-4">
+                    {section.groups.map((group) => (
+                      <div key={group.label}>
+                        <p className="text-on-surface-variant text-base font-medium mb-2">{group.label}</p>
+                        <ul className="list-disc pl-6 space-y-1 text-on-surface-variant text-base md:text-lg font-light leading-relaxed">
+                          {group.items.map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {"notes" in section && section.notes && section.notes.map((note) => (
+                  <p key={note} className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed mt-4">{note}</p>
+                ))}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>,
+  );
+}
+
+function buildStaticDocument(template: string, pageMarkup: string, head: string): string {
+  return template
+    .replace(/<title>.*?<\/title>/s, "")
+    .replace(/\s*<meta\s+[^>]*(?:name="(?:description|robots|twitter:[^"]+)"|property="og:[^"]+")[^>]*>/gs, "")
+    .replace(/\s*<link rel="canonical"[^>]*>/g, "")
+    .replace("</head>", `${head}\n  </head>`)
+    .replace('<div id="root"></div>', `<div id="root">${pageMarkup}</div>`);
 }
 
 async function prerender(entry: PrerenderEntry, template: string): Promise<void> {
@@ -82,12 +161,7 @@ async function prerender(entry: PrerenderEntry, template: string): Promise<void>
       <entry.component />
     </MemoryRouter>,
   );
-  const html = template
-    .replace(/<title>.*?<\/title>/s, "")
-    .replace(/\s*<meta\s+[^>]*(?:name="(?:description|robots|twitter:[^"]+)"|property="og:[^"]+")[^>]*>/gs, "")
-    .replace(/\s*<link rel="canonical"[^>]*>/g, "")
-    .replace("</head>", `${buildHead(entry.config, entry.faqs)}\n  </head>`)
-    .replace('<div id="root"></div>', `<div id="root">${pageMarkup}</div>`);
+  const html = buildStaticDocument(template, pageMarkup, buildFaqHead(entry.config, entry.faqs));
   const outputPath = path.join(process.cwd(), "dist", entry.route, "index.html");
   await mkdir(path.dirname(outputPath), {recursive: true});
   await writeFile(outputPath, html, "utf8");
@@ -97,4 +171,15 @@ const template = await readFile(path.join(process.cwd(), "dist", "index.html"), 
 for (const entry of entries) {
   await prerender(entry, template);
 }
-console.log(`Prerendered ${entries.length} FAQ routes.`);
+
+const resourcesHead = buildSeoHead(RESOURCES_SEO, [
+  {id: "breadcrumb-schema-herramientas", data: buildResourcesBreadcrumbSchema()},
+  {id: "resources-service-schema", data: buildResourcesServiceSchema()},
+]);
+const resourcesMarkup = buildResourcesEditorialMarkup();
+const resourcesHtml = buildStaticDocument(template, resourcesMarkup, resourcesHead);
+const resourcesOutputPath = path.join(process.cwd(), "dist", "herramientas", "index.html");
+await mkdir(path.dirname(resourcesOutputPath), {recursive: true});
+await writeFile(resourcesOutputPath, resourcesHtml, "utf8");
+
+console.log(`Prerendered ${entries.length} FAQ routes and /herramientas.`);
