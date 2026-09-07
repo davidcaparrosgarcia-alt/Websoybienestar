@@ -12,6 +12,7 @@ import type {
   AgentCapabilityPlan,
   AgentCapabilityRequest,
   AgentRiskLevel,
+  EmotionalCourseAccessContract,
 } from "../src/agent/types";
 
 function resolveAllowed(request: AgentCapabilityRequest): AgentCapabilityPlan {
@@ -238,6 +239,50 @@ test("catalog contains exactly seven unique capability identifiers", () => {
     ],
   );
   assert.equal(new Set(AGENT_CAPABILITY_CATALOG.map((item) => item.id)).size, 7);
+});
+
+test("wellbeing tool auth requirement depends on its input", () => {
+  const capability = AGENT_CAPABILITY_CATALOG.find(
+    (item) => item.id === "sb.open_wellbeing_tool",
+  );
+  assert.equal(capability?.authRequirement, "input_dependent");
+});
+
+test("exclusively public capabilities declare no auth requirement", () => {
+  const publicCapabilityIds = AGENT_CAPABILITY_CATALOG
+    .filter((item) => item.authRequirement === "none")
+    .map((item) => item.id);
+  assert.deepEqual(publicCapabilityIds, ["sb.open_guide", "sb.open_service"]);
+});
+
+test("capabilities that always reach an auth gate declare auth required", () => {
+  const requiredCapabilityIds = AGENT_CAPABILITY_CATALOG
+    .filter((item) => item.authRequirement === "required")
+    .map((item) => item.id);
+  assert.deepEqual(requiredCapabilityIds, [
+    "sb.start_free_consultation",
+    "sb.open_questionnaire_step",
+    "sb.open_dossier",
+    "sb.open_emotional_course",
+  ]);
+});
+
+test("intermediate emotional course can have no selected specialty", () => {
+  const access = {
+    tier: "intermediate",
+    specialtyAccess: "one_persistent",
+    selectedSpecialty: null,
+  } as const satisfies EmotionalCourseAccessContract;
+  assert.equal(access.selectedSpecialty, null);
+});
+
+test("intermediate emotional course can persist exactly one selected specialty", () => {
+  const access = {
+    tier: "intermediate",
+    specialtyAccess: "one_persistent",
+    selectedSpecialty: "love_heartbreak",
+  } as const satisfies EmotionalCourseAccessContract;
+  assert.equal(access.selectedSpecialty, "love_heartbreak");
 });
 
 test("no R2, R3 or R4 capability is executable", () => {

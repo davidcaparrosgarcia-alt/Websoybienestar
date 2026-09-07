@@ -18,17 +18,17 @@ export const AGENT_CAPABILITY_IDS = [
 ] as const satisfies readonly AgentCapabilityId[];
 
 export const AGENT_CAPABILITY_CATALOG = [
-  { id: "sb.open_guide", riskLevels: ["R0"], availability: "available", requiresAuth: false },
-  { id: "sb.open_wellbeing_tool", riskLevels: ["R0", "R1"], availability: "available", requiresAuth: false },
-  { id: "sb.open_service", riskLevels: ["R0"], availability: "available", requiresAuth: false },
-  { id: "sb.start_free_consultation", riskLevels: ["R1"], availability: "available", requiresAuth: true },
-  { id: "sb.open_questionnaire_step", riskLevels: ["R1"], availability: "available", requiresAuth: true },
-  { id: "sb.open_dossier", riskLevels: ["R1"], availability: "available", requiresAuth: true },
+  { id: "sb.open_guide", riskLevels: ["R0"], availability: "available", authRequirement: "none" },
+  { id: "sb.open_wellbeing_tool", riskLevels: ["R0", "R1"], availability: "available", authRequirement: "input_dependent" },
+  { id: "sb.open_service", riskLevels: ["R0"], availability: "available", authRequirement: "none" },
+  { id: "sb.start_free_consultation", riskLevels: ["R1"], availability: "available", authRequirement: "required" },
+  { id: "sb.open_questionnaire_step", riskLevels: ["R1"], availability: "available", authRequirement: "required" },
+  { id: "sb.open_dossier", riskLevels: ["R1"], availability: "available", authRequirement: "required" },
   {
     id: "sb.open_emotional_course",
     riskLevels: ["R1"],
     availability: "unavailable",
-    requiresAuth: true,
+    authRequirement: "required",
     futurePath: "/emocionario",
   },
 ] as const satisfies readonly AgentCapabilityDescriptor[];

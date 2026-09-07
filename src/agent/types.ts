@@ -60,6 +60,11 @@ export type AgentNavigationPath =
 
 export type CapabilityAvailability = "available" | "unavailable";
 
+export type CapabilityAuthRequirement =
+  | "none"
+  | "required"
+  | "input_dependent";
+
 export type EmotionalCourseTier = "basic" | "intermediate" | "complete";
 
 export type EmotionalCourseSpecialty =
@@ -75,7 +80,7 @@ export type EmotionalCourseAccessContract =
   | {
       readonly tier: "intermediate";
       readonly specialtyAccess: "one_persistent";
-      readonly specialty: EmotionalCourseSpecialty;
+      readonly selectedSpecialty: EmotionalCourseSpecialty | null;
     }
   | {
       readonly tier: "complete";
@@ -122,7 +127,7 @@ export interface AgentCapabilityDescriptor {
   readonly id: AgentCapabilityId;
   readonly riskLevels: readonly AgentRiskLevel[];
   readonly availability: CapabilityAvailability;
-  readonly requiresAuth: boolean;
+  readonly authRequirement: CapabilityAuthRequirement;
   readonly futurePath?: "/emocionario";
 }
 
