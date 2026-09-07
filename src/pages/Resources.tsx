@@ -11,6 +11,7 @@ import {
   buildResourcesBreadcrumbSchema,
   buildResourcesServiceSchema,
 } from "../data/resourcesSeo";
+import { consumeAgentArrivalContextForTarget } from "../agent/arrivalContext";
 
 const MATRIZ_ESTADOS = [
   {"sentimiento":0,"energia":0,"sintoma":"Bloqueo absoluto","explicacion":"Sientes un sufrimiento muy intenso y el cuerpo está sin fuerzas, como si todo pesara demasiado."},
@@ -230,12 +231,33 @@ export default function Resources() {
   const [estadoPaso, setEstadoPaso] = useState<"inicio" | "sentimiento" | "energia" | "resultado">("inicio");
   const [valorSentimiento, setValorSentimiento] = useState<number | null>(null);
   const [valorEnergia, setValorEnergia] = useState<number | null>(null);
+  const estadoActualSectionRef = useRef<HTMLElement>(null);
 
   const resetEstadoActual = () => {
     setEstadoPaso("inicio");
     setValorSentimiento(null);
     setValorEnergia(null);
   };
+
+  useEffect(() => {
+    const arrivalContext = consumeAgentArrivalContextForTarget("/herramientas");
+    if (!arrivalContext?.entryPoint) return;
+
+    if (arrivalContext.entryPoint === "meditations") {
+      setIsAudioModalOpen(true);
+      return;
+    }
+
+    if (arrivalContext.entryPoint === "breathing") {
+      setIsBreathingModalOpen(true);
+      return;
+    }
+
+    if (arrivalContext.entryPoint === "emotional_scan") {
+      resetEstadoActual();
+      estadoActualSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   const handleSentimientoSelect = (val: number) => {
     setValorSentimiento(val);
@@ -701,7 +723,7 @@ export default function Resources() {
         </section>
 
         {/* Herramienta Estado Actual */}
-        <section className="mt-8 md:mt-12 py-16 border-t border-outline-variant/10">
+        <section ref={estadoActualSectionRef} className="mt-8 md:mt-12 py-16 border-t border-outline-variant/10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
             <div>
