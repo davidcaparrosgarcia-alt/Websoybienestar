@@ -251,14 +251,83 @@ test("unknown entry point returns null and is removed", () => {
   assert.equal(storage.readRaw(), null);
 });
 
-test("meditations targeting dossier is invalid and removed", () => {
+test("dossier capability targeting herramientas with meditations is invalid and removed", () => {
   const storage = new MemoryStorage();
-  storage.writeRaw(validStoredContext({ targetPath: "/dossier-espejo" }));
+  storage.writeRaw(
+    validStoredContext({
+      capabilityId: "sb.open_dossier",
+      targetPath: "/herramientas",
+      entryPoint: "meditations",
+    }),
+  );
+  assert.equal(
+    consumeAgentArrivalContextForTarget("/herramientas", { storage, now: NOW }),
+    null,
+  );
+  assert.equal(storage.readRaw(), null);
+});
+
+test("guide capability targeting dossier is invalid and removed", () => {
+  const storage = new MemoryStorage();
+  storage.writeRaw(
+    validStoredContext({
+      capabilityId: "sb.open_guide",
+      targetPath: "/dossier-espejo",
+      entryPoint: undefined,
+    }),
+  );
   assert.equal(
     consumeAgentArrivalContextForTarget("/dossier-espejo", { storage, now: NOW }),
     null,
   );
   assert.equal(storage.readRaw(), null);
+});
+
+test("service capability targeting session is invalid and removed", () => {
+  const storage = new MemoryStorage();
+  storage.writeRaw(
+    validStoredContext({
+      capabilityId: "sb.open_service",
+      targetPath: "/session",
+      entryPoint: undefined,
+    }),
+  );
+  assert.equal(consumeAgentArrivalContextForTarget("/session", { storage, now: NOW }), null);
+  assert.equal(storage.readRaw(), null);
+});
+
+test("unavailable emotional course has no valid arrival target", () => {
+  const storage = new MemoryStorage();
+  storage.writeRaw(
+    validStoredContext({
+      capabilityId: "sb.open_emotional_course",
+      targetPath: "/session",
+      entryPoint: undefined,
+    }),
+  );
+  assert.equal(consumeAgentArrivalContextForTarget("/session", { storage, now: NOW }), null);
+  assert.equal(storage.readRaw(), null);
+});
+
+test("all legitimate capability and target relationships remain valid", () => {
+  const cases = [
+    ["sb.open_guide", "/ansiedad", undefined],
+    ["sb.open_wellbeing_tool", "/herramientas", "meditations"],
+    ["sb.open_wellbeing_tool", "/emotion-diary", undefined],
+    ["sb.open_service", "/hipnodigest", undefined],
+    ["sb.start_free_consultation", "/session", undefined],
+    ["sb.open_questionnaire_step", "/report", "questionnaire_next_step"],
+    ["sb.open_dossier", "/dossier-espejo", undefined],
+  ] as const;
+
+  for (const [capabilityId, targetPath, entryPoint] of cases) {
+    const storage = new MemoryStorage();
+    storage.writeRaw(validStoredContext({ capabilityId, targetPath, entryPoint }));
+    const context = consumeAgentArrivalContextForTarget(targetPath, { storage, now: NOW });
+    assert.equal(context?.capabilityId, capabilityId);
+    assert.equal(context?.targetPath, targetPath);
+    assert.equal(storage.readRaw(), null);
+  }
 });
 
 test("questionnaire next step targeting herramientas is invalid and removed", () => {
@@ -381,13 +450,15 @@ test("Resources consumes only herramientas public entry points without auto-acti
   const resourcesPath = resolve(testDirectory, "..", "src", "pages", "Resources.tsx");
   const source = readFileSync(resourcesPath, "utf8");
 
+  assert.match(source, /import \{ useNavigate, useLocation, Link \} from "react-router-dom";/);
   assert.match(source, /import \{ consumeAgentArrivalContextForTarget \} from "\.\.\/agent\/arrivalContext";/);
+  assert.match(source, /const location = useLocation\(\);/);
   assert.match(source, /consumeAgentArrivalContextForTarget\("\/herramientas"\)/);
 
   const effectStart = source.indexOf(
     'const arrivalContext = consumeAgentArrivalContextForTarget("/herramientas")',
   );
-  const effectEnd = source.indexOf("  }, []);", effectStart);
+  const effectEnd = source.indexOf("  }, [location.key]);", effectStart);
   assert.notEqual(effectStart, -1);
   assert.notEqual(effectEnd, -1);
   const arrivalEffect = source.slice(effectStart, effectEnd);
@@ -399,4 +470,5 @@ test("Resources consumes only herramientas public entry points without auto-acti
   assert.doesNotMatch(arrivalEffect, /setValorSentimiento\(/);
   assert.doesNotMatch(arrivalEffect, /setValorEnergia\(/);
   assert.doesNotMatch(arrivalEffect, /handlePlay\(/);
+  assert.match(source.slice(effectStart, effectEnd + 22), /\}, \[location\.key\]\);/);
 });

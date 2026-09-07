@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
@@ -139,6 +139,7 @@ const MATRIZ_ESTADOS = [
 
 export default function Resources() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user] = useAuthState(auth);
   
   const breadcrumbSchema = buildResourcesBreadcrumbSchema();
@@ -257,7 +258,7 @@ export default function Resources() {
       resetEstadoActual();
       estadoActualSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, []);
+  }, [location.key]);
 
   const handleSentimientoSelect = (val: number) => {
     setValorSentimiento(val);

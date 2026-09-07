@@ -71,6 +71,22 @@ const VALID_TARGET_PATHS = new Set<AgentNavigationPath>([
   DOSSIER_EFFECT.path,
 ]);
 
+const CAPABILITY_TARGET_PATHS = {
+  "sb.open_guide": new Set<AgentNavigationPath>(Object.values(GUIDE_DESTINATIONS)),
+  "sb.open_wellbeing_tool": new Set<AgentNavigationPath>(
+    Object.values(WELLBEING_TOOL_PLANS).map((plan) => plan.effect.path),
+  ),
+  "sb.open_service": new Set<AgentNavigationPath>(Object.values(SERVICE_DESTINATIONS)),
+  "sb.start_free_consultation": new Set<AgentNavigationPath>([
+    FREE_CONSULTATION_EFFECT.path,
+  ]),
+  "sb.open_questionnaire_step": new Set<AgentNavigationPath>([
+    QUESTIONNAIRE_STEP_EFFECT.path,
+  ]),
+  "sb.open_dossier": new Set<AgentNavigationPath>([DOSSIER_EFFECT.path]),
+  "sb.open_emotional_course": new Set<AgentNavigationPath>(),
+} as const satisfies Readonly<Record<AgentCapabilityId, ReadonlySet<AgentNavigationPath>>>;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
   const prototype = Object.getPrototypeOf(value);
@@ -105,6 +121,13 @@ function isValidEntryPointTarget(
   return entryPoint === undefined || ENTRY_POINT_TARGETS[entryPoint] === targetPath;
 }
 
+function isValidCapabilityTarget(
+  capabilityId: AgentCapabilityId,
+  targetPath: AgentNavigationPath,
+): boolean {
+  return CAPABILITY_TARGET_PATHS[capabilityId].has(targetPath);
+}
+
 function resolveStorage(storage?: AgentArrivalStorage): AgentArrivalStorage | null {
   if (storage) return storage;
   try {
@@ -135,6 +158,7 @@ function parseAgentArrivalContext(value: unknown, now: number): AgentArrivalCont
   if (!isAgentArrivalSource(value.source)) return null;
   if (!isAgentCapabilityId(value.capabilityId)) return null;
   if (!isAgentNavigationPath(value.targetPath)) return null;
+  if (!isValidCapabilityTarget(value.capabilityId, value.targetPath)) return null;
   if (hasEntryPoint && !isAgentEntryPoint(value.entryPoint)) return null;
   if (typeof value.createdAt !== "number" || !Number.isInteger(value.createdAt)) return null;
   if (typeof value.expiresAt !== "number" || !Number.isInteger(value.expiresAt)) return null;
