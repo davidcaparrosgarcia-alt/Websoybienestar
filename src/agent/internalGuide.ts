@@ -174,7 +174,10 @@ export const INTERNAL_GUIDE_SECTIONS = [
 ] as const satisfies readonly InternalGuideSection[];
 
 export const INTERNAL_GUIDE_ACTIONS: readonly InternalGuideAction[] =
-  INTERNAL_GUIDE_SECTIONS.flatMap((section) => section.actions);
+  INTERNAL_GUIDE_SECTIONS.reduce<InternalGuideAction[]>((actions, section) => {
+    actions.push(...section.actions);
+    return actions;
+  }, []);
 
 function readBuildEnvironment(): Readonly<Record<string, unknown>> | undefined {
   return (import.meta as ImportMeta & { readonly env?: Readonly<Record<string, unknown>> }).env;
