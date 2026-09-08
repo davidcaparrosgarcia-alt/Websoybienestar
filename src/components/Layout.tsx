@@ -10,6 +10,7 @@ import ThemeToggle from "./ThemeToggle";
 import NextStepsModal from "./NextStepsModal";
 import { resolveQuestionnaireUiState } from "../../api/questionnaireWebhookPolicy";
 import WebMcpBridge from "../agent/adapters/WebMcpBridge";
+import InternalGuide from "../agent/adapters/InternalGuide";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
@@ -145,6 +146,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       <WebMcpBridge />
+      <InternalGuide />
       <ScrollArrows />
       
       {/* Drawer Móvil (Menú Desplegable) */}
