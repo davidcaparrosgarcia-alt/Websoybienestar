@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import ThemeToggle from "./ThemeToggle";
 import NextStepsModal from "./NextStepsModal";
 import { resolveQuestionnaireUiState } from "../../api/questionnaireWebhookPolicy";
+import WebMcpBridge from "../agent/adapters/WebMcpBridge";
 
 export default function Layout() {
   const [user] = useAuthState(auth);
@@ -143,6 +144,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <WebMcpBridge />
       <ScrollArrows />
       
       {/* Drawer Móvil (Menú Desplegable) */}
