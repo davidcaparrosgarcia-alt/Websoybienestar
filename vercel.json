@@ -38,6 +38,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/agent-guide-interpret",
+      "destination": "/api/agent-guide-ai"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api"
     },
