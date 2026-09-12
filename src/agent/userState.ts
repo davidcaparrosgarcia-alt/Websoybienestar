@@ -17,26 +17,41 @@ export interface AgentCoarseUserState {
   readonly recommendedProcessActionId: AgentProcessActionId;
 }
 
-function consultationIsDone(
-  userData: Record<string, unknown>,
-  profileData: Record<string, unknown>,
-): boolean {
-  return [
-    userData.hasDoneConsultation,
-    userData.consultationCompleted,
-    userData.sessionCompleted,
-    profileData.hasDoneConsultation,
-    profileData.consultationCompleted,
-    profileData.sessionCompleted,
-  ].some((value) => value === true);
+/**
+ * Privacy-safe signals accepted by the agent state layer.
+ *
+ * This deliberately does not accept Firestore documents, questionnaire answers,
+ * dossier contents, access codes, identifiers or contact/profile data.
+ * A future transport may derive these coarse signals outside the agent boundary,
+ * but the agent itself only receives the values listed here.
+ */
+export interface AgentCoarseUserStateSignals {
+  readonly hasDoneConsultation?: boolean;
+  readonly userQuestionnaireStatus?: string | null;
+  readonly userQuestionnaireRequestStatus?: string | null;
+  readonly profileQuestionnaireStatus?: string | null;
+  readonly profileQuestionnaireRequestStatus?: string | null;
+  readonly dossierEvidence?: boolean;
 }
 
 export function deriveAgentCoarseUserState(
-  userData: Record<string, unknown>,
-  profileData: Record<string, unknown>,
+  signals: AgentCoarseUserStateSignals,
 ): AgentCoarseUserState {
-  const hasDoneConsultation = consultationIsDone(userData, profileData);
-  const questionnaireUiState = resolveQuestionnaireUiState(userData, profileData);
+  const hasDoneConsultation = signals.hasDoneConsultation === true;
+
+  // Reuse the existing canonical questionnaire policy with a synthetic,
+  // minimal input. No private document is passed into the agent layer.
+  const questionnaireUiState = resolveQuestionnaireUiState(
+    {
+      questionnaireStatus: signals.userQuestionnaireStatus,
+      questionnaireRequestStatus: signals.userQuestionnaireRequestStatus,
+      dossierAvailableAt: signals.dossierEvidence === true ? true : undefined,
+    },
+    {
+      questionnaireStatus: signals.profileQuestionnaireStatus,
+      questionnaireRequestStatus: signals.profileQuestionnaireRequestStatus,
+    },
+  );
 
   let questionnaireStage: AgentQuestionnaireStage = "not_started";
   let recommendedProcessActionId: AgentProcessActionId = "process_free_consultation";
