@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   INTERNAL_GUIDE_SECTIONS,
@@ -62,7 +62,7 @@ export default function InternalGuide() {
     setHasError(true);
   };
 
-  const handleInterpret = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleInterpret = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!query.trim() || isInterpreting) return;
 
@@ -116,7 +116,7 @@ export default function InternalGuide() {
             <div>
               <p className="font-headline text-2xl text-primary">Guía de navegación</p>
               <p className="mt-1 text-sm leading-relaxed text-on-surface-variant">
-                Elige qué quieres encontrar. Esta guía solo te lleva a recursos de SoyBienestar; no interpreta ni diagnostica.
+                Elige qué quieres encontrar. La guía puede orientarte hacia recursos de SoyBienestar; no diagnostica ni sustituye atención profesional.
               </p>
             </div>
             <button
@@ -174,7 +174,7 @@ export default function InternalGuide() {
                       ¿Qué necesitas encontrar?
                     </label>
                     <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-                      Escríbelo en pocas palabras. No incluyas datos personales.
+                      La orientación automática usa IA para clasificar solo este texto. No incluyas datos personales.
                     </p>
                     <div className="mt-3 flex gap-2">
                       <input
