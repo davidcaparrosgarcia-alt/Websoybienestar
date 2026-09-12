@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   INTERNAL_GUIDE_SECTIONS,
@@ -6,23 +6,47 @@ import {
   isSoyBienestarInternalGuideEnabled,
   type InternalGuideSectionId,
 } from "../internalGuide";
+import {
+  INTERNAL_GUIDE_AI_MAX_TEXT_LENGTH,
+  interpretInternalGuideText,
+  isSoyBienestarInternalGuideAiEnabled,
+  type InternalGuideAIResult,
+} from "../internalGuideAI";
 
 export default function InternalGuide() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<InternalGuideSectionId | null>(null);
   const [hasError, setHasError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [isInterpreting, setIsInterpreting] = useState(false);
+  const [aiResult, setAiResult] = useState<InternalGuideAIResult | null>(null);
+  const interpretControllerRef = useRef<AbortController | null>(null);
   const enabled = isSoyBienestarInternalGuideEnabled();
+  const aiEnabled = isSoyBienestarInternalGuideAiEnabled();
+
+  useEffect(() => {
+    return () => interpretControllerRef.current?.abort();
+  }, []);
 
   if (!enabled) return null;
 
   const selectedSection =
     INTERNAL_GUIDE_SECTIONS.find((section) => section.id === selectedSectionId) ?? null;
 
+  const resetInterpretation = () => {
+    interpretControllerRef.current?.abort();
+    interpretControllerRef.current = null;
+    setQuery("");
+    setIsInterpreting(false);
+    setAiResult(null);
+  };
+
   const closeGuide = () => {
     setIsOpen(false);
     setSelectedSectionId(null);
     setHasError(false);
+    resetInterpretation();
   };
 
   const handleAction = (actionId: string) => {
@@ -36,6 +60,27 @@ export default function InternalGuide() {
     }
 
     setHasError(true);
+  };
+
+  const handleInterpret = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!query.trim() || isInterpreting) return;
+
+    interpretControllerRef.current?.abort();
+    const controller = new AbortController();
+    interpretControllerRef.current = controller;
+    setIsInterpreting(true);
+    setAiResult(null);
+    setHasError(false);
+
+    const result = await interpretInternalGuideText(query, {
+      signal: controller.signal,
+    });
+
+    if (controller.signal.aborted) return;
+    setAiResult(result);
+    setIsInterpreting(false);
+    interpretControllerRef.current = null;
   };
 
   return (
@@ -119,30 +164,103 @@ export default function InternalGuide() {
                 </div>
               </>
             ) : (
-              <div className="space-y-2">
-                {INTERNAL_GUIDE_SECTIONS.map((section) => (
-                  <button
-                    key={section.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSectionId(section.id);
-                      setHasError(false);
-                    }}
-                    className="w-full flex items-center gap-4 text-left rounded-2xl border border-outline-variant/15 bg-surface-container-low px-4 py-4 hover:border-primary/30 hover:bg-surface-container transition-colors"
+              <>
+                {aiEnabled && (
+                  <form
+                    onSubmit={handleInterpret}
+                    className="mb-4 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4"
                   >
-                    <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-xl">{section.icon}</span>
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-headline text-lg text-primary">{section.title}</span>
-                      <span className="block mt-1 text-xs leading-relaxed text-on-surface-variant">
-                        {section.description}
+                    <label htmlFor="soybienestar-guide-query" className="block font-headline text-lg text-primary">
+                      ¿Qué necesitas encontrar?
+                    </label>
+                    <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                      Escríbelo en pocas palabras. No incluyas datos personales.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <input
+                        id="soybienestar-guide-query"
+                        type="text"
+                        value={query}
+                        maxLength={INTERNAL_GUIDE_AI_MAX_TEXT_LENGTH}
+                        autoComplete="off"
+                        onChange={(event) => {
+                          setQuery(event.target.value);
+                          setAiResult(null);
+                          setHasError(false);
+                        }}
+                        placeholder="Ej.: necesito desconectar antes de dormir"
+                        className="min-w-0 flex-1 rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/40"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!query.trim() || isInterpreting}
+                        className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                      >
+                        {isInterpreting ? "Buscando…" : "Orientarme"}
+                      </button>
+                    </div>
+
+                    {aiResult?.status === "suggestion" && (
+                      <div className="mt-3 rounded-xl border border-primary/15 bg-surface-container-lowest p-3">
+                        <p className="text-sm text-on-surface-variant">
+                          Te puede encajar: <strong className="text-primary">{aiResult.action.label}</strong>
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleAction(aiResult.action.id)}
+                          className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-75"
+                        >
+                          Abrir
+                          <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {aiResult?.status === "no_match" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        No encuentro una opción suficientemente clara. Puedes elegir una categoría debajo.
+                      </p>
+                    )}
+
+                    {aiResult?.status === "safety_blocked" && (
+                      <p role="alert" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        No voy a elegir una herramienta automáticamente con ese mensaje. Si hay peligro inmediato, contacta con emergencias de tu país o con una persona de confianza que pueda estar contigo.
+                      </p>
+                    )}
+
+                    {(aiResult?.status === "temporarily_unavailable" || aiResult?.status === "invalid_input") && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        Ahora no puedo interpretar el texto. Puedes seguir usando las opciones de abajo.
+                      </p>
+                    )}
+                  </form>
+                )}
+
+                <div className="space-y-2">
+                  {INTERNAL_GUIDE_SECTIONS.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSectionId(section.id);
+                        setHasError(false);
+                      }}
+                      className="w-full flex items-center gap-4 text-left rounded-2xl border border-outline-variant/15 bg-surface-container-low px-4 py-4 hover:border-primary/30 hover:bg-surface-container transition-colors"
+                    >
+                      <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-xl">{section.icon}</span>
                       </span>
-                    </span>
-                    <span className="material-symbols-outlined text-lg text-primary/60">chevron_right</span>
-                  </button>
-                ))}
-              </div>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-headline text-lg text-primary">{section.title}</span>
+                        <span className="block mt-1 text-xs leading-relaxed text-on-surface-variant">
+                          {section.description}
+                        </span>
+                      </span>
+                      <span className="material-symbols-outlined text-lg text-primary/60">chevron_right</span>
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
 
             {hasError && (
