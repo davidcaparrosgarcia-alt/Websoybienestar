@@ -59,8 +59,12 @@ export function deriveAgentCoarseUserState(
   };
 }
 
+function readBuildEnvironment(): Readonly<Record<string, unknown>> | undefined {
+  return (import.meta as ImportMeta & { readonly env?: Readonly<Record<string, unknown>> }).env;
+}
+
 export function isSoyBienestarInternalGuideContextEnabled(
-  env: Readonly<Record<string, unknown>> | undefined,
+  env: Readonly<Record<string, unknown>> | undefined = readBuildEnvironment(),
 ): boolean {
   return env?.VITE_INTERNAL_GUIDE_CONTEXT_ENABLED !== "false";
 }
