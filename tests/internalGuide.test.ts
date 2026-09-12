@@ -189,7 +189,7 @@ test("internal guide catalog contains no arbitrary route fields", () => {
   }
 });
 
-test("InternalGuide UI is deterministic and has no free-text or data access surface", () => {
+test("InternalGuide keeps deterministic execution while isolating optional AI transport", () => {
   const testDirectory = dirname(fileURLToPath(import.meta.url));
   const componentPath = resolve(
     testDirectory,
@@ -203,15 +203,15 @@ test("InternalGuide UI is deterministic and has no free-text or data access surf
 
   assert.match(source, /executeInternalGuideAction/);
   assert.match(source, /isSoyBienestarInternalGuideEnabled/);
-  assert.doesNotMatch(source, /<input\b/i);
-  assert.doesNotMatch(source, /<textarea\b/i);
-  assert.doesNotMatch(source, /<form\b/i);
+  assert.match(source, /interpretInternalGuideText/);
+  assert.match(source, /<input\b/i);
+  assert.match(source, /<form\b/i);
   assert.doesNotMatch(source, /firebase|firestore/i);
   assert.doesNotMatch(source, /\bfetch\s*\(/);
   assert.doesNotMatch(source, /modelContext|registerTool|sessionReply/i);
 });
 
-test("InternalGuide UI is transparent about being navigation-only", () => {
+test("InternalGuide UI is transparent about AI orientation and its limits", () => {
   const testDirectory = dirname(fileURLToPath(import.meta.url));
   const componentPath = resolve(
     testDirectory,
@@ -222,7 +222,12 @@ test("InternalGuide UI is transparent about being navigation-only", () => {
     "InternalGuide.tsx",
   );
   const source = readFileSync(componentPath, "utf8");
-  assert.match(source, /solo te lleva a recursos de SoyBienestar; no interpreta ni diagnostica/);
+  assert.match(
+    source,
+    /La guía puede orientarte hacia recursos de SoyBienestar; no diagnostica ni sustituye atención profesional/,
+  );
+  assert.match(source, /La orientación automática usa IA para clasificar solo este texto/);
+  assert.match(source, /No incluyas datos personales/);
 });
 
 test("Layout mounts WebMCP and InternalGuide exactly once without replacing existing integration", () => {
