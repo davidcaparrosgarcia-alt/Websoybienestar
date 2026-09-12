@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node --import tsx --test tests/agentCapabilities.test.ts tests/agentExecution.test.ts tests/webmcpAdapter.test.ts tests/internalGuide.test.ts tests/agentGuidePolicy.test.ts tests/internalGuideAI.test.ts tests/agentGuideApi.test.ts tests/agentUserState.test.ts tests/questionnaireWebhookPolicy.test.ts && npm run lint && npm run build",
+  "buildCommand": "node scripts/validate-agent-readiness.mjs",
   "redirects": [
     {
       "source": "/treatments",
