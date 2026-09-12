@@ -20,7 +20,7 @@ test("dedicated AI endpoint is isolated from auth and private data systems", () 
   assert.match(source, /parseAgentGuideModelActionId/);
   assert.doesNotMatch(source, /firebase|firestore/i);
   assert.doesNotMatch(source, /requireAuth/);
-  assert.doesNotMatch(source, /uid|email|patientId|accessCode|dossier/);
+  assert.doesNotMatch(source, /\buid\b|\bemail\b|\bpatientId\b|\baccessCode\b|\bdossier\b/);
 });
 
 test("safety gate executes before rate-limited model classification", () => {
