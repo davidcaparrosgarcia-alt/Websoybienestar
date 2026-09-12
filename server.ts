@@ -4,12 +4,19 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiApp from "./api/index.js";
+import agentGuideAiHandler from "./api/agent-guide-ai.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
+
+  app.post(
+    "/api/agent-guide-interpret",
+    express.json({ limit: "8kb" }),
+    agentGuideAiHandler,
+  );
 
   // Mount the API application 
   // Make sure it doesn't try to strip /api prefix inside apiApp since apiApp defines /api/...
