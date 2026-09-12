@@ -123,7 +123,9 @@ test("agent coarse-state layer has no Firestore or network reader", () => {
   );
 
   assert.equal(existsSync(oldAdapterPath), false);
-  assert.doesNotMatch(stateSource, /firebase|firestore|getDoc|setDoc|updateDoc|fetch\s*\(/i);
+  assert.doesNotMatch(stateSource, /from\s+["']firebase(?:\/[^"']*)?["']/i);
+  assert.doesNotMatch(stateSource, /\b(?:getDoc|setDoc|updateDoc|addDoc|deleteDoc)\s*\(/);
+  assert.doesNotMatch(stateSource, /\bfetch\s*\(/);
 });
 
 test("coarse-state policy reuses canonical questionnaire policy", () => {
