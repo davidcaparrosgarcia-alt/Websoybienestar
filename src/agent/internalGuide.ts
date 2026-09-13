@@ -100,8 +100,13 @@ export const INTERNAL_GUIDE_SECTIONS = [
       },
       {
         id: "tool_emotional_scan",
-        label: "Escaneo emocional",
+        label: "Estado actual: emoción y energía",
         request: { capabilityId: "sb.open_wellbeing_tool", input: { tool: "emotional_scan" } },
+      },
+      {
+        id: "tool_anxiety_check",
+        label: "Válvula de Presión Interna",
+        request: { capabilityId: "sb.open_wellbeing_tool", input: { tool: "anxiety_check" } },
       },
       {
         id: "tool_gratitude_diary",

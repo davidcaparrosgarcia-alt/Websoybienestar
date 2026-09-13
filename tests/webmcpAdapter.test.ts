@@ -182,7 +182,7 @@ test("guide schema exposes exactly seven allowed topics", async () => {
   ]);
 });
 
-test("wellbeing schema exposes exactly five allowed tools", async () => {
+test("wellbeing schema exposes exactly six allowed tools", async () => {
   const { modelContext } = await registerAdapter();
   const schema = modelContext.tool("soybienestar_open_wellbeing_tool").inputSchema;
   assert.deepEqual(schema.required, ["tool"]);
@@ -190,6 +190,7 @@ test("wellbeing schema exposes exactly five allowed tools", async () => {
     "meditations",
     "breathing",
     "emotional_scan",
+    "anxiety_check",
     "gratitude_diary",
     "weekly_goals",
   ]);
@@ -258,6 +259,15 @@ for (const [toolInput, expectedEntryPoint] of [
     );
   });
 }
+
+test("anxiety check navigates directly to the real Válvula de Presión Interna", async () => {
+  const { modelContext, navigations } = await registerAdapter();
+  assert.equal(
+    await executeTool(modelContext, "soybienestar_open_wellbeing_tool", { tool: "anxiety_check" }),
+    "NAVIGATED",
+  );
+  assert.deepEqual(navigations, ["/anxiety"]);
+});
 
 test("gratitude diary navigates to its protected route", async () => {
   const { modelContext, navigations } = await registerAdapter();

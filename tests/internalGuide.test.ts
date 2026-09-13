@@ -57,9 +57,9 @@ test("internal guide exposes exactly four deterministic sections", () => {
   );
 });
 
-test("internal guide exposes exactly twenty closed actions", () => {
-  assert.equal(INTERNAL_GUIDE_ACTIONS.length, 20);
-  assert.equal(new Set(INTERNAL_GUIDE_ACTIONS.map((action) => action.id)).size, 20);
+test("internal guide exposes exactly twenty-one closed actions", () => {
+  assert.equal(INTERNAL_GUIDE_ACTIONS.length, 21);
+  assert.equal(new Set(INTERNAL_GUIDE_ACTIONS.map((action) => action.id)).size, 21);
 });
 
 test("internal guide never exposes the unavailable emotional course capability", () => {
@@ -90,14 +90,21 @@ test("guide section maps only to the seven approved guide topics", () => {
   );
 });
 
-test("tools section maps only to the five approved wellbeing tools", () => {
+test("tools section maps only to the six approved wellbeing tools", () => {
   const section = INTERNAL_GUIDE_SECTIONS.find((item) => item.id === "tools");
   assert.ok(section);
   assert.deepEqual(
     section.actions.map((action) =>
       action.request.capabilityId === "sb.open_wellbeing_tool" ? action.request.input.tool : null,
     ),
-    ["meditations", "breathing", "emotional_scan", "gratitude_diary", "weekly_goals"],
+    [
+      "meditations",
+      "breathing",
+      "emotional_scan",
+      "anxiety_check",
+      "gratitude_diary",
+      "weekly_goals",
+    ],
   );
 });
 
@@ -121,7 +128,7 @@ test("process section maps only to consultation questionnaire and dossier doors"
   );
 });
 
-test("all twenty actions execute through the Core and App Executor", () => {
+test("all twenty-one actions execute through the Core and App Executor", () => {
   for (const action of INTERNAL_GUIDE_ACTIONS) {
     const { result, navigations } = executeAction(action.id);
     assert.equal(result.status, "NAVIGATED", action.id);
@@ -156,6 +163,12 @@ test("breathing and emotional scan retain user-selection entry points", () => {
     assert.equal(result.status, "NAVIGATED");
     assert.equal(storage.readArrivalContext()?.entryPoint, entryPoint);
   }
+});
+
+test("anxiety check opens the real interactive anxiety tool", () => {
+  const { result, navigations } = executeAction("tool_anxiety_check");
+  assert.equal(result.status, "NAVIGATED");
+  assert.deepEqual(navigations, ["/anxiety"]);
 });
 
 test("R1 process actions navigate only to their protected doors", () => {
@@ -222,11 +235,8 @@ test("InternalGuide UI is transparent about AI orientation and its limits", () =
     "InternalGuide.tsx",
   );
   const source = readFileSync(componentPath, "utf8");
-  assert.match(
-    source,
-    /La guía puede orientarte hacia recursos de SoyBienestar; no diagnostica ni sustituye atención profesional/,
-  );
-  assert.match(source, /La orientación automática usa IA para clasificar solo este texto/);
+  assert.match(source, /No hago consulta psicológica ni sustituyo atención profesional/);
+  assert.match(source, /preguntas menos directas pueden usar IA solo para orientarte dentro de SoyBienestar/);
   assert.match(source, /No incluyas datos personales/);
 });
 

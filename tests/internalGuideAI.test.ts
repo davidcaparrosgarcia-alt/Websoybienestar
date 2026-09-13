@@ -26,7 +26,7 @@ test("client sends only bounded free text to the dedicated endpoint", async () =
   const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
   const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
     calls.push({ input, init });
-    return jsonResponse({ status: "no_match" });
+    return jsonResponse({ status: "no_match", message: "No tengo información suficiente." });
   }) as typeof fetch;
 
   const result = await interpretInternalGuideText("  necesito dormir  ", { fetchImpl });
@@ -39,28 +39,60 @@ test("client sends only bounded free text to the dedicated endpoint", async () =
   assert.equal(String(calls[0].init?.body).includes("email"), false);
 });
 
-test("valid server suggestion resolves to an existing deterministic action", async () => {
+test("valid server answer resolves an optional existing deterministic action", async () => {
   const fetchImpl = (async () =>
-    jsonResponse({ status: "suggestion", actionId: "guide_insomnia" })) as typeof fetch;
+    jsonResponse({
+      status: "answer",
+      message: "Tenemos una guía específica sobre insomnio.",
+      actionId: "guide_insomnia",
+    })) as typeof fetch;
   const result = await interpretInternalGuideText("me cuesta dormir", { fetchImpl });
-  assert.equal(result.status, "suggestion");
-  if (result.status === "suggestion") {
-    assert.equal(result.action.id, "guide_insomnia");
-    assert.equal(result.action.request.capabilityId, "sb.open_guide");
+  assert.equal(result.status, "answer");
+  if (result.status === "answer") {
+    assert.equal(result.message, "Tenemos una guía específica sobre insomnio.");
+    assert.equal(result.action?.id, "guide_insomnia");
+    assert.equal(result.action?.request.capabilityId, "sb.open_guide");
   }
 });
 
-test("unknown suggestion is rejected client-side", async () => {
+test("answer without navigation stays useful without inventing an action", async () => {
   const fetchImpl = (async () =>
-    jsonResponse({ status: "suggestion", actionId: "open_any_url" })) as typeof fetch;
+    jsonResponse({ status: "answer", message: "Puedes escribir a contacto@soybienestar.es." })) as typeof fetch;
+  const result = await interpretInternalGuideText("cómo contacto", { fetchImpl });
+  assert.equal(result.status, "answer");
+  if (result.status === "answer") assert.equal(result.action, undefined);
+});
+
+test("unknown action is rejected client-side", async () => {
+  const fetchImpl = (async () =>
+    jsonResponse({ status: "answer", message: "Abre esto", actionId: "open_any_url" })) as typeof fetch;
   const result = await interpretInternalGuideText("haz algo", { fetchImpl });
   assert.equal(result.status, "temporarily_unavailable");
 });
 
+test("process guidance keeps only a closed reason and no private state in the request", async () => {
+  const fetchImpl = (async () =>
+    jsonResponse({
+      status: "process_guidance",
+      reason: "next_step",
+      message: "Puedo orientarte con tu siguiente paso.",
+    })) as typeof fetch;
+  const result = await interpretInternalGuideText("qué hago ahora", { fetchImpl });
+  assert.deepEqual(result, {
+    status: "process_guidance",
+    reason: "next_step",
+    message: "Puedo orientarte con tu siguiente paso.",
+  });
+});
+
 for (const [payload, expected] of [
-  [{ status: "safety_blocked" }, "safety_blocked"],
-  [{ status: "no_match" }, "no_match"],
-  [{ status: "temporarily_unavailable" }, "temporarily_unavailable"],
+  [{ status: "safety_blocked", message: "Busca ayuda inmediata." }, "safety_blocked"],
+  [{ status: "no_match", message: "No puedo confirmarlo." }, "no_match"],
+  [{ status: "off_topic", message: "Puedo ayudarte con SoyBienestar." }, "off_topic"],
+  [{ status: "malicious_warning", message: "No puedo ayudar con eso." }, "malicious_warning"],
+  [{ status: "daily_limit", message: "Límite diario alcanzado." }, "daily_limit"],
+  [{ status: "temporarily_blocked", message: "Guía pausada.", retryAfterSeconds: 600 }, "temporarily_blocked"],
+  [{ status: "temporarily_unavailable", message: "Espera unos minutos." }, "temporarily_unavailable"],
   [{ status: "invalid_input" }, "invalid_input"],
 ] as const) {
   test(`closed API status maps to ${expected}`, async () => {
@@ -99,7 +131,7 @@ test("invalid local input never calls the API", async () => {
   assert.equal(calls, 0);
 });
 
-test("InternalGuide asks for explicit confirmation before executing an AI suggestion", () => {
+test("InternalGuide requires an explicit user click before executing a suggested action", () => {
   const testDirectory = dirname(fileURLToPath(import.meta.url));
   const componentPath = resolve(
     testDirectory,
@@ -112,14 +144,13 @@ test("InternalGuide asks for explicit confirmation before executing an AI sugges
   const source = readFileSync(componentPath, "utf8");
 
   assert.match(source, /interpretInternalGuideText\(query/);
-  assert.match(source, /aiResult\.action\.label/);
-  assert.match(source, /onClick=\{\(\) => handleAction\(aiResult\.action\.id\)\}/);
-  assert.match(source, />\s*Abrir\s*</);
+  assert.match(source, /renderActionButton\(aiResult\.action\.id/);
+  assert.match(source, /onClick=\{\(\) => handleAction\(actionId\)\}/);
   assert.match(source, /No incluyas datos personales/);
-  assert.match(source, /Puedes seguir usando las opciones de abajo/);
+  assert.match(source, /preguntas menos directas pueden usar IA/i);
 
   const interpretStart = source.indexOf("const handleInterpret = async");
-  const interpretEnd = source.indexOf("  return (", interpretStart);
+  const interpretEnd = source.indexOf("  const renderActionButton", interpretStart);
   const interpretBlock = source.slice(interpretStart, interpretEnd);
   assert.doesNotMatch(interpretBlock, /navigate\(/);
   assert.doesNotMatch(interpretBlock, /handleAction\(/);

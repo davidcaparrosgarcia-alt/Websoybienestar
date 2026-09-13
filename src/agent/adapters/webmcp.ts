@@ -84,6 +84,7 @@ const WELLBEING_TOOLS = [
   "meditations",
   "breathing",
   "emotional_scan",
+  "anxiety_check",
   "gratitude_diary",
   "weekly_goals",
 ] as const;
@@ -153,7 +154,7 @@ function createToolDefinitions(
     {
       name: "soybienestar_open_wellbeing_tool",
       title: "Abrir herramienta de bienestar",
-      description: "Orienta al usuario hacia una herramienta de bienestar de SoyBienestar.",
+      description: "Orienta al usuario hacia una herramienta de bienestar de SoyBienestar, incluida la Válvula de Presión Interna para explorar señales relacionadas con ansiedad y tensión.",
       inputSchema: enumInputSchema("tool", WELLBEING_TOOLS),
       annotations: TOOL_ANNOTATIONS,
       execute: (input, options) =>

@@ -5,27 +5,13 @@ import {
   registerSoyBienestarWebMcpTools,
 } from "./webmcp";
 
-function readBuildEnvironment(): Readonly<Record<string, unknown>> | undefined {
-  return (import.meta as ImportMeta & { readonly env?: Readonly<Record<string, unknown>> }).env;
-}
-
-export function isSoyBienestarWebMcpBridgeEnabled(
-  env: Readonly<Record<string, unknown>> | undefined = readBuildEnvironment(),
-): boolean {
-  return (
-    env?.VITE_WEBMCP_ENABLED === "true" &&
-    env?.VITE_WEBMCP_DIRECT_NAVIGATION_ENABLED === "true"
-  );
-}
-
 export default function WebMcpBridge() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // WebMCP tools currently navigate when the external agent executes them.
-    // Require an explicit double opt-in until a human-confirmation contract is guaranteed.
-    if (!isSoyBienestarWebMcpBridgeEnabled()) return;
-
+    // WebMCP is the public adapter for compatible browser agents. The adapter itself
+    // keeps the emergency VITE_WEBMCP_ENABLED="false" kill switch and becomes a no-op
+    // automatically when document.modelContext is not supported.
     const registration = registerSoyBienestarWebMcpTools({
       modelContext: getDocumentModelContext(),
       navigate: (path) => navigate(path),

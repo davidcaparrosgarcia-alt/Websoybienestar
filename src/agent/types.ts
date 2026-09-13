@@ -22,6 +22,7 @@ export type AgentWellbeingTool =
   | "meditations"
   | "breathing"
   | "emotional_scan"
+  | "anxiety_check"
   | "gratitude_diary"
   | "weekly_goals";
 
@@ -39,6 +40,7 @@ export type AgentEntryPoint =
   | "questionnaire_next_step";
 
 export type AgentNavigationPath =
+  | "/anxiety"
   | "/ansiedad"
   | "/estres"
   | "/insomnio"

@@ -13,6 +13,7 @@ import {
   type InternalGuideAIResult,
 } from "../internalGuideAI";
 import { readAgentProcessContext } from "../processContext";
+import { buildInternalGuideProcessAnswer } from "../processGuidance";
 import type { AgentCoarseUserState } from "../userState";
 
 export default function InternalGuide() {
@@ -47,7 +48,7 @@ export default function InternalGuide() {
 
   useEffect(() => {
     if (!enabled || selectedSectionId !== "process") {
-      setProcessContext(null);
+      if (aiResult?.status !== "process_guidance") setProcessContext(null);
       return;
     }
 
@@ -65,12 +66,17 @@ export default function InternalGuide() {
     return () => {
       active = false;
     };
-  }, [enabled, selectedSectionId]);
+  }, [enabled, selectedSectionId, aiResult?.status]);
 
   if (!enabled) return null;
 
   const selectedSection =
     INTERNAL_GUIDE_SECTIONS.find((section) => section.id === selectedSectionId) ?? null;
+
+  const processAnswer =
+    aiResult?.status === "process_guidance"
+      ? buildInternalGuideProcessAnswer(aiResult.reason, processContext)
+      : null;
 
   const resetInterpretation = () => {
     interpretControllerRef.current?.abort();
@@ -78,6 +84,7 @@ export default function InternalGuide() {
     setQuery("");
     setIsInterpreting(false);
     setAiResult(null);
+    setProcessContext(null);
   };
 
   const closeGuide = () => {
@@ -109,6 +116,7 @@ export default function InternalGuide() {
     interpretControllerRef.current = controller;
     setIsInterpreting(true);
     setAiResult(null);
+    setProcessContext(null);
     setHasError(false);
 
     const result = await interpretInternalGuideText(query, {
@@ -116,16 +124,34 @@ export default function InternalGuide() {
     });
 
     if (controller.signal.aborted) return;
+
+    if (result.status === "process_guidance") {
+      const context = await readAgentProcessContext().catch(() => null);
+      if (controller.signal.aborted) return;
+      setProcessContext(context);
+    }
+
     setAiResult(result);
     setIsInterpreting(false);
     interpretControllerRef.current = null;
   };
 
+  const renderActionButton = (actionId: string, label: string) => (
+    <button
+      type="button"
+      onClick={() => handleAction(actionId)}
+      className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-75"
+    >
+      {label}
+      <span className="material-symbols-outlined text-base">arrow_forward</span>
+    </button>
+  );
+
   return (
     <>
       <button
         type="button"
-        aria-label={isOpen ? "Cerrar guía de navegación" : "Abrir guía de navegación"}
+        aria-label={isOpen ? "Cerrar asistente de SoyBienestar" : "Abrir asistente de SoyBienestar"}
         aria-expanded={isOpen}
         aria-controls="soybienestar-internal-guide"
         onClick={() => {
@@ -147,14 +173,14 @@ export default function InternalGuide() {
           id="soybienestar-internal-guide"
           role="dialog"
           aria-modal="false"
-          aria-label="Guía de navegación de SoyBienestar"
-          className="fixed left-4 right-4 bottom-20 md:left-6 md:right-auto md:bottom-20 z-[80] w-auto md:w-[380px] max-h-[calc(100vh-7rem)] rounded-3xl border border-outline-variant/20 bg-surface-container-lowest shadow-2xl overflow-hidden"
+          aria-label="Asistente de orientación de SoyBienestar"
+          className="fixed left-4 right-4 bottom-20 md:left-6 md:right-auto md:bottom-20 z-[80] w-auto md:w-[420px] max-h-[calc(100vh-7rem)] rounded-3xl border border-outline-variant/20 bg-surface-container-lowest shadow-2xl overflow-hidden"
         >
           <div className="flex items-start justify-between gap-4 p-5 border-b border-outline-variant/15">
             <div>
-              <p className="font-headline text-2xl text-primary">Guía de navegación</p>
+              <p className="font-headline text-2xl text-primary">Guía de SoyBienestar</p>
               <p className="mt-1 text-sm leading-relaxed text-on-surface-variant">
-                Elige qué quieres encontrar. La guía puede orientarte hacia recursos de SoyBienestar; no diagnostica ni sustituye atención profesional.
+                Pregúntame por herramientas, programas, funcionamiento o por tu siguiente paso en la web. No hago consulta psicológica ni sustituyo atención profesional.
               </p>
             </div>
             <button
@@ -167,7 +193,7 @@ export default function InternalGuide() {
             </button>
           </div>
 
-          <div className="p-4 max-h-[min(60vh,520px)] overflow-y-auto">
+          <div className="p-4 max-h-[min(65vh,580px)] overflow-y-auto">
             {selectedSection ? (
               <>
                 <button
@@ -227,10 +253,10 @@ export default function InternalGuide() {
                     className="mb-4 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4"
                   >
                     <label htmlFor="soybienestar-guide-query" className="block font-headline text-lg text-primary">
-                      ¿Qué necesitas encontrar?
+                      ¿Qué necesitas saber?
                     </label>
                     <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-                      La orientación automática usa IA para clasificar solo este texto. No incluyas datos personales.
+                      Las dudas frecuentes se resuelven sin gastar una consulta de IA; las preguntas menos directas pueden usar IA solo para orientarte dentro de SoyBienestar. No incluyas datos personales.
                     </p>
                     <div className="mt-3 flex gap-2">
                       <input
@@ -242,9 +268,10 @@ export default function InternalGuide() {
                         onChange={(event) => {
                           setQuery(event.target.value);
                           setAiResult(null);
+                          setProcessContext(null);
                           setHasError(false);
                         }}
-                        placeholder="Ej.: necesito desconectar antes de dormir"
+                        placeholder="Ej.: ¿qué debería hacer ahora?"
                         className="min-w-0 flex-1 rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/40"
                       />
                       <button
@@ -252,41 +279,70 @@ export default function InternalGuide() {
                         disabled={!query.trim() || isInterpreting}
                         className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                       >
-                        {isInterpreting ? "Buscando…" : "Orientarme"}
+                        {isInterpreting ? "Pensando…" : "Preguntar"}
                       </button>
                     </div>
 
-                    {aiResult?.status === "suggestion" && (
+                    {aiResult?.status === "answer" && (
                       <div className="mt-3 rounded-xl border border-primary/15 bg-surface-container-lowest p-3">
-                        <p className="text-sm text-on-surface-variant">
-                          Te puede encajar: <strong className="text-primary">{aiResult.action.label}</strong>
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleAction(aiResult.action.id)}
-                          className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-75"
-                        >
-                          Abrir
-                          <span className="material-symbols-outlined text-base">arrow_forward</span>
-                        </button>
+                        <p className="text-sm leading-relaxed text-on-surface-variant">{aiResult.message}</p>
+                        {aiResult.action &&
+                          renderActionButton(aiResult.action.id, `Abrir ${aiResult.action.label}`)}
+                      </div>
+                    )}
+
+                    {processAnswer && (
+                      <div className="mt-3 rounded-xl border border-primary/15 bg-surface-container-lowest p-3">
+                        <p className="text-sm leading-relaxed text-on-surface-variant">{processAnswer.message}</p>
+                        {renderActionButton(processAnswer.action.id, processAnswer.action.label)}
                       </div>
                     )}
 
                     {aiResult?.status === "no_match" && (
                       <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
-                        No encuentro una opción suficientemente clara. Puedes elegir una categoría debajo.
+                        {aiResult.message || "No tengo información suficiente para responder eso sin inventar. Puedes reformularlo como una duda sobre una herramienta, programa o parte de SoyBienestar."}
+                      </p>
+                    )}
+
+                    {aiResult?.status === "off_topic" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        {aiResult.message}
+                      </p>
+                    )}
+
+                    {aiResult?.status === "malicious_warning" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        {aiResult.message}
+                      </p>
+                    )}
+
+                    {aiResult?.status === "temporarily_blocked" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        {aiResult.message}
+                      </p>
+                    )}
+
+                    {aiResult?.status === "daily_limit" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        {aiResult.message}
                       </p>
                     )}
 
                     {aiResult?.status === "safety_blocked" && (
                       <p role="alert" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
-                        No voy a elegir una herramienta automáticamente con ese mensaje. Si hay peligro inmediato, contacta con emergencias de tu país o con una persona de confianza que pueda estar contigo.
+                        {aiResult.message || "Esta guía no puede atender una situación de riesgo inmediato. Si hay peligro ahora, contacta con emergencias de tu país o con una persona de confianza que pueda estar contigo."}
                       </p>
                     )}
 
-                    {(aiResult?.status === "temporarily_unavailable" || aiResult?.status === "invalid_input") && (
+                    {aiResult?.status === "temporarily_unavailable" && (
                       <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
-                        Ahora no puedo interpretar el texto. Puedes seguir usando las opciones de abajo.
+                        {aiResult.message || "Ahora no puedo usar la orientación con IA. Las categorías y accesos directos de abajo siguen funcionando."}
+                      </p>
+                    )}
+
+                    {aiResult?.status === "invalid_input" && (
+                      <p role="status" className="mt-3 text-xs leading-relaxed text-on-surface-variant">
+                        Escribe una pregunta breve sobre SoyBienestar para poder orientarte.
                       </p>
                     )}
                   </form>

@@ -17,20 +17,44 @@ test("dedicated AI endpoint is isolated from auth and private data systems", () 
   assert.match(source, /INTERNAL_GUIDE_AI_ENABLED/);
   assert.match(source, /normalizeAgentGuideText/);
   assert.match(source, /isImmediateRiskText/);
-  assert.match(source, /parseAgentGuideModelActionId/);
+  assert.match(source, /classifyDeterministicGuideRequest/);
+  assert.match(source, /parseAgentGuideModelDecision/);
   assert.doesNotMatch(source, /firebase|firestore/i);
   assert.doesNotMatch(source, /requireAuth/);
-  assert.doesNotMatch(source, /\buid\b|\bemail\b|\bpatientId\b|\baccessCode\b|\bdossier\b/);
+  assert.doesNotMatch(source, /\buid\b|\bemail\b|\bpatientId\b|\baccessCode\b|\bdossier\b/i);
 });
 
-test("safety gate executes before rate-limited model classification", () => {
+test("safety and deterministic policy execute before any model quota is consumed", () => {
   const source = read("api/agent-guide-ai.ts");
   const safetyIndex = source.indexOf("isImmediateRiskText(text)");
-  const rateIndex = source.indexOf("reserveRateSlot(requestKey(req))");
+  const deterministicIndex = source.indexOf("classifyDeterministicGuideRequest(text)");
+  const dailyIndex = source.indexOf("isGuideDailyLimitReached(guard, DAILY_AI_LIMIT, now)");
+  const rateIndex = source.indexOf("reserveRateSlot(requestKey(req), now)");
   const modelIndex = source.indexOf("classifyWithGemini(text)");
   assert.ok(safetyIndex > 0);
-  assert.ok(rateIndex > safetyIndex);
+  assert.ok(deterministicIndex > safetyIndex);
+  assert.ok(dailyIndex > deterministicIndex);
+  assert.ok(rateIndex > dailyIndex);
   assert.ok(modelIndex > rateIndex);
+});
+
+test("endpoint carries signed browser quota without storing private user data", () => {
+  const source = read("api/agent-guide-ai.ts");
+  assert.match(source, /createHmac/);
+  assert.match(source, /timingSafeEqual/);
+  assert.match(source, /sb_guide_guard_v1/);
+  assert.match(source, /DAILY_AI_LIMIT/);
+  assert.match(source, /HttpOnly; SameSite=Lax/);
+  assert.match(source, /registerGuideMaliciousAttempt/);
+  assert.match(source, /registerGuideOffTopicAttempt/);
+});
+
+test("guard policy encodes exact two-malicious and three-off-topic cooldown thresholds", () => {
+  const source = read("api/agentGuideGuard.ts");
+  assert.match(source, /GUIDE_MALICIOUS_LOCK_MS = 30 \* 60 \* 1000/);
+  assert.match(source, /GUIDE_OFF_TOPIC_LOCK_MS = 10 \* 60 \* 1000/);
+  assert.match(source, /maliciousCount >= 2/);
+  assert.match(source, /offTopicCount >= 3/);
 });
 
 test("endpoint never logs the user's free text", () => {

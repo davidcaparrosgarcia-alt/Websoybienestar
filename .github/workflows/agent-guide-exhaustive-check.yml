@@ -1,0 +1,36 @@
+name: Agent guide exhaustive check
+
+on:
+  push:
+    branches:
+      - feat/agent-guide-usefulness-and-guardrails
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite
+        run: node --import tsx --test tests/*.test.ts
+
+      - name: Lint / typecheck
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build

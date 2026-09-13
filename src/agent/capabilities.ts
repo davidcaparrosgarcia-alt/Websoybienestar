@@ -59,6 +59,11 @@ export const WELLBEING_TOOL_PLANS = {
     requiresAuth: false,
     effect: { kind: "navigate", path: "/herramientas", entryPoint: "emotional_scan" },
   },
+  anxiety_check: {
+    riskLevel: "R0",
+    requiresAuth: false,
+    effect: { kind: "navigate", path: "/anxiety" },
+  },
   gratitude_diary: {
     riskLevel: "R1",
     requiresAuth: true,
