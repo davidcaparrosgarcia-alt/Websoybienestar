@@ -300,7 +300,14 @@ export function classifyDeterministicGuideRequest(
     };
   }
 
-  if (/\b(cuestionario espejo|cuestionario)\b/.test(folded) && /\b(que es|para que sirve|como funciona|acceder|abrir|continuar|retomar)\b/.test(folded)) {
+  if (/\b(puedes|puede|sabes|conoces)\b.*\b(mi dossier|mi dosier|mis respuestas|mi clave|mis datos|mi pin)\b/.test(folded)) {
+    return {
+      status: "answer",
+      message: "No. Esta guía no recibe el contenido de tu consulta, tus respuestas, el Dossier Espejo, claves, PIN ni datos personales. Solo utiliza señales generales y limitadas cuando necesita orientarte sobre el siguiente paso.",
+    };
+  }
+
+  if (/\b(cuestionario espejo|cuestionario)\b/.test(folded) && /\b(que es|para que sirve|como funciona|acceder|accedo|abrir|continuar|retomar|retomo)\b/.test(folded)) {
     return {
       status: "answer",
       message: "El Cuestionario Espejo forma parte del recorrido cuando corresponde profundizar después de la primera orientación. La guía no puede leer tus respuestas; solo puede llevarte a la página que determina el siguiente paso.",
@@ -308,18 +315,11 @@ export function classifyDeterministicGuideRequest(
     };
   }
 
-  if (/\b(dossier espejo|dosier espejo|mi dossier|mi dosier)\b/.test(folded) && /\b(que es|para que sirve|acceder|abrir|ver|leer|entrar)\b/.test(folded)) {
+  if (/\b(dossier espejo|dosier espejo|mi dossier|mi dosier)\b/.test(folded) && /\b(que es|para que sirve|acceder|accedo|abrir|ver|leer|entrar)\b/.test(folded)) {
     return {
       status: "answer",
       message: "El Dossier Espejo es una parte personal de tu proceso. La guía no puede leer su contenido ni conocer tu clave; solo puede llevarte a su puerta de acceso segura.",
       actionId: "process_dossier",
-    };
-  }
-
-  if (/\b(puedes|puede|sabes|conoces)\b.*\b(mi dossier|mi dosier|mis respuestas|mi clave|mis datos|mi pin)\b/.test(folded)) {
-    return {
-      status: "answer",
-      message: "No. Esta guía no recibe el contenido de tu consulta, tus respuestas, el Dossier Espejo, claves, PIN ni datos personales. Solo utiliza señales generales y limitadas cuando necesita orientarte sobre el siguiente paso.",
     };
   }
 
@@ -378,13 +378,13 @@ export function classifyDeterministicGuideRequest(
   }
 
   const guideIntents: ReadonlyArray<readonly [RegExp, AgentGuideActionId, string]> = [
+    [/\b(comer por ansiedad|como por ansiedad|hambre emocional|alimentacion emocional|atracon emocional)\b/, "guide_emotional_eating", "Tenemos una guía específica sobre alimentación emocional y la relación entre emoción, conducta y comida."],
     [/\b(ansiedad|ataques de ansiedad)\b/, "guide_anxiety", "Si buscas comprender mejor la ansiedad, tenemos una guía específica con información y recursos de SoyBienestar. Si lo que quieres es medir tu presión actual, pregúntame por la Válvula de Presión Interna."],
     [/\b(estres|estresado|estresada|sobrecarga)\b/, "guide_stress", "Tenemos una guía específica sobre estrés y sobrecarga emocional. Puedo abrirla para que veas los recursos disponibles."],
     [/\b(insomnio|no puedo dormir|me cuesta dormir)\b/, "guide_insomnia", "Tenemos una guía específica sobre insomnio relacionado con ansiedad o estrés y también herramientas de respiración y meditación."],
     [/\b(procrastinacion|procrastino|posponer todo)\b/, "guide_procrastination", "Tenemos una guía específica para entender mejor la procrastinación, el bloqueo y el perfeccionismo."],
     [/\b(rumiacion|pensar demasiado|no paro de pensar|darle vueltas)\b/, "guide_rumination", "Tenemos una guía específica sobre rumiación y pensamientos repetitivos que puede ayudarte a entender el patrón y conocer los recursos disponibles."],
     [/\b(gestion emocional|regular emociones|emociones intensas)\b/, "guide_emotional_management", "Tenemos una guía sobre gestión emocional y recursos de autoobservación que pueden servirte como punto de partida."],
-    [/\b(comer por ansiedad|hambre emocional|alimentacion emocional|atracon emocional)\b/, "guide_emotional_eating", "Tenemos una guía específica sobre alimentación emocional y la relación entre emoción, conducta y comida."],
   ];
 
   for (const [pattern, actionId, message] of guideIntents) {
