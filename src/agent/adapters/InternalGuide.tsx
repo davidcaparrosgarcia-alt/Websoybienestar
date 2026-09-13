@@ -12,6 +12,8 @@ import {
   isSoyBienestarInternalGuideAiEnabled,
   type InternalGuideAIResult,
 } from "../internalGuideAI";
+import { readAgentProcessContext } from "../processContext";
+import type { AgentCoarseUserState } from "../userState";
 
 export default function InternalGuide() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function InternalGuide() {
   const [query, setQuery] = useState("");
   const [isInterpreting, setIsInterpreting] = useState(false);
   const [aiResult, setAiResult] = useState<InternalGuideAIResult | null>(null);
+  const [processContext, setProcessContext] = useState<AgentCoarseUserState | null>(null);
   const interpretControllerRef = useRef<AbortController | null>(null);
   const enabled = isSoyBienestarInternalGuideEnabled();
   const aiEnabled = isSoyBienestarInternalGuideAiEnabled();
@@ -28,6 +31,28 @@ export default function InternalGuide() {
   useEffect(() => {
     return () => interpretControllerRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    if (!enabled || selectedSectionId !== "process") {
+      setProcessContext(null);
+      return;
+    }
+
+    let active = true;
+    setProcessContext(null);
+
+    void readAgentProcessContext()
+      .then((context) => {
+        if (active) setProcessContext(context);
+      })
+      .catch(() => {
+        if (active) setProcessContext(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [enabled, selectedSectionId]);
 
   if (!enabled) return null;
 
@@ -150,17 +175,35 @@ export default function InternalGuide() {
                 </div>
 
                 <div className="space-y-2">
-                  {selectedSection.actions.map((action) => (
-                    <button
-                      key={action.id}
-                      type="button"
-                      onClick={() => handleAction(action.id)}
-                      className="w-full flex items-center justify-between gap-3 text-left rounded-2xl border border-outline-variant/15 bg-surface-container-low px-4 py-3 text-on-surface hover:border-primary/30 hover:bg-surface-container transition-colors"
-                    >
-                      <span className="text-sm font-medium">{action.label}</span>
-                      <span className="material-symbols-outlined text-lg text-primary/70">arrow_forward</span>
-                    </button>
-                  ))}
+                  {selectedSection.actions.map((action) => {
+                    const isRecommended =
+                      selectedSection.id === "process" &&
+                      processContext?.recommendedProcessActionId === action.id;
+
+                    return (
+                      <button
+                        key={action.id}
+                        type="button"
+                        aria-current={isRecommended ? "step" : undefined}
+                        onClick={() => handleAction(action.id)}
+                        className={`w-full flex items-center justify-between gap-3 text-left rounded-2xl border px-4 py-3 text-on-surface hover:border-primary/30 hover:bg-surface-container transition-colors ${
+                          isRecommended
+                            ? "border-primary/40 bg-primary/5"
+                            : "border-outline-variant/15 bg-surface-container-low"
+                        }`}
+                      >
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium">{action.label}</span>
+                          {isRecommended && (
+                            <span className="mt-1 block text-[11px] font-semibold uppercase tracking-wide text-primary">
+                              Recomendado
+                            </span>
+                          )}
+                        </span>
+                        <span className="material-symbols-outlined text-lg text-primary/70">arrow_forward</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             ) : (
