@@ -4,13 +4,24 @@ Este documento existe para que cualquier chat/agente pueda continuar el proyecto
 
 ## Repositorio
 - SoyBienestar: `davidcaparrosgarcia-alt/Websoybienestar`
-- `main` debe permanecer sin cambios hasta terminar todas las fases.
-- `main` de referencia y verificado tras Fase 7B: `51f31968af83174c93873195baab50bcdb9480ba`
+- `main` debe permanecer sin cambios hasta terminar las fases y realizar la auditoría integral final.
+- `main` de referencia y verificado tras Fase 7C: `51f31968af83174c93873195baab50bcdb9480ba`
 
 ## Regla de trabajo
-Cada fase parte del SHA auditado de la fase anterior, se desarrolla en una rama nueva, se audita en GitHub/Vercel y NO se integra en `main` hasta auditoría integral final.
+Cada checkpoint parte del SHA auditado anterior, se desarrolla en una rama separada, se audita en GitHub/Vercel y NO se integra en `main` hasta auditoría integral final.
 
 Si una mejora del agente exige modificar una pieza compartida por la web actual, detenerse antes de tocarla: se considera ALERTA ROJA y requiere auditoría previa de dependencias, flujos y regresiones.
+
+### Cadencia desde Fase 7C
+Las primeras fases se dividieron de forma muy granular para fijar con seguridad las fronteras de privacidad, transporte, autorización y ejecución. Esas fronteras ya están definidas.
+
+A partir de Fase 7C, evitar microfases innecesarias. Agrupar cambios contiguos que sean exclusivamente del agente y compartan el mismo nivel de riesgo en checkpoints mayores:
+- una auditoría al inicio;
+- un lote de implementación coherente;
+- una validación completa al final;
+- un único congelado del checkpoint.
+
+Solo detener el lote antes de tiempo si aparece una ALERTA ROJA, una dependencia compartida no prevista o una regresión real.
 
 ## Fases cerradas
 
@@ -38,7 +49,7 @@ Si una mejora del agente exige modificar una pieza compartida por la web actual,
 - Rama: `feat/agent-readiness-phase5-ai-interpreter`
 - SHA auditado: `8ca40d1e9b84cf7816e37d2db220de4cb3f5fb37`
 - Estado: PASS / congelada.
-- La IA es opcional: si falla, la guía determinista de Fase 4 sigue funcionando.
+- La IA es opcional: si falla, la guía determinista sigue funcionando.
 - Gemini solo clasifica a uno de los 20 `actionId` cerrados o `none`.
 - No navega ni ejecuta acciones directamente; requiere clic humano en “Abrir”.
 
@@ -48,167 +59,118 @@ Si una mejora del agente exige modificar una pieza compartida por la web actual,
 - SHA final auditado: `9240f44b5795074e5aaad45f4ed9cec8bf02e77e`
 - Estado: PASS / congelada como capa de política privacy-safe.
 
-#### Qué quedó finalmente
-La Fase 6 conserva una capa pura del agente en `src/agent/userState.ts` y sus pruebas.
+La capa pura `src/agent/userState.ts` acepta únicamente señales gruesas de consulta/cuestionario/dossier y devuelve únicamente `hasDoneConsultation`, `questionnaireStage` y `recommendedProcessActionId`.
 
-Acepta únicamente señales gruesas:
-- `hasDoneConsultation`
-- estado de cuestionario de usuario/perfil
-- evidencia booleana de dossier
+Reutiliza `resolveQuestionnaireUiState` sin modificar la política existente. `reset_required` manda sobre dossier. Usa solo el `hasDoneConsultation` canónico. La primera versión con lectura completa Firestore fue eliminada antes del cierre.
 
-Devuelve únicamente:
-- `hasDoneConsultation`
-- `questionnaireStage`: `not_started | active | reset_required | dossier_ready`
-- `recommendedProcessActionId`: `process_free_consultation | process_questionnaire | process_dossier`
-
-Reutiliza `resolveQuestionnaireUiState` de `api/questionnaireWebhookPolicy.ts` sin modificar esa política. `reset_required` manda sobre cualquier evidencia de dossier.
-
-El agente usa solo la señal canónica `hasDoneConsultation` y no interpreta alias alternativos.
-
-La primera versión de esta fase incluía un reader Firestore completo; fue eliminado antes del cierre. La capa final no hace `getDoc`, no usa `fetch`, no recibe documentos completos y no usa `getOrMigrateUserProfile`.
-
-#### Validación Fase 6
-- 211 tests
-- 211 PASS
-- 0 FAIL
-- `npm run lint`: PASS
-- `npm run build`: PASS
-- Preview final: READY
+Validación: 211/211 tests, lint PASS, build PASS, Preview READY.
 
 ### Fase 7A — masked coarse-state transport
 - Rama: `feat/agent-readiness-phase7a-masked-transport`
 - Base exacta: `9240f44b5795074e5aaad45f4ed9cec8bf02e77e`
 - SHA final auditado: `ba183616efff994dc04964f2c406dc96db8ce1f2`
-- Estado: PASS / congelada como transporte mínimo. NO conectado a `InternalGuide` ni a `Layout`.
+- Estado: PASS / congelada.
 
-#### Objetivo e implementación
-Se añadió:
-- `src/services/agentCoarseStateTransport.ts`
-- `tests/agentUserStateTransport.test.ts`
+Se añadió `src/services/agentCoarseStateTransport.ts` y sus tests. El transporte usa sesión Firebase existente + REST Firestore con `DocumentMask` para recibir solo:
 
-El transporte utiliza la sesión Firebase existente para autenticar una lectura REST de Firestore con `DocumentMask` / `mask.fieldPaths`.
-
-Campos permitidos en `users/{uid}`:
+`users/{uid}`:
 - `hasDoneConsultation`
 - `questionnaireStatus`
 - `questionnaireRequestStatus`
 - `dossierAvailableAt`
 
-Campos permitidos en `userProfiles/{uid}`:
+`userProfiles/{uid}`:
 - `questionnaireStatus`
 - `questionnaireRequestStatus`
 - `dossierAvailableAt`
 
-No pide ni interpreta dossier, contexto interno, respuestas, conclusiones, códigos/PIN, patient IDs, PII ni documentos completos.
+No solicita dossier, respuestas, conclusiones, códigos/PIN, patient IDs, PII ni documentos completos. El Firebase ID token existe solo temporalmente dentro del transporte y no cruza hacia la capa de decisión ni Gemini. No se modificaron Firebase Rules, auth, backend, webhooks ni estructura de datos. Fallos de auth/red degradan a `null`.
 
-El Firebase ID token existe solo temporalmente dentro del transporte, no se guarda, no se imprime y no cruza hacia la capa de decisión del agente ni hacia Gemini.
-
-Firestore Security Rules continúan siendo la autoridad de acceso. No se modificaron reglas, auth, backend, webhooks ni estructura de datos.
-
-Si falta el perfil se trata como vacío. Si falla auth/red/respuesta, devuelve `null` y la guía deberá degradar al comportamiento sin contexto.
-
-#### Validación Fase 7A
-- 219 tests
-- 219 PASS
-- 0 FAIL
-- `npm run lint`: PASS
-- `npm run build`: PASS
-- Preview final limpio: READY
-
-#### Diff neto Fase 7A
-Solo dos archivos nuevos:
-- `src/services/agentCoarseStateTransport.ts`
-- `tests/agentUserStateTransport.test.ts`
-
-No se modificó ningún archivo existente de runtime de SoyBienestar.
+Validación: 219/219 tests, lint PASS, build PASS, Preview final limpio READY.
 
 ### Fase 7B — process context composition
 - Rama: `feat/agent-readiness-phase7b-process-context`
 - Base exacta: `ba183616efff994dc04964f2c406dc96db8ce1f2`
 - SHA final auditado: `33f4a0efa8caf29b01b7c8bcff349cdf607e0db9`
-- Estado: PASS / congelada. El transporte y la política ya están compuestos, pero todavía NO están montados en `InternalGuide` ni en `Layout`.
+- Estado: PASS / congelada.
 
-#### Objetivo
-Unir de forma controlada el transporte privacy-safe de Fase 7A con la política pura de Fase 6 para obtener un contexto de proceso cerrado y determinista sin introducir comportamiento visible todavía.
-
-#### Implementación
-Se añadió exclusivamente:
-- `src/agent/processContext.ts`
-- `tests/agentProcessContext.test.ts`
-
-`readAgentProcessContext()` hace únicamente esta cadena:
+Se añadió `src/agent/processContext.ts` y sus tests. La cadena es:
 
 `masked transport -> AgentCoarseUserStateSignals -> deriveAgentCoarseUserState -> AgentCoarseUserState`
 
-El resultado posible sigue limitado a:
-- `hasDoneConsultation`
-- `questionnaireStage`
-- `recommendedProcessActionId`
+La composición no recibe token, UID, documentos, PII, dossier, respuestas o conclusiones. Tampoco navega, ejecuta acciones ni llama a Gemini. Si falla el transporte devuelve `null`; `null` nunca autoriza nada. El kill switch `VITE_INTERNAL_GUIDE_CONTEXT_ENABLED=false` evita incluso la lectura.
 
-La capa de composición no recibe ni conoce token, UID, documentos Firestore, PII, dossier, respuestas o conclusiones. Tampoco navega, ejecuta acciones ni llama a Gemini.
+Semántica verificada:
+- sin consulta -> consulta gratuita;
+- consulta completada -> cuestionario;
+- cuestionario activo -> cuestionario;
+- dossier disponible -> dossier;
+- `reset_required` + dossier -> cuestionario.
 
-#### Degradación y kill switch
-- Si el transporte devuelve `null`, `readAgentProcessContext()` devuelve `null`.
-- `null` significa “sin contexto disponible”, nunca autorización ni estado alternativo.
-- Si `VITE_INTERNAL_GUIDE_CONTEXT_ENABLED === "false"`, el transporte ni siquiera se ejecuta.
-- La guía determinista actual debe seguir funcionando exactamente como antes cuando no exista contexto.
+Validación: 229/229 tests, lint PASS, build PASS, Preview final limpio READY.
 
-#### Semántica verificada
-- Sin consulta completada -> `process_free_consultation`.
-- Consulta completada -> `process_questionnaire`.
-- Cuestionario activo -> `process_questionnaire`.
-- Dossier disponible -> `process_dossier`.
-- `reset_required` + dossier -> `process_questionnaire`; reset sigue ganando.
+### Fase 7C — process guidance in InternalGuide
+- Rama: `feat/agent-readiness-phase7c-process-guidance`
+- Base exacta: `33f4a0efa8caf29b01b7c8bcff349cdf607e0db9`
+- SHA final auditado: `d532046eeedaa386e171a091c267dfd854c438f2`
+- Estado: PASS / congelada.
 
-La semántica sigue viniendo de Fase 6 y de `resolveQuestionnaireUiState`; Fase 7B no crea un segundo motor de estados.
+#### Objetivo
+Hacer visible la recomendación determinista de proceso únicamente dentro de la sección “Tu proceso” de la guía interna, sin convertirla en autorización, sin navegación automática y sin alterar los flujos reales de consulta, cuestionario o dossier.
 
-#### No conexión deliberada
-Fase 7B NO modifica ni importa `readAgentProcessContext()` desde:
-- `Layout.tsx`
-- `InternalGuide.tsx`
-- consulta
-- dossier
-- solicitud de cuestionario
-- backend
-- Firebase Rules
-- webhooks
+#### Implementación
+Runtime modificado:
+- `src/agent/adapters/InternalGuide.tsx`
 
-Por tanto, todavía no cambia nada visible ni funcional para el usuario de la web actual.
+Tests:
+- `tests/internalGuideProcessGuidance.test.ts` nuevo
+- `tests/agentProcessContext.test.ts` ajustado para reflejar el montaje deliberado de Fase 7C sin perder el guard de que `Layout` no conoce el contexto.
 
-#### Validación Fase 7B
-Se añadió temporalmente un runner de validación en Preview y se retiró completamente antes del SHA final.
+Comportamiento:
+- La lectura de contexto NO se hace al montar `Layout` ni al abrir simplemente la guía.
+- Solo se solicita cuando el usuario entra explícitamente en “Tu proceso”.
+- Las tres acciones existentes siguen visibles, en el mismo orden y clicables.
+- La acción recomendada recibe únicamente una indicación visual discreta `Recomendado` y `aria-current="step"`.
+- No hay autoejecución ni autonavegación.
+- `handleAction()` sigue ejecutándose únicamente por clic humano.
+- La recomendación no se envía a Gemini ni modifica el texto enviado al clasificador IA.
+- `InternalGuide` no accede directamente a Firebase, Firestore, token ni red; llama exclusivamente a `readAgentProcessContext()`.
+- Si no hay contexto o falla la lectura, desaparece la recomendación y se conserva el listado normal sin mensaje de error adicional.
+- No se modificaron `Layout.tsx`, Firebase Rules, backend, webhooks, consulta, cuestionario ni dossier en Fase 7C.
 
-Resultado:
-- 229 tests
-- 229 PASS
+#### Validación Fase 7C
+La primera ejecución detectó un único test histórico de Fase 7B que afirmaba que todavía no debía existir montaje en `InternalGuide`. Era una aserción deliberadamente válida para 7B pero obsoleta para el objetivo de 7C; no fue un fallo de runtime. Se actualizó ese guard para exigir ahora que el contexto esté montado solo en `InternalGuide` y nunca en `Layout`.
+
+Resultado final:
+- 235 tests
+- 235 PASS
 - 0 FAIL
 - `npm run lint`: PASS
 - `npm run build`: PASS
 - Preview de validación: READY
-- Preview final limpio `33f4a0e...`: READY
+- Preview final limpio del SHA `d532046...`: READY
 
-El runner temporal y el `buildCommand` temporal NO existen en el SHA final.
+El runner temporal y el `buildCommand` temporal se retiraron completamente antes del SHA final.
 
-#### Diff neto Fase 7B respecto a Fase 7A
-Únicamente dos archivos nuevos:
-- `src/agent/processContext.ts`
-- `tests/agentProcessContext.test.ts`
+#### Diff neto Fase 7C respecto a Fase 7B
+Solo:
+- `src/agent/adapters/InternalGuide.tsx` modificado
+- `tests/agentProcessContext.test.ts` modificado
+- `tests/internalGuideProcessGuidance.test.ts` añadido
 
-No se modificó ningún archivo existente de runtime de SoyBienestar.
+No quedaron cambios netos en `vercel.json` ni scripts temporales.
 
-## Siguiente fase recomendada
-Fase 7C: estudiar y, si pasa auditoría previa, conectar el `recommendedProcessActionId` únicamente a la orientación de la sección “Tu proceso” de `InternalGuide`.
+## Próximo checkpoint recomendado — cierre amplio de Agent Readiness
+No crear una microfase 7D por cada detalle. El siguiente trabajo debe agrupar el cierre técnico del agente en un checkpoint mayor:
 
-Condiciones para Fase 7C:
-1. partir exactamente del SHA `33f4a0efa8caf29b01b7c8bcff349cdf607e0db9`;
-2. antes de modificar `InternalGuide.tsx`, auditar cómo se presentan actualmente sus tres acciones de proceso y sus pruebas;
-3. el coarse state solo puede destacar/recomendar una acción; nunca ocultar puertas válidas, autorizar acceso ni saltarse `ProtectedRoute`;
-4. no ejecutar automáticamente la recomendación;
-5. mantener clic humano antes de cualquier navegación;
-6. no enviar el coarse state a Gemini; la recomendación debe ser determinista;
-7. si el transporte falla o está desactivado, `InternalGuide` debe conservar exactamente el comportamiento visual y funcional actual;
-8. no modificar `Layout`, Firebase Rules, backend, webhooks, consulta, cuestionario o dossier;
-9. cualquier necesidad de tocar una pieza compartida de la web = ALERTA ROJA antes del cambio.
+1. auditar acumulativamente todo el diff desde `main` hasta Fase 7C;
+2. revisar específicamente los pocos archivos compartidos tocados por fases anteriores (`Layout.tsx`, `Resources.tsx`, `server.ts`, `vercel.json`) y sus dependencias antes de cualquier futura integración;
+3. comprobar kill switches, degradación, navegación humana, privacidad, ausencia de ejecución R2/R3/R4 y compatibilidad móvil/escritorio;
+4. identificar y resolver en el mismo lote únicamente los defectos agent-only que aparezcan;
+5. ejecutar una única batería integral de tests + lint + build + Preview;
+6. todavía NO tocar ni fusionar `main` hasta que esa auditoría integral dé PASS.
+
+Si durante ese checkpoint aparece la necesidad de cambiar lógica compartida real de SoyBienestar, detener el lote y declarar ALERTA ROJA antes del cambio.
 
 ## Arquitectura que NO debe romperse
 
@@ -236,6 +198,6 @@ Además:
 ## Cómo continuar en un chat nuevo
 Indicación mínima al nuevo chat:
 
-> Lee `docs/agent-readiness/HANDOFF.md` en la rama `docs/agent-readiness-handoff` y audita después el SHA congelado de Fase 7B `33f4a0efa8caf29b01b7c8bcff349cdf607e0db9` en `feat/agent-readiness-phase7b-process-context`. Diseña Fase 7C sin tocar `main` ni ninguna pieza compartida de la web sin declarar antes ALERTA ROJA.
+> Lee `docs/agent-readiness/HANDOFF.md` en la rama `docs/agent-readiness-handoff` y audita después el SHA congelado de Fase 7C `d532046eeedaa386e171a091c267dfd854c438f2` en `feat/agent-readiness-phase7c-process-guidance`. Continúa con el checkpoint amplio de cierre de Agent Readiness sin tocar `main`; cualquier cambio necesario en lógica compartida real de SoyBienestar es ALERTA ROJA y debe auditarse antes.
 
 El código real de GitHub manda sobre cualquier resumen.
