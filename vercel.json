@@ -1,5 +1,4 @@
 {
-  "buildCommand": "node scripts/validate-agent-readiness.mjs",
   "redirects": [
     {
       "source": "/treatments",
