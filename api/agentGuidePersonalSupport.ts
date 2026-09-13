@@ -30,7 +30,7 @@ const STRONG_PERSONAL_PATTERNS: readonly RegExp[] = [
   /\b(no se que hacer con mi vida)\b/,
   /\b(mi jefe|mis companeros)\b.{0,40}\b(me humilla|me humillan|me acosa|me acosan|se rien de mi)\b/,
   /\b(mi pareja|mi familia|mis amigos)\b.{0,45}\b(me ignora|me ignoran|no me entiende|no me entienden|me rechaza|me rechazan|me trata mal|me tratan mal)\b/,
-  /\b(estoy pasando|paso por)\b.{0,25}\b(una )?(mala epoca|epoca dificil|momento dificil)\b/,
+  /\b(estoy pasando|paso por)\b.{0,25}\b(una epoca (?:muy )?(?:mala|dificil)|un momento dificil|una mala epoca)\b/,
   /\b(lloro mucho|no paro de llorar|estoy llorando)\b/,
 ];
 
