@@ -38,15 +38,26 @@ test("safety and deterministic policy execute before any model quota is consumed
   assert.ok(modelIndex > rateIndex);
 });
 
-test("endpoint carries signed browser quota without storing private user data", () => {
+test("endpoint carries signed anonymous quota in a response header and never creates cookies", () => {
   const source = read("api/agent-guide-ai.ts");
   assert.match(source, /createHmac/);
   assert.match(source, /timingSafeEqual/);
-  assert.match(source, /sb_guide_guard_v1/);
+  assert.match(source, /X-SB-Guide-Guard/);
+  assert.match(source, /x-sb-guide-guard/);
   assert.match(source, /DAILY_AI_LIMIT/);
-  assert.match(source, /HttpOnly; SameSite=Lax/);
   assert.match(source, /registerGuideMaliciousAttempt/);
   assert.match(source, /registerGuideOffTopicAttempt/);
+  assert.doesNotMatch(source, /Set-Cookie|document\.cookie|req\?\.headers\?\.cookie/i);
+});
+
+test("client stores only the opaque signed guard token in localStorage and sends it explicitly", () => {
+  const source = read("src/agent/internalGuideAI.ts");
+  assert.match(source, /soybienestar\.guideGuard\.v1/);
+  assert.match(source, /window\.localStorage\.getItem/);
+  assert.match(source, /window\.localStorage\.setItem/);
+  assert.match(source, /headers\["X-SB-Guide-Guard"\] = guardToken/);
+  assert.match(source, /response\.headers\.get\("X-SB-Guide-Guard"\)/);
+  assert.doesNotMatch(source, /document\.cookie|Set-Cookie/i);
 });
 
 test("guard policy encodes exact two-malicious and three-off-topic cooldown thresholds", () => {

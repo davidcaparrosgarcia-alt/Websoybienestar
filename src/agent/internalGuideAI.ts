@@ -4,6 +4,7 @@ import {
 } from "./internalGuide";
 
 export const INTERNAL_GUIDE_AI_MAX_TEXT_LENGTH = 500;
+export const INTERNAL_GUIDE_GUARD_STORAGE_KEY = "soybienestar.guideGuard.v1";
 export type InternalGuideProcessReason = "next_step" | "pricing";
 
 export type InternalGuideAIResult =
@@ -46,6 +47,26 @@ function readMessage(payload: Record<string, unknown>): string | undefined {
     : undefined;
 }
 
+function readGuardToken(): string | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const value = window.localStorage.getItem(INTERNAL_GUIDE_GUARD_STORAGE_KEY);
+    return typeof value === "string" && value.trim() ? value.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeGuardToken(value: string | null): void {
+  if (!value) return;
+  try {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(INTERNAL_GUIDE_GUARD_STORAGE_KEY, value);
+  } catch {
+    // Abuse-control state is best-effort and must never break the guide.
+  }
+}
+
 export async function interpretInternalGuideText(
   value: unknown,
   options: InterpretInternalGuideTextOptions = {},
@@ -54,14 +75,19 @@ export async function interpretInternalGuideText(
   if (!text) return { status: "invalid_input" };
 
   const fetchImpl = options.fetchImpl ?? fetch;
+  const guardToken = readGuardToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (guardToken) headers["X-SB-Guide-Guard"] = guardToken;
 
   try {
     const response = await fetchImpl("/api/agent-guide-interpret", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ text }),
       signal: options.signal,
     });
+
+    storeGuardToken(response.headers.get("X-SB-Guide-Guard"));
 
     let payload: unknown = null;
     try {
@@ -93,7 +119,11 @@ export async function interpretInternalGuideText(
           : {}),
       };
     }
-    if (status === "process_guidance" && message && (record.reason === "next_step" || record.reason === "pricing")) {
+    if (
+      status === "process_guidance" &&
+      message &&
+      (record.reason === "next_step" || record.reason === "pricing")
+    ) {
       return { status: "process_guidance", message, reason: record.reason };
     }
     if (status === "answer" && message) {

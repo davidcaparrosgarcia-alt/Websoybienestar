@@ -32,7 +32,7 @@ const MODEL_CANDIDATES = [
 ].filter((value, index, array) => value && array.indexOf(value) === index);
 
 const RATE_WINDOW_MS = 5 * 60 * 1000;
-const GUARD_COOKIE_NAME = "sb_guide_guard_v1";
+const GUARD_HEADER_NAME = "X-SB-Guide-Guard";
 
 type RateBucket = { count: number; resetAt: number };
 const rateBuckets = new Map<string, RateBucket>();
@@ -97,28 +97,20 @@ function guardSecret(): string | null {
   return process.env.INTERNAL_GUIDE_RATE_SECRET || API_KEY || null;
 }
 
-function parseCookieHeader(header: unknown): Record<string, string> {
-  if (typeof header !== "string" || !header.trim()) return {};
-  const result: Record<string, string> = {};
-  for (const part of header.split(";")) {
-    const separator = part.indexOf("=");
-    if (separator <= 0) continue;
-    const key = part.slice(0, separator).trim();
-    const value = part.slice(separator + 1).trim();
-    if (key) result[key] = value;
-  }
-  return result;
-}
-
 function signGuardPayload(payload: string, secret: string): string {
   return createHmac("sha256", secret).update(payload).digest("base64url");
+}
+
+function readGuardHeader(req: any): string | null {
+  const value = req?.headers?.["x-sb-guide-guard"];
+  if (Array.isArray(value)) return typeof value[0] === "string" ? value[0] : null;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 function readGuardState(req: any, now: number): GuideGuardState {
   const secret = guardSecret();
   if (!secret) return freshGuideGuardState(now);
-  const cookies = parseCookieHeader(req?.headers?.cookie);
-  const encoded = cookies[GUARD_COOKIE_NAME];
+  const encoded = readGuardHeader(req);
   if (!encoded) return freshGuideGuardState(now);
 
   const separator = encoded.lastIndexOf(".");
@@ -143,11 +135,7 @@ function writeGuardState(res: any, state: GuideGuardState): void {
   if (!secret) return;
   const payload = Buffer.from(JSON.stringify(state), "utf8").toString("base64url");
   const signature = signGuardPayload(payload, secret);
-  const secure = process.env.VERCEL || process.env.NODE_ENV === "production" ? "; Secure" : "";
-  res.setHeader(
-    "Set-Cookie",
-    `${GUARD_COOKIE_NAME}=${payload}.${signature}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400${secure}`,
-  );
+  res.setHeader(GUARD_HEADER_NAME, `${payload}.${signature}`);
 }
 
 function blockedResponse(res: any, state: GuideGuardState, now: number) {
