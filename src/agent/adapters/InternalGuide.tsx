@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   INTERNAL_GUIDE_SECTIONS,
   executeInternalGuideAction,
@@ -17,6 +17,7 @@ import type { AgentCoarseUserState } from "../userState";
 
 export default function InternalGuide() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<InternalGuideSectionId | null>(null);
   const [hasError, setHasError] = useState(false);
@@ -31,6 +32,18 @@ export default function InternalGuide() {
   useEffect(() => {
     return () => interpretControllerRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    interpretControllerRef.current?.abort();
+    interpretControllerRef.current = null;
+    setIsOpen(false);
+    setSelectedSectionId(null);
+    setHasError(false);
+    setQuery("");
+    setIsInterpreting(false);
+    setAiResult(null);
+    setProcessContext(null);
+  }, [location.key]);
 
   useEffect(() => {
     if (!enabled || selectedSectionId !== "process") {

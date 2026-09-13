@@ -70,11 +70,9 @@ function readBooleanField(fields: FirestoreFields, fieldName: string): boolean {
   return fields[fieldName]?.booleanValue === true;
 }
 
-function hasNonNullField(fields: FirestoreFields, fieldName: string): boolean {
-  const value = fields[fieldName];
-  if (!value) return false;
-  if (Object.prototype.hasOwnProperty.call(value, "nullValue")) return false;
-  return true;
+function hasValidTimestampField(fields: FirestoreFields, fieldName: string): boolean {
+  const value = fields[fieldName]?.timestampValue;
+  return typeof value === "string" && value.trim().length > 0 && !Number.isNaN(Date.parse(value));
 }
 
 async function readMaskedDocument(
@@ -143,8 +141,8 @@ export async function readAgentCoarseUserStateSignalsForAuthenticatedUser(
         "questionnaireRequestStatus",
       ),
       dossierEvidence:
-        hasNonNullField(userFields, "dossierAvailableAt") ||
-        hasNonNullField(profileFields, "dossierAvailableAt"),
+        hasValidTimestampField(userFields, "dossierAvailableAt") ||
+        hasValidTimestampField(profileFields, "dossierAvailableAt"),
     };
   } catch {
     return null;
