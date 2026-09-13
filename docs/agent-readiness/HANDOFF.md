@@ -5,7 +5,7 @@ Este documento existe para que cualquier chat/agente pueda continuar el proyecto
 ## Repositorio
 - SoyBienestar: `davidcaparrosgarcia-alt/Websoybienestar`
 - `main` debe permanecer sin cambios hasta terminar todas las fases.
-- `main` de referencia y verificado tras Fase 6: `51f31968af83174c93873195baab50bcdb9480ba`
+- `main` de referencia y verificado tras Fase 7A: `51f31968af83174c93873195baab50bcdb9480ba`
 
 ## Regla de trabajo
 Cada fase parte del SHA auditado de la fase anterior, se desarrolla en una rama nueva, se audita en GitHub/Vercel y NO se integra en `main` hasta auditoría integral final.
@@ -107,14 +107,120 @@ Tests:
 
 No hay adapter Firestore del agente en el diff final.
 
-## Siguiente fase recomendada
-Diseñar el transporte mínimo de señales gruesas hacia el agente SIN tocar todavía la lógica actual de la web.
+### Fase 7A — masked coarse-state transport
+- Rama: `feat/agent-readiness-phase7a-masked-transport`
+- Base exacta: `9240f44b5795074e5aaad45f4ed9cec8bf02e77e`
+- SHA final auditado: `ba183616efff994dc04964f2c406dc96db8ce1f2`
+- Estado: PASS / congelada como transporte mínimo. NO está conectado todavía a `InternalGuide` ni a `Layout`.
 
-Antes de implementar:
-1. identificar de dónde puede obtenerse cada señal sin entregar documentos completos;
-2. demostrar que no requiere cambiar ningún flujo actual;
-3. si requiere modificar una pieza compartida, declarar ALERTA ROJA y auditar primero todas sus dependencias;
-4. mantener la conexión a `InternalGuide` desactivada hasta que el transporte privacy-safe esté validado.
+#### Objetivo
+Permitir que una futura capa del agente obtenga únicamente las señales gruesas que necesita la Fase 6 sin descargar los documentos completos de `users/{uid}` y `userProfiles/{uid}` en la frontera del agente y sin modificar procesos existentes de SoyBienestar.
+
+#### Implementación
+Se añadió exclusivamente un servicio nuevo dedicado al transporte:
+- `src/services/agentCoarseStateTransport.ts`
+
+Y sus pruebas:
+- `tests/agentUserStateTransport.test.ts`
+
+El transporte usa la sesión Firebase ya existente solo para identificar al usuario autenticado y obtener temporalmente su Firebase ID token. Ese token:
+- no se devuelve al agente;
+- no se guarda;
+- no se imprime en consola;
+- no se incluye en URLs;
+- se usa únicamente como `Authorization: Bearer ...` para la llamada REST autenticada.
+
+La petición REST usa `DocumentMask` / `mask.fieldPaths` para pedir únicamente estos campos:
+
+`users/{uid}`:
+- `hasDoneConsultation`
+- `questionnaireStatus`
+- `questionnaireRequestStatus`
+- `dossierAvailableAt`
+
+`userProfiles/{uid}`:
+- `questionnaireStatus`
+- `questionnaireRequestStatus`
+- `dossierAvailableAt`
+
+No pide ni interpreta:
+- `latestDossier`
+- `latestDossierInternalContext`
+- respuestas del cuestionario
+- conclusiones
+- códigos/PIN
+- patient IDs
+- nombre, email, teléfono, edad o sexo
+- resúmenes clínicos
+- documentos completos
+
+El transporte convierte inmediatamente `dossierAvailableAt` en una señal booleana `dossierEvidence` y devuelve solo el contrato grueso esperado por Fase 6.
+
+#### Frontera de seguridad importante
+Firestore Security Rules continúan autorizando la lectura a nivel de documento y NO son un control de lectura por campo. La máscara REST se usa aquí como minimización del contenido devuelto al transporte del agente, no como sustituto de las reglas de seguridad.
+
+Las reglas actuales siguen siendo la autoridad: el usuario autenticado solo puede leer sus propios documentos porque `request.auth.uid == userId`. No se modificaron `firestore.rules`.
+
+La función de producción toma el usuario de `auth.currentUser`; no recibe un UID arbitrario desde la IA o desde texto del usuario. En pruebas existe una variante inyectable, pero incluso una combinación UID/token que no pertenezca al mismo usuario queda rechazada por las reglas de propietario de Firestore.
+
+#### Fallos y degradación
+- Si `userProfiles/{uid}` no existe: se trata como documento vacío.
+- Si hay 401/403, error de red, respuesta inválida o cualquier fallo del transporte: devuelve `null` y el agente deberá degradar a comportamiento sin contexto.
+- No hay escrituras.
+- No usa Firestore SDK para leer documentos (`getDoc`, `setDoc`, `updateDoc`, etc.).
+- No registra errores que puedan incluir token o contenido privado.
+
+#### Compatibilidad con la política existente
+El transporte no decide qué significa cada estado. Solo devuelve señales gruesas.
+
+La Fase 6 sigue siendo quien llama a `resolveQuestionnaireUiState`, por lo que:
+- `reset_required` sigue mandando sobre dossier;
+- cuestionario activo sigue siendo cuestionario activo;
+- dossier disponible sigue recomendando la puerta del dossier;
+- no se ha creado un segundo motor de estados.
+
+#### No conexión deliberada
+Fase 7A NO modifica ni importa el transporte desde:
+- `Layout.tsx`
+- `InternalGuide.tsx`
+- páginas de consulta
+- páginas de dossier
+- componentes de solicitud de cuestionario
+
+Por tanto, esta fase no altera ningún comportamiento visible de la web actual.
+
+#### Validación Fase 7A
+En Preview de Vercel se añadió temporalmente un runner que ejecutó todos los `*.test.ts` existentes y después se retiró completamente.
+
+Resultado:
+- 219 tests
+- 219 PASS
+- 0 FAIL
+- `npm run lint`: PASS
+- `npm run build`: PASS
+- Preview de validación: READY
+- Preview del SHA final limpio `ba18361...`: READY
+
+El runner temporal y el `buildCommand` temporal NO existen en el SHA final.
+
+#### Diff neto Fase 7A respecto a Fase 6
+Únicamente dos archivos nuevos:
+- `src/services/agentCoarseStateTransport.ts`
+- `tests/agentUserStateTransport.test.ts`
+
+No se modificó ningún archivo existente de runtime de SoyBienestar.
+
+## Siguiente fase recomendada
+Fase 7B: conectar de forma controlada el transporte de Fase 7A con la política pura de Fase 6 y, solo después, decidir cómo usa `InternalGuide` el `recommendedProcessActionId`.
+
+Condiciones para Fase 7B:
+1. partir exactamente del SHA `ba183616efff994dc04964f2c406dc96db8ce1f2`;
+2. no reutilizar ni modificar el estado cargado por `Layout.tsx`;
+3. no modificar Firebase Rules, backend, webhooks, consulta, cuestionario o dossier;
+4. mantener la IA fuera del transporte: Gemini no debe recibir UID, token ni estas señales salvo que una fase futura lo justifique y se audite expresamente;
+5. si el transporte falla, la guía determinista debe seguir funcionando exactamente como antes;
+6. cualquier necesidad de tocar una pieza compartida de la web = ALERTA ROJA antes del cambio;
+7. antes de conectar visualmente nada, añadir pruebas que demuestren que la recomendación solo cambia la orientación del agente y nunca la autorización ni el estado real del usuario.
 
 ## Arquitectura que NO debe romperse
 
@@ -126,11 +232,13 @@ Además:
 - `ProtectedRoute` sigue siendo autoridad para auth.
 - Cuestionario/Dossier/consulta privada no exponen contenido al agente.
 - `sb.open_emotional_course` sigue UNAVAILABLE hasta implementar el entitlement definitivo.
+- El coarse state solo puede orientar; nunca autorizar ni sustituir las puertas protegidas actuales.
 
 ## Prohibiciones
 - No tocar `main` hasta auditoría integral final.
 - No duplicar lógica del cuestionario; reutilizar `resolveQuestionnaireUiState`.
-- No leer dossier, respuestas, conclusiones, PIN/códigos, Firestore docs completos, tokens ni PII desde el agente.
+- No leer dossier, respuestas, conclusiones, PIN/códigos, Firestore docs completos, tokens ni PII desde la capa de decisión del agente.
+- El token solo puede existir transitoriamente dentro del transporte autenticado y nunca cruzar al agente/IA.
 - No usar `getOrMigrateUserProfile` para el estado del agente porque escribe.
 - No modificar Cuestionario Espejo desde estas fases.
 - No convertir el agente en un segundo motor de estados.
@@ -140,6 +248,6 @@ Además:
 ## Cómo continuar en un chat nuevo
 Indicación mínima al nuevo chat:
 
-> Lee `docs/agent-readiness/HANDOFF.md` en la rama `docs/agent-readiness-handoff` y audita después el SHA congelado de Fase 6 `9240f44b5795074e5aaad45f4ed9cec8bf02e77e` en `feat/agent-readiness-phase6-coarse-state`. Diseña la siguiente fase sin tocar `main` ni ninguna pieza compartida de la web sin declarar antes ALERTA ROJA.
+> Lee `docs/agent-readiness/HANDOFF.md` en la rama `docs/agent-readiness-handoff` y audita después el SHA congelado de Fase 7A `ba183616efff994dc04964f2c406dc96db8ce1f2` en `feat/agent-readiness-phase7a-masked-transport`. Diseña Fase 7B sin tocar `main` ni ninguna pieza compartida de la web sin declarar antes ALERTA ROJA.
 
 El código real de GitHub manda sobre cualquier resumen.
