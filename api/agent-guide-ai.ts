@@ -13,6 +13,10 @@ import {
   type AgentGuideModelDecision,
 } from "./agentGuidePolicy.js";
 import {
+  PERSONAL_SUPPORT_GUIDANCE,
+  isPersonalSupportSeekingText,
+} from "./agentGuidePersonalSupport.js";
+import {
   freshGuideGuardState,
   incrementGuideAiCount,
   isGuideDailyLimitReached,
@@ -31,7 +35,7 @@ const MODEL_CANDIDATES = [
   "gemini-2.5-flash-lite",
 ].filter((value, index, array) => value && array.indexOf(value) === index);
 
-const RATE_WINDOW_MS = 5 * 60 * 1000;
+const RATE_WINDOW_MS = 20 * 1000;
 const GUARD_HEADER_NAME = "X-SB-Guide-Guard";
 
 type RateBucket = { count: number; resetAt: number };
@@ -43,8 +47,14 @@ function boundedInteger(value: string | undefined, fallback: number, min: number
   return Math.min(max, Math.max(min, parsed));
 }
 
-const RATE_MAX_REQUESTS = boundedInteger(process.env.INTERNAL_GUIDE_AI_BURST_LIMIT, 8, 2, 30);
-const DAILY_AI_LIMIT = boundedInteger(process.env.INTERNAL_GUIDE_AI_DAILY_LIMIT, 20, 5, 100);
+const RATE_MAX_REQUESTS = Math.min(
+  3,
+  boundedInteger(process.env.INTERNAL_GUIDE_AI_BURST_LIMIT, 3, 1, 30),
+);
+const DAILY_AI_LIMIT = Math.min(
+  10,
+  boundedInteger(process.env.INTERNAL_GUIDE_AI_DAILY_LIMIT, 10, 1, 100),
+);
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
@@ -149,6 +159,17 @@ function blockedResponse(res: any, state: GuideGuardState, now: number) {
   });
 }
 
+function personalSupportBlockedResponse(res: any, state: GuideGuardState, now: number) {
+  const retryAfterSeconds = Math.max(1, Math.ceil((state.lockedUntil - now) / 1000));
+  res.setHeader("Retry-After", String(retryAfterSeconds));
+  writeGuardState(res, state);
+  return res.status(429).json({
+    status: "temporarily_blocked",
+    message: "He pausado temporalmente las preguntas libres porque esta guía no está diseñada para mantener una conversación terapéutica. La consulta guiada gratuita y el recorrido de SoyBienestar siguen disponibles para ayudarte a continuar. Podrás volver a usar las preguntas libres dentro de unos minutos.",
+    retryAfterSeconds,
+  });
+}
+
 async function classifyWithGemini(text: string): Promise<AgentGuideModelDecision> {
   if (!ai) throw new Error("AI unavailable");
   const prompt = buildAgentGuideInterpreterPrompt(text);
@@ -219,6 +240,13 @@ export default async function agentGuideAiHandler(req: any, res: any) {
     return blockedResponse(res, guard, now);
   }
 
+  if (!reserveRateSlot(requestKey(req), now)) {
+    return res.status(429).json({
+      status: "temporarily_unavailable",
+      message: "Has enviado varias consultas en muy pocos segundos. Espera un momento antes de volver a preguntar.",
+    });
+  }
+
   const deterministic = classifyDeterministicGuideRequest(text);
   if (deterministic?.status === "malicious") {
     guard = registerGuideMaliciousAttempt(guard, now);
@@ -234,6 +262,17 @@ export default async function agentGuideAiHandler(req: any, res: any) {
     return res.status(200).json({ status: "off_topic", message: OFF_TOPIC_GUIDANCE });
   }
 
+  if (isPersonalSupportSeekingText(text)) {
+    guard = registerGuideOffTopicAttempt(guard, now);
+    if (guard.lockedUntil > now) return personalSupportBlockedResponse(res, guard, now);
+    writeGuardState(res, guard);
+    return res.status(200).json({
+      status: "process_guidance",
+      reason: "personal_support",
+      message: PERSONAL_SUPPORT_GUIDANCE,
+    });
+  }
+
   if (deterministic?.status === "answer") {
     return res.status(200).json(deterministic);
   }
@@ -247,13 +286,6 @@ export default async function agentGuideAiHandler(req: any, res: any) {
     return res.status(429).json({
       status: "daily_limit",
       message: "Has alcanzado el límite diario de consultas inteligentes de esta guía. Las opciones directas de SoyBienestar siguen disponibles y mañana podrás volver a utilizar la orientación con IA.",
-    });
-  }
-
-  if (!reserveRateSlot(requestKey(req), now)) {
-    return res.status(429).json({
-      status: "temporarily_unavailable",
-      message: "Has hecho varias consultas seguidas. Espera unos minutos antes de volver a usar la orientación con IA.",
     });
   }
 

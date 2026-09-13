@@ -24,18 +24,25 @@ test("dedicated AI endpoint is isolated from auth and private data systems", () 
   assert.doesNotMatch(source, /\buid\b|\bemail\b|\bpatientId\b|\baccessCode\b|\bdossier\b/i);
 });
 
-test("safety and deterministic policy execute before any model quota is consumed", () => {
+test("safety runs before burst limiting and deterministic answers still bypass AI quota", () => {
   const source = read("api/agent-guide-ai.ts");
   const safetyIndex = source.indexOf("isImmediateRiskText(text)");
+  const rateIndex = source.indexOf("reserveRateSlot(requestKey(req), now)");
   const deterministicIndex = source.indexOf("classifyDeterministicGuideRequest(text)");
   const dailyIndex = source.indexOf("isGuideDailyLimitReached(guard, DAILY_AI_LIMIT, now)");
-  const rateIndex = source.indexOf("reserveRateSlot(requestKey(req), now)");
   const modelIndex = source.indexOf("classifyWithGemini(text)");
   assert.ok(safetyIndex > 0);
-  assert.ok(deterministicIndex > safetyIndex);
+  assert.ok(rateIndex > safetyIndex);
+  assert.ok(deterministicIndex > rateIndex);
   assert.ok(dailyIndex > deterministicIndex);
-  assert.ok(rateIndex > dailyIndex);
-  assert.ok(modelIndex > rateIndex);
+  assert.ok(modelIndex > dailyIndex);
+});
+
+test("endpoint enforces at most three guide submissions per twenty seconds and ten AI calls per day", () => {
+  const source = read("api/agent-guide-ai.ts");
+  assert.match(source, /RATE_WINDOW_MS = 20 \* 1000/);
+  assert.match(source, /Math\.min\(\s*3,\s*boundedInteger\(process\.env\.INTERNAL_GUIDE_AI_BURST_LIMIT, 3, 1, 30\)/s);
+  assert.match(source, /Math\.min\(\s*10,\s*boundedInteger\(process\.env\.INTERNAL_GUIDE_AI_DAILY_LIMIT, 10, 1, 100\)/s);
 });
 
 test("endpoint carries signed anonymous quota in a response header and never creates cookies", () => {

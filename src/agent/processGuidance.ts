@@ -1,7 +1,7 @@
 import { findInternalGuideAction, type InternalGuideAction } from "./internalGuide";
 import type { AgentCoarseUserState } from "./userState";
 
-export type InternalGuideProcessReason = "next_step" | "pricing";
+export type InternalGuideProcessReason = "next_step" | "pricing" | "personal_support";
 
 export interface InternalGuideProcessAnswer {
   readonly message: string;
@@ -47,10 +47,37 @@ function nextStepForState(state: AgentCoarseUserState | null): InternalGuideProc
   };
 }
 
+function personalSupportForState(state: AgentCoarseUserState | null): InternalGuideProcessAnswer {
+  const nextStep = nextStepForState(state);
+
+  if (nextStep.action.id === "process_free_consultation") {
+    return {
+      message: "Lo que cuentas parece necesitar algo más personal que una respuesta general. Esta guía no hace terapia ni puede valorar tu situación en profundidad, pero tenemos una consulta guiada gratuita de aproximadamente 15 minutos en la que puedes explicar con tus propias palabras lo que te ocurre. Si decides continuar el recorrido que corresponda, podrás profundizar con el Cuestionario Espejo y llegar a un Dossier Espejo personalizado, gratuito y sin compromiso, pensado para ayudarte a entender mejor cómo te sientes y qué opciones puedes valorar.",
+      action: nextStep.action,
+    };
+  }
+
+  if (nextStep.action.id === "process_questionnaire") {
+    return {
+      message: state?.questionnaireStage === "reset_required"
+        ? "Lo que cuentas merece una orientación más personal que la que puede darte esta guía. Como tu proceso indica que el Cuestionario Espejo necesita retomarse desde el paso previsto por la web, ese es el camino adecuado para continuar sin repetir la consulta inicial. Al completar el recorrido que corresponda podrás llegar a tu Dossier Espejo personalizado, gratuito y sin compromiso."
+        : "Lo que cuentas merece una orientación más personal que la que puede darte esta guía. Como ya has avanzado en el proceso, no necesitas empezar de nuevo: continúa con el Cuestionario Espejo para profundizar y, al completar el recorrido que corresponda, llegar a tu Dossier Espejo personalizado, gratuito y sin compromiso.",
+      action: nextStep.action,
+    };
+  }
+
+  return {
+    message: "Lo que cuentas merece una orientación más personal que la que puede darte esta guía. Como tu Dossier Espejo ya figura disponible, ese es el siguiente paso: puede ayudarte a entender mejor cómo te sientes y qué opciones puedes valorar. La guía no puede leer su contenido ni conocer tu clave de acceso.",
+    action: nextStep.action,
+  };
+}
+
 export function buildInternalGuideProcessAnswer(
   reason: InternalGuideProcessReason,
   state: AgentCoarseUserState | null,
 ): InternalGuideProcessAnswer {
+  if (reason === "personal_support") return personalSupportForState(state);
+
   const nextStep = nextStepForState(state);
   if (reason === "next_step") return nextStep;
 

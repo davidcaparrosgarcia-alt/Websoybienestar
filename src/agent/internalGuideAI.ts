@@ -5,7 +5,7 @@ import {
 
 export const INTERNAL_GUIDE_AI_MAX_TEXT_LENGTH = 500;
 export const INTERNAL_GUIDE_GUARD_STORAGE_KEY = "soybienestar.guideGuard.v1";
-export type InternalGuideProcessReason = "next_step" | "pricing";
+export type InternalGuideProcessReason = "next_step" | "pricing" | "personal_support";
 
 export type InternalGuideAIResult =
   | { readonly status: "answer"; readonly message: string; readonly action?: InternalGuideAction }
@@ -122,7 +122,9 @@ export async function interpretInternalGuideText(
     if (
       status === "process_guidance" &&
       message &&
-      (record.reason === "next_step" || record.reason === "pricing")
+      (record.reason === "next_step" ||
+        record.reason === "pricing" ||
+        record.reason === "personal_support")
     ) {
       return { status: "process_guidance", message, reason: record.reason };
     }
