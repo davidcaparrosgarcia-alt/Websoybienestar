@@ -134,12 +134,12 @@ test("phase7b composition layer contains no auth, token, Firestore, navigation o
   }
 });
 
-test("phase7b is still not mounted into Layout or InternalGuide UI", () => {
+test("phase7c mounts process context only inside InternalGuide and never into Layout", () => {
   const layoutSource = readFileSync("src/components/Layout.tsx", "utf8");
   const guideSource = readFileSync("src/agent/adapters/InternalGuide.tsx", "utf8");
 
   assert.equal(layoutSource.includes("readAgentProcessContext"), false);
-  assert.equal(guideSource.includes("readAgentProcessContext"), false);
   assert.equal(layoutSource.includes("processContext"), false);
-  assert.equal(guideSource.includes("processContext"), false);
+  assert.equal(guideSource.includes("readAgentProcessContext"), true);
+  assert.equal(guideSource.includes("processContext"), true);
 });
