@@ -277,7 +277,7 @@ export default function InternalGuide() {
                       <button
                         type="submit"
                         disabled={!query.trim() || isInterpreting}
-                        className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                        className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-black disabled:opacity-50"
                       >
                         {isInterpreting ? "Pensando…" : "Preguntar"}
                       </button>
