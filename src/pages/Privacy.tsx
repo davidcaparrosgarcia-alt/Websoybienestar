@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 
 export default function Privacy() {
@@ -83,9 +82,9 @@ export default function Privacy() {
                 <span className="material-symbols-outlined text-4xl mb-6 !text-[#cca969]" style={{ fontVariationSettings: "'wght' 300" }}>self_improvement</span>
                 <h3 className="font-headline text-2xl mb-4 !text-white italic">El Puente de la IA</h3>
                 <p className="!text-white/80 font-light leading-relaxed mb-6 text-sm">
-                  SoyBienestar puede utilizar herramientas de inteligencia artificial como apoyo inicial para ordenar la información que la propia persona decide compartir durante la consulta guiada.
+                  SoyBienestar puede utilizar herramientas de inteligencia artificial como apoyo para ordenar la información que la persona decide compartir, generar resúmenes u orientaciones preliminares y facilitar la revisión posterior por el equipo humano.
                   <br /><br />
-                  Esta escucha asistida permite estructurar mejor la situación expresada y facilitar el posterior acompañamiento de nuestro equipo humano dentro de su proceso de bienestar emocional. El uso de la consulta guiada implica que la persona comprende esta intervención inicial asistida, descrita durante el propio recorrido, y decide participar voluntariamente en ella.
+                  La inteligencia artificial no sustituye la valoración profesional ni adopta por sí sola decisiones con efectos jurídicos o equivalentes sobre la persona. Cuando el contenido compartido pueda incluir información sensible, su tratamiento se limita a las finalidades del servicio y a los proveedores tecnológicos necesarios para prestarlo, de acuerdo con esta Política de Privacidad.
                 </p>
               </div>
             </div>
@@ -100,24 +99,57 @@ export default function Privacy() {
             <h2 className="font-headline text-4xl text-primary mb-8 border-l-4 border-primary pl-8">Transparencia en el Uso de Datos</h2>
             <div className="space-y-12 text-on-surface-variant">
               <div className="group">
-                <h3 className="font-headline text-2xl text-primary mb-4 transition-colors">1. Recolección de Intenciones</h3>
+                <h3 className="font-headline text-2xl text-primary mb-4 transition-colors">1. Responsable del tratamiento</h3>
                 <p className="leading-relaxed">
-                  Solo recopilamos la información estrictamente necesaria para su proceso de acompañamiento. Esto incluye datos identificativos básicos y el historial de sesiones necesario para mantener la continuidad de su "camino de claridad". No vendemos, ni cederemos jamás su información a terceros con fines comerciales.
-                </p>
-                <div className="mt-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/10 text-sm">
-                  La web puede utilizar tecnologías necesarias para mantener la sesión iniciada, proteger el acceso del usuario y permitir el funcionamiento de las áreas privadas. Puedes consultar más información en la <Link to="/cookies" className="text-secondary font-medium hover:underline">Política de cookies</Link>.
-                </div>
-              </div>
-              <div className="group">
-                <h3 className="font-headline text-2xl text-primary mb-4">2. Medidas estrictas de seguridad</h3>
-                <p className="leading-relaxed">
-                  Implementamos medidas técnicas y organizativas para proteger sus datos personales contra el acceso no autorizado, la pérdida accidental o la destrucción, trabajando conforme al RGPD y la normativa aplicable de protección de datos.
+                  El responsable del tratamiento de los datos personales es la titular de SoyBienestar, cuyos datos identificativos completos figuran en el Aviso Legal. Para cualquier cuestión relacionada con privacidad o protección de datos puedes contactar en info@soybienestar.es.
                 </p>
               </div>
               <div className="group">
-                <h3 className="font-headline text-2xl text-primary mb-4">3. Sus Derechos</h3>
+                <h3 className="font-headline text-2xl text-primary mb-4">2. Qué datos tratamos y para qué</h3>
                 <p className="leading-relaxed">
-                  Usted mantiene el control total. Puede ejercer sus derechos de acceso, rectificación, supresión ("derecho al olvido"), limitación del tratamiento y portabilidad en cualquier momento a través de nuestro canal de contacto directo.
+                  Podemos tratar los datos identificativos y de contacto necesarios para crear y mantener tu cuenta, gestionar consultas, reservas y comunicaciones, así como la información que decidas facilitar durante la consulta guiada, el Cuestionario Espejo y el proceso de elaboración de tu Dossier.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  Esa información puede incluir datos sobre tu situación personal, emocional o de bienestar y, en determinados casos, información que pueda considerarse relativa a la salud. También podemos tratar datos técnicos necesarios para la seguridad, funcionamiento y medición agregada del uso de la plataforma.
+                </p>
+              </div>
+              <div className="group">
+                <h3 className="font-headline text-2xl text-primary mb-4">3. Base jurídica</h3>
+                <p className="leading-relaxed">
+                  Tratamos los datos necesarios para prestar los servicios solicitados, gestionar las relaciones precontractuales o contractuales y cumplir las obligaciones legales aplicables.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  Cuando la información que decidas facilitar pueda revelar datos relativos a tu salud o bienestar emocional y sea necesario tu consentimiento para su tratamiento, solicitaremos tu consentimiento explícito. Podrás retirarlo en cualquier momento, sin que ello afecte a la licitud del tratamiento realizado anteriormente.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  Determinados tratamientos técnicos necesarios para proteger la plataforma, prevenir usos abusivos o garantizar su seguridad podrán basarse en nuestro interés legítimo.
+                </p>
+              </div>
+              <div className="group">
+                <h3 className="font-headline text-2xl text-primary mb-4">4. Proveedores tecnológicos y comunicaciones</h3>
+                <p className="leading-relaxed">
+                  Para prestar el servicio utilizamos proveedores tecnológicos necesarios para el alojamiento de la plataforma, autenticación y almacenamiento de datos, procesamiento mediante inteligencia artificial, comunicaciones y gestión de pagos. Entre ellos pueden encontrarse proveedores como Google/Firebase, Google Gemini, Vercel y Stripe, según la funcionalidad utilizada.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  No vendemos datos personales ni los cedemos para publicidad de terceros. Cuando algún proveedor implique tratamiento internacional de datos, se aplicarán las garantías exigidas por la normativa de protección de datos que correspondan.
+                </p>
+              </div>
+              <div className="group">
+                <h3 className="font-headline text-2xl text-primary mb-4">5. Conservación</h3>
+                <p className="leading-relaxed">
+                  Los datos se conservarán mientras sean necesarios para mantener la cuenta, gestionar el proceso solicitado y prestar los servicios contratados. Posteriormente podrán mantenerse bloqueados durante los plazos necesarios para atender obligaciones legales o posibles responsabilidades y serán eliminados cuando dejen de resultar necesarios.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  Algunos datos técnicos o recursos temporales pueden tener periodos de conservación más breves cuando su función ya haya finalizado.
+                </p>
+              </div>
+              <div className="group">
+                <h3 className="font-headline text-2xl text-primary mb-4">6. Tus derechos</h3>
+                <p className="leading-relaxed">
+                  Puedes solicitar el acceso a tus datos, su rectificación o supresión, la limitación u oposición a determinados tratamientos y, cuando corresponda, su portabilidad. También puedes retirar en cualquier momento los consentimientos que hayas otorgado.
+                </p>
+                <p className="leading-relaxed mt-4">
+                  Puedes ejercer estos derechos escribiendo a info@soybienestar.es. Si consideras que el tratamiento de tus datos no se ajusta a la normativa, tienes derecho a presentar una reclamación ante la Agencia Española de Protección de Datos.
                 </p>
               </div>
             </div>

@@ -50,7 +50,15 @@ export default function Cookies() {
             </p>
 
             <p>
-              Si en el futuro incorporamos herramientas de analítica, publicidad, medición no necesaria o seguimiento comercial, informaremos previamente al usuario y solicitaremos el consentimiento correspondiente cuando sea necesario.
+              SoyBienestar utiliza Vercel Web Analytics para obtener estadísticas agregadas sobre el uso de la web, con el objetivo de conocer qué contenidos y funcionalidades se utilizan y mejorar el servicio. Esta medición no se utiliza para publicidad comportamental ni para realizar seguimiento comercial del usuario entre distintos sitios web.
+            </p>
+
+            <p>
+              Algunas funciones pueden utilizar almacenamiento local del navegador para conservar temporalmente preferencias, estado técnico o información necesaria para que determinadas herramientas funcionen correctamente. Este almacenamiento no se utiliza para publicidad ni remarketing.
+            </p>
+
+            <p>
+              Si en el futuro incorporamos publicidad, remarketing u otras tecnologías que requieran consentimiento previo, informaremos al usuario y solicitaremos dicho consentimiento cuando legalmente corresponda.
             </p>
 
             <p>

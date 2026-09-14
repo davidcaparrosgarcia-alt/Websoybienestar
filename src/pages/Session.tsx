@@ -44,6 +44,12 @@ export default function Session() {
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [showHelpText, setShowHelpText] = useState(false);
   const [hasStartedGuidedSession, setHasStartedGuidedSession] = useState(false);
+  const [hasAcceptedPrivacyConsent, setHasAcceptedPrivacyConsent] =
+    useState(false);
+  const [isSavingPrivacyConsent, setIsSavingPrivacyConsent] = useState(false);
+  const [privacyConsentError, setPrivacyConsentError] = useState<string | null>(
+    null,
+  );
   const [hasUserStartedResponding, setHasUserStartedResponding] =
     useState(false);
   const [urgentMessage, setUrgentMessage] = useState<string | null>(null);
@@ -95,6 +101,7 @@ export default function Session() {
   const pendingSessionLimitAutoSendRef = useRef(false);
   const sessionLimitHandledRef = useRef(false);
   const sessionLimitMessageSentRef = useRef(false);
+  const privacyConsentSaveInFlightRef = useRef(false);
 
   const navigate = useNavigate();
   const [hasDoneConsultation, setHasDoneConsultation] = useState<
@@ -1144,6 +1151,53 @@ export default function Session() {
     }
   };
 
+  const startGuidedSession = async () => {
+    if (
+      !hasAcceptedPrivacyConsent ||
+      isSavingPrivacyConsent ||
+      privacyConsentSaveInFlightRef.current
+    ) {
+      return;
+    }
+
+    privacyConsentSaveInFlightRef.current = true;
+    setIsSavingPrivacyConsent(true);
+    setPrivacyConsentError(null);
+
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Authenticated user unavailable");
+
+      const { userRef, profileRef } = await getOrMigrateUserProfile(user.uid);
+      const consentData = {
+        guidedConsultationPrivacyConsent: true,
+        guidedConsultationPrivacyConsentVersion: "2026-09-14-v1",
+        guidedConsultationPrivacyConsentAcceptedAt: new Date().toISOString(),
+        guidedConsultationPrivacyConsentSource: "session_intro",
+      };
+
+      await Promise.all([
+        updateDoc(userRef, consentData).catch(async () => {
+          await setDoc(userRef, consentData, { merge: true });
+        }),
+        updateDoc(profileRef, consentData).catch(async () => {
+          await setDoc(profileRef, consentData, { merge: true });
+        }),
+      ]);
+
+      sessionStartTimeRef.current = Date.now();
+      setHasStartedGuidedSession(true);
+    } catch (error) {
+      console.error("Privacy consent persistence failed", error);
+      setPrivacyConsentError(
+        "No hemos podido registrar tu consentimiento. Revisa la conexión e inténtalo de nuevo.",
+      );
+    } finally {
+      privacyConsentSaveInFlightRef.current = false;
+      setIsSavingPrivacyConsent(false);
+    }
+  };
+
   if (hasDoneConsultation === null) {
     return (
       <>
@@ -1224,15 +1278,55 @@ export default function Session() {
             ayudará a ordenar lo que siento y expresar mi situación con más
             claridad antes del acompañamiento de un equipo humano.
           </p>
+          <div className="w-full text-left text-xs leading-relaxed text-on-surface-variant space-y-2">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasAcceptedPrivacyConsent}
+                onChange={(event) => {
+                  setHasAcceptedPrivacyConsent(event.target.checked);
+                  setPrivacyConsentError(null);
+                }}
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-primary"
+              />
+              <span>
+                He leído la información de privacidad y consiento expresamente
+                el tratamiento de la información personal, emocional o relativa
+                a mi salud o bienestar que decida compartir para gestionar esta
+                consulta y, si continúo el proceso, el Cuestionario Espejo y mi
+                Dossier.
+              </span>
+            </label>
+            <p>
+              Responsable: SoyBienestar · Finalidad: gestionar esta consulta y
+              la continuidad del proceso · Los datos podrán ser tratados por
+              proveedores tecnológicos necesarios para prestar el servicio y no
+              se venden con fines publicitarios · Derechos:
+              info@soybienestar.es ·{" "}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-secondary font-medium hover:underline"
+              >
+                Política de Privacidad
+              </a>
+            </p>
+            {privacyConsentError && (
+              <p role="alert" className="text-sm text-on-surface-variant">
+                {privacyConsentError}
+              </p>
+            )}
+          </div>
           <div className="w-full flex justify-center mt-8">
             <button
-              onClick={() => {
-                sessionStartTimeRef.current = Date.now();
-                setHasStartedGuidedSession(true);
-              }}
-              className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline text-lg tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95"
+              onClick={() => void startGuidedSession()}
+              disabled={!hasAcceptedPrivacyConsent || isSavingPrivacyConsent}
+              className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline text-lg tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
             >
-              Comenzar consulta guiada
+              {isSavingPrivacyConsent
+                ? "Guardando..."
+                : "Comenzar consulta guiada"}
             </button>
           </div>
         </div>

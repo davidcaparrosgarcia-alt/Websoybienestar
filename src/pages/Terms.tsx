@@ -61,6 +61,12 @@ export default function Terms() {
               <p>
                 SoyBienestar puede incluir enlaces o referencias a contenidos de terceros. En ese caso, dichos contenidos serán responsabilidad de sus respectivos titulares, sin que SoyBienestar asuma responsabilidad directa sobre ellos.
               </p>
+              <p>
+                Las herramientas digitales, la consulta guiada, el Cuestionario Espejo y los contenidos generados o asistidos mediante inteligencia artificial tienen una función de orientación y apoyo dentro del proceso SoyBienestar. Por sí solos no constituyen un diagnóstico médico o psicológico ni sustituyen la atención sanitaria o de urgencia cuando ésta resulte necesaria.
+              </p>
+              <p>
+                Los sistemas de inteligencia artificial utilizados por SoyBienestar actúan como herramientas de apoyo para organizar información y elaborar borradores, orientaciones o informes preliminares. Sus resultados pueden requerir revisión humana y no deben interpretarse como decisiones clínicas automatizadas.
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -104,6 +110,19 @@ export default function Terms() {
               <h2 className="font-headline text-2xl text-primary font-bold">8. Ley aplicable y jurisdicción</h2>
               <p>
                 Para la resolución de las controversias o cuestiones relacionadas con este sitio web o las actividades en él desarrolladas, será de aplicación la legislación española, sometiéndose las partes a los juzgados y tribunales que resulten competentes conforme a la normativa aplicable.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="font-headline text-2xl text-primary font-bold">9. Contratación y pagos</h2>
+              <p>
+                Antes de realizar cualquier pago, SoyBienestar mostrará las características principales del programa seleccionado, su duración, el precio total, los impuestos incluidos, la cantidad que se abona en ese momento y las modalidades de pago disponibles.
+              </p>
+              <p>
+                Los pagos con tarjeta se procesan mediante una plataforma externa de pago seguro. SoyBienestar no almacena los datos completos de la tarjeta bancaria. En los pagos mediante transferencia, los datos facilitados se utilizan para identificar y vincular correctamente el ingreso con la reserva correspondiente.
+              </p>
+              <p>
+                Una vez confirmado el pago o la reserva, el equipo de SoyBienestar contactará con el usuario para coordinar el inicio y desarrollo del servicio.
               </p>
             </div>
 
